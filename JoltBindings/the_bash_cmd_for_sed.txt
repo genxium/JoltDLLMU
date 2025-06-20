@@ -1,0 +1,3 @@
+find . -type f -exec sed -i 's/Unity\.Mathematics/System.Numerics/g' {} +
+find . -type f -exec sed -i 's/float3/Vector3/g' {} +
+find . -type f -exec sed -i 's/quaternion/Quaternion/g' {} +

@@ -1,0 +1,6 @@
+**/obj*
+**/bin*
+TestResults
+TestResults/*
+*.sln
+**/*.sln

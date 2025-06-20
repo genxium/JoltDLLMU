@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);CS0028;CS0618;CS8500</NoWarn>        
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" /> 
+      <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+      <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <UnityPackageOutputPath>$(MSBuildThisFileDirectory)/../UnityPackageOutput</UnityPackageOutputPath>
+    </PropertyGroup>
+
+    <Target Name="ExportAll" AfterTargets="AfterBuild">
+        <Copy SourceFiles="$(MSBuildThisFileDirectory)/SerializableData.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
+        <Copy SourceFiles="$(MSBuildThisFileDirectory)/JoltCSharpBindings.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
+        <Copy SourceFiles="$(MSBuildThisFileDirectory)/JoltcPrebuiltLoader.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
+    </Target>
+
+    <Target Name="PostClean" AfterTargets="Clean">
+        <Delete Files="$(UnityPackageOutputPath)/Runtime/SerializableData.cs" />
+        <Delete Files="$(UnityPackageOutputPath)/Runtime/JoltCSharpBindings.cs" />
+        <Delete Files="$(UnityPackageOutputPath)/Runtime/JoltcPrebuiltLoader.cs" />
+    </Target>
+
+</Project>

@@ -1,0 +1,12 @@
+bin.meta
+obj*.meta
+bin/
+obj*/
+bin/**
+obj*/**
+*.sln
+**/obj*
+out
+out/**
+cmakeout
+cmakeout/**
