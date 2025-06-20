@@ -3,6 +3,8 @@
 #include "serializable_data.pb.h"
 #include "BattleConsts.h"
 
+using namespace jtshared;
+
 static float defaultThickness = 2.0f;
 static float defaultHalfThickness = defaultThickness * 0.5f;
 
@@ -23,7 +25,7 @@ const uint32_t SPECIES_YELLOWCAT = 12;
 const uint32_t SPECIES_BLACKCAT = 13;
 
 
-void NewBullet(shared::Bullet* single, int bulletLocalId, int originatedRenderFrameId, int offenderJoinIndex, int teamId, shared::BulletState blState, int framesInBlState) {
+void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int offenderJoinIndex, int teamId, BulletState blState, int framesInBlState) {
     single->set_bl_state(blState);
     single->set_frames_in_bl_state(framesInBlState);
     single->set_bullet_local_id(bulletLocalId);
@@ -32,24 +34,24 @@ void NewBullet(shared::Bullet* single, int bulletLocalId, int originatedRenderFr
     single->set_team_id(teamId);
 }
 
-void NewPreallocatedCharacterDownsync(shared::CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
+void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
     single->set_id(TERMINATING_PLAYER_ID);
     single->set_join_index(JOIN_INDEX_NOT_INITIALIZED);
     for (int i = 0; i < buffCapacity; i++) {
-        shared::Buff* singleBuff = single->add_buff_list();
+        Buff* singleBuff = single->add_buff_list();
         singleBuff->set_species_id(TERMINATING_BUFF_SPECIES_ID);
         singleBuff->set_originated_render_frame_id(TERMINATING_RENDER_FRAME_ID);
         singleBuff->set_orig_ch_species_id(SPECIES_NONE_CH);
     }
     for (int i = 0; i < debuffCapacity; i++) {
-        shared::Buff* singleDebuff = single->add_buff_list();
+        Buff* singleDebuff = single->add_buff_list();
         singleDebuff->set_species_id(TERMINATING_DEBUFF_SPECIES_ID);
     }
     if (0 < inventoryCapacity) {
-        shared::Inventory* inv = single->mutable_inventory();
+        Inventory* inv = single->mutable_inventory();
         for (int i = 0; i < inventoryCapacity; i++) {
             auto singleSlot = inv->add_slots();
-            singleSlot->set_stock_type(shared::InventorySlotStockType::NoneIv);
+            singleSlot->set_stock_type(InventorySlotStockType::NoneIv);
         }
     }
 
@@ -60,8 +62,8 @@ void NewPreallocatedCharacterDownsync(shared::CharacterDownsync* single, int buf
     }
 }
 
-shared::RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount) {
-    auto ret = new shared::RenderFrame();
+RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount) {
+    auto ret = new RenderFrame();
     ret->set_id(TERMINATING_RENDER_FRAME_ID);
     ret->set_bullet_local_id_counter(0);
 
@@ -77,13 +79,13 @@ shared::RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, 
 
     for (int i = 0; i < preallocBulletCount; i++) {
         auto single = ret->add_bullets();
-        NewBullet(single, TERMINATING_BULLET_LOCAL_ID, 0, 0, 0, shared::BulletState::StartUp, 0);
+        NewBullet(single, TERMINATING_BULLET_LOCAL_ID, 0, 0, 0, BulletState::StartUp, 0);
     }
 
     return ret;
 }
 
-shared::RenderFrame* mockStartRdf() {
+RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(DOWNSYNC_MSG_ACT_BATTLE_START);
@@ -100,7 +102,7 @@ shared::RenderFrame* mockStartRdf() {
     ch1.set_revival_x(ch1.x());
     ch1.set_revival_y(ch1.y());
     ch1.set_speed(10);
-    ch1.set_character_state(shared::CharacterState::InAirIdle1NoJump);
+    ch1.set_character_state(CharacterState::InAirIdle1NoJump);
     ch1.set_frames_to_recover(0);
     ch1.set_dir_x(2);
     ch1.set_dir_y(0);
@@ -119,7 +121,7 @@ shared::RenderFrame* mockStartRdf() {
     ch2.set_revival_x(ch2.x());
     ch2.set_revival_y(ch2.y());
     ch2.set_speed(10);
-    ch2.set_character_state(shared::CharacterState::InAirIdle1NoJump);
+    ch2.set_character_state(CharacterState::InAirIdle1NoJump);
     ch2.set_frames_to_recover(0);
     ch2.set_dir_x(-2);
     ch2.set_dir_y(0);

@@ -3,80 +3,17 @@ inline RingBuffer<T>::RingBuffer(int n) {
     Cnt = St = Ed = 0;
     N = n;
     Eles.reserve(n);
-    for (int i = 0; i < n; i++) {
-        Eles.reserve(n);
-    }
+    Eles.assign(n, nullptr);
 }
 
 template <typename T>
 inline RingBuffer<T>::~RingBuffer() {
-}
-
-template <typename T>
-inline bool RingBuffer<T>::Put(T item) {
-    while (0 < Cnt && Cnt >= N) {
-        // Make room for the new element
-        Pop();
-    }
-    if (Ed < Eles.size()) {
-        Eles[Ed] = item;
-    } else {
-        Eles.emplace(Eles.end(), item);
-    }
-    Cnt++;
-    Ed++;
-
-    if (Ed >= N) {
-        Ed -= N; // Deliberately not using "%" operator for performance concern
-
-    }
-    return true;
-}
-
-template <typename T>
-inline T* RingBuffer<T>::GetFirst() {
-    if (0 == Cnt) return nullptr;
-    return &Eles[St];
-}
-
-template <typename T>
-inline T* RingBuffer<T>::GetLast() {
-    if (0 == Cnt) return nullptr;
-    if (0 <= Ed - 1) return &Eles[Ed - 1];
-    else return &Eles[Ed - 1 + N];
-}
-
-template <typename T>
-inline T* RingBuffer<T>::Pop() {
-    if (0 == Cnt) return nullptr;
-    auto holder = GetFirst();
-    Cnt--; St++;
-
-    if (St >= N) {
-        St -= N;
-    }
-    return holder;
-}
-
-template <typename T>
-inline void RingBuffer<T>::Clear() {
     while (0 < Cnt) {
-        Pop();
+        T* front = Pop();
+        delete front;
+        front = nullptr;
     }
-    St = Ed = 0;
-}
-
-
-template <typename T>
-inline T* RingBuffer<T>::PopTail() {
-    if (0 == Cnt) return nullptr;
-    auto holder = GetLast();
-    Cnt--; Ed--;
-
-    if (Ed < 0) {
-        Ed += N;
-    }
-    return holder;
+    Clear();
 }
 
 template <typename T>
@@ -118,5 +55,64 @@ inline T* RingBuffer<T>::GetByOffset(int offsetFromSt) {
     if (0 > arrIdx || arrIdx >= N) {
         return nullptr;
     }
-    return &Eles[arrIdx];
+    return Eles[arrIdx];
+}
+
+template <typename T>
+inline T* RingBuffer<T>::GetFirst() {
+    if (0 == Cnt) return nullptr;
+    return Eles[St];
+}
+
+template <typename T>
+inline T* RingBuffer<T>::GetLast() {
+    if (0 == Cnt) return nullptr;
+    if (0 < Ed) return Eles[Ed - 1];
+    else return Eles[N - 1];
+}
+
+template <typename T>
+inline T* RingBuffer<T>::Pop() {
+    if (0 == Cnt) return nullptr;
+    auto holder = GetFirst();
+    Cnt--; St++;
+
+    if (St >= N) {
+        St -= N;
+    }
+    return holder;
+}
+
+template <typename T>
+inline T* RingBuffer<T>::PopTail() {
+    if (0 == Cnt) return nullptr;
+    auto holder = GetLast();
+    Cnt--; Ed--;
+
+    if (Ed < 0) {
+        Ed += N;
+    }
+    return holder;
+}
+
+template <typename T>
+inline void RingBuffer<T>::Clear() {
+    Cnt = 0;
+    St = Ed = 0;
+    Eles.clear();
+}
+
+template <typename T>
+inline T* RingBuffer<T>::DryPut() { 
+    T* candidateSlot = (N > Ed ? Eles[Ed] : Eles[0]);
+    if (nullptr == candidateSlot) {
+        candidateSlot = new T();
+    }
+    Cnt++;
+    Ed++;
+
+    if (Ed >= N) {
+        Ed -= N; // Deliberately not using "%" operator for performance concern
+    }
+    return candidateSlot;
 }

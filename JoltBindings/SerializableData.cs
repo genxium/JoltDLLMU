@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace shared {
+namespace jtshared {
 
   /// <summary>Holder for reflection information generated from serializable_data.proto</summary>
   public static partial class SerializableDataReflection {
@@ -24,691 +24,696 @@ namespace shared {
     static SerializableDataReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChdzZXJpYWxpemFibGVfZGF0YS5wcm90bxIGc2hhcmVkIm4KE0F1dGhUb2tl",
-            "blVuZGVybHlpbmcSEQoJcGxheWVyX2lkGAEgASgJEhcKD2Zyb21fYXV0aHNy",
-            "dl9pZBgCIAEoDRIXCg90b19iYXR0bGVzcnZfaWQYAyABKA0SEgoKZXhwaXJl",
-            "c19hdBgEIAEoAyL5AQoKQXV0aFJlc3VsdBIQCghyZXRfY29kZRgBIAEoBRIN",
-            "CgV1bmFtZRgCIAEoCRIPCgdjYXB0Y2hhGAMgASgJEhIKCmV4cGlyZXNfYXQY",
-            "BCABKAMSEQoJcGxheWVyX2lkGAUgASgJEhYKDm5ld19hdXRoX3Rva2VuGAYg",
-            "ASgJEhoKEm5ld19hdXRoX3Rva2VuX3NpZxgHIAEoCRIhChljYXB0Y2hhX3N1",
-            "Ym1pdF9hdXRoc3J2X2lkGAggASgNEh8KF2JhdHRsZXNydl9ob3N0bmFtZV9v",
-            "bmx5GAkgASgJEhoKEmJhdHRsZXNydl9lbmRwb2ludBgKIAEoCSKNAQooU3Rl",
-            "YW1BdXRoZW50aWNhdGVVc2VyVGlja2V0UGF5bG9hZFBhcmFtcxIOCgZyZXN1",
-            "bHQYASABKAkSDwoHc3RlYW1pZBgCIAEoCRIUCgxvd25lcnN0ZWFtaWQYAyAB",
-            "KAkSEQoJdmFjYmFubmVkGAQgASgIEhcKD3B1Ymxpc2hlcmJhbm5lZBgFIAEo",
-            "CCJqCiZTdGVhbUF1dGhlbnRpY2F0ZVVzZXJUaWNrZXRQYXlsb2FkUmVzcBJA",
-            "CgZwYXJhbXMYASABKAsyMC5zaGFyZWQuU3RlYW1BdXRoZW50aWNhdGVVc2Vy",
-            "VGlja2V0UGF5bG9hZFBhcmFtcyJlCiFTdGVhbUF1dGhlbnRpY2F0ZVVzZXJU",
-            "aWNrZXRSZXN1bHQSQAoIcmVzcG9uc2UYASABKAsyLi5zaGFyZWQuU3RlYW1B",
-            "dXRoZW50aWNhdGVVc2VyVGlja2V0UGF5bG9hZFJlc3AigAEKEEJhdHRsZUlu",
-            "dml0YXRpb24SFgoOZnJvbV9wbGF5ZXJfaWQYASABKAkSFwoPdG9fYmF0dGxl",
-            "c3J2X2lkGAIgASgNEhUKDWJvdW5kX3Jvb21faWQYAyABKAUSEgoKZXhwaXJl",
-            "c19hdBgEIAEoAxIQCghwYXNzY29kZRgFIAEoCSLNGgoPQ2hhcmFjdGVyQ29u",
-            "ZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SFAoMc3BlY2llc19uYW1lGAIgASgJ",
-            "EgoKAmhwGAMgASgFEgoKAm1wGAQgASgFEhcKD2xheV9kb3duX2ZyYW1lcxgF",
-            "IAEoBRIiChpsYXlfZG93bl9mcmFtZXNfdG9fcmVjb3ZlchgGIAEoBRIgChhn",
-            "ZXRfdXBfaW52aW5zaWJsZV9mcmFtZXMYByABKAUSIAoYZ2V0X3VwX2ZyYW1l",
-            "c190b19yZWNvdmVyGAggASgFEg0KBXNwZWVkGAkgASgCEh0KFW1wX3JlZ2Vu",
-            "X3Blcl9pbnRlcnZhbBgKIAEoBRIZChFtcF9yZWdlbl9pbnRlcnZhbBgLIAEo",
-            "BRIaChJqdW1waW5nX2luaXRfdmVsX3kYDCABKAISIQoZaW5lcnRpYV9mcmFt",
-            "ZXNfdG9fcmVjb3ZlchgNIAEoBRIXCg9kYXNoaW5nX2VuYWJsZWQYDiABKAgS",
-            "FwoPc2xpZGluZ19lbmFibGVkGA8gASgIEhcKD29uX3dhbGxfZW5hYmxlZBgQ",
-            "IAEoCBIZChFjcm91Y2hpbmdfZW5hYmxlZBgRIAEoCBIdChVjcm91Y2hpbmdf",
-            "YXRrX2VuYWJsZWQYEiABKAgSJgoed2FsbF9qdW1waW5nX2ZyYW1lc190b19y",
-            "ZWNvdmVyGBMgASgFEh8KF3dhbGxfanVtcGluZ19pbml0X3ZlbF94GBQgASgC",
-            "Eh8KF3dhbGxfanVtcGluZ19pbml0X3ZlbF95GBUgASgCEhoKEndhbGxfc2xp",
-            "ZGluZ192ZWxfeRgWIAEoAhIZChFtaW5fZmFsbGluZ192ZWxfeRgXIAEoAhIb",
-            "ChNtYXhfYXNjZW5kaW5nX3ZlbF95GBggASgCEhsKE3VzZV9pbnZlbnRvcnlf",
-            "YnRuX2IYGSABKAgSNwovZ3JvdW5kX2RvZGdlX2VuYWJsZWRfYnlfaXZfc2xv",
-            "dF9jX2luX2Jsb2NrX3N0dW4YGiABKAgSNgouZ3JvdW5kX2RvZGdlX2VuYWJs",
-            "ZWRfYnlfcmRmX2NudF9mcm9tX2JlZ2lubmluZxgbIAEoBRInCh9ncm91bmRf",
-            "ZG9kZ2VkX2ZyYW1lc190b19yZWNvdmVyGBwgASgFEicKH2dyb3VuZF9kb2Rn",
-            "ZWRfZnJhbWVzX2ludmluc2libGUYHSABKAUSGwoTZ3JvdW5kX2RvZGdlZF9z",
-            "cGVlZBgeIAEoAhIXCg92aXNpb25fb2Zmc2V0X3gYHyABKAISFwoPdmlzaW9u",
-            "X29mZnNldF95GCAgASgCEhUKDXZpc2lvbl9zaXplX3gYISABKAISFQoNdmlz",
-            "aW9uX3NpemVfeRgiIAEoAhIWCg5jYXBzdWxlX3JhZGl1cxgjIAEoAhIbChNj",
-            "YXBzdWxlX2hhbGZfaGVpZ2h0GCQgASgCEh0KFXNocmlua2VkX3NjYWxlX3Jh",
-            "ZGl1cxglIAEoAhIdChVzaHJpbmtlZF9zY2FsZV9oZWlnaHQYJiABKAISHQoV",
-            "bGF5X2Rvd25fc2NhbGVfcmFkaXVzGCcgASgCEh0KFWxheV9kb3duX3NjYWxl",
-            "X2hlaWdodBgoIAEoAhIaChJkeWluZ19zY2FsZV9yYWRpdXMYKSABKAISGgoS",
-            "ZHlpbmdfc2NhbGVfaGVpZ2h0GCogASgCEhsKE2RpbW1lZF9zY2FsZV9yYWRp",
-            "dXMYKyABKAISGwoTZGltbWVkX3NjYWxlX2hlaWdodBgsIAEoAhIeChZhbnRp",
-            "X2dyYXZpdHlfd2hlbl9pZGxlGC0gASgIEiUKHWFudGlfZ3Jhdml0eV9mcmFt",
-            "ZXNfbGluZ2VyaW5nGC4gASgFEhQKDG9taXRfZ3Jhdml0eRgvIAEoCBIaChJv",
-            "bWl0X3NvZnRfcHVzaGJhY2sYMCABKAgSGwoTcmVwZWxfc29mdF9wdXNoYmFj",
-            "axgxIAEoCBIbChNjb2xsaXNpb25fdHlwZV9tYXNrGDIgASgEEhwKFGhhc190",
-            "dXJuX2Fyb3VuZF9hbmltGDMgASgIEhcKD2hhc19kaW1tZWRfYW5pbRg0IAEo",
-            "CBIYChBoYXNfYXdha2luZ19hbmltGDUgASgIEh4KFmhhc193YWxrX3N0b3Bw",
-            "aW5nX2FuaW0YNiABKAgSJQodaGFzX2luX2Fpcl93YWxrX3N0b3BwaW5nX2Fu",
-            "aW0YNyABKAgSJwofbGF5X2Rvd25fdG9fcmVjb3Zlcl9mcm9tX2RpbW1lZBg4",
-            "IAEoCBIQCghoYXJkbmVzcxg5IAEoBRIlCh1wcm9hY3RpdmVfanVtcF9zdGFy",
-            "dHVwX2ZyYW1lcxg6IAEoBRIeChZkZWZhdWx0X2Fpcl9qdW1wX3F1b3RhGDsg",
-            "ASgNEh4KFmRlZmF1bHRfYWlyX2Rhc2hfcXVvdGEYPCABKA0SGQoRZGVmYXVs",
-            "dF9kZWYxUXVvdGEYPSABKA0SKAogaXNvbGF0ZWRfYWlyX2p1bXBfYW5kX2Rh",
-            "c2hfcXVvdGEYPiABKAgSHwoXYWlyX2p1bXBfdmZ4X3NwZWNpZXNfaWQYPyAB",
-            "KAUSKwojc2xpcF9qdW1wX3RocmVzX2hvbGRfYmVsb3dfdG9wX2ZhY2UYQCAB",
-            "KAISIgoac2xpcF9qdW1wX2NoYXJhY3Rlcl9kcm9wX3kYQSABKAISLAokdHJh",
-            "bnNmb3JtX2ludG9fc3BlY2llc19pZF91cG9uX2RlYXRoGEIgASgNEhsKE2p1",
-            "bXBfaG9sZGluZ190b19mbHkYQyABKAgSEAoIaGFzX2RlZjEYRCABKAgSGgoS",
-            "aGFzX2RlZjFBdGtlZDFBbmltGEUgASgIEiwKJGRlZmF1bHRfZGVmMUJyb2tl",
-            "bl9mcmFtZXNfdG9fcmVjb3ZlchhGIAEoBRIiChpkZWYxX2FjdGl2ZV92Znhf",
-            "c3BlY2llc19pZBhHIAEoBRIhChlkZWYxX2F0a2VkX3ZmeF9zcGVjaWVzX2lk",
-            "GEggASgFEiIKGmRlZjFfYnJva2VuX3ZmeF9zcGVjaWVzX2lkGEkgASgFEhsK",
-            "E2RlZjFfc3RhcnR1cF9mcmFtZXMYSiABKAUSGQoRZGVmMV9kYW1hZ2VfeWll",
-            "bGQYSyABKAISLAokZGVmMV9kZWZpZXNfZWxlX3dlYWtuZXNzX3BlbmV0cmF0",
-            "aW9uGEwgASgIEhoKEmRlZjFfZGVmaWVzX2RlYnVmZhhNIAEoCBIcChRmbHlp",
-            "bmdfcXVvdGFfcmRmX2NudBhOIAEoBRIZChF3YWxraW5nX2F1dG9fZGVmMRhP",
-            "IAEoCBIdCgNJZmMYUCABKA4yEC5zaGFyZWQuSWZhY2VDYXQSFAoMZWxlX3dl",
-            "YWtuZXNzGFEgASgNEhYKDmVsZV9yZXNpc3RhbmNlGFIgASgNEhoKEmhhc19i",
-            "dG5fYl9jaGFyZ2luZxhTIAEoCBIkChxidG5fYl9jaGFyZ2VkX3ZmeF9zcGVj",
-            "aWVzX2lkGFQgASgFEhEKCWlzX2tleV9jaBhVIAEoCBImCh5hbGxvd3Nfc2Ft",
-            "ZV90ZWFtX3NvZnRfcHVzaGJhY2sYViABKAgSHQoVZ2F1Z2VfaW5jX3doZW5f",
-            "a2lsbGVkGFcgASgFEiIKGmp1bXBpbmdfaW5zdGVhZF9vZl93YWxraW5nGFgg",
-            "ASgIEioKInZpc2lvbl9zZWFyY2hfaW50ZXJ2YWxfcG93Mk1pbnVzMVUYWSAB",
-            "KA0SKQohdmlzaW9uX3NlYXJjaF9pbnRlcnZhbF9wb3cyTWludXMxGFogASgF",
-            "EiIKGm5wY19ub19kZWZhdWx0X2Fpcl93YWxraW5nGFsgASgIEiYKHm5wY19w",
-            "cmlvcml0aXplX2J1bGxldF9oYW5kbGluZxhcIAEoCBIjChtucGNfcHJpb3Jp",
-            "dGl6ZV9hbGx5X2hlYWxpbmcYXSABKAgSJgoebnBjX25vdF9odW50aW5nX2lu",
-            "X2Fpcl9vcHBvX2NoGF4gASgIEigKIHRyYW5zZm9ybV9pbnRvX2ZyYW1lc190",
-            "b19yZWNvdmVyGF8gASgFEigKIHRyYW5zZm9ybV9pbnRvX2ZyYW1lc19pbnZp",
-            "bnNpYmxlGGAgASgFEiEKGWF3YWtpbmdfZnJhbWVzX3RvX3JlY292ZXIYYSAB",
-            "KAUSIQoZYXdha2luZ19mcmFtZXNfaW52aW5zaWJsZRhiIAEoBRIgChh1c2Vf",
-            "aWRsZTFfYXNfZmx5aW5nX2lkbGUYYyABKAgSDwoHbm9fZmxlZRhkIAEoCBIz",
-            "ChRpbml0X2ludmVudG9yeV9zbG90cxhlIAMoCzIVLnNoYXJlZC5JbnZlbnRv",
-            "cnlTbG90EjsKG2J0bl9iX2F1dG9fdW5ob2xkX2NoX3N0YXRlcxhmIAMoDjIW",
-            "LnNoYXJlZC5DaGFyYWN0ZXJTdGF0ZRJHChFsb29waW5nX2NoX3N0YXRlcxhn",
-            "IAMoCzIsLnNoYXJlZC5DaGFyYWN0ZXJDb25maWcuTG9vcGluZ0NoU3RhdGVz",
-            "RW50cnkaNgoUTG9vcGluZ0NoU3RhdGVzRW50cnkSCwoDa2V5GAEgASgFEg0K",
-            "BXZhbHVlGAIgASgFOgI4ASLpEQoRQ2hhcmFjdGVyRG93bnN5bmMSCgoCaWQY",
-            "ASABKAUSCQoBeBgCIAEoAhIJCgF5GAMgASgCEg0KBWRpcl94GAQgASgFEg0K",
-            "BWRpcl95GAUgASgFEg0KBXZlbF94GAYgASgCEg0KBXZlbF95GAcgASgCEg0K",
-            "BXNwZWVkGAggASgCEhIKCnNwZWNpZXNfaWQYCSABKA0SEgoKam9pbl9pbmRl",
-            "eBgKIAEoBRIZChFmcmFtZXNfdG9fcmVjb3ZlchgLIAEoBRIiChpmcmFtZXNf",
-            "Y2FwdHVyZWRfYnlfaW5lcnRpYRgMIAEoBRIeChZjYXB0dXJlZF9ieV9wYXRy",
-            "b2xfY3VlGA0gASgIEhwKFGZyYW1lc19pbl9wYXRyb2xfY3VlGA4gASgFEhEK",
-            "CWJlYXRzX2NudBgPIAEoDRISCgpiZWF0ZW5fY250GBAgASgNEgoKAmhwGBEg",
-            "ASgFEgoKAm1wGBIgASgFEh8KF2J0bl9iX2hvbGRpbmdfcmRmX2NvdW50GBMg",
-            "ASgFEi8KD2NoYXJhY3Rlcl9zdGF0ZRgWIAEoDjIWLnNoYXJlZC5DaGFyYWN0",
-            "ZXJTdGF0ZRIaChJmcmFtZXNfaW5fY2hfc3RhdGUYFyABKAUSDgoGaW5fYWly",
-            "GBggASgIEhYKDmp1bXBfdHJpZ2dlcmVkGBkgASgIEg8KB29uX3dhbGwYGiAB",
-            "KAgSFgoOb25fd2FsbF9ub3JtX3gYGyABKAUSFgoOb25fd2FsbF9ub3JtX3kY",
-            "HCABKAUSFAoMb21pdF9ncmF2aXR5GB0gASgIEhoKEm9taXRfc29mdF9wdXNo",
-            "YmFjaxgeIAEoCBIdChV3YWl2aW5nX3BhdHJvbF9jdWVfaWQYHyABKAUSJAoL",
-            "Z29hbF9hc19ucGMYICABKA4yDy5zaGFyZWQuTnBjR29hbBIRCglyZXZpdmFs",
-            "X3gYISABKAISEQoJcmV2aXZhbF95GCIgASgCEhUKDXJldml2YWxfZGlyX3gY",
-            "IyABKAUSFQoNcmV2aXZhbF9kaXJfeRgkIAEoBRIQCghvbl9zbG9wZRglIAEo",
-            "CBIWCg5mcmljdGlvbl92ZWxfeBgmIAEoBRIYChBmb3JjZWRfY3JvdWNoaW5n",
-            "GCcgASgIEhsKE3NsaXBfanVtcF90cmlnZ2VyZWQYKCABKAgSLAokcHJpbWFy",
-            "aWx5X29uX3NsaXBwYWJsZV9oYXJkX3B1c2hiYWNrGCkgASgIEhoKEnByZXZf",
-            "d2FzX2Nyb3VjaGluZxgqIAEoCBIRCgluZXdfYmlydGgYKyABKAgSGQoRZnJh",
-            "bWVzX2ludmluc2libGUYLCABKAUSFAoManVtcF9zdGFydGVkGC0gASgIEhwK",
-            "FGZyYW1lc190b19zdGFydF9qdW1wGC4gASgFEhsKE3JlcGVsX3NvZnRfcHVz",
-            "aGJhY2sYLyABKAgSJwofcHVibGlzaGluZ19ldnRfbWFza191cG9uX2tpbGxl",
-            "ZBgwIAEoBBIyCipwdWJsaXNoaW5nX3RvX3RyaWdnZXJfbG9jYWxfaWRfdXBv",
-            "bl9raWxsZWQYMSABKAUSJgoec3Vic2NyaWJlc190b190cmlnZ2VyX2xvY2Fs",
-            "X2lkGDIgASgFEhwKFGp1bXBfaG9sZGluZ19yZGZfY250GDMgASgFEiAKGHJl",
-            "bWFpbmluZ19haXJfanVtcF9xdW90YRg0IAEoDRIgChhyZW1haW5pbmdfYWly",
-            "X2Rhc2hfcXVvdGEYNSABKA0SLAoka2lsbGVkX3RvX2Ryb3BfY29uc3VtYWJs",
-            "ZV9zcGVjaWVzX2lkGDYgASgNEiYKHmtpbGxlZF90b19kcm9wX2J1ZmZfc3Bl",
-            "Y2llc19pZBg3IAEoDRImCh5raWxsZWRfdG9fZHJvcF9waWNrdXBfc2tpbGxf",
-            "aWQYOCABKA0SFgoOZnJpY3Rpb25fdmVsX3kYOSABKAUSIQoZZnJhbWVzX3Np",
-            "bmNlX2xhc3RfZGFtYWdlZBg6IAEoBRIbChNyZW1haW5pbmdfZGVmMVF1b3Rh",
-            "GDsgASgNEhUKDWNvbWJvX2hpdF9jbnQYPCABKA0SHQoVY29tYm9fZnJhbWVz",
-            "X3JlbWFpbmVkGD0gASgFEh4KFmRhbWFnZV9lbGVtZW50YWxfYXR0cnMYPiAB",
-            "KA0SHAoUb25fc2xvcGVfZmFjaW5nX2Rvd24YPyABKAgSIgoabGFzdF9kYW1h",
-            "Z2VkX2J5X2pvaW5faW5kZXgYQCABKAUSJgoebGFzdF9kYW1hZ2VkX2J5X2J1",
-            "bGxldF90ZWFtX2lkGEEgASgFEhgKEGFjdGl2YXRlZF9yZGZfaWQYQiABKAUS",
-            "FgoOY2FjaGVkX2N1ZV9jbWQYQyABKAQSFwoPYWN0aXZlX3NraWxsX2lkGEQg",
-            "ASgNEhgKEGFjdGl2ZV9za2lsbF9oaXQYRSABKAUSFgoOYnVsbGV0X3RlYW1f",
-            "aWQYRiABKAUSHAoUY2hfY29sbGlzaW9uX3RlYW1faWQYRyABKAUSHwoXYnRu",
-            "X2NfaG9sZGluZ19yZGZfY291bnQYSCABKAUSHwoXYnRuX2RfSG9sZGluZ19y",
-            "ZGZfY291bnQYSSABKAUSHwoXYnRuX2VfaG9sZGluZ19yZGZfY291bnQYSiAB",
-            "KAUSHwoXcGFycnlfcHJlcF9yZGZfY250X2Rvd24YSyABKAUSHgoWbXBfcmVn",
-            "ZW5fcmRmX2NvdW50ZG93bhhMIAEoBRIcChRmbHlpbmdfcmRmX2NvdW50ZG93",
-            "bhhNIAEoBRIdChVsb2NraW5nX29uX2pvaW5faW5kZXgYTiABKAUSHwoJYnVm",
-            "Zl9saXN0GFogAygLMgwuc2hhcmVkLkJ1ZmYSIwoLZGVidWZmX2xpc3QYWyAD",
-            "KAsyDi5zaGFyZWQuRGVidWZmEiQKCWludmVudG9yeRhcIAEoCzIRLnNoYXJl",
-            "ZC5JbnZlbnRvcnkSOQoVYnVsbGV0X2ltbXVuZV9yZWNvcmRzGF0gAygLMhou",
-            "c2hhcmVkLkJ1bGxldEltbXVuZVJlY29yZBIXCg9raW5lbWF0aWNfa25vYnMY",
-            "XiADKAIilAEKEUlucHV0RnJhbWVEZWNvZGVkEgoKAmR4GAEgASgFEgoKAmR5",
-            "GAIgASgFEhMKC2J0bl9hX2xldmVsGAMgASgFEhMKC2J0bl9iX2xldmVsGAQg",
-            "ASgFEhMKC2J0bl9jX2xldmVsGAUgASgFEhMKC2J0bl9kX2xldmVsGAYgASgF",
-            "EhMKC2J0bl9lX2xldmVsGAcgASgFIk8KEElucHV0RnJhbWVVcHN5bmMSFgoO",
-            "aW5wdXRfZnJhbWVfaWQYASABKAUSDwoHZW5jb2RlZBgCIAEoBBISCgpqb2lu",
-            "X2luZGV4GAMgASgFInQKEklucHV0RnJhbWVEb3duc3luYxIWCg5pbnB1dF9m",
-            "cmFtZV9pZBgBIAEoBRISCgppbnB1dF9saXN0GAIgAygEEhYKDmNvbmZpcm1l",
-            "ZF9saXN0GAMgASgEEhoKEnVkcF9jb25maXJtZWRfbGlzdBgEIAEoBCKABwoF",
-            "V3NSZXESEQoJcGxheWVyX2lkGAEgASgJEgsKA2FjdBgCIAEoBRISCgpqb2lu",
-            "X2luZGV4GAMgASgFEhcKD2Fja2luZ19mcmFtZV9pZBgEIAEoBRIdChVhY2tp",
-            "bmdfaW5wdXRfZnJhbWVfaWQYBSABKAUSEAoIYXV0aF9rZXkYBiABKAUSOgoY",
-            "aW5wdXRfZnJhbWVfdXBzeW5jX2JhdGNoGAcgAygLMhguc2hhcmVkLklucHV0",
-            "RnJhbWVVcHN5bmMSLAoPc2VsZl9wYXJzZWRfcmRmGAggASgLMhMuc2hhcmVk",
-            "LlJlbmRlckZyYW1lEiIKGmNvbGxpc2lvbl9zcGFjZV9oYWxmX3dpZHRoGAkg",
-            "ASgFEiMKG2NvbGxpc2lvbl9zcGFjZV9oYWxmX2hlaWdodBgKIAEoBRIfChdi",
-            "YXR0bGVfZHVyYXRpb25fc2Vjb25kcxgLIAEoBRJGChtzZXJpYWxpemVkX2Jh",
-            "cnJpZXJfcG9seWdvbnMYDCADKAsyIS5zaGFyZWQuU2VyaWFsaXphYmxlQ29u",
-            "dmV4UG9seWdvbhJaCh1zZXJpYWxpemVkX3N0YXRpY19wYXRyb2xfY3VlcxgN",
-            "IAMoCzIzLnNoYXJlZC5TZXJpYWxpemVkQ29tcGxldGVseVN0YXRpY1BhdHJv",
-            "bEN1ZUNvbGxpZGVyEloKInNlcmlhbGl6ZWRfY29tcGxldGVseV9zdGF0aWNf",
-            "dHJhcHMYDiADKAsyLi5zaGFyZWQuU2VyaWFsaXplZENvbXBsZXRlbHlTdGF0",
-            "aWNUcmFwQ29sbGlkZXISVQoac2VyaWFsaXplZF9zdGF0aWNfdHJpZ2dlcnMY",
-            "DyADKAsyMS5zaGFyZWQuU2VyaWFsaXplZENvbXBsZXRlbHlTdGF0aWNUcmln",
-            "Z2VyQ29sbGlkZXISYAoqc2VyaWFsaXplZF90cmFwX2xvY2FsX2lkX3RvX2Nv",
-            "bGxpZGVyX2F0dHJzGBAgASgLMiwuc2hhcmVkLlNlcmlhbGl6ZWRUcmFwTG9j",
-            "YWxJZFRvQ29sbGlkZXJBdHRycxJcCihzZXJpYWxpemVkX3RyaWdnZXJfZWRp",
-            "dG9yX2lkX3RvX2xvY2FsX2lkGBIgASgLMiouc2hhcmVkLlNlcmlhbGl6ZWRU",
-            "cmlnZ2VyRWRpdG9ySWRUb0xvY2FsSWQSDgoGc2VxX25vGBMgASgNIsUBChNJ",
-            "bnB1dEJ1ZmZlclNuYXBzaG90EhsKE3JlZl9yZW5kZXJfZnJhbWVfaWQYASAB",
-            "KAUSGAoQdW5jb25maXJtZWRfbWFzaxgCIAEoBBJBCh10b19zZW5kX2lucHV0",
-            "X2ZyYW1lX2Rvd25zeW5jcxgDIAMoCzIaLnNoYXJlZC5JbnB1dEZyYW1lRG93",
-            "bnN5bmMSGwoTc2hvdWxkX2ZvcmNlX3Jlc3luYxgEIAEoCBIXCg9wZWVyX2pv",
-            "aW5faW5kZXgYBSABKAUi4QEKCVBhdHJvbEN1ZRIKCgJpZBgBIAEoBRIOCgZm",
-            "bF9hY3QYAiABKAQSDgoGZnJfYWN0GAMgASgEEhkKEWZsX2NhcHR1cmVfZnJh",
-            "bWVzGAQgASgFEhkKEWZyX2NhcHR1cmVfZnJhbWVzGAUgASgFEg4KBmZkX2Fj",
-            "dBgGIAEoBBIOCgZmdV9hY3QYByABKAQSGQoRZmRfY2FwdHVyZV9mcmFtZXMY",
-            "CCABKAUSGQoRZnVfY2FwdHVyZV9mcmFtZXMYCSABKAUSHAoTY29sbGlzaW9u",
-            "X3R5cGVfbWFzaxiFCCABKAQi3wEKCVZmeENvbmZpZxISCgpzcGVjaWVzX2lk",
-            "GAEgASgFEioKC21vdGlvbl90eXBlGAIgASgOMhUuc2hhcmVkLlZmeE1vdGlv",
-            "blR5cGUSLgoNZHVyYXRpb25fdHlwZRgDIAEoDjIXLnNoYXJlZC5WZnhEdXJh",
-            "dGlvblR5cGUSFAoMb25fY2hhcmFjdGVyGAQgASgIEhEKCW9uX2J1bGxldBgF",
-            "IAEoCBIPCgdvbl90cmFwGAYgASgIEhkKEXVzZV9waXhlbGF0ZWRfdmVyGAcg",
-            "ASgIEg0KBG5hbWUYgAggASgJIs8aCgxCdWxsZXRDb25maWcSFgoOc3RhcnR1",
-            "cF9mcmFtZXMYASABKAUSHAoUY2FuY2VsbGFibGVfc3RfZnJhbWUYAiABKAUS",
-            "HAoUY2FuY2VsbGFibGVfZWRfZnJhbWUYAyABKAUSFQoNYWN0aXZlX2ZyYW1l",
-            "cxgEIAEoBRIXCg9oaXRfc3R1bl9mcmFtZXMYBSABKAUSGQoRYmxvY2tfc3R1",
-            "bl9mcmFtZXMYBiABKAUSFgoOcHVzaGJhY2tfdmVsX3gYByABKAISFgoOcHVz",
-            "aGJhY2tfdmVsX3kYCCABKAISDgoGZGFtYWdlGAkgASgFEhcKD3NlbGZfbG9j",
-            "a192ZWxfeBgKIAEoAhIXCg9zZWxmX2xvY2tfdmVsX3kYCyABKAISFwoPaGl0",
-            "Ym94X29mZnNldF94GAwgASgCEhcKD2hpdGJveF9vZmZzZXRfeRgNIAEoAhIV",
-            "Cg1oaXRib3hfc2l6ZV94GA4gASgCEhUKDWhpdGJveF9zaXplX3kYDyABKAIS",
-            "DwoHYmxvd191cBgQIAEoCBISCgpzcGVjaWVzX2lkGBEgASgFEhgKEGV4cGxv",
-            "c2lvbl9mcmFtZXMYEiABKAUSIgoGYl90eXBlGBMgASgOMhIuc2hhcmVkLkJ1",
-            "bGxldFR5cGUSJQoHbWhfdHlwZRgUIAEoDjIULnNoYXJlZC5NdWx0aUhpdFR5",
-            "cGUSIgoac2ltdWx0YW5lb3VzX211bHRpX2hpdF9jbnQYFSABKA0SDQoFc3Bl",
-            "ZWQYFiABKAISDQoFZGlyX3gYFyABKAUSDQoFZGlyX3kYGCABKAUSPwoOY2Fu",
-            "Y2VsX3RyYW5zaXQYGSADKAsyJy5zaGFyZWQuQnVsbGV0Q29uZmlnLkNhbmNl",
-            "bFRyYW5zaXRFbnRyeRIUCgxyZXBlYXRfcXVvdGEYGiABKAUSHQoVYWN0aXZl",
-            "X3ZmeF9zcGVjaWVzX2lkGBsgASgFEiAKGGV4cGxvc2lvbl92Znhfc3BlY2ll",
-            "c19pZBgcIAEoBRIWCg5hbGxvd3Nfd2Fsa2luZxgdIAEoCBIYChBhbGxvd3Nf",
-            "Y3JvdWNoaW5nGB4gASgIEhAKCGhhcmRuZXNzGB8gASgFEiEKGXN0YXJ0dXBf",
-            "aW52aW5zaWJsZV9mcmFtZXMYICABKAUSHQoVaGl0X2ludmluc2libGVfZnJh",
-            "bWVzGCEgASgFEhwKFGV4cGxvc2lvbl9zcGVjaWVzX2lkGCIgASgFEhQKDHBl",
-            "cnBfYWNjX21hZxgjIAEoBRIgChhkZWxheV9zZWxmX3ZlbF90b19hY3RpdmUY",
-            "JCABKAgSGAoQc3BlZWRfaWZfbm90X2hpdBglIAEoAhIaChJvbWl0X3NvZnRf",
-            "cHVzaGJhY2sYJiABKAgSGQoRaGl0Ym94X3NpemVfaW5jX3gYJyABKAISGQoR",
-            "aGl0Ym94X3NpemVfaW5jX3kYKCABKAISGAoQcmVtYWluc191cG9uX2hpdBgp",
-            "IAEoCBIeChZyb3RhdGVzX2Fsb25nX3ZlbG9jaXR5GCogASgIEioKImRlZmF1",
-            "bHRfaGFyZF9wdXNoYmFja19ib3VuY2VfcXVvdGEYKyABKAUSKAogaGFyZF9w",
-            "dXNoYmFja19ib3VuY2Vfbm9ybV9mYWN0b3IYLCABKAISKQohaGFyZF9wdXNo",
-            "YmFja19ib3VuY2Vfc2hlZXJfZmFjdG9yGC0gASgCEh8KF2lzX3BpeGVsYXRl",
-            "ZF9hY3RpdmVfdmZ4GC4gASgIEiMKG2lzX3BpeGVsYXRlZF9leHBsb3N0aW9u",
-            "X3ZmeBgvIAEoCBIeChZtaF92YW5pc2hfb25fbWVsZWVfaGl0GDAgASgIEh8K",
-            "F2Rvd25fc2xvcGVfcHJpbWVyX3ZlbF95GDEgASgCEh0KFW1oX3VwZGF0ZXNf",
-            "b3JpZ2luX3BvcxgyIAEoCBIWCg5iZWFtX2NvbGxpc2lvbhgzIAEoCBIdChVh",
-            "bmd1bGFyX2ZyYW1lX3ZlbF9jb3MYNCABKAISHQoVYW5ndWxhcl9mcmFtZV92",
-            "ZWxfc2luGDUgASgCEhcKD3Zpc2lvbl9vZmZzZXRfeBg2IAEoAhIXCg92aXNp",
-            "b25fb2Zmc2V0X3kYNyABKAISFQoNdmlzaW9uX3NpemVfeBg4IAEoAhIVCg12",
-            "aXNpb25fc2l6ZV95GDkgASgCEiIKGnNlbGZfbG9ja192ZWxfeVdoZW5fZmx5",
-            "aW5nGDogASgFEhcKD2VsZW1lbnRhbF9hdHRycxg7IAEoDRInCh9jYW5jZWxs",
-            "YWJsZV9ieV9pbnZlbnRvcnlfc2xvdF9jGDwgASgIEicKH2NhbmNlbGxhYmxl",
-            "X2J5X2ludmVudG9yeV9zbG90X2QYPSABKAgSFQoNc3Bpbl9hbmNob3JfeBg+",
-            "IAEoAhIVCg1zcGluX2FuY2hvcl95GD8gASgCEhoKEmJlYW1fdmlzdWFsX3Np",
-            "emVfeRhAIAEoAhImCh50b3VjaF9leHBsb3Npb25fYm9tYl9jb2xsaXNpb24Y",
-            "QSABKAgSHgoWYWlyX3JpZGluZ19ncm91bmRfd2F2ZRhCIAEoCBIlCh1ncm91",
-            "bmRfaW1wYWN0X21lbGVlX2NvbGxpc2lvbhhDIAEoCBIjCht3YWxsX2ltcGFj",
-            "dF9tZWxlZV9jb2xsaXNpb24YRCABKAgSGAoQbWhfaW5oZXJpdHNfc3BpbhhF",
-            "IAEoCBIVCg1pbml0X3NwaW5fY29zGEYgASgCEhUKDWluaXRfc3Bpbl9zaW4Y",
-            "RyABKAISGAoQZmluaXNoaW5nX2ZyYW1lcxhIIAEoBRIlCh1ub19leHBsb3Np",
-            "b25fb25faGFyZF9wdXNoYmFjaxhJIAEoCBIeChZzdGFydHVwX3ZmeF9zcGVj",
-            "aWVzX2lkGEogASgFEh0KA2lmYxhLIAEoDjIQLnNoYXJlZC5JZmFjZUNhdBIn",
-            "Ch9yZWZsZWN0X2ZpcmViYWxsX3hJZl9ub3RfaGFyZGVyGEwgASgIEi4KJnJl",
-            "amVjdHNfcmVmbGVjdGlvbl9mcm9tX2Fub3RoZXJfYnVsbGV0GE0gASgIEh8K",
-            "F3Byb3ZpZGVzX3hIYXJkX3B1c2hiYWNrGE4gASgIEiMKG3Byb3ZpZGVzX3lI",
-            "YXJkX3B1c2hiYWNrX3RvcBhPIAEoCBImCh5wcm92aWRlc195SGFyZF9wdXNo",
-            "YmFja19ib3R0b20YUCABKAgSIQoZaWdub3JlX3Nsb3BlX2RlY2VsZXJhdGlv",
-            "bhhRIAEoCBIhChlyb3RhdGVfb2ZmZW5kZXJfd2l0aF9zcGluGFIgASgIEiAK",
-            "GG1oX25vdF90cmlnZ2VyX29uX2NoX2hpdBhTIAEoCBIrCiNtaF9ub3RfdHJp",
-            "Z2dlcl9vbl9oYXJkZXJfYnVsbGV0X2hpdBhUIAEoCBIrCiNtaF9ub3RfdHJp",
-            "Z2dlcl9vbl9oYXJkX3B1c2hiYWNrX2hpdBhVIAEoCBIWCg5ob3BwZXJfbWlz",
-            "c2lsZRhWIAEoCBIWCg5iZWFtX3JlbmRlcmluZxhXIAEoCBIqCiJtaXNzaWxl",
-            "X3NlYXJjaF9pbnRlcnZhbF9wb3cyTWludXMxGFggASgNEi8KJ3VzZV9jaF9v",
-            "ZmZzZXRfcmVnYXJkbGVzc19vZl9lbWlzc2lvbl9taBhZIAEoCBIrCiNpbnBs",
-            "YWNlX3ZhbmlzaF9leHBsb3Npb25fc3BlY2llc19pZBhaIAEoBRIfChdhbmlt",
-            "X2xvb3BpbmdfcmRmX29mZnNldBhbIAEoBRIpCiFleHBsb3Npb25fYW5pbV9s",
-            "b29waW5nX3JkZl9vZmZzZXQYXCABKAUSIQoZZ2F1Z2VfaW5jX3JlZHVjdGlv",
-            "bl9yYXRpbxhdIAEoAhImCh5taF9pbmhlcml0c19mcmFtZXNfaW5fYmxfc3Rh",
-            "dGUYXiABKAgSIwobZ3VhcmRfYnJlYWtlcl9leHRyYV9oaXRfY250GF8gASgN",
-            "EiIKGnRha2VzX2RlZjFBc19oYXJkX3B1c2hiYWNrGGAgASgIEhwKE2NvbGxp",
-            "c2lvbl90eXBlX21hc2sYhQggASgEEhYKDXRha2VzX2dyYXZpdHkYhgggASgI",
-            "EigKC2J1ZmZfY29uZmlnGIcIIAEoCzISLnNoYXJlZC5CdWZmQ29uZmlnEiAK",
-            "F2NoYXJhY3Rlcl9lbWl0X3NmeF9uYW1lGIAQIAEoCRIfChZmaXJlYmFsbF9l",
-            "bWl0X3NmeF9uYW1lGIEQIAEoCRIbChJleHBsb3Npb25fc2Z4X25hbWUYghAg",
-            "ASgJEhgKD2FjdGl2ZV9zZnhfbmFtZRiDECABKAkSJAobZXhwbG9zaW9uX29u",
-            "X2ZsZXNoX3NmeF9uYW1lGIQQIAEoCRIjChpleHBsb3Npb25fb25fcm9ja19z",
-            "ZnhfbmFtZRiFECABKAkSJAobZXhwbG9zaW9uX29uX21ldGFsX3NmeF9uYW1l",
-            "GIYQIAEoCRIjChpleHBsb3Npb25fb25fd29vZF9zZnhfbmFtZRiHECABKAka",
-            "NAoSQ2FuY2VsVHJhbnNpdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgC",
-            "IAEoDToCOAEigwUKBkJ1bGxldBIlCghibF9zdGF0ZRgBIAEoDjITLnNoYXJl",
-            "ZC5CdWxsZXRTdGF0ZRIaChJmcmFtZXNfaW5fYmxfc3RhdGUYAiABKAUSFwoP",
-            "YnVsbGV0X2xvY2FsX2lkGAMgASgFEiIKGm9yaWdpbmF0ZWRfcmVuZGVyX2Zy",
-            "YW1lX2lkGAQgASgFEhsKE29mZmVuZGVyX2pvaW5faW5kZXgYBSABKAUSHgoW",
-            "b2ZmZW5kZXJfdHJhcF9sb2NhbF9pZBgGIAEoBRIPCgd0ZWFtX2lkGAcgASgF",
-            "Ei0KJXZlcnRfbW92aW5nX3RyYXBfbG9jYWxfaWRfdXBvbl9hY3RpdmUYCCAB",
-            "KAUSGQoRcmVwZWF0X3F1b3RhX2xlZnQYCSABKAUSLAokcmVtYWluaW5nX2hh",
-            "cmRfcHVzaGJhY2tfYm91bmNlX3F1b3RhGAogASgFEiMKG3RhcmdldF9jaGFy",
-            "YWN0ZXJfam9pbl9pbmRleBgLIAEoBRIVCg1kYW1hZ2VfZGVhbGVkGAwgASgF",
-            "EikKD2V4cGxvZGVkX29uX2lmYxgNIAEoDjIQLnNoYXJlZC5JZmFjZUNhdBIJ",
-            "CgF4GA4gASgCEgkKAXkYDyABKAISDQoFZGlyX3gYECABKAISDQoFZGlyX3kY",
-            "ESABKAISDQoFdmVsX3gYEiABKAISDQoFdmVsX3kYEyABKAISFAoMb3JpZ2lu",
-            "YXRlZF94GBQgASgCEhQKDG9yaWdpbmF0ZWRfeRgVIAEoAhIQCghzcGluX2Nv",
-            "cxgWIAEoAhIQCghzcGluX3NpbhgXIAEoAhIYChBhY3RpdmVfc2tpbGxfaGl0",
-            "GBggASgFEhAKCHNraWxsX2lkGBkgASgNItQFCgpUcmFwQ29uZmlnEhIKCnNw",
-            "ZWNpZXNfaWQYASABKAUSHAoUZXhwbG9zaW9uX3NwZWNpZXNfaWQYAiABKAUS",
-            "GAoQZXhwbG9zaW9uX2ZyYW1lcxgDIAEoBRIPCgdibG93X3VwGAQgASgIEg4K",
-            "BmRhbWFnZRgFIAEoBRIXCg9oaXRfc3R1bl9mcmFtZXMYBiABKAUSHQoVaGl0",
-            "X2ludmluc2libGVfZnJhbWVzGAcgASgFEhUKDWRlYWN0aXZhdGFibGUYCCAB",
-            "KAgSEAoIaGFyZG5lc3MYCSABKAUSIQoZZGVhY3RpdmF0ZV91cG9uX3RyaWdn",
-            "ZXJlZBgKIAEoCBIgChhjb25zdF9mcmljdGlvbl92ZWxfeF90b3AYCyABKAIS",
-            "IwobY29uc3RfZnJpY3Rpb25fdmVsX3hfYm90dG9tGAwgASgCEiEKGWNvbnN0",
-            "X2ZyaWN0aW9uX3ZlbF95X2xlZnQYDSABKAISIgoaY29uc3RfZnJpY3Rpb25f",
-            "dmVsX3lfcmlnaHQYDiABKAISKAogcGF0cm9sX2N1ZV9yZXF1aXJlc19mdWxs",
-            "X2NvbnRhaW4YDyABKAgSFQoNc3Bpbl9hbmNob3JfeBgQIAEoAhIVCg1zcGlu",
-            "X2FuY2hvcl95GBEgASgCEh0KFWFuZ3VsYXJfZnJhbWVfdmVsX2NvcxgSIAEo",
-            "AhIdChVhbmd1bGFyX2ZyYW1lX3ZlbF9zaW4YEyABKAISGgoSaW50cmluc2lj",
-            "X3NwaW5fY29zGBQgASgCEhoKEmludHJpbnNpY19zcGluX3NpbhgVIAEoAhIb",
-            "ChNhdGsxX3Vwb25fdHJpZ2dlcmVkGBYgASgIEhUKDWF0azFfc2tpbGxfaWQY",
-            "FyABKA0SEQoJaXNfcm90YXJ5GBggASgIEhsKE25vX3hfZmxpcF9yZW5kZXJp",
-            "bmcYGSABKAgSFQoMc3BlY2llc19uYW1lGIAIIAEoCSKHAgoTVHJhcENvbmZp",
-            "Z0Zyb21UaWxlZBISCgpzcGVjaWVzX2lkGAEgASgFEg0KBXF1b3RhGAIgASgF",
-            "Eg0KBXNwZWVkGAMgASgCEg0KBWRpcl94GAQgASgFEg0KBWRpcl95GAUgASgF",
-            "EhgKEHN1YnNjcmliZXNfdG9faWQYByABKAUSKwojc3Vic2NyaWJlc190b19p",
-            "ZF9hZnRlcl9pbml0aWFsX2ZpcmUYCCABKAUSHAoUc3Vic2NyaWJlc190b19p",
-            "ZF9hbHQYCSABKAUSDgoGYm94X2N3GAogASgCEg4KBmJveF9jaBgLIAEoAhIb",
-            "ChNpbml0X25vX2FuZ3VsYXJfdmVsGAwgASgCIuQDChBUcmFwQ29sbGlkZXJB",
-            "dHRyEhcKD2hpdGJveF9vZmZzZXRfeBgBIAEoBRIXCg9oaXRib3hfb2Zmc2V0",
-            "X3kYAiABKAUSFQoNaGl0Ym94X3NpemVfeBgDIAEoBRIVCg1oaXRib3hfc2l6",
-            "ZV95GAQgASgFEh4KFnByb3ZpZGVzX2hhcmRfcHVzaGJhY2sYBSABKAgSFwoP",
-            "cHJvdmlkZXNfZGFtYWdlGAYgASgIEhcKD3Byb3ZpZGVzX2VzY2FwZRgHIAEo",
-            "CBIaChJwcm92aWRlc19zbGlwX2p1bXAYCCABKAgSHwoXcHJvaGliaXRzX3dh",
-            "bGxfZ3JhYmJpbmcYCSABKAgSGAoQZm9yY2VzX2Nyb3VjaGluZxgKIAEoCBIS",
-            "CgpzcGVjaWVzX2lkGAsgASgFEiEKGW9ubHlfYWxsb3dzX2FsaWduZWRfdmVs",
-            "X3gYDCABKAUSIQoZb25seV9hbGxvd3NfYWxpZ25lZF92ZWxfeRgNIAEoBRIV",
-            "Cg1hc19wYXRyb2xfY3VlGA4gASgIEiAKBXRjX3BjGA8gASgLMhEuc2hhcmVk",
-            "LlBhdHJvbEN1ZRIWCg10cmFwX2xvY2FsX2lkGIAIIAEoBRIcChNjb2xsaXNp",
-            "b25fdHlwZV9tYXNrGIUIIAEoBCLrBAoEVHJhcBIVCg10cmFwX2xvY2FsX2lk",
-            "GAEgASgFEigKIHBhdHJvbF9jdWVfYW5ndWxhcl92ZWxfZmxpcF9tYXJrGAIg",
-            "ASgFEjYKEWNvbmZpZ19mcm9tX3RpbGVkGAMgASgLMhsuc2hhcmVkLlRyYXBD",
-            "b25maWdGcm9tVGlsZWQSJQoKdHJhcF9zdGF0ZRgEIAEoDjIRLnNoYXJlZC5U",
-            "cmFwU3RhdGUSHAoUZnJhbWVzX2luX3RyYXBfc3RhdGUYBSABKAUSHAoUaXNf",
-            "Y29tcGxldGVseV9zdGF0aWMYBiABKAgSHgoWY2FwdHVyZWRfYnlfcGF0cm9s",
-            "X2N1ZRgHIAEoCBIcChRmcmFtZXNfaW5fcGF0cm9sX2N1ZRgIIAEoBRIdChV3",
-            "YWl2aW5nX3BhdHJvbF9jdWVfaWQYCSABKAUSIgoad2FpdmluZ19zcG9udGFu",
-            "ZW91c19wYXRyb2wYCiABKAgSJgoec3Vic2NyaWJlc190b190cmlnZ2VyX2xv",
-            "Y2FsX2lkGAsgASgFEioKInN1YnNjcmliZXNfdG9fdHJpZ2dlcl9sb2NhbF9p",
-            "ZF9hbHQYDCABKAUSEAoIc3Bpbl9jb3MYDSABKAISEAoIc3Bpbl9zaW4YDiAB",
-            "KAISHQoVYW5ndWxhcl9mcmFtZV92ZWxfY29zGA8gASgCEh0KFWFuZ3VsYXJf",
-            "ZnJhbWVfdmVsX3NpbhgQIAEoAhIJCgF4GBEgASgCEgkKAXkYEiABKAISDQoF",
-            "ZGlyX3gYEyABKAUSDQoFZGlyX3kYFCABKAUSDQoFdmVsX3gYFSABKAISDQoF",
-            "dmVsX3kYFiABKAIigQEKDVRyaWdnZXJDb25maWcSEgoKc3BlY2llc19pZBgB",
-            "IAEoBRIUCgxzcGVjaWVzX25hbWUYAiABKAkSKQoMdHJpZ2dlcl90eXBlGAMg",
-            "ASgOMhMuc2hhcmVkLlRyaWdnZXJUeXBlEhsKE2NvbGxpc2lvbl90eXBlX21h",
-            "c2sYBCABKAQiSQoLUGVlclVkcEFkZHISCgoCaXAYASABKAkSDAoEcG9ydBgC",
-            "IAEoBRIQCghhdXRoX2tleRgDIAEoBRIOCgZzZXFfbm8YBCABKA0i5wMKEkJh",
-            "dHRsZUNvbGxpZGVySW5mbxISCgpzdGFnZV9uYW1lGAEgASgJEhUKDWJvdW5k",
-            "X3Jvb21faWQYAiABKAUSHgoWYmF0dGxlX2R1cmF0aW9uX2ZyYW1lcxgDIAEo",
-            "AxIqCiJpbnB1dF9mcmFtZV91cHN5bmNfZGVsYXlfdG9sZXJhbmNlGAQgASgF",
-            "EiwKJG1heF9jaGFzaW5nX3JlbmRlcl9mcmFtZXNfcGVyX3VwZGF0ZRgFIAEo",
-            "BRIkChxyb2xsYmFja19lc3RpbWF0ZWRfZHRfbWlsbGlzGAYgASgBEiMKG3Jv",
-            "bGxiYWNrX2VzdGltYXRlZF9kdF9uYW5vcxgHIAEoAxIaChJyZW5kZXJfYnVm",
-            "ZmVyX3NpemUYCCABKAUSGgoSY29sbGlzaW9uX21pbl9zdGVwGAkgASgFEhsK",
-            "E2JvdW5kX3Jvb21fY2FwYWNpdHkYCiABKAUSHQoVcHJlYWxsb2NfbnBjX2Nh",
-            "cGFjaXR5GAsgASgFEiAKGHByZWFsbG9jX2J1bGxldF9jYXBhY2l0eRgMIAEo",
-            "BRIvChFiYXR0bGVfdWRwX3R1bm5lbBiACCABKAsyEy5zaGFyZWQuUGVlclVk",
-            "cEFkZHISGgoRZnJhbWVfbG9nX2VuYWJsZWQYgQggASgIIv0DCgtSZW5kZXJG",
-            "cmFtZRIKCgJpZBgBIAEoBRIuCgtwbGF5ZXJzX2FychgCIAMoCzIZLnNoYXJl",
-            "ZC5DaGFyYWN0ZXJEb3duc3luYxIXCg9jb3VudGRvd25fbmFub3MYAyABKAMS",
-            "HwoHYnVsbGV0cxgEIAMoCzIOLnNoYXJlZC5CdWxsZXQSKwoIbnBjc19hcnIY",
-            "BSADKAsyGS5zaGFyZWQuQ2hhcmFjdGVyRG93bnN5bmMSHwoJdHJhcHNfYXJy",
-            "GAYgAygLMgwuc2hhcmVkLlRyYXASJQoMdHJpZ2dlcnNfYXJyGAcgAygLMg8u",
-            "c2hhcmVkLlRyaWdnZXISIwoJcGlja2FibGVzGAogAygLMhAuc2hhcmVkLlBp",
-            "Y2thYmxlEiEKGGJhY2tlbmRfdW5jb25maXJtZWRfbWFzaxiACCABKAQSHAoT",
-            "c2hvdWxkX2ZvcmNlX3Jlc3luYxiBCCABKAgSGAoPc3BlY2llc19pZF9saXN0",
-            "GIIIIAMoBRIgChdidWxsZXRfbG9jYWxfaWRfY291bnRlchiDCCABKAUSHQoU",
-            "bnBjX2xvY2FsX2lkX2NvdW50ZXIYhAggASgFEh4KFXBhcnRpY2lwYW50X2No",
-            "YW5nZV9pZBiFCCABKAUSIgoZcGlja2FibGVfbG9jYWxfaWRfY291bnRlchiG",
-            "CCABKAUijwIKBldzUmVzcBILCgNyZXQYASABKAUSCwoDYWN0GAIgASgFEiAK",
-            "A3JkZhgDIAEoCzITLnNoYXJlZC5SZW5kZXJGcmFtZRI+ChppbnB1dF9mcmFt",
-            "ZV9kb3duc3luY19iYXRjaBgEIAMoCzIaLnNoYXJlZC5JbnB1dEZyYW1lRG93",
-            "bnN5bmMSLQoJYmNpX2ZyYW1lGAUgASgLMhouc2hhcmVkLkJhdHRsZUNvbGxp",
-            "ZGVySW5mbxIXCg9wZWVyX2pvaW5faW5kZXgYBiABKAUSLwoScGVlcl91ZHBf",
-            "YWRkcl9saXN0GAcgAygLMhMuc2hhcmVkLlBlZXJVZHBBZGRyEhAKB2Vycl9t",
-            "c2cYgBAgASgJIocDCgVTa2lsbBIXCg9iYXR0bGVfbG9jYWxfaWQYASABKAUS",
-            "FwoPcmVjb3ZlcnlfZnJhbWVzGAIgASgFEiAKGHJlY292ZXJ5X2ZyYW1lc19v",
-            "bl9ibG9jaxgDIAEoBRIeChZyZWNvdmVyeV9mcmFtZXNfb25faGl0GAQgASgF",
-            "Ei4KDHRyaWdnZXJfdHlwZRgFIAEoDjIYLnNoYXJlZC5Ta2lsbFRyaWdnZXJU",
-            "eXBlEi4KDmJvdW5kX2NoX3N0YXRlGAYgASgOMhYuc2hhcmVkLkNoYXJhY3Rl",
-            "clN0YXRlEjUKFWJvdW5kX2NoX3N0YXRlX29uX2hpdBgHIAEoDjIWLnNoYXJl",
-            "ZC5DaGFyYWN0ZXJTdGF0ZRIQCghtcF9kZWx0YRgIIAEoBRIKCgJpZBgJIAEo",
-            "DRIjCgRoaXRzGIAIIAMoCzIULnNoYXJlZC5CdWxsZXRDb25maWcSMAoTc2Vs",
-            "Zl9ub25fc3RvY2tfYnVmZhiBCCABKAsyEi5zaGFyZWQuQnVmZkNvbmZpZyJj",
-            "CghGcmFtZUxvZxIgCgNyZGYYASABKAsyEy5zaGFyZWQuUmVuZGVyRnJhbWUS",
-            "NQoRYWN0dWFsbHlfdXNlZF9pZGYYAiABKAsyGi5zaGFyZWQuSW5wdXRGcmFt",
-            "ZURvd25zeW5jIkgKDEJhdHRsZVJlc3VsdBIZChF3aW5uZXJfam9pbl9pbmRl",
-            "eBgBIAEoBRIdChV3aW5uZXJfYnVsbGV0X3RlYW1faWQYAiABKAUipQIKDERl",
-            "YnVmZkNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgNEikKCnN0b2NrX3R5cGUY",
-            "AiABKA4yFS5zaGFyZWQuQnVmZlN0b2NrVHlwZRINCgVzdG9jaxgDIAEoBRIg",
-            "CgR0eXBlGAQgASgOMhIuc2hhcmVkLkRlYnVmZlR5cGUSDwoHYXJyX2lkeBgF",
-            "IAEoBRIbChNpbXBhY3RfcGVyX2ludGVydmFsGAYgASgFEhcKD2ltcGFjdF9p",
-            "bnRlcnZhbBgHIAEoBRIWCg5mcmljdGlvbl92ZWxfeBgIIAEoBRIWCg5mcmlj",
-            "dGlvbl92ZWxfeRgJIAEoBRIWCg5mcmljdGlvbl9hY2NfeBgKIAEoBRIWCg5m",
-            "cmljdGlvbl9hY2NfeRgLIAEoBSKgBAoKQnVmZkNvbmZpZxISCgpzcGVjaWVz",
-            "X2lkGAEgASgNEikKCnN0b2NrX3R5cGUYAiABKA4yFS5zaGFyZWQuQnVmZlN0",
-            "b2NrVHlwZRINCgVzdG9jaxgDIAEoBRITCgtzcGVlZF9kZWx0YRgEIAEoAhIb",
-            "ChNoaXRib3hfc2l6ZV94X2RlbHRhGAUgASgCEhsKE2hpdGJveF9zaXplX3lf",
-            "ZGVsdGEYBiABKAISFAoMZGFtYWdlX2RlbHRhGAcgASgFEiIKGmRhbWFnZV9k",
-            "ZWx0YV9ieV9wZXJjZW50YWdlGAggASgFEiAKGGNoYXJhY3Rlcl9oYXJkbmVz",
-            "c19kZWx0YRgJIAEoBRIcChRtZWxlZV9oYXJkbmVzc19kZWx0YRgKIAEoBRIf",
-            "ChdmaXJlYmFsbF9oYXJkbmVzc19kZWx0YRgLIAEoBRISCgppbnZpbnNpYmxl",
-            "GAwgASgIEhsKE3hmb3JtX2NoX3NwZWNpZXNfaWQYDSABKA0SGwoTcmVwZWxf",
-            "c29mdF9wdXNoYmFjaxgOIAEoCBIUCgxvbWl0X2dyYXZpdHkYDyABKAgSEQoJ",
-            "YXV0b19kZWYxGBAgASgIEhoKEmFzc29jaWF0ZWRfZGVidWZmcxgRIAMoDRIg",
-            "ChhjaGFyYWN0ZXJfdmZ4X3NwZWNpZXNfaWQYEiABKAUSJQodaXNfcGl4ZWxh",
-            "dGVkX3ZmeF9vbl9jaGFyYWN0ZXIYEyABKAgipgEKBEJ1ZmYSEgoKc3BlY2ll",
-            "c19pZBgBIAEoDRINCgVzdG9jaxgCIAEoBRIiChpvcmlnaW5hdGVkX3JlbmRl",
-            "cl9mcmFtZV9pZBgDIAEoBRIaChJvcmlnX2NoX3NwZWNpZXNfaWQYBCABKA0S",
-            "IAoYb3JpZ19yZXBlbF9zb2Z0X3B1c2hiYWNrGAUgASgIEhkKEW9yaWdfb21p",
-            "dF9ncmF2aXR5GAYgASgIIisKBkRlYnVmZhISCgpzcGVjaWVzX2lkGAEgASgN",
-            "Eg0KBXN0b2NrGAIgASgFIlMKEkJ1bGxldEltbXVuZVJlY29yZBIXCg9idWxs",
-            "ZXRfbG9jYWxfaWQYASABKAUSJAoccmVtYWluaW5nX2xpZmV0aW1lX3JkZl9j",
-            "b3VudBgCIAEoBSJ6ChBDb25zdW1hYmxlQ29uZmlnEhIKCnNwZWNpZXNfaWQY",
-            "ASABKA0SFAoMcmVmaWxsX2RlbHRhGAIgASgFEhgKEHZmeF9pZF9vbl9waWNr",
-            "ZXIYAyABKAUSIgoaaXNfcGl4ZWxhdGVkX3ZmeF9vbl9waWNrZXIYBCABKAgi",
-            "ZQoTUGlja2FibGVTa2lsbENvbmZpZxIQCghza2lsbF9pZBgBIAEoDRIYChB2",
-            "ZnhfaWRfb25fcGlja2VyGAIgASgFEiIKGmlzX3BpeGVsYXRlZF92Znhfb25f",
-            "cGlja2VyGAMgASgIItoCCg1JbnZlbnRvcnlTbG90EjIKCnN0b2NrX3R5cGUY",
-            "ASABKA4yHi5zaGFyZWQuSW52ZW50b3J5U2xvdFN0b2NrVHlwZRINCgVxdW90",
-            "YRgCIAEoDRIZChFmcmFtZXNfdG9fcmVjb3ZlchgDIAEoBRIVCg1kZWZhdWx0",
-            "X3F1b3RhGAQgASgNEiEKGWRlZmF1bHRfZnJhbWVzX3RvX3JlY292ZXIYBSAB",
-            "KAUSFwoPYnVmZl9zcGVjaWVzX2lkGAYgASgNEhAKCHNraWxsX2lkGAcgASgN",
-            "EhQKDHNraWxsX2lkX2FpchgIIAEoDRIVCg1nYXVnZV9jaGFyZ2VkGAkgASgF",
-            "EhYKDmdhdWdlX3JlcXVpcmVkGAogASgFEiMKG2Z1bGxfY2hhcmdlX2J1ZmZf",
-            "c3BlY2llc19pZBgLIAEoDRIcChRmdWxsX2NoYXJnZV9za2lsbF9pZBgMIAEo",
-            "DSIxCglJbnZlbnRvcnkSJAoFc2xvdHMYASADKAsyFS5zaGFyZWQuSW52ZW50",
-            "b3J5U2xvdCIlCg9CYXR0bGVFcXVpcG1lbnQSEgoKc3BlY2llc19pZBgBIAEo",
-            "DSImCg5QbGF5ZXJTZXR0aW5ncxIUCgxzb3VuZF92b2x1bWUYASABKAUi8AIK",
-            "FFBsYXllclJlZ2lvblByb2dyZXNzEhEKCXJlZ2lvbl9pZBgBIAEoBRIdChVj",
-            "b21wbGV0ZWRfbGV2ZWxfY291bnQYAiABKAUSVwoWcmVtYWluaW5nX2RlcGVu",
-            "ZGVuY2llcxgDIAMoCzI3LnNoYXJlZC5QbGF5ZXJSZWdpb25Qcm9ncmVzcy5S",
-            "ZW1haW5pbmdEZXBlbmRlbmNpZXNFbnRyeRJTChRyZW1vdmVkX2RlcGVuZGVu",
-            "Y2llcxgEIAMoCzI1LnNoYXJlZC5QbGF5ZXJSZWdpb25Qcm9ncmVzcy5SZW1v",
-            "dmVkRGVwZW5kZW5jaWVzRW50cnkaPAoaUmVtYWluaW5nRGVwZW5kZW5jaWVz",
-            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ARo6ChhSZW1v",
-            "dmVkRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIg",
-            "ASgIOgI4ASLQBAoTUGxheWVyTGV2ZWxQcm9ncmVzcxIRCglyZWdpb25faWQY",
-            "ASABKAUSEAoIbGV2ZWxfaWQYAiABKAUSFQoNaGlnaGVzdF9zY29yZRgDIAEo",
-            "BRItCiVzaG9ydGVzdF9maW5pc2hfdGltZV9hdF9oaWdoZXN0X3Njb3JlGAQg",
-            "ASgFEi0KJWNoYXJhY3Rlcl9zcGVjaWVzX2lkX2F0X2hpZ2hlc3Rfc2NvcmUY",
-            "BSABKA0SHAoUc2hvcnRlc3RfZmluaXNoX3RpbWUYBiABKAUSJQodc2NvcmVf",
-            "YXRfc2hvcnRlc3RfZmluaXNoX3RpbWUYByABKAUSNAosY2hhcmFjdGVyX3Nw",
-            "ZWNpZXNfaWRfYXRfc2hvcnRlc3RfZmluaXNoX3RpbWUYCCABKA0SVgoWcmVt",
-            "YWluaW5nX2RlcGVuZGVuY2llcxgJIAMoCzI2LnNoYXJlZC5QbGF5ZXJMZXZl",
-            "bFByb2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5ElIKFHJlbW92",
-            "ZWRfZGVwZW5kZW5jaWVzGAogAygLMjQuc2hhcmVkLlBsYXllckxldmVsUHJv",
-            "Z3Jlc3MuUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5GjwKGlJlbWFpbmluZ0Rl",
-            "cGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoC",
-            "OAEaOgoYUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRIN",
-            "CgV2YWx1ZRgCIAEoCDoCOAEi2AIKFlBsYXllckNoVW5sb2NrUHJvZ3Jlc3MS",
-            "EgoKc3BlY2llc19pZBgBIAEoDRJZChZyZW1haW5pbmdfZGVwZW5kZW5jaWVz",
-            "GAIgAygLMjkuc2hhcmVkLlBsYXllckNoVW5sb2NrUHJvZ3Jlc3MuUmVtYWlu",
-            "aW5nRGVwZW5kZW5jaWVzRW50cnkSVQoUcmVtb3ZlZF9kZXBlbmRlbmNpZXMY",
-            "AyADKAsyNy5zaGFyZWQuUGxheWVyQ2hVbmxvY2tQcm9ncmVzcy5SZW1vdmVk",
-            "RGVwZW5kZW5jaWVzRW50cnkaPAoaUmVtYWluaW5nRGVwZW5kZW5jaWVzRW50",
-            "cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ARo6ChhSZW1vdmVk",
-            "RGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgI",
-            "OgI4ASKfBQoTUGxheWVyU3RvcnlQcm9ncmVzcxJRChRyZWdpb25fcHJvZ3Jl",
-            "c3NfZGljdBgBIAMoCzIzLnNoYXJlZC5QbGF5ZXJTdG9yeVByb2dyZXNzLlJl",
-            "Z2lvblByb2dyZXNzRGljdEVudHJ5Ek8KE2xldmVsX3Byb2dyZXNzX2RpY3QY",
-            "AiADKAsyMi5zaGFyZWQuUGxheWVyU3RvcnlQcm9ncmVzcy5MZXZlbFByb2dy",
-            "ZXNzRGljdEVudHJ5EhgKEGN1cnNvcl9yZWdpb25faWQYAyABKAUSFwoPY3Vy",
-            "c29yX2xldmVsX2lkGAQgASgFEi8KBHZpZXcYBSABKA4yIS5zaGFyZWQuUGxh",
-            "eWVyU3RvcnlNb2RlU2VsZWN0VmlldxIbChNzYXZlZF9hdF9nbXRfbWlsbGlz",
-            "GAYgASgEElYKF2NoX3VubG9ja19wcm9ncmVzc19kaWN0GAcgAygLMjUuc2hh",
-            "cmVkLlBsYXllclN0b3J5UHJvZ3Jlc3MuQ2hVbmxvY2tQcm9ncmVzc0RpY3RF",
-            "bnRyeRpXChdSZWdpb25Qcm9ncmVzc0RpY3RFbnRyeRILCgNrZXkYASABKAUS",
-            "KwoFdmFsdWUYAiABKAsyHC5zaGFyZWQuUGxheWVyUmVnaW9uUHJvZ3Jlc3M6",
-            "AjgBGlUKFkxldmVsUHJvZ3Jlc3NEaWN0RW50cnkSCwoDa2V5GAEgASgFEioK",
-            "BXZhbHVlGAIgASgLMhsuc2hhcmVkLlBsYXllckxldmVsUHJvZ3Jlc3M6AjgB",
-            "GlsKGUNoVW5sb2NrUHJvZ3Jlc3NEaWN0RW50cnkSCwoDa2V5GAEgASgNEi0K",
-            "BXZhbHVlGAIgASgLMh4uc2hhcmVkLlBsYXllckNoVW5sb2NrUHJvZ3Jlc3M6",
-            "AjgBIoYCChlQbGF5ZXJPbmxpbmVBcmVuYVByb2dyZXNzEhsKE3NhdmVkX2F0",
-            "X2dtdF9taWxsaXMYASABKAQSEQoJcGxheWVyX2lkGAIgASgJElwKF2NoX3Vu",
-            "bG9ja19wcm9ncmVzc19kaWN0GAMgAygLMjsuc2hhcmVkLlBsYXllck9ubGlu",
-            "ZUFyZW5hUHJvZ3Jlc3MuQ2hVbmxvY2tQcm9ncmVzc0RpY3RFbnRyeRpbChlD",
-            "aFVubG9ja1Byb2dyZXNzRGljdEVudHJ5EgsKA2tleRgBIAEoDRItCgV2YWx1",
-            "ZRgCIAEoCzIeLnNoYXJlZC5QbGF5ZXJDaFVubG9ja1Byb2dyZXNzOgI4ASJ2",
-            "ChRTdG9yeVBvaW50RGlhbG9nTGluZRIbChNuYXJyYXRvcl9qb2luX2luZGV4",
-            "GAEgASgFEhsKE25hcnJhdG9yX3NwZWNpZXNfaWQYAiABKA0SDwoHY29udGVu",
-            "dBgDIAEoCRITCgtkb3duX29yX25vdBgEIAEoCCJeCg5TdG9yeVBvaW50U3Rl",
-            "cBIrCgVsaW5lcxgBIAMoCzIcLnNoYXJlZC5TdG9yeVBvaW50RGlhbG9nTGlu",
-            "ZRIfChdub25jdHJsX2FsaXZlX3JkZl9jb3VudBgCIAEoBSJbCgpTdG9yeVBv",
-            "aW50EiUKBXN0ZXBzGAEgAygLMhYuc2hhcmVkLlN0b3J5UG9pbnRTdGVwEg8K",
-            "B25vbmN0cmwYAiABKAgSFQoNY3V0c2NlbmVfbmFtZRgDIAEoCSJ/CgpMZXZl",
-            "bFN0b3J5Ei4KBnBvaW50cxgBIAMoCzIeLnNoYXJlZC5MZXZlbFN0b3J5LlBv",
-            "aW50c0VudHJ5GkEKC1BvaW50c0VudHJ5EgsKA2tleRgBIAEoBRIhCgV2YWx1",
-            "ZRgCIAEoCzISLnNoYXJlZC5TdG9yeVBvaW50OgI4ASJPChlTZXJpYWxpemFi",
-            "bGVDb252ZXhQb2x5Z29uEhAKCGFuY2hvcl94GAEgASgCEhAKCGFuY2hvcl95",
-            "GAIgASgCEg4KBnBvaW50cxgDIAMoAiKCAQorU2VyaWFsaXplZENvbXBsZXRl",
-            "bHlTdGF0aWNQYXRyb2xDdWVDb2xsaWRlchIfCgRhdHRyGAEgASgLMhEuc2hh",
-            "cmVkLlBhdHJvbEN1ZRIyCgdwb2x5Z29uGAIgASgLMiEuc2hhcmVkLlNlcmlh",
-            "bGl6YWJsZUNvbnZleFBvbHlnb24ihAEKJlNlcmlhbGl6ZWRDb21wbGV0ZWx5",
-            "U3RhdGljVHJhcENvbGxpZGVyEiYKBGF0dHIYASABKAsyGC5zaGFyZWQuVHJh",
-            "cENvbGxpZGVyQXR0chIyCgdwb2x5Z29uGAIgASgLMiEuc2hhcmVkLlNlcmlh",
-            "bGl6YWJsZUNvbnZleFBvbHlnb24iigEKKVNlcmlhbGl6ZWRDb21wbGV0ZWx5",
-            "U3RhdGljVHJpZ2dlckNvbGxpZGVyEikKBGF0dHIYASABKAsyGy5zaGFyZWQu",
-            "VHJpZ2dlckNvbGxpZGVyQXR0chIyCgdwb2x5Z29uGAIgASgLMiEuc2hhcmVk",
-            "LlNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24iPwoVVHJhcENvbGxpZGVyQXR0",
-            "ckFycmF5EiYKBGxpc3QYASADKAsyGC5zaGFyZWQuVHJhcENvbGxpZGVyQXR0",
-            "ciK4AQokU2VyaWFsaXplZFRyYXBMb2NhbElkVG9Db2xsaWRlckF0dHJzEkQK",
-            "BGRpY3QYASADKAsyNi5zaGFyZWQuU2VyaWFsaXplZFRyYXBMb2NhbElkVG9D",
-            "b2xsaWRlckF0dHJzLkRpY3RFbnRyeRpKCglEaWN0RW50cnkSCwoDa2V5GAEg",
-            "ASgFEiwKBXZhbHVlGAIgASgLMh0uc2hhcmVkLlRyYXBDb2xsaWRlckF0dHJB",
-            "cnJheToCOAEiqQIKIlNlcmlhbGl6ZWRUcmlnZ2VyRWRpdG9ySWRUb0xvY2Fs",
-            "SWQSQgoEZGljdBgBIAMoCzI0LnNoYXJlZC5TZXJpYWxpemVkVHJpZ2dlckVk",
-            "aXRvcklkVG9Mb2NhbElkLkRpY3RFbnRyeRJECgVkaWN0MhgCIAMoCzI1LnNo",
-            "YXJlZC5TZXJpYWxpemVkVHJpZ2dlckVkaXRvcklkVG9Mb2NhbElkLkRpY3Qy",
-            "RW50cnkaKwoJRGljdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEo",
-            "BToCOAEaTAoKRGljdDJFbnRyeRILCgNrZXkYASABKAUSLQoFdmFsdWUYAiAB",
-            "KAsyHi5zaGFyZWQuVHJpZ2dlckNvbmZpZ0Zyb21UaWxlZDoCOAEisgMKF1Bp",
-            "Y2thYmxlQ29uZmlnRnJvbVRpbGVkEhsKE2luaXRfdmlydHVhbF9ncmlkX3gY",
-            "ASABKAUSGwoTaW5pdF92aXJ0dWFsX2dyaWRfeRgCIAEoBRIVCg10YWtlc19n",
-            "cmF2aXR5GAMgASgIEhkKEWZpcnN0X3Nob3dfcmRmX2lkGAQgASgFEhMKC3Jl",
-            "Y3VyX3F1b3RhGAUgASgFEiAKGHJlY3VyX2ludGVydmFsX3JkZl9jb3VudBgG",
-            "IAEoDRIpCiFsaWZldGltZV9yZGZfY291bnRfcGVyX29jY3VycmVuY2UYByAB",
-            "KA0SJwoLcGlja3VwX3R5cGUYCCABKA4yEi5zaGFyZWQuUGlja3VwVHlwZRIi",
-            "ChpzdG9ja19xdW90YV9wZXJfb2NjdXJyZW5jZRgJIAEoDRIXCg9zdWJzY3Jp",
-            "cHRpb25faWQYCiABKAUSFgoOdmZ4X3NwZWNpZXNfaWQYCyABKAUSHgoVY29u",
-            "c3VtYWJsZV9zcGVjaWVzX2lkGIAIIAEoDRIYCg9idWZmX3NwZWNpZXNfaWQY",
-            "gQggASgNEhEKCHNraWxsX2lkGIIIIAEoDSK9AgoIUGlja2FibGUSGQoRcGlj",
-            "a2FibGVfbG9jYWxfaWQYASABKAUSCQoBeBgCIAEoAhIJCgF5GAMgASgCEjoK",
-            "EWNvbmZpZ19mcm9tX3RpbGVkGAQgASgLMh8uc2hhcmVkLlBpY2thYmxlQ29u",
-            "ZmlnRnJvbVRpbGVkEiQKHHJlbWFpbmluZ19saWZldGltZV9yZGZfY291bnQY",
-            "BSABKAUSHQoVcmVtYWluaW5nX3JlY3VyX3F1b3RhGAYgASgFEg0KBXZlbF94",
-            "GAcgASgCEg0KBXZlbF95GAggASgCEicKCHBrX3N0YXRlGAkgASgOMhUuc2hh",
-            "cmVkLlBpY2thYmxlU3RhdGUSGgoSZnJhbWVzX2luX3BrX3N0YXRlGAogASgF",
-            "EhwKFHBpY2tlZF9ieV9qb2luX2luZGV4GAsgASgFIjwKEUluamVjdGVkQ21k",
-            "Q29uZmlnEhsKE2N1dG9mZl9yZGZfZnJhbWVfaWQYASABKAUSCgoCb3AYAiAB",
-            "KAQiZAoWQ2hhcmFjdGVyU3Bhd25lckNvbmZpZxIbChNjdXRvZmZfcmRmX2Zy",
-            "YW1lX2lkGAEgASgFEhcKD3NwZWNpZXNfaWRfbGlzdBgCIAMoDRIUCgxpbml0",
-            "X29wX2xpc3QYAyADKAQikQEKFVBpY2thYmxlU3Bhd25lckNvbmZpZxIbChNj",
-            "dXRvZmZfcmRmX2ZyYW1lX2lkGAEgASgFEhcKD3NwZWNpZXNfaWRfbGlzdBgC",
-            "IAMoDRIUCgxpbml0X29wX2xpc3QYAyADKAQSLAoQcGlja3VwX3R5cGVfbGlz",
-            "dBgEIAMoDjISLnNoYXJlZC5QaWNrdXBUeXBlIkMKE1RyaWdnZXJDb2xsaWRl",
-            "ckF0dHISGAoQdHJpZ2dlcl9sb2NhbF9pZBgBIAEoBRISCgpzcGVjaWVzX2lk",
-            "GAIgASgFIs8GChZUcmlnZ2VyQ29uZmlnRnJvbVRpbGVkEhEKCWVkaXRvcl9p",
-            "ZBgBIAEoBRISCgpzcGVjaWVzX2lkGAIgASgFEhYKDmRlbGF5ZWRfZnJhbWVz",
-            "GAMgASgFEhcKD3JlY292ZXJ5X2ZyYW1lcxgEIAEoBRIWCg5idWxsZXRfdGVh",
-            "bV9pZBgFIAEoBRIgChhzdWJfY3ljbGVfdHJpZ2dlcl9mcmFtZXMYBiABKAUS",
-            "FwoPc3ViX2N5Y2xlX3F1b3RhGAcgASgFEhEKCXF1b3RhX2NhcBgIIAEoBRId",
-            "ChVzdWJzY3JpYmVzX3RvX2lkX2xpc3QYCSADKAUSJwofc3Vic2NyaWJlc190",
-            "b19leGhhdXN0ZWRfaWRfbGlzdBgKIAMoBRIVCg1uZXdfcmV2aXZhbF94GAsg",
-            "ASgCEhUKDW5ld19yZXZpdmFsX3kYDCABKAISEgoKaW5pdF9kaXJfeBgNIAEo",
-            "BRISCgppbml0X2Rpcl95GA4gASgFEioKInB1Ymxpc2hpbmdfZXZ0X21hc2tf",
-            "dXBvbl9leGhhdXN0ZWQYDyABKAQSQgoaY2hhcmFjdGVyX3NwYXduZXJfdGlt",
-            "ZV9zZXEYECADKAsyHi5zaGFyZWQuQ2hhcmFjdGVyU3Bhd25lckNvbmZpZxJA",
-            "ChlwaWNrYWJsZV9zcGF3bmVyX3RpbWVfc2VxGBEgAygLMh0uc2hhcmVkLlBp",
-            "Y2thYmxlU3Bhd25lckNvbmZpZxIcChRmb3JjZV9jdHJsX3JkZl9jb3VudBgS",
-            "IAEoBRIWCg5mb3JjZV9jdHJsX2NtZBgTIAEoBBIlCh1yZWxvYWRfY29sbGlk",
-            "ZXJzX2luX25ld19waGFzZRgUIAEoCBIXCg5zdG9yeV9wb2ludF9pZBiACCAB",
-            "KAUSDwoGYmdtX2lkGIEIIAEoBRJNChBib3NzX3NwZWNpZXNfc2V0GIIIIAMo",
-            "CzIyLnNoYXJlZC5UcmlnZ2VyQ29uZmlnRnJvbVRpbGVkLkJvc3NTcGVjaWVz",
-            "U2V0RW50cnkSGgoRaXNfYm9zc19zYXZlcG9pbnQYgwggASgIGjUKE0Jvc3NT",
-            "cGVjaWVzU2V0RW50cnkSCwoDa2V5GAEgASgNEg0KBXZhbHVlGAIgASgIOgI4",
-            "ASL+AwoHVHJpZ2dlchIRCgllZGl0b3JfaWQYASABKAUSGAoQdHJpZ2dlcl9s",
-            "b2NhbF9pZBgCIAEoBRIWCg5mcmFtZXNfdG9fZmlyZRgDIAEoBRIZChFmcmFt",
-            "ZXNfdG9fcmVjb3ZlchgEIAEoBRINCgVxdW90YRgFIAEoBRIWCg5idWxsZXRf",
-            "dGVhbV9pZBgGIAEoBRINCgVkaXJfeBgHIAEoBRIcChRzdWJfY3ljbGVfcXVv",
-            "dGFfbGVmdBgJIAEoBRIjCgVzdGF0ZRgKIAEoDjIULnNoYXJlZC5UcmlnZ2Vy",
-            "U3RhdGUSFwoPZnJhbWVzX2luX3N0YXRlGAsgASgFEgkKAXgYDCABKAISCQoB",
-            "eRgNIAEoAhIZChFkZW1hbmRlZF9ldnRfbWFzaxgOIAEoBBIaChJmdWxmaWxs",
-            "ZWRfZXZ0X21hc2sYDyABKAQSKAogd2F2ZV9ucGNfa2lsbGVkX2V2dF9tYXNr",
-            "X2NvdW50ZXIYECABKAQSIQoZc3Vic2NyaWJlcl9sb2NhbF9pZHNfbWFzaxgR",
-            "IAEoBBIpCiFleGhhdXN0X3N1YnNjcmliZXJfbG9jYWxfaWRzX21hc2sYEiAB",
-            "KAQSGwoTb2ZmZW5kZXJfam9pbl9pbmRleBgTIAEoBRIfChdvZmZlbmRlcl9i",
-            "dWxsZXRfdGVhbV9pZBgUIAEoBSJ0Cg5QbGF5ZXJNZXRhSW5mbxIRCglwbGF5",
-            "ZXJfaWQYASABKAkSEgoKam9pbl9pbmRleBgCIAEoBRIWCg5idWxsZXRfdGVh",
-            "bV9pZBgDIAEoBRISCgpzcGVjaWVzX2lkGAQgASgNEg8KB3Jvb21faWQYBSAB",
-            "KAUicwoRUnBjRW5kcG9pbnRIb2xkZXISCgoCaWQYASABKA0SGgoSZXh0ZXJu",
-            "YWxfYWRkcl9ob3N0GAIgASgJEhoKEmV4dGVybmFsX2FkZHJfcG9ydBgDIAEo",
-            "DRIaChJpbnRlcm5hbF9hZGRyX2hvc3QYBCABKAkqNAoUQm94SW50ZXJwb2xh",
-            "dGlvblR5cGUSCwoHVXNlUHJldhAAEg8KC0ludGVycG9sYXRlEAEqVQoISWZh",
-            "Y2VDYXQSCQoFRU1QVFkQABIJCgVGTEVTSBABEgkKBU1FVEFMEAISCQoFRkxV",
-            "SUQQAxIICgRST0NLEAQSCQoFR1JBU1MQBRIICgRXT09EEAYqRAoLQnVsbGV0",
-            "U3RhdGUSCwoHU3RhcnRVcBAAEgoKBkFjdGl2ZRABEg0KCUV4cGxvZGluZxAC",
-            "Eg0KCVZhbmlzaGluZxADKrgHCg5DaGFyYWN0ZXJTdGF0ZRIJCgVJZGxlMRAA",
-            "EgsKB1dhbGtpbmcQARIOCgpUdXJuQXJvdW5kEAISCgoGQXRrZWQxEAMSFAoQ",
-            "SW5BaXJJZGxlMU5vSnVtcBAEEhQKEEluQWlySWRsZTFCeUp1bXAQBRIUChBJ",
-            "bkFpcklkbGUyQnlKdW1wEAYSGAoUSW5BaXJJZGxlMUJ5V2FsbEp1bXAQBxIP",
-            "CgtJbkFpckF0a2VkMRAIEgwKCEJsb3duVXAxEAkSDAoITGF5RG93bjEQChIK",
-            "CgZHZXRVcDEQCxIJCgVEeWluZxAMEgsKB0Rhc2hpbmcQDRILCgdTbGlkaW5n",
-            "EA4SCgoGRGltbWVkEA8SFAoQVHJhbnNmb3JtaW5nSW50bxAQEg8KC0JhY2tE",
-            "YXNoaW5nEBESEAoMSW5BaXJXYWxraW5nEBISHQoZVHJhbnNmb3JtaW5nSW50",
-            "b0Zyb21EZWF0aBATEhAKDFdhbGtTdG9wcGluZxAUEhUKEUluQWlyV2Fsa1N0",
-            "b3BwaW5nEBUSCwoHUGFycmllZBAWEgsKB0F3YWtpbmcQFxIQCgxHcm91bmRE",
-            "b2RnZWQQGBIPCgtCYWNrV2Fsa2luZxAZEhAKC09uV2FsbElkbGUxEIABEhAK",
-            "C0Nyb3VjaElkbGUxEIACEg8KCkNyb3VjaEF0azEQgQISEgoNQ3JvdWNoV2Fs",
-            "a2luZxCCAhIRCgxDcm91Y2hBdGtlZDEQgwISCQoERGVmMRCEAhIPCgpEZWYx",
-            "QXRrZWQxEIUCEg8KCkRlZjFCcm9rZW4QhgISCQoEQXRrMRCACBIJCgRBdGsy",
-            "EIEIEgkKBEF0azMQgggSCQoEQXRrNBCDCBIJCgRBdGs1EIQIEgkKBEF0azYQ",
-            "hQgSCQoEQXRrNxCGCBISCg1BdGs3X0NoYXJnaW5nEIcIEhcKEkF0azdfQ2hh",
-            "cmdlUmVsZWFzZRCICBIJCgRBdGs4EIkIEg4KCUluQWlyQXRrMRCAEBIOCglJ",
-            "bkFpckF0azIQgRASEAoLV2Fsa2luZ0F0azEQghASEAoLV2Fsa2luZ0F0azQQ",
-            "gxASDgoJSW5BaXJBdGs2EIQQEg8KCk9uV2FsbEF0azEQgBgSEwoOSWRsZTFf",
-            "Q2hhcmdpbmcQgRgSGQoUV2Fsa2luZ0F0azFfQ2hhcmdpbmcQghgSFwoSSW5B",
-            "aXJBdGsxX0NoYXJnaW5nEIMYEhgKE09uV2FsbEF0azFfQ2hhcmdpbmcQhBgS",
-            "GAoTQ3JvdWNoQXRrMV9DaGFyZ2luZxCFGCqTAQoHTnBjR29hbBIJCgVOSWRs",
-            "ZRAAEg8KC05Gb2xsb3dBbGx5EAESCwoHTlBhdHJvbBACEhEKDU5IdW50VGhl",
-            "bklkbGUQAxITCg9OSHVudFRoZW5QYXRyb2wQBBIXChNOSHVudFRoZW5Gb2xs",
-            "b3dBbGx5EAUSHgoaTklkbGVJZkdvSHVudGluZ1RoZW5QYXRyb2wQBipOCglU",
-            "cmFwU3RhdGUSCQoFVElkbGUQABIMCghUV2Fsa2luZxABEgkKBVRBdGsxEAIS",
-            "CwoHVEF0a2VkMRADEhAKDFREZWFjdGl2YXRlZBAEKiwKDFRyaWdnZXJTdGF0",
-            "ZRIKCgZUUmVhZHkQABIQCgxUQ29vbGluZ0Rvd24QASo8Cg1QaWNrYWJsZVN0",
-            "YXRlEgkKBVBJZGxlEAASEQoNUERpc2FwcGVhcmluZxABEg0KCVBDb25zdW1l",
-            "ZBACKnYKCkJ1bGxldFR5cGUSEAoMVW5kZXRlcm1pbmVkEAASCQoFTWVsZWUQ",
-            "ARIMCghGaXJlYmFsbBACEg4KCkdyb3VuZFdhdmUQAxIRCg1NaXNzaWxlTGlu",
-            "ZWFyEAQSGgoWTWlzc2lsZVF1YWRyYXRpY0JlemllchAFKuYBCgxNdWx0aUhp",
-            "dFR5cGUSCAoETm9uZRAAEhAKDEZyb21FbWlzc2lvbhABEhYKEkZyb21GaXJz",
-            "dEhpdEFjdHVhbBACEhYKEkZyb21GaXJzdEhpdEFueXdheRADEhUKEUZyb21Q",
-            "cmV2SGl0QWN0dWFsEAQSFQoRRnJvbVByZXZIaXRBbnl3YXkQBRIbChdGcm9t",
-            "VmlzaW9uU2Vla09yRGVmYXVsdBAGEiMKH0Zyb21QcmV2SGl0QWN0dWFsT3JB",
-            "Y3RpdmVUaW1lVXAQBxIaChZGcm9tRW1pc3Npb25KdXN0QWN0aXZlEAgqMwoQ",
-            "U2tpbGxUcmlnZ2VyVHlwZRIOCgpSaXNpbmdFZGdlEAASDwoLRmFsbGluZ0Vk",
-            "Z2UQASosCg9WZnhEdXJhdGlvblR5cGUSCgoGT25lT2ZmEAASDQoJUmVwZWF0",
-            "aW5nEAEqNwoNVmZ4TW90aW9uVHlwZRIMCghOb01vdGlvbhAAEgsKB0Ryb3Bw",
-            "ZWQQARILCgdUcmFjaW5nEAIqeQoLVHJpZ2dlclR5cGUSCgoGVHROb25lEAAS",
-            "DQoJVHRUcml2aWFsEAESEQoNVHRDeWNsaWNUaW1lZBACEg4KClR0SW5kaVdh",
-            "dmUQAxIOCgpUdFN5bmNXYXZlEAQSDgoKVHRNb3ZlbWVudBAFEgwKCFR0QXR0",
-            "YWNrEAYqMQoNQnVmZlN0b2NrVHlwZRIKCgZOb25lQmYQABIJCgVUaW1lZBAB",
-            "EgkKBVF1b3RhEAIqcQoKRGVidWZmVHlwZRILCgdOb25lRGJmEAASEQoNU3Bl",
-            "ZWREb3duT25seRABEhEKDUNvbGRTcGVlZERvd24QAhIWChJQb3NpdGlvbkxv",
-            "Y2tlZE9ubHkQAxIYChRGcm96ZW5Qb3NpdGlvbkxvY2tlZBAEKjYKDkNvbnN1",
-            "bWFibGVUeXBlEgwKCE5vbmVDc21iEAASCgoGUmVmaWxsEAESCgoGRGJmUmN2",
-            "EAIqnwEKFkludmVudG9yeVNsb3RTdG9ja1R5cGUSCgoGTm9uZUl2EAASCwoH",
-            "RHVtbXlJdhABEgwKCFBvY2tldEl2EAISCwoHVGltZWRJdhADEgsKB1F1b3Rh",
-            "SXYQBBITCg9UaW1lZE1hZ2F6aW5lSXYQBRIUChBHYXVnZWRNYWdhemluZUl2",
-            "EAYSGQoVR2F1Z2VkVGltZWRNYWdhemluZUl2EAcqPAoZUGxheWVyU3RvcnlN",
-            "b2RlU2VsZWN0VmlldxIICgROT05FEAASCgoGUkVHSU9OEAESCQoFTEVWRUwQ",
-            "Aio1ChBGaW5pc2hlZEx2T3B0aW9uEg0KCUJPU1NfT05MWRAAEhIKDlNUT1JZ",
-            "X0FORF9CT1NTEAEqMQoKUGlja3VwVHlwZRINCglJbW1lZGlhdGUQABIUChBQ",
-            "dXRJbnRvSW52ZW50b3J5EAFCCaoCBnNoYXJlZGIGcHJvdG8z"));
+            "ChdzZXJpYWxpemFibGVfZGF0YS5wcm90bxIIanRzaGFyZWQibgoTQXV0aFRv",
+            "a2VuVW5kZXJseWluZxIRCglwbGF5ZXJfaWQYASABKAkSFwoPZnJvbV9hdXRo",
+            "c3J2X2lkGAIgASgNEhcKD3RvX2JhdHRsZXNydl9pZBgDIAEoDRISCgpleHBp",
+            "cmVzX2F0GAQgASgDIvkBCgpBdXRoUmVzdWx0EhAKCHJldF9jb2RlGAEgASgF",
+            "Eg0KBXVuYW1lGAIgASgJEg8KB2NhcHRjaGEYAyABKAkSEgoKZXhwaXJlc19h",
+            "dBgEIAEoAxIRCglwbGF5ZXJfaWQYBSABKAkSFgoObmV3X2F1dGhfdG9rZW4Y",
+            "BiABKAkSGgoSbmV3X2F1dGhfdG9rZW5fc2lnGAcgASgJEiEKGWNhcHRjaGFf",
+            "c3VibWl0X2F1dGhzcnZfaWQYCCABKA0SHwoXYmF0dGxlc3J2X2hvc3RuYW1l",
+            "X29ubHkYCSABKAkSGgoSYmF0dGxlc3J2X2VuZHBvaW50GAogASgJIo0BCihT",
+            "dGVhbUF1dGhlbnRpY2F0ZVVzZXJUaWNrZXRQYXlsb2FkUGFyYW1zEg4KBnJl",
+            "c3VsdBgBIAEoCRIPCgdzdGVhbWlkGAIgASgJEhQKDG93bmVyc3RlYW1pZBgD",
+            "IAEoCRIRCgl2YWNiYW5uZWQYBCABKAgSFwoPcHVibGlzaGVyYmFubmVkGAUg",
+            "ASgIImwKJlN0ZWFtQXV0aGVudGljYXRlVXNlclRpY2tldFBheWxvYWRSZXNw",
+            "EkIKBnBhcmFtcxgBIAEoCzIyLmp0c2hhcmVkLlN0ZWFtQXV0aGVudGljYXRl",
+            "VXNlclRpY2tldFBheWxvYWRQYXJhbXMiZwohU3RlYW1BdXRoZW50aWNhdGVV",
+            "c2VyVGlja2V0UmVzdWx0EkIKCHJlc3BvbnNlGAEgASgLMjAuanRzaGFyZWQu",
+            "U3RlYW1BdXRoZW50aWNhdGVVc2VyVGlja2V0UGF5bG9hZFJlc3AigAEKEEJh",
+            "dHRsZUludml0YXRpb24SFgoOZnJvbV9wbGF5ZXJfaWQYASABKAkSFwoPdG9f",
+            "YmF0dGxlc3J2X2lkGAIgASgNEhUKDWJvdW5kX3Jvb21faWQYAyABKAUSEgoK",
+            "ZXhwaXJlc19hdBgEIAEoAxIQCghwYXNzY29kZRgFIAEoCSLVGgoPQ2hhcmFj",
+            "dGVyQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SFAoMc3BlY2llc19uYW1l",
+            "GAIgASgJEgoKAmhwGAMgASgFEgoKAm1wGAQgASgFEhcKD2xheV9kb3duX2Zy",
+            "YW1lcxgFIAEoBRIiChpsYXlfZG93bl9mcmFtZXNfdG9fcmVjb3ZlchgGIAEo",
+            "BRIgChhnZXRfdXBfaW52aW5zaWJsZV9mcmFtZXMYByABKAUSIAoYZ2V0X3Vw",
+            "X2ZyYW1lc190b19yZWNvdmVyGAggASgFEg0KBXNwZWVkGAkgASgCEh0KFW1w",
+            "X3JlZ2VuX3Blcl9pbnRlcnZhbBgKIAEoBRIZChFtcF9yZWdlbl9pbnRlcnZh",
+            "bBgLIAEoBRIaChJqdW1waW5nX2luaXRfdmVsX3kYDCABKAISIQoZaW5lcnRp",
+            "YV9mcmFtZXNfdG9fcmVjb3ZlchgNIAEoBRIXCg9kYXNoaW5nX2VuYWJsZWQY",
+            "DiABKAgSFwoPc2xpZGluZ19lbmFibGVkGA8gASgIEhcKD29uX3dhbGxfZW5h",
+            "YmxlZBgQIAEoCBIZChFjcm91Y2hpbmdfZW5hYmxlZBgRIAEoCBIdChVjcm91",
+            "Y2hpbmdfYXRrX2VuYWJsZWQYEiABKAgSJgoed2FsbF9qdW1waW5nX2ZyYW1l",
+            "c190b19yZWNvdmVyGBMgASgFEh8KF3dhbGxfanVtcGluZ19pbml0X3ZlbF94",
+            "GBQgASgCEh8KF3dhbGxfanVtcGluZ19pbml0X3ZlbF95GBUgASgCEhoKEndh",
+            "bGxfc2xpZGluZ192ZWxfeRgWIAEoAhIZChFtaW5fZmFsbGluZ192ZWxfeRgX",
+            "IAEoAhIbChNtYXhfYXNjZW5kaW5nX3ZlbF95GBggASgCEhsKE3VzZV9pbnZl",
+            "bnRvcnlfYnRuX2IYGSABKAgSNwovZ3JvdW5kX2RvZGdlX2VuYWJsZWRfYnlf",
+            "aXZfc2xvdF9jX2luX2Jsb2NrX3N0dW4YGiABKAgSNgouZ3JvdW5kX2RvZGdl",
+            "X2VuYWJsZWRfYnlfcmRmX2NudF9mcm9tX2JlZ2lubmluZxgbIAEoBRInCh9n",
+            "cm91bmRfZG9kZ2VkX2ZyYW1lc190b19yZWNvdmVyGBwgASgFEicKH2dyb3Vu",
+            "ZF9kb2RnZWRfZnJhbWVzX2ludmluc2libGUYHSABKAUSGwoTZ3JvdW5kX2Rv",
+            "ZGdlZF9zcGVlZBgeIAEoAhIXCg92aXNpb25fb2Zmc2V0X3gYHyABKAISFwoP",
+            "dmlzaW9uX29mZnNldF95GCAgASgCEhUKDXZpc2lvbl9zaXplX3gYISABKAIS",
+            "FQoNdmlzaW9uX3NpemVfeRgiIAEoAhIWCg5jYXBzdWxlX3JhZGl1cxgjIAEo",
+            "AhIbChNjYXBzdWxlX2hhbGZfaGVpZ2h0GCQgASgCEh0KFXNocmlua2VkX3Nj",
+            "YWxlX3JhZGl1cxglIAEoAhIdChVzaHJpbmtlZF9zY2FsZV9oZWlnaHQYJiAB",
+            "KAISHQoVbGF5X2Rvd25fc2NhbGVfcmFkaXVzGCcgASgCEh0KFWxheV9kb3du",
+            "X3NjYWxlX2hlaWdodBgoIAEoAhIaChJkeWluZ19zY2FsZV9yYWRpdXMYKSAB",
+            "KAISGgoSZHlpbmdfc2NhbGVfaGVpZ2h0GCogASgCEhsKE2RpbW1lZF9zY2Fs",
+            "ZV9yYWRpdXMYKyABKAISGwoTZGltbWVkX3NjYWxlX2hlaWdodBgsIAEoAhIe",
+            "ChZhbnRpX2dyYXZpdHlfd2hlbl9pZGxlGC0gASgIEiUKHWFudGlfZ3Jhdml0",
+            "eV9mcmFtZXNfbGluZ2VyaW5nGC4gASgFEhQKDG9taXRfZ3Jhdml0eRgvIAEo",
+            "CBIaChJvbWl0X3NvZnRfcHVzaGJhY2sYMCABKAgSGwoTcmVwZWxfc29mdF9w",
+            "dXNoYmFjaxgxIAEoCBIbChNjb2xsaXNpb25fdHlwZV9tYXNrGDIgASgEEhwK",
+            "FGhhc190dXJuX2Fyb3VuZF9hbmltGDMgASgIEhcKD2hhc19kaW1tZWRfYW5p",
+            "bRg0IAEoCBIYChBoYXNfYXdha2luZ19hbmltGDUgASgIEh4KFmhhc193YWxr",
+            "X3N0b3BwaW5nX2FuaW0YNiABKAgSJQodaGFzX2luX2Fpcl93YWxrX3N0b3Bw",
+            "aW5nX2FuaW0YNyABKAgSJwofbGF5X2Rvd25fdG9fcmVjb3Zlcl9mcm9tX2Rp",
+            "bW1lZBg4IAEoCBIQCghoYXJkbmVzcxg5IAEoBRIlCh1wcm9hY3RpdmVfanVt",
+            "cF9zdGFydHVwX2ZyYW1lcxg6IAEoBRIeChZkZWZhdWx0X2Fpcl9qdW1wX3F1",
+            "b3RhGDsgASgNEh4KFmRlZmF1bHRfYWlyX2Rhc2hfcXVvdGEYPCABKA0SGQoR",
+            "ZGVmYXVsdF9kZWYxUXVvdGEYPSABKA0SKAogaXNvbGF0ZWRfYWlyX2p1bXBf",
+            "YW5kX2Rhc2hfcXVvdGEYPiABKAgSHwoXYWlyX2p1bXBfdmZ4X3NwZWNpZXNf",
+            "aWQYPyABKAUSKwojc2xpcF9qdW1wX3RocmVzX2hvbGRfYmVsb3dfdG9wX2Zh",
+            "Y2UYQCABKAISIgoac2xpcF9qdW1wX2NoYXJhY3Rlcl9kcm9wX3kYQSABKAIS",
+            "LAokdHJhbnNmb3JtX2ludG9fc3BlY2llc19pZF91cG9uX2RlYXRoGEIgASgN",
+            "EhsKE2p1bXBfaG9sZGluZ190b19mbHkYQyABKAgSEAoIaGFzX2RlZjEYRCAB",
+            "KAgSGgoSaGFzX2RlZjFBdGtlZDFBbmltGEUgASgIEiwKJGRlZmF1bHRfZGVm",
+            "MUJyb2tlbl9mcmFtZXNfdG9fcmVjb3ZlchhGIAEoBRIiChpkZWYxX2FjdGl2",
+            "ZV92Znhfc3BlY2llc19pZBhHIAEoBRIhChlkZWYxX2F0a2VkX3ZmeF9zcGVj",
+            "aWVzX2lkGEggASgFEiIKGmRlZjFfYnJva2VuX3ZmeF9zcGVjaWVzX2lkGEkg",
+            "ASgFEhsKE2RlZjFfc3RhcnR1cF9mcmFtZXMYSiABKAUSGQoRZGVmMV9kYW1h",
+            "Z2VfeWllbGQYSyABKAISLAokZGVmMV9kZWZpZXNfZWxlX3dlYWtuZXNzX3Bl",
+            "bmV0cmF0aW9uGEwgASgIEhoKEmRlZjFfZGVmaWVzX2RlYnVmZhhNIAEoCBIc",
+            "ChRmbHlpbmdfcXVvdGFfcmRmX2NudBhOIAEoBRIZChF3YWxraW5nX2F1dG9f",
+            "ZGVmMRhPIAEoCBIfCgNJZmMYUCABKA4yEi5qdHNoYXJlZC5JZmFjZUNhdBIU",
+            "CgxlbGVfd2Vha25lc3MYUSABKA0SFgoOZWxlX3Jlc2lzdGFuY2UYUiABKA0S",
+            "GgoSaGFzX2J0bl9iX2NoYXJnaW5nGFMgASgIEiQKHGJ0bl9iX2NoYXJnZWRf",
+            "dmZ4X3NwZWNpZXNfaWQYVCABKAUSEQoJaXNfa2V5X2NoGFUgASgIEiYKHmFs",
+            "bG93c19zYW1lX3RlYW1fc29mdF9wdXNoYmFjaxhWIAEoCBIdChVnYXVnZV9p",
+            "bmNfd2hlbl9raWxsZWQYVyABKAUSIgoaanVtcGluZ19pbnN0ZWFkX29mX3dh",
+            "bGtpbmcYWCABKAgSKgoidmlzaW9uX3NlYXJjaF9pbnRlcnZhbF9wb3cyTWlu",
+            "dXMxVRhZIAEoDRIpCiF2aXNpb25fc2VhcmNoX2ludGVydmFsX3BvdzJNaW51",
+            "czEYWiABKAUSIgoabnBjX25vX2RlZmF1bHRfYWlyX3dhbGtpbmcYWyABKAgS",
+            "JgoebnBjX3ByaW9yaXRpemVfYnVsbGV0X2hhbmRsaW5nGFwgASgIEiMKG25w",
+            "Y19wcmlvcml0aXplX2FsbHlfaGVhbGluZxhdIAEoCBImCh5ucGNfbm90X2h1",
+            "bnRpbmdfaW5fYWlyX29wcG9fY2gYXiABKAgSKAogdHJhbnNmb3JtX2ludG9f",
+            "ZnJhbWVzX3RvX3JlY292ZXIYXyABKAUSKAogdHJhbnNmb3JtX2ludG9fZnJh",
+            "bWVzX2ludmluc2libGUYYCABKAUSIQoZYXdha2luZ19mcmFtZXNfdG9fcmVj",
+            "b3ZlchhhIAEoBRIhChlhd2FraW5nX2ZyYW1lc19pbnZpbnNpYmxlGGIgASgF",
+            "EiAKGHVzZV9pZGxlMV9hc19mbHlpbmdfaWRsZRhjIAEoCBIPCgdub19mbGVl",
+            "GGQgASgIEjUKFGluaXRfaW52ZW50b3J5X3Nsb3RzGGUgAygLMhcuanRzaGFy",
+            "ZWQuSW52ZW50b3J5U2xvdBI9ChtidG5fYl9hdXRvX3VuaG9sZF9jaF9zdGF0",
+            "ZXMYZiADKA4yGC5qdHNoYXJlZC5DaGFyYWN0ZXJTdGF0ZRJJChFsb29waW5n",
+            "X2NoX3N0YXRlcxhnIAMoCzIuLmp0c2hhcmVkLkNoYXJhY3RlckNvbmZpZy5M",
+            "b29waW5nQ2hTdGF0ZXNFbnRyeRo2ChRMb29waW5nQ2hTdGF0ZXNFbnRyeRIL",
+            "CgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBIvURChFDaGFyYWN0ZXJE",
+            "b3duc3luYxIKCgJpZBgBIAEoBRIJCgF4GAIgASgCEgkKAXkYAyABKAISDQoF",
+            "ZGlyX3gYBCABKAUSDQoFZGlyX3kYBSABKAUSDQoFdmVsX3gYBiABKAISDQoF",
+            "dmVsX3kYByABKAISDQoFc3BlZWQYCCABKAISEgoKc3BlY2llc19pZBgJIAEo",
+            "DRISCgpqb2luX2luZGV4GAogASgFEhkKEWZyYW1lc190b19yZWNvdmVyGAsg",
+            "ASgFEiIKGmZyYW1lc19jYXB0dXJlZF9ieV9pbmVydGlhGAwgASgFEh4KFmNh",
+            "cHR1cmVkX2J5X3BhdHJvbF9jdWUYDSABKAgSHAoUZnJhbWVzX2luX3BhdHJv",
+            "bF9jdWUYDiABKAUSEQoJYmVhdHNfY250GA8gASgNEhIKCmJlYXRlbl9jbnQY",
+            "ECABKA0SCgoCaHAYESABKAUSCgoCbXAYEiABKAUSHwoXYnRuX2JfaG9sZGlu",
+            "Z19yZGZfY291bnQYEyABKAUSMQoPY2hhcmFjdGVyX3N0YXRlGBYgASgOMhgu",
+            "anRzaGFyZWQuQ2hhcmFjdGVyU3RhdGUSGgoSZnJhbWVzX2luX2NoX3N0YXRl",
+            "GBcgASgFEg4KBmluX2FpchgYIAEoCBIWCg5qdW1wX3RyaWdnZXJlZBgZIAEo",
+            "CBIPCgdvbl93YWxsGBogASgIEhYKDm9uX3dhbGxfbm9ybV94GBsgASgFEhYK",
+            "Dm9uX3dhbGxfbm9ybV95GBwgASgFEhQKDG9taXRfZ3Jhdml0eRgdIAEoCBIa",
+            "ChJvbWl0X3NvZnRfcHVzaGJhY2sYHiABKAgSHQoVd2FpdmluZ19wYXRyb2xf",
+            "Y3VlX2lkGB8gASgFEiYKC2dvYWxfYXNfbnBjGCAgASgOMhEuanRzaGFyZWQu",
+            "TnBjR29hbBIRCglyZXZpdmFsX3gYISABKAISEQoJcmV2aXZhbF95GCIgASgC",
+            "EhUKDXJldml2YWxfZGlyX3gYIyABKAUSFQoNcmV2aXZhbF9kaXJfeRgkIAEo",
+            "BRIQCghvbl9zbG9wZRglIAEoCBIWCg5mcmljdGlvbl92ZWxfeBgmIAEoBRIY",
+            "ChBmb3JjZWRfY3JvdWNoaW5nGCcgASgIEhsKE3NsaXBfanVtcF90cmlnZ2Vy",
+            "ZWQYKCABKAgSLAokcHJpbWFyaWx5X29uX3NsaXBwYWJsZV9oYXJkX3B1c2hi",
+            "YWNrGCkgASgIEhoKEnByZXZfd2FzX2Nyb3VjaGluZxgqIAEoCBIRCgluZXdf",
+            "YmlydGgYKyABKAgSGQoRZnJhbWVzX2ludmluc2libGUYLCABKAUSFAoManVt",
+            "cF9zdGFydGVkGC0gASgIEhwKFGZyYW1lc190b19zdGFydF9qdW1wGC4gASgF",
+            "EhsKE3JlcGVsX3NvZnRfcHVzaGJhY2sYLyABKAgSJwofcHVibGlzaGluZ19l",
+            "dnRfbWFza191cG9uX2tpbGxlZBgwIAEoBBIyCipwdWJsaXNoaW5nX3RvX3Ry",
+            "aWdnZXJfbG9jYWxfaWRfdXBvbl9raWxsZWQYMSABKAUSJgoec3Vic2NyaWJl",
+            "c190b190cmlnZ2VyX2xvY2FsX2lkGDIgASgFEhwKFGp1bXBfaG9sZGluZ19y",
+            "ZGZfY250GDMgASgFEiAKGHJlbWFpbmluZ19haXJfanVtcF9xdW90YRg0IAEo",
+            "DRIgChhyZW1haW5pbmdfYWlyX2Rhc2hfcXVvdGEYNSABKA0SLAoka2lsbGVk",
+            "X3RvX2Ryb3BfY29uc3VtYWJsZV9zcGVjaWVzX2lkGDYgASgNEiYKHmtpbGxl",
+            "ZF90b19kcm9wX2J1ZmZfc3BlY2llc19pZBg3IAEoDRImCh5raWxsZWRfdG9f",
+            "ZHJvcF9waWNrdXBfc2tpbGxfaWQYOCABKA0SFgoOZnJpY3Rpb25fdmVsX3kY",
+            "OSABKAUSIQoZZnJhbWVzX3NpbmNlX2xhc3RfZGFtYWdlZBg6IAEoBRIbChNy",
+            "ZW1haW5pbmdfZGVmMVF1b3RhGDsgASgNEhUKDWNvbWJvX2hpdF9jbnQYPCAB",
+            "KA0SHQoVY29tYm9fZnJhbWVzX3JlbWFpbmVkGD0gASgFEh4KFmRhbWFnZV9l",
+            "bGVtZW50YWxfYXR0cnMYPiABKA0SHAoUb25fc2xvcGVfZmFjaW5nX2Rvd24Y",
+            "PyABKAgSIgoabGFzdF9kYW1hZ2VkX2J5X2pvaW5faW5kZXgYQCABKAUSJgoe",
+            "bGFzdF9kYW1hZ2VkX2J5X2J1bGxldF90ZWFtX2lkGEEgASgFEhgKEGFjdGl2",
+            "YXRlZF9yZGZfaWQYQiABKAUSFgoOY2FjaGVkX2N1ZV9jbWQYQyABKAQSFwoP",
+            "YWN0aXZlX3NraWxsX2lkGEQgASgNEhgKEGFjdGl2ZV9za2lsbF9oaXQYRSAB",
+            "KAUSFgoOYnVsbGV0X3RlYW1faWQYRiABKAUSHAoUY2hfY29sbGlzaW9uX3Rl",
+            "YW1faWQYRyABKAUSHwoXYnRuX2NfaG9sZGluZ19yZGZfY291bnQYSCABKAUS",
+            "HwoXYnRuX2RfSG9sZGluZ19yZGZfY291bnQYSSABKAUSHwoXYnRuX2VfaG9s",
+            "ZGluZ19yZGZfY291bnQYSiABKAUSHwoXcGFycnlfcHJlcF9yZGZfY250X2Rv",
+            "d24YSyABKAUSHgoWbXBfcmVnZW5fcmRmX2NvdW50ZG93bhhMIAEoBRIcChRm",
+            "bHlpbmdfcmRmX2NvdW50ZG93bhhNIAEoBRIdChVsb2NraW5nX29uX2pvaW5f",
+            "aW5kZXgYTiABKAUSIQoJYnVmZl9saXN0GFogAygLMg4uanRzaGFyZWQuQnVm",
+            "ZhIlCgtkZWJ1ZmZfbGlzdBhbIAMoCzIQLmp0c2hhcmVkLkRlYnVmZhImCglp",
+            "bnZlbnRvcnkYXCABKAsyEy5qdHNoYXJlZC5JbnZlbnRvcnkSOwoVYnVsbGV0",
+            "X2ltbXVuZV9yZWNvcmRzGF0gAygLMhwuanRzaGFyZWQuQnVsbGV0SW1tdW5l",
+            "UmVjb3JkEhcKD2tpbmVtYXRpY19rbm9icxheIAMoAiKUAQoRSW5wdXRGcmFt",
+            "ZURlY29kZWQSCgoCZHgYASABKAUSCgoCZHkYAiABKAUSEwoLYnRuX2FfbGV2",
+            "ZWwYAyABKAUSEwoLYnRuX2JfbGV2ZWwYBCABKAUSEwoLYnRuX2NfbGV2ZWwY",
+            "BSABKAUSEwoLYnRuX2RfbGV2ZWwYBiABKAUSEwoLYnRuX2VfbGV2ZWwYByAB",
+            "KAUiTwoQSW5wdXRGcmFtZVVwc3luYxIWCg5pbnB1dF9mcmFtZV9pZBgBIAEo",
+            "BRIPCgdlbmNvZGVkGAIgASgEEhIKCmpvaW5faW5kZXgYAyABKAUidAoSSW5w",
+            "dXRGcmFtZURvd25zeW5jEhYKDmlucHV0X2ZyYW1lX2lkGAEgASgFEhIKCmlu",
+            "cHV0X2xpc3QYAiADKAQSFgoOY29uZmlybWVkX2xpc3QYAyABKAQSGgoSdWRw",
+            "X2NvbmZpcm1lZF9saXN0GAQgASgEIpAHCgVXc1JlcRIRCglwbGF5ZXJfaWQY",
+            "ASABKAkSCwoDYWN0GAIgASgFEhIKCmpvaW5faW5kZXgYAyABKAUSFwoPYWNr",
+            "aW5nX2ZyYW1lX2lkGAQgASgFEh0KFWFja2luZ19pbnB1dF9mcmFtZV9pZBgF",
+            "IAEoBRIQCghhdXRoX2tleRgGIAEoBRI8ChhpbnB1dF9mcmFtZV91cHN5bmNf",
+            "YmF0Y2gYByADKAsyGi5qdHNoYXJlZC5JbnB1dEZyYW1lVXBzeW5jEi4KD3Nl",
+            "bGZfcGFyc2VkX3JkZhgIIAEoCzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEiIK",
+            "GmNvbGxpc2lvbl9zcGFjZV9oYWxmX3dpZHRoGAkgASgFEiMKG2NvbGxpc2lv",
+            "bl9zcGFjZV9oYWxmX2hlaWdodBgKIAEoBRIfChdiYXR0bGVfZHVyYXRpb25f",
+            "c2Vjb25kcxgLIAEoBRJIChtzZXJpYWxpemVkX2JhcnJpZXJfcG9seWdvbnMY",
+            "DCADKAsyIy5qdHNoYXJlZC5TZXJpYWxpemFibGVDb252ZXhQb2x5Z29uElwK",
+            "HXNlcmlhbGl6ZWRfc3RhdGljX3BhdHJvbF9jdWVzGA0gAygLMjUuanRzaGFy",
+            "ZWQuU2VyaWFsaXplZENvbXBsZXRlbHlTdGF0aWNQYXRyb2xDdWVDb2xsaWRl",
+            "chJcCiJzZXJpYWxpemVkX2NvbXBsZXRlbHlfc3RhdGljX3RyYXBzGA4gAygL",
+            "MjAuanRzaGFyZWQuU2VyaWFsaXplZENvbXBsZXRlbHlTdGF0aWNUcmFwQ29s",
+            "bGlkZXISVwoac2VyaWFsaXplZF9zdGF0aWNfdHJpZ2dlcnMYDyADKAsyMy5q",
+            "dHNoYXJlZC5TZXJpYWxpemVkQ29tcGxldGVseVN0YXRpY1RyaWdnZXJDb2xs",
+            "aWRlchJiCipzZXJpYWxpemVkX3RyYXBfbG9jYWxfaWRfdG9fY29sbGlkZXJf",
+            "YXR0cnMYECABKAsyLi5qdHNoYXJlZC5TZXJpYWxpemVkVHJhcExvY2FsSWRU",
+            "b0NvbGxpZGVyQXR0cnMSXgooc2VyaWFsaXplZF90cmlnZ2VyX2VkaXRvcl9p",
+            "ZF90b19sb2NhbF9pZBgSIAEoCzIsLmp0c2hhcmVkLlNlcmlhbGl6ZWRUcmln",
+            "Z2VyRWRpdG9ySWRUb0xvY2FsSWQSDgoGc2VxX25vGBMgASgNIscBChNJbnB1",
+            "dEJ1ZmZlclNuYXBzaG90EhsKE3JlZl9yZW5kZXJfZnJhbWVfaWQYASABKAUS",
+            "GAoQdW5jb25maXJtZWRfbWFzaxgCIAEoBBJDCh10b19zZW5kX2lucHV0X2Zy",
+            "YW1lX2Rvd25zeW5jcxgDIAMoCzIcLmp0c2hhcmVkLklucHV0RnJhbWVEb3du",
+            "c3luYxIbChNzaG91bGRfZm9yY2VfcmVzeW5jGAQgASgIEhcKD3BlZXJfam9p",
+            "bl9pbmRleBgFIAEoBSLhAQoJUGF0cm9sQ3VlEgoKAmlkGAEgASgFEg4KBmZs",
+            "X2FjdBgCIAEoBBIOCgZmcl9hY3QYAyABKAQSGQoRZmxfY2FwdHVyZV9mcmFt",
+            "ZXMYBCABKAUSGQoRZnJfY2FwdHVyZV9mcmFtZXMYBSABKAUSDgoGZmRfYWN0",
+            "GAYgASgEEg4KBmZ1X2FjdBgHIAEoBBIZChFmZF9jYXB0dXJlX2ZyYW1lcxgI",
+            "IAEoBRIZChFmdV9jYXB0dXJlX2ZyYW1lcxgJIAEoBRIcChNjb2xsaXNpb25f",
+            "dHlwZV9tYXNrGIUIIAEoBCLjAQoJVmZ4Q29uZmlnEhIKCnNwZWNpZXNfaWQY",
+            "ASABKAUSLAoLbW90aW9uX3R5cGUYAiABKA4yFy5qdHNoYXJlZC5WZnhNb3Rp",
+            "b25UeXBlEjAKDWR1cmF0aW9uX3R5cGUYAyABKA4yGS5qdHNoYXJlZC5WZnhE",
+            "dXJhdGlvblR5cGUSFAoMb25fY2hhcmFjdGVyGAQgASgIEhEKCW9uX2J1bGxl",
+            "dBgFIAEoCBIPCgdvbl90cmFwGAYgASgIEhkKEXVzZV9waXhlbGF0ZWRfdmVy",
+            "GAcgASgIEg0KBG5hbWUYgAggASgJItkaCgxCdWxsZXRDb25maWcSFgoOc3Rh",
+            "cnR1cF9mcmFtZXMYASABKAUSHAoUY2FuY2VsbGFibGVfc3RfZnJhbWUYAiAB",
+            "KAUSHAoUY2FuY2VsbGFibGVfZWRfZnJhbWUYAyABKAUSFQoNYWN0aXZlX2Zy",
+            "YW1lcxgEIAEoBRIXCg9oaXRfc3R1bl9mcmFtZXMYBSABKAUSGQoRYmxvY2tf",
+            "c3R1bl9mcmFtZXMYBiABKAUSFgoOcHVzaGJhY2tfdmVsX3gYByABKAISFgoO",
+            "cHVzaGJhY2tfdmVsX3kYCCABKAISDgoGZGFtYWdlGAkgASgFEhcKD3NlbGZf",
+            "bG9ja192ZWxfeBgKIAEoAhIXCg9zZWxmX2xvY2tfdmVsX3kYCyABKAISFwoP",
+            "aGl0Ym94X29mZnNldF94GAwgASgCEhcKD2hpdGJveF9vZmZzZXRfeRgNIAEo",
+            "AhIVCg1oaXRib3hfc2l6ZV94GA4gASgCEhUKDWhpdGJveF9zaXplX3kYDyAB",
+            "KAISDwoHYmxvd191cBgQIAEoCBISCgpzcGVjaWVzX2lkGBEgASgFEhgKEGV4",
+            "cGxvc2lvbl9mcmFtZXMYEiABKAUSJAoGYl90eXBlGBMgASgOMhQuanRzaGFy",
+            "ZWQuQnVsbGV0VHlwZRInCgdtaF90eXBlGBQgASgOMhYuanRzaGFyZWQuTXVs",
+            "dGlIaXRUeXBlEiIKGnNpbXVsdGFuZW91c19tdWx0aV9oaXRfY250GBUgASgN",
+            "Eg0KBXNwZWVkGBYgASgCEg0KBWRpcl94GBcgASgFEg0KBWRpcl95GBggASgF",
+            "EkEKDmNhbmNlbF90cmFuc2l0GBkgAygLMikuanRzaGFyZWQuQnVsbGV0Q29u",
+            "ZmlnLkNhbmNlbFRyYW5zaXRFbnRyeRIUCgxyZXBlYXRfcXVvdGEYGiABKAUS",
+            "HQoVYWN0aXZlX3ZmeF9zcGVjaWVzX2lkGBsgASgFEiAKGGV4cGxvc2lvbl92",
+            "Znhfc3BlY2llc19pZBgcIAEoBRIWCg5hbGxvd3Nfd2Fsa2luZxgdIAEoCBIY",
+            "ChBhbGxvd3NfY3JvdWNoaW5nGB4gASgIEhAKCGhhcmRuZXNzGB8gASgFEiEK",
+            "GXN0YXJ0dXBfaW52aW5zaWJsZV9mcmFtZXMYICABKAUSHQoVaGl0X2ludmlu",
+            "c2libGVfZnJhbWVzGCEgASgFEhwKFGV4cGxvc2lvbl9zcGVjaWVzX2lkGCIg",
+            "ASgFEhQKDHBlcnBfYWNjX21hZxgjIAEoBRIgChhkZWxheV9zZWxmX3ZlbF90",
+            "b19hY3RpdmUYJCABKAgSGAoQc3BlZWRfaWZfbm90X2hpdBglIAEoAhIaChJv",
+            "bWl0X3NvZnRfcHVzaGJhY2sYJiABKAgSGQoRaGl0Ym94X3NpemVfaW5jX3gY",
+            "JyABKAISGQoRaGl0Ym94X3NpemVfaW5jX3kYKCABKAISGAoQcmVtYWluc191",
+            "cG9uX2hpdBgpIAEoCBIeChZyb3RhdGVzX2Fsb25nX3ZlbG9jaXR5GCogASgI",
+            "EioKImRlZmF1bHRfaGFyZF9wdXNoYmFja19ib3VuY2VfcXVvdGEYKyABKAUS",
+            "KAogaGFyZF9wdXNoYmFja19ib3VuY2Vfbm9ybV9mYWN0b3IYLCABKAISKQoh",
+            "aGFyZF9wdXNoYmFja19ib3VuY2Vfc2hlZXJfZmFjdG9yGC0gASgCEh8KF2lz",
+            "X3BpeGVsYXRlZF9hY3RpdmVfdmZ4GC4gASgIEiMKG2lzX3BpeGVsYXRlZF9l",
+            "eHBsb3N0aW9uX3ZmeBgvIAEoCBIeChZtaF92YW5pc2hfb25fbWVsZWVfaGl0",
+            "GDAgASgIEh8KF2Rvd25fc2xvcGVfcHJpbWVyX3ZlbF95GDEgASgCEh0KFW1o",
+            "X3VwZGF0ZXNfb3JpZ2luX3BvcxgyIAEoCBIWCg5iZWFtX2NvbGxpc2lvbhgz",
+            "IAEoCBIdChVhbmd1bGFyX2ZyYW1lX3ZlbF9jb3MYNCABKAISHQoVYW5ndWxh",
+            "cl9mcmFtZV92ZWxfc2luGDUgASgCEhcKD3Zpc2lvbl9vZmZzZXRfeBg2IAEo",
+            "AhIXCg92aXNpb25fb2Zmc2V0X3kYNyABKAISFQoNdmlzaW9uX3NpemVfeBg4",
+            "IAEoAhIVCg12aXNpb25fc2l6ZV95GDkgASgCEiIKGnNlbGZfbG9ja192ZWxf",
+            "eVdoZW5fZmx5aW5nGDogASgFEhcKD2VsZW1lbnRhbF9hdHRycxg7IAEoDRIn",
+            "Ch9jYW5jZWxsYWJsZV9ieV9pbnZlbnRvcnlfc2xvdF9jGDwgASgIEicKH2Nh",
+            "bmNlbGxhYmxlX2J5X2ludmVudG9yeV9zbG90X2QYPSABKAgSFQoNc3Bpbl9h",
+            "bmNob3JfeBg+IAEoAhIVCg1zcGluX2FuY2hvcl95GD8gASgCEhoKEmJlYW1f",
+            "dmlzdWFsX3NpemVfeRhAIAEoAhImCh50b3VjaF9leHBsb3Npb25fYm9tYl9j",
+            "b2xsaXNpb24YQSABKAgSHgoWYWlyX3JpZGluZ19ncm91bmRfd2F2ZRhCIAEo",
+            "CBIlCh1ncm91bmRfaW1wYWN0X21lbGVlX2NvbGxpc2lvbhhDIAEoCBIjCht3",
+            "YWxsX2ltcGFjdF9tZWxlZV9jb2xsaXNpb24YRCABKAgSGAoQbWhfaW5oZXJp",
+            "dHNfc3BpbhhFIAEoCBIVCg1pbml0X3NwaW5fY29zGEYgASgCEhUKDWluaXRf",
+            "c3Bpbl9zaW4YRyABKAISGAoQZmluaXNoaW5nX2ZyYW1lcxhIIAEoBRIlCh1u",
+            "b19leHBsb3Npb25fb25faGFyZF9wdXNoYmFjaxhJIAEoCBIeChZzdGFydHVw",
+            "X3ZmeF9zcGVjaWVzX2lkGEogASgFEh8KA2lmYxhLIAEoDjISLmp0c2hhcmVk",
+            "LklmYWNlQ2F0EicKH3JlZmxlY3RfZmlyZWJhbGxfeElmX25vdF9oYXJkZXIY",
+            "TCABKAgSLgomcmVqZWN0c19yZWZsZWN0aW9uX2Zyb21fYW5vdGhlcl9idWxs",
+            "ZXQYTSABKAgSHwoXcHJvdmlkZXNfeEhhcmRfcHVzaGJhY2sYTiABKAgSIwob",
+            "cHJvdmlkZXNfeUhhcmRfcHVzaGJhY2tfdG9wGE8gASgIEiYKHnByb3ZpZGVz",
+            "X3lIYXJkX3B1c2hiYWNrX2JvdHRvbRhQIAEoCBIhChlpZ25vcmVfc2xvcGVf",
+            "ZGVjZWxlcmF0aW9uGFEgASgIEiEKGXJvdGF0ZV9vZmZlbmRlcl93aXRoX3Nw",
+            "aW4YUiABKAgSIAoYbWhfbm90X3RyaWdnZXJfb25fY2hfaGl0GFMgASgIEisK",
+            "I21oX25vdF90cmlnZ2VyX29uX2hhcmRlcl9idWxsZXRfaGl0GFQgASgIEisK",
+            "I21oX25vdF90cmlnZ2VyX29uX2hhcmRfcHVzaGJhY2tfaGl0GFUgASgIEhYK",
+            "DmhvcHBlcl9taXNzaWxlGFYgASgIEhYKDmJlYW1fcmVuZGVyaW5nGFcgASgI",
+            "EioKIm1pc3NpbGVfc2VhcmNoX2ludGVydmFsX3BvdzJNaW51czEYWCABKA0S",
+            "LwondXNlX2NoX29mZnNldF9yZWdhcmRsZXNzX29mX2VtaXNzaW9uX21oGFkg",
+            "ASgIEisKI2lucGxhY2VfdmFuaXNoX2V4cGxvc2lvbl9zcGVjaWVzX2lkGFog",
+            "ASgFEh8KF2FuaW1fbG9vcGluZ19yZGZfb2Zmc2V0GFsgASgFEikKIWV4cGxv",
+            "c2lvbl9hbmltX2xvb3BpbmdfcmRmX29mZnNldBhcIAEoBRIhChlnYXVnZV9p",
+            "bmNfcmVkdWN0aW9uX3JhdGlvGF0gASgCEiYKHm1oX2luaGVyaXRzX2ZyYW1l",
+            "c19pbl9ibF9zdGF0ZRheIAEoCBIjChtndWFyZF9icmVha2VyX2V4dHJhX2hp",
+            "dF9jbnQYXyABKA0SIgoadGFrZXNfZGVmMUFzX2hhcmRfcHVzaGJhY2sYYCAB",
+            "KAgSHAoTY29sbGlzaW9uX3R5cGVfbWFzaxiFCCABKAQSFgoNdGFrZXNfZ3Jh",
+            "dml0eRiGCCABKAgSKgoLYnVmZl9jb25maWcYhwggASgLMhQuanRzaGFyZWQu",
+            "QnVmZkNvbmZpZxIgChdjaGFyYWN0ZXJfZW1pdF9zZnhfbmFtZRiAECABKAkS",
+            "HwoWZmlyZWJhbGxfZW1pdF9zZnhfbmFtZRiBECABKAkSGwoSZXhwbG9zaW9u",
+            "X3NmeF9uYW1lGIIQIAEoCRIYCg9hY3RpdmVfc2Z4X25hbWUYgxAgASgJEiQK",
+            "G2V4cGxvc2lvbl9vbl9mbGVzaF9zZnhfbmFtZRiEECABKAkSIwoaZXhwbG9z",
+            "aW9uX29uX3JvY2tfc2Z4X25hbWUYhRAgASgJEiQKG2V4cGxvc2lvbl9vbl9t",
+            "ZXRhbF9zZnhfbmFtZRiGECABKAkSIwoaZXhwbG9zaW9uX29uX3dvb2Rfc2Z4",
+            "X25hbWUYhxAgASgJGjQKEkNhbmNlbFRyYW5zaXRFbnRyeRILCgNrZXkYASAB",
+            "KAUSDQoFdmFsdWUYAiABKA06AjgBIocFCgZCdWxsZXQSJwoIYmxfc3RhdGUY",
+            "ASABKA4yFS5qdHNoYXJlZC5CdWxsZXRTdGF0ZRIaChJmcmFtZXNfaW5fYmxf",
+            "c3RhdGUYAiABKAUSFwoPYnVsbGV0X2xvY2FsX2lkGAMgASgFEiIKGm9yaWdp",
+            "bmF0ZWRfcmVuZGVyX2ZyYW1lX2lkGAQgASgFEhsKE29mZmVuZGVyX2pvaW5f",
+            "aW5kZXgYBSABKAUSHgoWb2ZmZW5kZXJfdHJhcF9sb2NhbF9pZBgGIAEoBRIP",
+            "Cgd0ZWFtX2lkGAcgASgFEi0KJXZlcnRfbW92aW5nX3RyYXBfbG9jYWxfaWRf",
+            "dXBvbl9hY3RpdmUYCCABKAUSGQoRcmVwZWF0X3F1b3RhX2xlZnQYCSABKAUS",
+            "LAokcmVtYWluaW5nX2hhcmRfcHVzaGJhY2tfYm91bmNlX3F1b3RhGAogASgF",
+            "EiMKG3RhcmdldF9jaGFyYWN0ZXJfam9pbl9pbmRleBgLIAEoBRIVCg1kYW1h",
+            "Z2VfZGVhbGVkGAwgASgFEisKD2V4cGxvZGVkX29uX2lmYxgNIAEoDjISLmp0",
+            "c2hhcmVkLklmYWNlQ2F0EgkKAXgYDiABKAISCQoBeRgPIAEoAhINCgVkaXJf",
+            "eBgQIAEoAhINCgVkaXJfeRgRIAEoAhINCgV2ZWxfeBgSIAEoAhINCgV2ZWxf",
+            "eRgTIAEoAhIUCgxvcmlnaW5hdGVkX3gYFCABKAISFAoMb3JpZ2luYXRlZF95",
+            "GBUgASgCEhAKCHNwaW5fY29zGBYgASgCEhAKCHNwaW5fc2luGBcgASgCEhgK",
+            "EGFjdGl2ZV9za2lsbF9oaXQYGCABKAUSEAoIc2tpbGxfaWQYGSABKA0i1AUK",
+            "ClRyYXBDb25maWcSEgoKc3BlY2llc19pZBgBIAEoBRIcChRleHBsb3Npb25f",
+            "c3BlY2llc19pZBgCIAEoBRIYChBleHBsb3Npb25fZnJhbWVzGAMgASgFEg8K",
+            "B2Jsb3dfdXAYBCABKAgSDgoGZGFtYWdlGAUgASgFEhcKD2hpdF9zdHVuX2Zy",
+            "YW1lcxgGIAEoBRIdChVoaXRfaW52aW5zaWJsZV9mcmFtZXMYByABKAUSFQoN",
+            "ZGVhY3RpdmF0YWJsZRgIIAEoCBIQCghoYXJkbmVzcxgJIAEoBRIhChlkZWFj",
+            "dGl2YXRlX3Vwb25fdHJpZ2dlcmVkGAogASgIEiAKGGNvbnN0X2ZyaWN0aW9u",
+            "X3ZlbF94X3RvcBgLIAEoAhIjChtjb25zdF9mcmljdGlvbl92ZWxfeF9ib3R0",
+            "b20YDCABKAISIQoZY29uc3RfZnJpY3Rpb25fdmVsX3lfbGVmdBgNIAEoAhIi",
+            "Chpjb25zdF9mcmljdGlvbl92ZWxfeV9yaWdodBgOIAEoAhIoCiBwYXRyb2xf",
+            "Y3VlX3JlcXVpcmVzX2Z1bGxfY29udGFpbhgPIAEoCBIVCg1zcGluX2FuY2hv",
+            "cl94GBAgASgCEhUKDXNwaW5fYW5jaG9yX3kYESABKAISHQoVYW5ndWxhcl9m",
+            "cmFtZV92ZWxfY29zGBIgASgCEh0KFWFuZ3VsYXJfZnJhbWVfdmVsX3NpbhgT",
+            "IAEoAhIaChJpbnRyaW5zaWNfc3Bpbl9jb3MYFCABKAISGgoSaW50cmluc2lj",
+            "X3NwaW5fc2luGBUgASgCEhsKE2F0azFfdXBvbl90cmlnZ2VyZWQYFiABKAgS",
+            "FQoNYXRrMV9za2lsbF9pZBgXIAEoDRIRCglpc19yb3RhcnkYGCABKAgSGwoT",
+            "bm9feF9mbGlwX3JlbmRlcmluZxgZIAEoCBIVCgxzcGVjaWVzX25hbWUYgAgg",
+            "ASgJIocCChNUcmFwQ29uZmlnRnJvbVRpbGVkEhIKCnNwZWNpZXNfaWQYASAB",
+            "KAUSDQoFcXVvdGEYAiABKAUSDQoFc3BlZWQYAyABKAISDQoFZGlyX3gYBCAB",
+            "KAUSDQoFZGlyX3kYBSABKAUSGAoQc3Vic2NyaWJlc190b19pZBgHIAEoBRIr",
+            "CiNzdWJzY3JpYmVzX3RvX2lkX2FmdGVyX2luaXRpYWxfZmlyZRgIIAEoBRIc",
+            "ChRzdWJzY3JpYmVzX3RvX2lkX2FsdBgJIAEoBRIOCgZib3hfY3cYCiABKAIS",
+            "DgoGYm94X2NoGAsgASgCEhsKE2luaXRfbm9fYW5ndWxhcl92ZWwYDCABKAIi",
+            "5gMKEFRyYXBDb2xsaWRlckF0dHISFwoPaGl0Ym94X29mZnNldF94GAEgASgF",
+            "EhcKD2hpdGJveF9vZmZzZXRfeRgCIAEoBRIVCg1oaXRib3hfc2l6ZV94GAMg",
+            "ASgFEhUKDWhpdGJveF9zaXplX3kYBCABKAUSHgoWcHJvdmlkZXNfaGFyZF9w",
+            "dXNoYmFjaxgFIAEoCBIXCg9wcm92aWRlc19kYW1hZ2UYBiABKAgSFwoPcHJv",
+            "dmlkZXNfZXNjYXBlGAcgASgIEhoKEnByb3ZpZGVzX3NsaXBfanVtcBgIIAEo",
+            "CBIfChdwcm9oaWJpdHNfd2FsbF9ncmFiYmluZxgJIAEoCBIYChBmb3JjZXNf",
+            "Y3JvdWNoaW5nGAogASgIEhIKCnNwZWNpZXNfaWQYCyABKAUSIQoZb25seV9h",
+            "bGxvd3NfYWxpZ25lZF92ZWxfeBgMIAEoBRIhChlvbmx5X2FsbG93c19hbGln",
+            "bmVkX3ZlbF95GA0gASgFEhUKDWFzX3BhdHJvbF9jdWUYDiABKAgSIgoFdGNf",
+            "cGMYDyABKAsyEy5qdHNoYXJlZC5QYXRyb2xDdWUSFgoNdHJhcF9sb2NhbF9p",
+            "ZBiACCABKAUSHAoTY29sbGlzaW9uX3R5cGVfbWFzaxiFCCABKAQi7wQKBFRy",
+            "YXASFQoNdHJhcF9sb2NhbF9pZBgBIAEoBRIoCiBwYXRyb2xfY3VlX2FuZ3Vs",
+            "YXJfdmVsX2ZsaXBfbWFyaxgCIAEoBRI4ChFjb25maWdfZnJvbV90aWxlZBgD",
+            "IAEoCzIdLmp0c2hhcmVkLlRyYXBDb25maWdGcm9tVGlsZWQSJwoKdHJhcF9z",
+            "dGF0ZRgEIAEoDjITLmp0c2hhcmVkLlRyYXBTdGF0ZRIcChRmcmFtZXNfaW5f",
+            "dHJhcF9zdGF0ZRgFIAEoBRIcChRpc19jb21wbGV0ZWx5X3N0YXRpYxgGIAEo",
+            "CBIeChZjYXB0dXJlZF9ieV9wYXRyb2xfY3VlGAcgASgIEhwKFGZyYW1lc19p",
+            "bl9wYXRyb2xfY3VlGAggASgFEh0KFXdhaXZpbmdfcGF0cm9sX2N1ZV9pZBgJ",
+            "IAEoBRIiChp3YWl2aW5nX3Nwb250YW5lb3VzX3BhdHJvbBgKIAEoCBImCh5z",
+            "dWJzY3JpYmVzX3RvX3RyaWdnZXJfbG9jYWxfaWQYCyABKAUSKgoic3Vic2Ny",
+            "aWJlc190b190cmlnZ2VyX2xvY2FsX2lkX2FsdBgMIAEoBRIQCghzcGluX2Nv",
+            "cxgNIAEoAhIQCghzcGluX3NpbhgOIAEoAhIdChVhbmd1bGFyX2ZyYW1lX3Zl",
+            "bF9jb3MYDyABKAISHQoVYW5ndWxhcl9mcmFtZV92ZWxfc2luGBAgASgCEgkK",
+            "AXgYESABKAISCQoBeRgSIAEoAhINCgVkaXJfeBgTIAEoBRINCgVkaXJfeRgU",
+            "IAEoBRINCgV2ZWxfeBgVIAEoAhINCgV2ZWxfeRgWIAEoAiKDAQoNVHJpZ2dl",
+            "ckNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgFEhQKDHNwZWNpZXNfbmFtZRgC",
+            "IAEoCRIrCgx0cmlnZ2VyX3R5cGUYAyABKA4yFS5qdHNoYXJlZC5UcmlnZ2Vy",
+            "VHlwZRIbChNjb2xsaXNpb25fdHlwZV9tYXNrGAQgASgEIkkKC1BlZXJVZHBB",
+            "ZGRyEgoKAmlwGAEgASgJEgwKBHBvcnQYAiABKAUSEAoIYXV0aF9rZXkYAyAB",
+            "KAUSDgoGc2VxX25vGAQgASgNIukDChJCYXR0bGVDb2xsaWRlckluZm8SEgoK",
+            "c3RhZ2VfbmFtZRgBIAEoCRIVCg1ib3VuZF9yb29tX2lkGAIgASgFEh4KFmJh",
+            "dHRsZV9kdXJhdGlvbl9mcmFtZXMYAyABKAMSKgoiaW5wdXRfZnJhbWVfdXBz",
+            "eW5jX2RlbGF5X3RvbGVyYW5jZRgEIAEoBRIsCiRtYXhfY2hhc2luZ19yZW5k",
+            "ZXJfZnJhbWVzX3Blcl91cGRhdGUYBSABKAUSJAoccm9sbGJhY2tfZXN0aW1h",
+            "dGVkX2R0X21pbGxpcxgGIAEoARIjChtyb2xsYmFja19lc3RpbWF0ZWRfZHRf",
+            "bmFub3MYByABKAMSGgoScmVuZGVyX2J1ZmZlcl9zaXplGAggASgFEhoKEmNv",
+            "bGxpc2lvbl9taW5fc3RlcBgJIAEoBRIbChNib3VuZF9yb29tX2NhcGFjaXR5",
+            "GAogASgFEh0KFXByZWFsbG9jX25wY19jYXBhY2l0eRgLIAEoBRIgChhwcmVh",
+            "bGxvY19idWxsZXRfY2FwYWNpdHkYDCABKAUSMQoRYmF0dGxlX3VkcF90dW5u",
+            "ZWwYgAggASgLMhUuanRzaGFyZWQuUGVlclVkcEFkZHISGgoRZnJhbWVfbG9n",
+            "X2VuYWJsZWQYgQggASgIIokECgtSZW5kZXJGcmFtZRIKCgJpZBgBIAEoBRIw",
+            "CgtwbGF5ZXJzX2FychgCIAMoCzIbLmp0c2hhcmVkLkNoYXJhY3RlckRvd25z",
+            "eW5jEhcKD2NvdW50ZG93bl9uYW5vcxgDIAEoAxIhCgdidWxsZXRzGAQgAygL",
+            "MhAuanRzaGFyZWQuQnVsbGV0Ei0KCG5wY3NfYXJyGAUgAygLMhsuanRzaGFy",
+            "ZWQuQ2hhcmFjdGVyRG93bnN5bmMSIQoJdHJhcHNfYXJyGAYgAygLMg4uanRz",
+            "aGFyZWQuVHJhcBInCgx0cmlnZ2Vyc19hcnIYByADKAsyES5qdHNoYXJlZC5U",
+            "cmlnZ2VyEiUKCXBpY2thYmxlcxgKIAMoCzISLmp0c2hhcmVkLlBpY2thYmxl",
+            "EiEKGGJhY2tlbmRfdW5jb25maXJtZWRfbWFzaxiACCABKAQSHAoTc2hvdWxk",
+            "X2ZvcmNlX3Jlc3luYxiBCCABKAgSGAoPc3BlY2llc19pZF9saXN0GIIIIAMo",
+            "BRIgChdidWxsZXRfbG9jYWxfaWRfY291bnRlchiDCCABKAUSHQoUbnBjX2xv",
+            "Y2FsX2lkX2NvdW50ZXIYhAggASgFEh4KFXBhcnRpY2lwYW50X2NoYW5nZV9p",
+            "ZBiFCCABKAUSIgoZcGlja2FibGVfbG9jYWxfaWRfY291bnRlchiGCCABKAUi",
+            "lwIKBldzUmVzcBILCgNyZXQYASABKAUSCwoDYWN0GAIgASgFEiIKA3JkZhgD",
+            "IAEoCzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEkAKGmlucHV0X2ZyYW1lX2Rv",
+            "d25zeW5jX2JhdGNoGAQgAygLMhwuanRzaGFyZWQuSW5wdXRGcmFtZURvd25z",
+            "eW5jEi8KCWJjaV9mcmFtZRgFIAEoCzIcLmp0c2hhcmVkLkJhdHRsZUNvbGxp",
+            "ZGVySW5mbxIXCg9wZWVyX2pvaW5faW5kZXgYBiABKAUSMQoScGVlcl91ZHBf",
+            "YWRkcl9saXN0GAcgAygLMhUuanRzaGFyZWQuUGVlclVkcEFkZHISEAoHZXJy",
+            "X21zZxiAECABKAkikQMKBVNraWxsEhcKD2JhdHRsZV9sb2NhbF9pZBgBIAEo",
+            "BRIXCg9yZWNvdmVyeV9mcmFtZXMYAiABKAUSIAoYcmVjb3ZlcnlfZnJhbWVz",
+            "X29uX2Jsb2NrGAMgASgFEh4KFnJlY292ZXJ5X2ZyYW1lc19vbl9oaXQYBCAB",
+            "KAUSMAoMdHJpZ2dlcl90eXBlGAUgASgOMhouanRzaGFyZWQuU2tpbGxUcmln",
+            "Z2VyVHlwZRIwCg5ib3VuZF9jaF9zdGF0ZRgGIAEoDjIYLmp0c2hhcmVkLkNo",
+            "YXJhY3RlclN0YXRlEjcKFWJvdW5kX2NoX3N0YXRlX29uX2hpdBgHIAEoDjIY",
+            "Lmp0c2hhcmVkLkNoYXJhY3RlclN0YXRlEhAKCG1wX2RlbHRhGAggASgFEgoK",
+            "AmlkGAkgASgNEiUKBGhpdHMYgAggAygLMhYuanRzaGFyZWQuQnVsbGV0Q29u",
+            "ZmlnEjIKE3NlbGZfbm9uX3N0b2NrX2J1ZmYYgQggASgLMhQuanRzaGFyZWQu",
+            "QnVmZkNvbmZpZyJnCghGcmFtZUxvZxIiCgNyZGYYASABKAsyFS5qdHNoYXJl",
+            "ZC5SZW5kZXJGcmFtZRI3ChFhY3R1YWxseV91c2VkX2lkZhgCIAEoCzIcLmp0",
+            "c2hhcmVkLklucHV0RnJhbWVEb3duc3luYyJICgxCYXR0bGVSZXN1bHQSGQoR",
+            "d2lubmVyX2pvaW5faW5kZXgYASABKAUSHQoVd2lubmVyX2J1bGxldF90ZWFt",
+            "X2lkGAIgASgFIqkCCgxEZWJ1ZmZDb25maWcSEgoKc3BlY2llc19pZBgBIAEo",
+            "DRIrCgpzdG9ja190eXBlGAIgASgOMhcuanRzaGFyZWQuQnVmZlN0b2NrVHlw",
+            "ZRINCgVzdG9jaxgDIAEoBRIiCgR0eXBlGAQgASgOMhQuanRzaGFyZWQuRGVi",
+            "dWZmVHlwZRIPCgdhcnJfaWR4GAUgASgFEhsKE2ltcGFjdF9wZXJfaW50ZXJ2",
+            "YWwYBiABKAUSFwoPaW1wYWN0X2ludGVydmFsGAcgASgFEhYKDmZyaWN0aW9u",
+            "X3ZlbF94GAggASgFEhYKDmZyaWN0aW9uX3ZlbF95GAkgASgFEhYKDmZyaWN0",
+            "aW9uX2FjY194GAogASgFEhYKDmZyaWN0aW9uX2FjY195GAsgASgFIqIECgpC",
+            "dWZmQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SKwoKc3RvY2tfdHlwZRgC",
+            "IAEoDjIXLmp0c2hhcmVkLkJ1ZmZTdG9ja1R5cGUSDQoFc3RvY2sYAyABKAUS",
+            "EwoLc3BlZWRfZGVsdGEYBCABKAISGwoTaGl0Ym94X3NpemVfeF9kZWx0YRgF",
+            "IAEoAhIbChNoaXRib3hfc2l6ZV95X2RlbHRhGAYgASgCEhQKDGRhbWFnZV9k",
+            "ZWx0YRgHIAEoBRIiChpkYW1hZ2VfZGVsdGFfYnlfcGVyY2VudGFnZRgIIAEo",
+            "BRIgChhjaGFyYWN0ZXJfaGFyZG5lc3NfZGVsdGEYCSABKAUSHAoUbWVsZWVf",
+            "aGFyZG5lc3NfZGVsdGEYCiABKAUSHwoXZmlyZWJhbGxfaGFyZG5lc3NfZGVs",
+            "dGEYCyABKAUSEgoKaW52aW5zaWJsZRgMIAEoCBIbChN4Zm9ybV9jaF9zcGVj",
+            "aWVzX2lkGA0gASgNEhsKE3JlcGVsX3NvZnRfcHVzaGJhY2sYDiABKAgSFAoM",
+            "b21pdF9ncmF2aXR5GA8gASgIEhEKCWF1dG9fZGVmMRgQIAEoCBIaChJhc3Nv",
+            "Y2lhdGVkX2RlYnVmZnMYESADKA0SIAoYY2hhcmFjdGVyX3ZmeF9zcGVjaWVz",
+            "X2lkGBIgASgFEiUKHWlzX3BpeGVsYXRlZF92Znhfb25fY2hhcmFjdGVyGBMg",
+            "ASgIIqYBCgRCdWZmEhIKCnNwZWNpZXNfaWQYASABKA0SDQoFc3RvY2sYAiAB",
+            "KAUSIgoab3JpZ2luYXRlZF9yZW5kZXJfZnJhbWVfaWQYAyABKAUSGgoSb3Jp",
+            "Z19jaF9zcGVjaWVzX2lkGAQgASgNEiAKGG9yaWdfcmVwZWxfc29mdF9wdXNo",
+            "YmFjaxgFIAEoCBIZChFvcmlnX29taXRfZ3Jhdml0eRgGIAEoCCIrCgZEZWJ1",
+            "ZmYSEgoKc3BlY2llc19pZBgBIAEoDRINCgVzdG9jaxgCIAEoBSJTChJCdWxs",
+            "ZXRJbW11bmVSZWNvcmQSFwoPYnVsbGV0X2xvY2FsX2lkGAEgASgFEiQKHHJl",
+            "bWFpbmluZ19saWZldGltZV9yZGZfY291bnQYAiABKAUiegoQQ29uc3VtYWJs",
+            "ZUNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgNEhQKDHJlZmlsbF9kZWx0YRgC",
+            "IAEoBRIYChB2ZnhfaWRfb25fcGlja2VyGAMgASgFEiIKGmlzX3BpeGVsYXRl",
+            "ZF92Znhfb25fcGlja2VyGAQgASgIImUKE1BpY2thYmxlU2tpbGxDb25maWcS",
+            "EAoIc2tpbGxfaWQYASABKA0SGAoQdmZ4X2lkX29uX3BpY2tlchgCIAEoBRIi",
+            "Chppc19waXhlbGF0ZWRfdmZ4X29uX3BpY2tlchgDIAEoCCLcAgoNSW52ZW50",
+            "b3J5U2xvdBI0CgpzdG9ja190eXBlGAEgASgOMiAuanRzaGFyZWQuSW52ZW50",
+            "b3J5U2xvdFN0b2NrVHlwZRINCgVxdW90YRgCIAEoDRIZChFmcmFtZXNfdG9f",
+            "cmVjb3ZlchgDIAEoBRIVCg1kZWZhdWx0X3F1b3RhGAQgASgNEiEKGWRlZmF1",
+            "bHRfZnJhbWVzX3RvX3JlY292ZXIYBSABKAUSFwoPYnVmZl9zcGVjaWVzX2lk",
+            "GAYgASgNEhAKCHNraWxsX2lkGAcgASgNEhQKDHNraWxsX2lkX2FpchgIIAEo",
+            "DRIVCg1nYXVnZV9jaGFyZ2VkGAkgASgFEhYKDmdhdWdlX3JlcXVpcmVkGAog",
+            "ASgFEiMKG2Z1bGxfY2hhcmdlX2J1ZmZfc3BlY2llc19pZBgLIAEoDRIcChRm",
+            "dWxsX2NoYXJnZV9za2lsbF9pZBgMIAEoDSIzCglJbnZlbnRvcnkSJgoFc2xv",
+            "dHMYASADKAsyFy5qdHNoYXJlZC5JbnZlbnRvcnlTbG90IiUKD0JhdHRsZUVx",
+            "dWlwbWVudBISCgpzcGVjaWVzX2lkGAEgASgNIiYKDlBsYXllclNldHRpbmdz",
+            "EhQKDHNvdW5kX3ZvbHVtZRgBIAEoBSL0AgoUUGxheWVyUmVnaW9uUHJvZ3Jl",
+            "c3MSEQoJcmVnaW9uX2lkGAEgASgFEh0KFWNvbXBsZXRlZF9sZXZlbF9jb3Vu",
+            "dBgCIAEoBRJZChZyZW1haW5pbmdfZGVwZW5kZW5jaWVzGAMgAygLMjkuanRz",
+            "aGFyZWQuUGxheWVyUmVnaW9uUHJvZ3Jlc3MuUmVtYWluaW5nRGVwZW5kZW5j",
+            "aWVzRW50cnkSVQoUcmVtb3ZlZF9kZXBlbmRlbmNpZXMYBCADKAsyNy5qdHNo",
+            "YXJlZC5QbGF5ZXJSZWdpb25Qcm9ncmVzcy5SZW1vdmVkRGVwZW5kZW5jaWVz",
+            "RW50cnkaPAoaUmVtYWluaW5nRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEg",
+            "ASgFEg0KBXZhbHVlGAIgASgIOgI4ARo6ChhSZW1vdmVkRGVwZW5kZW5jaWVz",
+            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASLUBAoTUGxh",
+            "eWVyTGV2ZWxQcm9ncmVzcxIRCglyZWdpb25faWQYASABKAUSEAoIbGV2ZWxf",
+            "aWQYAiABKAUSFQoNaGlnaGVzdF9zY29yZRgDIAEoBRItCiVzaG9ydGVzdF9m",
+            "aW5pc2hfdGltZV9hdF9oaWdoZXN0X3Njb3JlGAQgASgFEi0KJWNoYXJhY3Rl",
+            "cl9zcGVjaWVzX2lkX2F0X2hpZ2hlc3Rfc2NvcmUYBSABKA0SHAoUc2hvcnRl",
+            "c3RfZmluaXNoX3RpbWUYBiABKAUSJQodc2NvcmVfYXRfc2hvcnRlc3RfZmlu",
+            "aXNoX3RpbWUYByABKAUSNAosY2hhcmFjdGVyX3NwZWNpZXNfaWRfYXRfc2hv",
+            "cnRlc3RfZmluaXNoX3RpbWUYCCABKA0SWAoWcmVtYWluaW5nX2RlcGVuZGVu",
+            "Y2llcxgJIAMoCzI4Lmp0c2hhcmVkLlBsYXllckxldmVsUHJvZ3Jlc3MuUmVt",
+            "YWluaW5nRGVwZW5kZW5jaWVzRW50cnkSVAoUcmVtb3ZlZF9kZXBlbmRlbmNp",
+            "ZXMYCiADKAsyNi5qdHNoYXJlZC5QbGF5ZXJMZXZlbFByb2dyZXNzLlJlbW92",
+            "ZWREZXBlbmRlbmNpZXNFbnRyeRo8ChpSZW1haW5pbmdEZXBlbmRlbmNpZXNF",
+            "bnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjoKGFJlbW92",
+            "ZWREZXBlbmRlbmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiAB",
+            "KAg6AjgBItwCChZQbGF5ZXJDaFVubG9ja1Byb2dyZXNzEhIKCnNwZWNpZXNf",
+            "aWQYASABKA0SWwoWcmVtYWluaW5nX2RlcGVuZGVuY2llcxgCIAMoCzI7Lmp0",
+            "c2hhcmVkLlBsYXllckNoVW5sb2NrUHJvZ3Jlc3MuUmVtYWluaW5nRGVwZW5k",
+            "ZW5jaWVzRW50cnkSVwoUcmVtb3ZlZF9kZXBlbmRlbmNpZXMYAyADKAsyOS5q",
+            "dHNoYXJlZC5QbGF5ZXJDaFVubG9ja1Byb2dyZXNzLlJlbW92ZWREZXBlbmRl",
+            "bmNpZXNFbnRyeRo8ChpSZW1haW5pbmdEZXBlbmRlbmNpZXNFbnRyeRILCgNr",
+            "ZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjoKGFJlbW92ZWREZXBlbmRl",
+            "bmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBIq0F",
+            "ChNQbGF5ZXJTdG9yeVByb2dyZXNzElMKFHJlZ2lvbl9wcm9ncmVzc19kaWN0",
+            "GAEgAygLMjUuanRzaGFyZWQuUGxheWVyU3RvcnlQcm9ncmVzcy5SZWdpb25Q",
+            "cm9ncmVzc0RpY3RFbnRyeRJRChNsZXZlbF9wcm9ncmVzc19kaWN0GAIgAygL",
+            "MjQuanRzaGFyZWQuUGxheWVyU3RvcnlQcm9ncmVzcy5MZXZlbFByb2dyZXNz",
+            "RGljdEVudHJ5EhgKEGN1cnNvcl9yZWdpb25faWQYAyABKAUSFwoPY3Vyc29y",
+            "X2xldmVsX2lkGAQgASgFEjEKBHZpZXcYBSABKA4yIy5qdHNoYXJlZC5QbGF5",
+            "ZXJTdG9yeU1vZGVTZWxlY3RWaWV3EhsKE3NhdmVkX2F0X2dtdF9taWxsaXMY",
+            "BiABKAQSWAoXY2hfdW5sb2NrX3Byb2dyZXNzX2RpY3QYByADKAsyNy5qdHNo",
+            "YXJlZC5QbGF5ZXJTdG9yeVByb2dyZXNzLkNoVW5sb2NrUHJvZ3Jlc3NEaWN0",
+            "RW50cnkaWQoXUmVnaW9uUHJvZ3Jlc3NEaWN0RW50cnkSCwoDa2V5GAEgASgF",
+            "Ei0KBXZhbHVlGAIgASgLMh4uanRzaGFyZWQuUGxheWVyUmVnaW9uUHJvZ3Jl",
+            "c3M6AjgBGlcKFkxldmVsUHJvZ3Jlc3NEaWN0RW50cnkSCwoDa2V5GAEgASgF",
+            "EiwKBXZhbHVlGAIgASgLMh0uanRzaGFyZWQuUGxheWVyTGV2ZWxQcm9ncmVz",
+            "czoCOAEaXQoZQ2hVbmxvY2tQcm9ncmVzc0RpY3RFbnRyeRILCgNrZXkYASAB",
+            "KA0SLwoFdmFsdWUYAiABKAsyIC5qdHNoYXJlZC5QbGF5ZXJDaFVubG9ja1By",
+            "b2dyZXNzOgI4ASKKAgoZUGxheWVyT25saW5lQXJlbmFQcm9ncmVzcxIbChNz",
+            "YXZlZF9hdF9nbXRfbWlsbGlzGAEgASgEEhEKCXBsYXllcl9pZBgCIAEoCRJe",
+            "ChdjaF91bmxvY2tfcHJvZ3Jlc3NfZGljdBgDIAMoCzI9Lmp0c2hhcmVkLlBs",
+            "YXllck9ubGluZUFyZW5hUHJvZ3Jlc3MuQ2hVbmxvY2tQcm9ncmVzc0RpY3RF",
+            "bnRyeRpdChlDaFVubG9ja1Byb2dyZXNzRGljdEVudHJ5EgsKA2tleRgBIAEo",
+            "DRIvCgV2YWx1ZRgCIAEoCzIgLmp0c2hhcmVkLlBsYXllckNoVW5sb2NrUHJv",
+            "Z3Jlc3M6AjgBInYKFFN0b3J5UG9pbnREaWFsb2dMaW5lEhsKE25hcnJhdG9y",
+            "X2pvaW5faW5kZXgYASABKAUSGwoTbmFycmF0b3Jfc3BlY2llc19pZBgCIAEo",
+            "DRIPCgdjb250ZW50GAMgASgJEhMKC2Rvd25fb3Jfbm90GAQgASgIImAKDlN0",
+            "b3J5UG9pbnRTdGVwEi0KBWxpbmVzGAEgAygLMh4uanRzaGFyZWQuU3RvcnlQ",
+            "b2ludERpYWxvZ0xpbmUSHwoXbm9uY3RybF9hbGl2ZV9yZGZfY291bnQYAiAB",
+            "KAUiXQoKU3RvcnlQb2ludBInCgVzdGVwcxgBIAMoCzIYLmp0c2hhcmVkLlN0",
+            "b3J5UG9pbnRTdGVwEg8KB25vbmN0cmwYAiABKAgSFQoNY3V0c2NlbmVfbmFt",
+            "ZRgDIAEoCSKDAQoKTGV2ZWxTdG9yeRIwCgZwb2ludHMYASADKAsyIC5qdHNo",
+            "YXJlZC5MZXZlbFN0b3J5LlBvaW50c0VudHJ5GkMKC1BvaW50c0VudHJ5EgsK",
+            "A2tleRgBIAEoBRIjCgV2YWx1ZRgCIAEoCzIULmp0c2hhcmVkLlN0b3J5UG9p",
+            "bnQ6AjgBIk8KGVNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24SEAoIYW5jaG9y",
+            "X3gYASABKAISEAoIYW5jaG9yX3kYAiABKAISDgoGcG9pbnRzGAMgAygCIoYB",
+            "CitTZXJpYWxpemVkQ29tcGxldGVseVN0YXRpY1BhdHJvbEN1ZUNvbGxpZGVy",
+            "EiEKBGF0dHIYASABKAsyEy5qdHNoYXJlZC5QYXRyb2xDdWUSNAoHcG9seWdv",
+            "bhgCIAEoCzIjLmp0c2hhcmVkLlNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24i",
+            "iAEKJlNlcmlhbGl6ZWRDb21wbGV0ZWx5U3RhdGljVHJhcENvbGxpZGVyEigK",
+            "BGF0dHIYASABKAsyGi5qdHNoYXJlZC5UcmFwQ29sbGlkZXJBdHRyEjQKB3Bv",
+            "bHlnb24YAiABKAsyIy5qdHNoYXJlZC5TZXJpYWxpemFibGVDb252ZXhQb2x5",
+            "Z29uIo4BCilTZXJpYWxpemVkQ29tcGxldGVseVN0YXRpY1RyaWdnZXJDb2xs",
+            "aWRlchIrCgRhdHRyGAEgASgLMh0uanRzaGFyZWQuVHJpZ2dlckNvbGxpZGVy",
+            "QXR0chI0Cgdwb2x5Z29uGAIgASgLMiMuanRzaGFyZWQuU2VyaWFsaXphYmxl",
+            "Q29udmV4UG9seWdvbiJBChVUcmFwQ29sbGlkZXJBdHRyQXJyYXkSKAoEbGlz",
+            "dBgBIAMoCzIaLmp0c2hhcmVkLlRyYXBDb2xsaWRlckF0dHIivAEKJFNlcmlh",
+            "bGl6ZWRUcmFwTG9jYWxJZFRvQ29sbGlkZXJBdHRycxJGCgRkaWN0GAEgAygL",
+            "MjguanRzaGFyZWQuU2VyaWFsaXplZFRyYXBMb2NhbElkVG9Db2xsaWRlckF0",
+            "dHJzLkRpY3RFbnRyeRpMCglEaWN0RW50cnkSCwoDa2V5GAEgASgFEi4KBXZh",
+            "bHVlGAIgASgLMh8uanRzaGFyZWQuVHJhcENvbGxpZGVyQXR0ckFycmF5OgI4",
+            "ASKvAgoiU2VyaWFsaXplZFRyaWdnZXJFZGl0b3JJZFRvTG9jYWxJZBJECgRk",
+            "aWN0GAEgAygLMjYuanRzaGFyZWQuU2VyaWFsaXplZFRyaWdnZXJFZGl0b3JJ",
+            "ZFRvTG9jYWxJZC5EaWN0RW50cnkSRgoFZGljdDIYAiADKAsyNy5qdHNoYXJl",
+            "ZC5TZXJpYWxpemVkVHJpZ2dlckVkaXRvcklkVG9Mb2NhbElkLkRpY3QyRW50",
+            "cnkaKwoJRGljdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToC",
+            "OAEaTgoKRGljdDJFbnRyeRILCgNrZXkYASABKAUSLwoFdmFsdWUYAiABKAsy",
+            "IC5qdHNoYXJlZC5UcmlnZ2VyQ29uZmlnRnJvbVRpbGVkOgI4ASK0AwoXUGlj",
+            "a2FibGVDb25maWdGcm9tVGlsZWQSGwoTaW5pdF92aXJ0dWFsX2dyaWRfeBgB",
+            "IAEoBRIbChNpbml0X3ZpcnR1YWxfZ3JpZF95GAIgASgFEhUKDXRha2VzX2dy",
+            "YXZpdHkYAyABKAgSGQoRZmlyc3Rfc2hvd19yZGZfaWQYBCABKAUSEwoLcmVj",
+            "dXJfcXVvdGEYBSABKAUSIAoYcmVjdXJfaW50ZXJ2YWxfcmRmX2NvdW50GAYg",
+            "ASgNEikKIWxpZmV0aW1lX3JkZl9jb3VudF9wZXJfb2NjdXJyZW5jZRgHIAEo",
+            "DRIpCgtwaWNrdXBfdHlwZRgIIAEoDjIULmp0c2hhcmVkLlBpY2t1cFR5cGUS",
+            "Igoac3RvY2tfcXVvdGFfcGVyX29jY3VycmVuY2UYCSABKA0SFwoPc3Vic2Ny",
+            "aXB0aW9uX2lkGAogASgFEhYKDnZmeF9zcGVjaWVzX2lkGAsgASgFEh4KFWNv",
+            "bnN1bWFibGVfc3BlY2llc19pZBiACCABKA0SGAoPYnVmZl9zcGVjaWVzX2lk",
+            "GIEIIAEoDRIRCghza2lsbF9pZBiCCCABKA0iwQIKCFBpY2thYmxlEhkKEXBp",
+            "Y2thYmxlX2xvY2FsX2lkGAEgASgFEgkKAXgYAiABKAISCQoBeRgDIAEoAhI8",
+            "ChFjb25maWdfZnJvbV90aWxlZBgEIAEoCzIhLmp0c2hhcmVkLlBpY2thYmxl",
+            "Q29uZmlnRnJvbVRpbGVkEiQKHHJlbWFpbmluZ19saWZldGltZV9yZGZfY291",
+            "bnQYBSABKAUSHQoVcmVtYWluaW5nX3JlY3VyX3F1b3RhGAYgASgFEg0KBXZl",
+            "bF94GAcgASgCEg0KBXZlbF95GAggASgCEikKCHBrX3N0YXRlGAkgASgOMhcu",
+            "anRzaGFyZWQuUGlja2FibGVTdGF0ZRIaChJmcmFtZXNfaW5fcGtfc3RhdGUY",
+            "CiABKAUSHAoUcGlja2VkX2J5X2pvaW5faW5kZXgYCyABKAUiPAoRSW5qZWN0",
+            "ZWRDbWRDb25maWcSGwoTY3V0b2ZmX3JkZl9mcmFtZV9pZBgBIAEoBRIKCgJv",
+            "cBgCIAEoBCJkChZDaGFyYWN0ZXJTcGF3bmVyQ29uZmlnEhsKE2N1dG9mZl9y",
+            "ZGZfZnJhbWVfaWQYASABKAUSFwoPc3BlY2llc19pZF9saXN0GAIgAygNEhQK",
+            "DGluaXRfb3BfbGlzdBgDIAMoBCKTAQoVUGlja2FibGVTcGF3bmVyQ29uZmln",
+            "EhsKE2N1dG9mZl9yZGZfZnJhbWVfaWQYASABKAUSFwoPc3BlY2llc19pZF9s",
+            "aXN0GAIgAygNEhQKDGluaXRfb3BfbGlzdBgDIAMoBBIuChBwaWNrdXBfdHlw",
+            "ZV9saXN0GAQgAygOMhQuanRzaGFyZWQuUGlja3VwVHlwZSJDChNUcmlnZ2Vy",
+            "Q29sbGlkZXJBdHRyEhgKEHRyaWdnZXJfbG9jYWxfaWQYASABKAUSEgoKc3Bl",
+            "Y2llc19pZBgCIAEoBSLVBgoWVHJpZ2dlckNvbmZpZ0Zyb21UaWxlZBIRCgll",
+            "ZGl0b3JfaWQYASABKAUSEgoKc3BlY2llc19pZBgCIAEoBRIWCg5kZWxheWVk",
+            "X2ZyYW1lcxgDIAEoBRIXCg9yZWNvdmVyeV9mcmFtZXMYBCABKAUSFgoOYnVs",
+            "bGV0X3RlYW1faWQYBSABKAUSIAoYc3ViX2N5Y2xlX3RyaWdnZXJfZnJhbWVz",
+            "GAYgASgFEhcKD3N1Yl9jeWNsZV9xdW90YRgHIAEoBRIRCglxdW90YV9jYXAY",
+            "CCABKAUSHQoVc3Vic2NyaWJlc190b19pZF9saXN0GAkgAygFEicKH3N1YnNj",
+            "cmliZXNfdG9fZXhoYXVzdGVkX2lkX2xpc3QYCiADKAUSFQoNbmV3X3Jldml2",
+            "YWxfeBgLIAEoAhIVCg1uZXdfcmV2aXZhbF95GAwgASgCEhIKCmluaXRfZGly",
+            "X3gYDSABKAUSEgoKaW5pdF9kaXJfeRgOIAEoBRIqCiJwdWJsaXNoaW5nX2V2",
+            "dF9tYXNrX3Vwb25fZXhoYXVzdGVkGA8gASgEEkQKGmNoYXJhY3Rlcl9zcGF3",
+            "bmVyX3RpbWVfc2VxGBAgAygLMiAuanRzaGFyZWQuQ2hhcmFjdGVyU3Bhd25l",
+            "ckNvbmZpZxJCChlwaWNrYWJsZV9zcGF3bmVyX3RpbWVfc2VxGBEgAygLMh8u",
+            "anRzaGFyZWQuUGlja2FibGVTcGF3bmVyQ29uZmlnEhwKFGZvcmNlX2N0cmxf",
+            "cmRmX2NvdW50GBIgASgFEhYKDmZvcmNlX2N0cmxfY21kGBMgASgEEiUKHXJl",
+            "bG9hZF9jb2xsaWRlcnNfaW5fbmV3X3BoYXNlGBQgASgIEhcKDnN0b3J5X3Bv",
+            "aW50X2lkGIAIIAEoBRIPCgZiZ21faWQYgQggASgFEk8KEGJvc3Nfc3BlY2ll",
+            "c19zZXQYggggAygLMjQuanRzaGFyZWQuVHJpZ2dlckNvbmZpZ0Zyb21UaWxl",
+            "ZC5Cb3NzU3BlY2llc1NldEVudHJ5EhoKEWlzX2Jvc3Nfc2F2ZXBvaW50GIMI",
+            "IAEoCBo1ChNCb3NzU3BlY2llc1NldEVudHJ5EgsKA2tleRgBIAEoDRINCgV2",
+            "YWx1ZRgCIAEoCDoCOAEigAQKB1RyaWdnZXISEQoJZWRpdG9yX2lkGAEgASgF",
+            "EhgKEHRyaWdnZXJfbG9jYWxfaWQYAiABKAUSFgoOZnJhbWVzX3RvX2ZpcmUY",
+            "AyABKAUSGQoRZnJhbWVzX3RvX3JlY292ZXIYBCABKAUSDQoFcXVvdGEYBSAB",
+            "KAUSFgoOYnVsbGV0X3RlYW1faWQYBiABKAUSDQoFZGlyX3gYByABKAUSHAoU",
+            "c3ViX2N5Y2xlX3F1b3RhX2xlZnQYCSABKAUSJQoFc3RhdGUYCiABKA4yFi5q",
+            "dHNoYXJlZC5UcmlnZ2VyU3RhdGUSFwoPZnJhbWVzX2luX3N0YXRlGAsgASgF",
+            "EgkKAXgYDCABKAISCQoBeRgNIAEoAhIZChFkZW1hbmRlZF9ldnRfbWFzaxgO",
+            "IAEoBBIaChJmdWxmaWxsZWRfZXZ0X21hc2sYDyABKAQSKAogd2F2ZV9ucGNf",
+            "a2lsbGVkX2V2dF9tYXNrX2NvdW50ZXIYECABKAQSIQoZc3Vic2NyaWJlcl9s",
+            "b2NhbF9pZHNfbWFzaxgRIAEoBBIpCiFleGhhdXN0X3N1YnNjcmliZXJfbG9j",
+            "YWxfaWRzX21hc2sYEiABKAQSGwoTb2ZmZW5kZXJfam9pbl9pbmRleBgTIAEo",
+            "BRIfChdvZmZlbmRlcl9idWxsZXRfdGVhbV9pZBgUIAEoBSJ0Cg5QbGF5ZXJN",
+            "ZXRhSW5mbxIRCglwbGF5ZXJfaWQYASABKAkSEgoKam9pbl9pbmRleBgCIAEo",
+            "BRIWCg5idWxsZXRfdGVhbV9pZBgDIAEoBRISCgpzcGVjaWVzX2lkGAQgASgN",
+            "Eg8KB3Jvb21faWQYBSABKAUicwoRUnBjRW5kcG9pbnRIb2xkZXISCgoCaWQY",
+            "ASABKA0SGgoSZXh0ZXJuYWxfYWRkcl9ob3N0GAIgASgJEhoKEmV4dGVybmFs",
+            "X2FkZHJfcG9ydBgDIAEoDRIaChJpbnRlcm5hbF9hZGRyX2hvc3QYBCABKAkq",
+            "NAoUQm94SW50ZXJwb2xhdGlvblR5cGUSCwoHVXNlUHJldhAAEg8KC0ludGVy",
+            "cG9sYXRlEAEqVQoISWZhY2VDYXQSCQoFRU1QVFkQABIJCgVGTEVTSBABEgkK",
+            "BU1FVEFMEAISCQoFRkxVSUQQAxIICgRST0NLEAQSCQoFR1JBU1MQBRIICgRX",
+            "T09EEAYqRAoLQnVsbGV0U3RhdGUSCwoHU3RhcnRVcBAAEgoKBkFjdGl2ZRAB",
+            "Eg0KCUV4cGxvZGluZxACEg0KCVZhbmlzaGluZxADKrgHCg5DaGFyYWN0ZXJT",
+            "dGF0ZRIJCgVJZGxlMRAAEgsKB1dhbGtpbmcQARIOCgpUdXJuQXJvdW5kEAIS",
+            "CgoGQXRrZWQxEAMSFAoQSW5BaXJJZGxlMU5vSnVtcBAEEhQKEEluQWlySWRs",
+            "ZTFCeUp1bXAQBRIUChBJbkFpcklkbGUyQnlKdW1wEAYSGAoUSW5BaXJJZGxl",
+            "MUJ5V2FsbEp1bXAQBxIPCgtJbkFpckF0a2VkMRAIEgwKCEJsb3duVXAxEAkS",
+            "DAoITGF5RG93bjEQChIKCgZHZXRVcDEQCxIJCgVEeWluZxAMEgsKB0Rhc2hp",
+            "bmcQDRILCgdTbGlkaW5nEA4SCgoGRGltbWVkEA8SFAoQVHJhbnNmb3JtaW5n",
+            "SW50bxAQEg8KC0JhY2tEYXNoaW5nEBESEAoMSW5BaXJXYWxraW5nEBISHQoZ",
+            "VHJhbnNmb3JtaW5nSW50b0Zyb21EZWF0aBATEhAKDFdhbGtTdG9wcGluZxAU",
+            "EhUKEUluQWlyV2Fsa1N0b3BwaW5nEBUSCwoHUGFycmllZBAWEgsKB0F3YWtp",
+            "bmcQFxIQCgxHcm91bmREb2RnZWQQGBIPCgtCYWNrV2Fsa2luZxAZEhAKC09u",
+            "V2FsbElkbGUxEIABEhAKC0Nyb3VjaElkbGUxEIACEg8KCkNyb3VjaEF0azEQ",
+            "gQISEgoNQ3JvdWNoV2Fsa2luZxCCAhIRCgxDcm91Y2hBdGtlZDEQgwISCQoE",
+            "RGVmMRCEAhIPCgpEZWYxQXRrZWQxEIUCEg8KCkRlZjFCcm9rZW4QhgISCQoE",
+            "QXRrMRCACBIJCgRBdGsyEIEIEgkKBEF0azMQgggSCQoEQXRrNBCDCBIJCgRB",
+            "dGs1EIQIEgkKBEF0azYQhQgSCQoEQXRrNxCGCBISCg1BdGs3X0NoYXJnaW5n",
+            "EIcIEhcKEkF0azdfQ2hhcmdlUmVsZWFzZRCICBIJCgRBdGs4EIkIEg4KCUlu",
+            "QWlyQXRrMRCAEBIOCglJbkFpckF0azIQgRASEAoLV2Fsa2luZ0F0azEQghAS",
+            "EAoLV2Fsa2luZ0F0azQQgxASDgoJSW5BaXJBdGs2EIQQEg8KCk9uV2FsbEF0",
+            "azEQgBgSEwoOSWRsZTFfQ2hhcmdpbmcQgRgSGQoUV2Fsa2luZ0F0azFfQ2hh",
+            "cmdpbmcQghgSFwoSSW5BaXJBdGsxX0NoYXJnaW5nEIMYEhgKE09uV2FsbEF0",
+            "azFfQ2hhcmdpbmcQhBgSGAoTQ3JvdWNoQXRrMV9DaGFyZ2luZxCFGCqTAQoH",
+            "TnBjR29hbBIJCgVOSWRsZRAAEg8KC05Gb2xsb3dBbGx5EAESCwoHTlBhdHJv",
+            "bBACEhEKDU5IdW50VGhlbklkbGUQAxITCg9OSHVudFRoZW5QYXRyb2wQBBIX",
+            "ChNOSHVudFRoZW5Gb2xsb3dBbGx5EAUSHgoaTklkbGVJZkdvSHVudGluZ1Ro",
+            "ZW5QYXRyb2wQBipOCglUcmFwU3RhdGUSCQoFVElkbGUQABIMCghUV2Fsa2lu",
+            "ZxABEgkKBVRBdGsxEAISCwoHVEF0a2VkMRADEhAKDFREZWFjdGl2YXRlZBAE",
+            "KiwKDFRyaWdnZXJTdGF0ZRIKCgZUUmVhZHkQABIQCgxUQ29vbGluZ0Rvd24Q",
+            "ASo8Cg1QaWNrYWJsZVN0YXRlEgkKBVBJZGxlEAASEQoNUERpc2FwcGVhcmlu",
+            "ZxABEg0KCVBDb25zdW1lZBACKnYKCkJ1bGxldFR5cGUSEAoMVW5kZXRlcm1p",
+            "bmVkEAASCQoFTWVsZWUQARIMCghGaXJlYmFsbBACEg4KCkdyb3VuZFdhdmUQ",
+            "AxIRCg1NaXNzaWxlTGluZWFyEAQSGgoWTWlzc2lsZVF1YWRyYXRpY0Jlemll",
+            "chAFKuYBCgxNdWx0aUhpdFR5cGUSCAoETm9uZRAAEhAKDEZyb21FbWlzc2lv",
+            "bhABEhYKEkZyb21GaXJzdEhpdEFjdHVhbBACEhYKEkZyb21GaXJzdEhpdEFu",
+            "eXdheRADEhUKEUZyb21QcmV2SGl0QWN0dWFsEAQSFQoRRnJvbVByZXZIaXRB",
+            "bnl3YXkQBRIbChdGcm9tVmlzaW9uU2Vla09yRGVmYXVsdBAGEiMKH0Zyb21Q",
+            "cmV2SGl0QWN0dWFsT3JBY3RpdmVUaW1lVXAQBxIaChZGcm9tRW1pc3Npb25K",
+            "dXN0QWN0aXZlEAgqMwoQU2tpbGxUcmlnZ2VyVHlwZRIOCgpSaXNpbmdFZGdl",
+            "EAASDwoLRmFsbGluZ0VkZ2UQASosCg9WZnhEdXJhdGlvblR5cGUSCgoGT25l",
+            "T2ZmEAASDQoJUmVwZWF0aW5nEAEqNwoNVmZ4TW90aW9uVHlwZRIMCghOb01v",
+            "dGlvbhAAEgsKB0Ryb3BwZWQQARILCgdUcmFjaW5nEAIqeQoLVHJpZ2dlclR5",
+            "cGUSCgoGVHROb25lEAASDQoJVHRUcml2aWFsEAESEQoNVHRDeWNsaWNUaW1l",
+            "ZBACEg4KClR0SW5kaVdhdmUQAxIOCgpUdFN5bmNXYXZlEAQSDgoKVHRNb3Zl",
+            "bWVudBAFEgwKCFR0QXR0YWNrEAYqMQoNQnVmZlN0b2NrVHlwZRIKCgZOb25l",
+            "QmYQABIJCgVUaW1lZBABEgkKBVF1b3RhEAIqcQoKRGVidWZmVHlwZRILCgdO",
+            "b25lRGJmEAASEQoNU3BlZWREb3duT25seRABEhEKDUNvbGRTcGVlZERvd24Q",
+            "AhIWChJQb3NpdGlvbkxvY2tlZE9ubHkQAxIYChRGcm96ZW5Qb3NpdGlvbkxv",
+            "Y2tlZBAEKjYKDkNvbnN1bWFibGVUeXBlEgwKCE5vbmVDc21iEAASCgoGUmVm",
+            "aWxsEAESCgoGRGJmUmN2EAIqnwEKFkludmVudG9yeVNsb3RTdG9ja1R5cGUS",
+            "CgoGTm9uZUl2EAASCwoHRHVtbXlJdhABEgwKCFBvY2tldEl2EAISCwoHVGlt",
+            "ZWRJdhADEgsKB1F1b3RhSXYQBBITCg9UaW1lZE1hZ2F6aW5lSXYQBRIUChBH",
+            "YXVnZWRNYWdhemluZUl2EAYSGQoVR2F1Z2VkVGltZWRNYWdhemluZUl2EAcq",
+            "PAoZUGxheWVyU3RvcnlNb2RlU2VsZWN0VmlldxIICgROT05FEAASCgoGUkVH",
+            "SU9OEAESCQoFTEVWRUwQAio1ChBGaW5pc2hlZEx2T3B0aW9uEg0KCUJPU1Nf",
+            "T05MWRAAEhIKDlNUT1JZX0FORF9CT1NTEAEqMQoKUGlja3VwVHlwZRINCglJ",
+            "bW1lZGlhdGUQABIUChBQdXRJbnRvSW52ZW50b3J5EAFCC6oCCGp0c2hhcmVk",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::shared.BoxInterpolationType), typeof(global::shared.IfaceCat), typeof(global::shared.BulletState), typeof(global::shared.CharacterState), typeof(global::shared.NpcGoal), typeof(global::shared.TrapState), typeof(global::shared.TriggerState), typeof(global::shared.PickableState), typeof(global::shared.BulletType), typeof(global::shared.MultiHitType), typeof(global::shared.SkillTriggerType), typeof(global::shared.VfxDurationType), typeof(global::shared.VfxMotionType), typeof(global::shared.TriggerType), typeof(global::shared.BuffStockType), typeof(global::shared.DebuffType), typeof(global::shared.ConsumableType), typeof(global::shared.InventorySlotStockType), typeof(global::shared.PlayerStoryModeSelectView), typeof(global::shared.FinishedLvOption), typeof(global::shared.PickupType), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.AuthTokenUnderlying), global::shared.AuthTokenUnderlying.Parser, new[]{ "PlayerId", "FromAuthsrvId", "ToBattlesrvId", "ExpiresAt" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.AuthResult), global::shared.AuthResult.Parser, new[]{ "RetCode", "Uname", "Captcha", "ExpiresAt", "PlayerId", "NewAuthToken", "NewAuthTokenSig", "CaptchaSubmitAuthsrvId", "BattlesrvHostnameOnly", "BattlesrvEndpoint" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SteamAuthenticateUserTicketPayloadParams), global::shared.SteamAuthenticateUserTicketPayloadParams.Parser, new[]{ "Result", "Steamid", "Ownersteamid", "Vacbanned", "Publisherbanned" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SteamAuthenticateUserTicketPayloadResp), global::shared.SteamAuthenticateUserTicketPayloadResp.Parser, new[]{ "Params" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SteamAuthenticateUserTicketResult), global::shared.SteamAuthenticateUserTicketResult.Parser, new[]{ "Response" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BattleInvitation), global::shared.BattleInvitation.Parser, new[]{ "FromPlayerId", "ToBattlesrvId", "BoundRoomId", "ExpiresAt", "Passcode" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.CharacterConfig), global::shared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "InertiaFramesToRecover", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "UseInventoryBtnB", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedScaleRadius", "ShrinkedScaleHeight", "LayDownScaleRadius", "LayDownScaleHeight", "DyingScaleRadius", "DyingScaleHeight", "DimmedScaleRadius", "DimmedScaleHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "HasTurnAroundAnim", "HasDimmedAnim", "HasAwakingAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenKilled", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.CharacterDownsync), global::shared.CharacterDownsync.Parser, new[]{ "Id", "X", "Y", "DirX", "DirY", "VelX", "VelY", "Speed", "SpeciesId", "JoinIndex", "FramesToRecover", "FramesCapturedByInertia", "CapturedByPatrolCue", "FramesInPatrolCue", "BeatsCnt", "BeatenCnt", "Hp", "Mp", "BtnBHoldingRdfCount", "CharacterState", "FramesInChState", "InAir", "JumpTriggered", "OnWall", "OnWallNormX", "OnWallNormY", "OmitGravity", "OmitSoftPushback", "WaivingPatrolCueId", "GoalAsNpc", "RevivalX", "RevivalY", "RevivalDirX", "RevivalDirY", "OnSlope", "FrictionVelX", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "PrevWasCrouching", "NewBirth", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "RepelSoftPushback", "PublishingEvtMaskUponKilled", "PublishingToTriggerLocalIdUponKilled", "SubscribesToTriggerLocalId", "JumpHoldingRdfCnt", "RemainingAirJumpQuota", "RemainingAirDashQuota", "KilledToDropConsumableSpeciesId", "KilledToDropBuffSpeciesId", "KilledToDropPickupSkillId", "FrictionVelY", "FramesSinceLastDamaged", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "DamageElementalAttrs", "OnSlopeFacingDown", "LastDamagedByJoinIndex", "LastDamagedByBulletTeamId", "ActivatedRdfId", "CachedCueCmd", "ActiveSkillId", "ActiveSkillHit", "BulletTeamId", "ChCollisionTeamId", "BtnCHoldingRdfCount", "BtnDHoldingRdfCount", "BtnEHoldingRdfCount", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnJoinIndex", "BuffList", "DebuffList", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InputFrameDecoded), global::shared.InputFrameDecoded.Parser, new[]{ "Dx", "Dy", "BtnALevel", "BtnBLevel", "BtnCLevel", "BtnDLevel", "BtnELevel" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InputFrameUpsync), global::shared.InputFrameUpsync.Parser, new[]{ "InputFrameId", "Encoded", "JoinIndex" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InputFrameDownsync), global::shared.InputFrameDownsync.Parser, new[]{ "InputFrameId", "InputList", "ConfirmedList", "UdpConfirmedList" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.WsReq), global::shared.WsReq.Parser, new[]{ "PlayerId", "Act", "JoinIndex", "AckingFrameId", "AckingInputFrameId", "AuthKey", "InputFrameUpsyncBatch", "SelfParsedRdf", "CollisionSpaceHalfWidth", "CollisionSpaceHalfHeight", "BattleDurationSeconds", "SerializedBarrierPolygons", "SerializedStaticPatrolCues", "SerializedCompletelyStaticTraps", "SerializedStaticTriggers", "SerializedTrapLocalIdToColliderAttrs", "SerializedTriggerEditorIdToLocalId", "SeqNo" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InputBufferSnapshot), global::shared.InputBufferSnapshot.Parser, new[]{ "RefRenderFrameId", "UnconfirmedMask", "ToSendInputFrameDownsyncs", "ShouldForceResync", "PeerJoinIndex" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PatrolCue), global::shared.PatrolCue.Parser, new[]{ "Id", "FlAct", "FrAct", "FlCaptureFrames", "FrCaptureFrames", "FdAct", "FuAct", "FdCaptureFrames", "FuCaptureFrames", "CollisionTypeMask" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.VfxConfig), global::shared.VfxConfig.Parser, new[]{ "SpeciesId", "MotionType", "DurationType", "OnCharacter", "OnBullet", "OnTrap", "UsePixelatedVer", "Name" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BulletConfig), global::shared.BulletConfig.Parser, new[]{ "StartupFrames", "CancellableStFrame", "CancellableEdFrame", "ActiveFrames", "HitStunFrames", "BlockStunFrames", "PushbackVelX", "PushbackVelY", "Damage", "SelfLockVelX", "SelfLockVelY", "HitboxOffsetX", "HitboxOffsetY", "HitboxSizeX", "HitboxSizeY", "BlowUp", "SpeciesId", "ExplosionFrames", "BType", "MhType", "SimultaneousMultiHitCnt", "Speed", "DirX", "DirY", "CancelTransit", "RepeatQuota", "ActiveVfxSpeciesId", "ExplosionVfxSpeciesId", "AllowsWalking", "AllowsCrouching", "Hardness", "StartupInvinsibleFrames", "HitInvinsibleFrames", "ExplosionSpeciesId", "PerpAccMag", "DelaySelfVelToActive", "SpeedIfNotHit", "OmitSoftPushback", "HitboxSizeIncX", "HitboxSizeIncY", "RemainsUponHit", "RotatesAlongVelocity", "DefaultHardPushbackBounceQuota", "HardPushbackBounceNormFactor", "HardPushbackBounceSheerFactor", "IsPixelatedActiveVfx", "IsPixelatedExplostionVfx", "MhVanishOnMeleeHit", "DownSlopePrimerVelY", "MhUpdatesOriginPos", "BeamCollision", "AngularFrameVelCos", "AngularFrameVelSin", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "SelfLockVelYWhenFlying", "ElementalAttrs", "CancellableByInventorySlotC", "CancellableByInventorySlotD", "SpinAnchorX", "SpinAnchorY", "BeamVisualSizeY", "TouchExplosionBombCollision", "AirRidingGroundWave", "GroundImpactMeleeCollision", "WallImpactMeleeCollision", "MhInheritsSpin", "InitSpinCos", "InitSpinSin", "FinishingFrames", "NoExplosionOnHardPushback", "StartupVfxSpeciesId", "Ifc", "ReflectFireballXIfNotHarder", "RejectsReflectionFromAnotherBullet", "ProvidesXHardPushback", "ProvidesYHardPushbackTop", "ProvidesYHardPushbackBottom", "IgnoreSlopeDeceleration", "RotateOffenderWithSpin", "MhNotTriggerOnChHit", "MhNotTriggerOnHarderBulletHit", "MhNotTriggerOnHardPushbackHit", "HopperMissile", "BeamRendering", "MissileSearchIntervalPow2Minus1", "UseChOffsetRegardlessOfEmissionMh", "InplaceVanishExplosionSpeciesId", "AnimLoopingRdfOffset", "ExplosionAnimLoopingRdfOffset", "GaugeIncReductionRatio", "MhInheritsFramesInBlState", "GuardBreakerExtraHitCnt", "TakesDef1AsHardPushback", "CollisionTypeMask", "TakesGravity", "BuffConfig", "CharacterEmitSfxName", "FireballEmitSfxName", "ExplosionSfxName", "ActiveSfxName", "ExplosionOnFleshSfxName", "ExplosionOnRockSfxName", "ExplosionOnMetalSfxName", "ExplosionOnWoodSfxName" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Bullet), global::shared.Bullet.Parser, new[]{ "BlState", "FramesInBlState", "BulletLocalId", "OriginatedRenderFrameId", "OffenderJoinIndex", "OffenderTrapLocalId", "TeamId", "VertMovingTrapLocalIdUponActive", "RepeatQuotaLeft", "RemainingHardPushbackBounceQuota", "TargetCharacterJoinIndex", "DamageDealed", "ExplodedOnIfc", "X", "Y", "DirX", "DirY", "VelX", "VelY", "OriginatedX", "OriginatedY", "SpinCos", "SpinSin", "ActiveSkillHit", "SkillId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TrapConfig), global::shared.TrapConfig.Parser, new[]{ "SpeciesId", "ExplosionSpeciesId", "ExplosionFrames", "BlowUp", "Damage", "HitStunFrames", "HitInvinsibleFrames", "Deactivatable", "Hardness", "DeactivateUponTriggered", "ConstFrictionVelXTop", "ConstFrictionVelXBottom", "ConstFrictionVelYLeft", "ConstFrictionVelYRight", "PatrolCueRequiresFullContain", "SpinAnchorX", "SpinAnchorY", "AngularFrameVelCos", "AngularFrameVelSin", "IntrinsicSpinCos", "IntrinsicSpinSin", "Atk1UponTriggered", "Atk1SkillId", "IsRotary", "NoXFlipRendering", "SpeciesName" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TrapConfigFromTiled), global::shared.TrapConfigFromTiled.Parser, new[]{ "SpeciesId", "Quota", "Speed", "DirX", "DirY", "SubscribesToId", "SubscribesToIdAfterInitialFire", "SubscribesToIdAlt", "BoxCw", "BoxCh", "InitNoAngularVel" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TrapColliderAttr), global::shared.TrapColliderAttr.Parser, new[]{ "HitboxOffsetX", "HitboxOffsetY", "HitboxSizeX", "HitboxSizeY", "ProvidesHardPushback", "ProvidesDamage", "ProvidesEscape", "ProvidesSlipJump", "ProhibitsWallGrabbing", "ForcesCrouching", "SpeciesId", "OnlyAllowsAlignedVelX", "OnlyAllowsAlignedVelY", "AsPatrolCue", "TcPc", "TrapLocalId", "CollisionTypeMask" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Trap), global::shared.Trap.Parser, new[]{ "TrapLocalId", "PatrolCueAngularVelFlipMark", "ConfigFromTiled", "TrapState", "FramesInTrapState", "IsCompletelyStatic", "CapturedByPatrolCue", "FramesInPatrolCue", "WaivingPatrolCueId", "WaivingSpontaneousPatrol", "SubscribesToTriggerLocalId", "SubscribesToTriggerLocalIdAlt", "SpinCos", "SpinSin", "AngularFrameVelCos", "AngularFrameVelSin", "X", "Y", "DirX", "DirY", "VelX", "VelY" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TriggerConfig), global::shared.TriggerConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "TriggerType", "CollisionTypeMask" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PeerUdpAddr), global::shared.PeerUdpAddr.Parser, new[]{ "Ip", "Port", "AuthKey", "SeqNo" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BattleColliderInfo), global::shared.BattleColliderInfo.Parser, new[]{ "StageName", "BoundRoomId", "BattleDurationFrames", "InputFrameUpsyncDelayTolerance", "MaxChasingRenderFramesPerUpdate", "RollbackEstimatedDtMillis", "RollbackEstimatedDtNanos", "RenderBufferSize", "CollisionMinStep", "BoundRoomCapacity", "PreallocNpcCapacity", "PreallocBulletCapacity", "BattleUdpTunnel", "FrameLogEnabled" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.RenderFrame), global::shared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "TrapsArr", "TriggersArr", "Pickables", "BackendUnconfirmedMask", "ShouldForceResync", "SpeciesIdList", "BulletLocalIdCounter", "NpcLocalIdCounter", "ParticipantChangeId", "PickableLocalIdCounter" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.WsResp), global::shared.WsResp.Parser, new[]{ "Ret", "Act", "Rdf", "InputFrameDownsyncBatch", "BciFrame", "PeerJoinIndex", "PeerUdpAddrList", "ErrMsg" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Skill), global::shared.Skill.Parser, new[]{ "BattleLocalId", "RecoveryFrames", "RecoveryFramesOnBlock", "RecoveryFramesOnHit", "TriggerType", "BoundChState", "BoundChStateOnHit", "MpDelta", "Id", "Hits", "SelfNonStockBuff" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.FrameLog), global::shared.FrameLog.Parser, new[]{ "Rdf", "ActuallyUsedIdf" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BattleResult), global::shared.BattleResult.Parser, new[]{ "WinnerJoinIndex", "WinnerBulletTeamId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.DebuffConfig), global::shared.DebuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "Type", "ArrIdx", "ImpactPerInterval", "ImpactInterval", "FrictionVelX", "FrictionVelY", "FrictionAccX", "FrictionAccY" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BuffConfig), global::shared.BuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "SpeedDelta", "HitboxSizeXDelta", "HitboxSizeYDelta", "DamageDelta", "DamageDeltaByPercentage", "CharacterHardnessDelta", "MeleeHardnessDelta", "FireballHardnessDelta", "Invinsible", "XformChSpeciesId", "RepelSoftPushback", "OmitGravity", "AutoDef1", "AssociatedDebuffs", "CharacterVfxSpeciesId", "IsPixelatedVfxOnCharacter" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Buff), global::shared.Buff.Parser, new[]{ "SpeciesId", "Stock", "OriginatedRenderFrameId", "OrigChSpeciesId", "OrigRepelSoftPushback", "OrigOmitGravity" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Debuff), global::shared.Debuff.Parser, new[]{ "SpeciesId", "Stock" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BulletImmuneRecord), global::shared.BulletImmuneRecord.Parser, new[]{ "BulletLocalId", "RemainingLifetimeRdfCount" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.ConsumableConfig), global::shared.ConsumableConfig.Parser, new[]{ "SpeciesId", "RefillDelta", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PickableSkillConfig), global::shared.PickableSkillConfig.Parser, new[]{ "SkillId", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InventorySlot), global::shared.InventorySlot.Parser, new[]{ "StockType", "Quota", "FramesToRecover", "DefaultQuota", "DefaultFramesToRecover", "BuffSpeciesId", "SkillId", "SkillIdAir", "GaugeCharged", "GaugeRequired", "FullChargeBuffSpeciesId", "FullChargeSkillId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Inventory), global::shared.Inventory.Parser, new[]{ "Slots" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.BattleEquipment), global::shared.BattleEquipment.Parser, new[]{ "SpeciesId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerSettings), global::shared.PlayerSettings.Parser, new[]{ "SoundVolume" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerRegionProgress), global::shared.PlayerRegionProgress.Parser, new[]{ "RegionId", "CompletedLevelCount", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerLevelProgress), global::shared.PlayerLevelProgress.Parser, new[]{ "RegionId", "LevelId", "HighestScore", "ShortestFinishTimeAtHighestScore", "CharacterSpeciesIdAtHighestScore", "ShortestFinishTime", "ScoreAtShortestFinishTime", "CharacterSpeciesIdAtShortestFinishTime", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerChUnlockProgress), global::shared.PlayerChUnlockProgress.Parser, new[]{ "SpeciesId", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerStoryProgress), global::shared.PlayerStoryProgress.Parser, new[]{ "RegionProgressDict", "LevelProgressDict", "CursorRegionId", "CursorLevelId", "View", "SavedAtGmtMillis", "ChUnlockProgressDict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerOnlineArenaProgress), global::shared.PlayerOnlineArenaProgress.Parser, new[]{ "SavedAtGmtMillis", "PlayerId", "ChUnlockProgressDict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.StoryPointDialogLine), global::shared.StoryPointDialogLine.Parser, new[]{ "NarratorJoinIndex", "NarratorSpeciesId", "Content", "DownOrNot" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.StoryPointStep), global::shared.StoryPointStep.Parser, new[]{ "Lines", "NonctrlAliveRdfCount" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.StoryPoint), global::shared.StoryPoint.Parser, new[]{ "Steps", "Nonctrl", "CutsceneName" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.LevelStory), global::shared.LevelStory.Parser, new[]{ "Points" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializableConvexPolygon), global::shared.SerializableConvexPolygon.Parser, new[]{ "AnchorX", "AnchorY", "Points" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializedCompletelyStaticPatrolCueCollider), global::shared.SerializedCompletelyStaticPatrolCueCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializedCompletelyStaticTrapCollider), global::shared.SerializedCompletelyStaticTrapCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializedCompletelyStaticTriggerCollider), global::shared.SerializedCompletelyStaticTriggerCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TrapColliderAttrArray), global::shared.TrapColliderAttrArray.Parser, new[]{ "List" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializedTrapLocalIdToColliderAttrs), global::shared.SerializedTrapLocalIdToColliderAttrs.Parser, new[]{ "Dict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.SerializedTriggerEditorIdToLocalId), global::shared.SerializedTriggerEditorIdToLocalId.Parser, new[]{ "Dict", "Dict2" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PickableConfigFromTiled), global::shared.PickableConfigFromTiled.Parser, new[]{ "InitVirtualGridX", "InitVirtualGridY", "TakesGravity", "FirstShowRdfId", "RecurQuota", "RecurIntervalRdfCount", "LifetimeRdfCountPerOccurrence", "PickupType", "StockQuotaPerOccurrence", "SubscriptionId", "VfxSpeciesId", "ConsumableSpeciesId", "BuffSpeciesId", "SkillId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Pickable), global::shared.Pickable.Parser, new[]{ "PickableLocalId", "X", "Y", "ConfigFromTiled", "RemainingLifetimeRdfCount", "RemainingRecurQuota", "VelX", "VelY", "PkState", "FramesInPkState", "PickedByJoinIndex" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.InjectedCmdConfig), global::shared.InjectedCmdConfig.Parser, new[]{ "CutoffRdfFrameId", "Op" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.CharacterSpawnerConfig), global::shared.CharacterSpawnerConfig.Parser, new[]{ "CutoffRdfFrameId", "SpeciesIdList", "InitOpList" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PickableSpawnerConfig), global::shared.PickableSpawnerConfig.Parser, new[]{ "CutoffRdfFrameId", "SpeciesIdList", "InitOpList", "PickupTypeList" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TriggerColliderAttr), global::shared.TriggerColliderAttr.Parser, new[]{ "TriggerLocalId", "SpeciesId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.TriggerConfigFromTiled), global::shared.TriggerConfigFromTiled.Parser, new[]{ "EditorId", "SpeciesId", "DelayedFrames", "RecoveryFrames", "BulletTeamId", "SubCycleTriggerFrames", "SubCycleQuota", "QuotaCap", "SubscribesToIdList", "SubscribesToExhaustedIdList", "NewRevivalX", "NewRevivalY", "InitDirX", "InitDirY", "PublishingEvtMaskUponExhausted", "CharacterSpawnerTimeSeq", "PickableSpawnerTimeSeq", "ForceCtrlRdfCount", "ForceCtrlCmd", "ReloadCollidersInNewPhase", "StoryPointId", "BgmId", "BossSpeciesSet", "IsBossSavepoint" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.Trigger), global::shared.Trigger.Parser, new[]{ "EditorId", "TriggerLocalId", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "DirX", "SubCycleQuotaLeft", "State", "FramesInState", "X", "Y", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcKilledEvtMaskCounter", "SubscriberLocalIdsMask", "ExhaustSubscriberLocalIdsMask", "OffenderJoinIndex", "OffenderBulletTeamId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.PlayerMetaInfo), global::shared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::shared.RpcEndpointHolder), global::shared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::jtshared.BoxInterpolationType), typeof(global::jtshared.IfaceCat), typeof(global::jtshared.BulletState), typeof(global::jtshared.CharacterState), typeof(global::jtshared.NpcGoal), typeof(global::jtshared.TrapState), typeof(global::jtshared.TriggerState), typeof(global::jtshared.PickableState), typeof(global::jtshared.BulletType), typeof(global::jtshared.MultiHitType), typeof(global::jtshared.SkillTriggerType), typeof(global::jtshared.VfxDurationType), typeof(global::jtshared.VfxMotionType), typeof(global::jtshared.TriggerType), typeof(global::jtshared.BuffStockType), typeof(global::jtshared.DebuffType), typeof(global::jtshared.ConsumableType), typeof(global::jtshared.InventorySlotStockType), typeof(global::jtshared.PlayerStoryModeSelectView), typeof(global::jtshared.FinishedLvOption), typeof(global::jtshared.PickupType), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.AuthTokenUnderlying), global::jtshared.AuthTokenUnderlying.Parser, new[]{ "PlayerId", "FromAuthsrvId", "ToBattlesrvId", "ExpiresAt" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.AuthResult), global::jtshared.AuthResult.Parser, new[]{ "RetCode", "Uname", "Captcha", "ExpiresAt", "PlayerId", "NewAuthToken", "NewAuthTokenSig", "CaptchaSubmitAuthsrvId", "BattlesrvHostnameOnly", "BattlesrvEndpoint" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketPayloadParams), global::jtshared.SteamAuthenticateUserTicketPayloadParams.Parser, new[]{ "Result", "Steamid", "Ownersteamid", "Vacbanned", "Publisherbanned" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketPayloadResp), global::jtshared.SteamAuthenticateUserTicketPayloadResp.Parser, new[]{ "Params" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketResult), global::jtshared.SteamAuthenticateUserTicketResult.Parser, new[]{ "Response" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleInvitation), global::jtshared.BattleInvitation.Parser, new[]{ "FromPlayerId", "ToBattlesrvId", "BoundRoomId", "ExpiresAt", "Passcode" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "InertiaFramesToRecover", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "UseInventoryBtnB", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedScaleRadius", "ShrinkedScaleHeight", "LayDownScaleRadius", "LayDownScaleHeight", "DyingScaleRadius", "DyingScaleHeight", "DimmedScaleRadius", "DimmedScaleHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "HasTurnAroundAnim", "HasDimmedAnim", "HasAwakingAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenKilled", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterDownsync), global::jtshared.CharacterDownsync.Parser, new[]{ "Id", "X", "Y", "DirX", "DirY", "VelX", "VelY", "Speed", "SpeciesId", "JoinIndex", "FramesToRecover", "FramesCapturedByInertia", "CapturedByPatrolCue", "FramesInPatrolCue", "BeatsCnt", "BeatenCnt", "Hp", "Mp", "BtnBHoldingRdfCount", "CharacterState", "FramesInChState", "InAir", "JumpTriggered", "OnWall", "OnWallNormX", "OnWallNormY", "OmitGravity", "OmitSoftPushback", "WaivingPatrolCueId", "GoalAsNpc", "RevivalX", "RevivalY", "RevivalDirX", "RevivalDirY", "OnSlope", "FrictionVelX", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "PrevWasCrouching", "NewBirth", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "RepelSoftPushback", "PublishingEvtMaskUponKilled", "PublishingToTriggerLocalIdUponKilled", "SubscribesToTriggerLocalId", "JumpHoldingRdfCnt", "RemainingAirJumpQuota", "RemainingAirDashQuota", "KilledToDropConsumableSpeciesId", "KilledToDropBuffSpeciesId", "KilledToDropPickupSkillId", "FrictionVelY", "FramesSinceLastDamaged", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "DamageElementalAttrs", "OnSlopeFacingDown", "LastDamagedByJoinIndex", "LastDamagedByBulletTeamId", "ActivatedRdfId", "CachedCueCmd", "ActiveSkillId", "ActiveSkillHit", "BulletTeamId", "ChCollisionTeamId", "BtnCHoldingRdfCount", "BtnDHoldingRdfCount", "BtnEHoldingRdfCount", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnJoinIndex", "BuffList", "DebuffList", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDecoded), global::jtshared.InputFrameDecoded.Parser, new[]{ "Dx", "Dy", "BtnALevel", "BtnBLevel", "BtnCLevel", "BtnDLevel", "BtnELevel" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameUpsync), global::jtshared.InputFrameUpsync.Parser, new[]{ "InputFrameId", "Encoded", "JoinIndex" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDownsync), global::jtshared.InputFrameDownsync.Parser, new[]{ "InputFrameId", "InputList", "ConfirmedList", "UdpConfirmedList" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsReq), global::jtshared.WsReq.Parser, new[]{ "PlayerId", "Act", "JoinIndex", "AckingFrameId", "AckingInputFrameId", "AuthKey", "InputFrameUpsyncBatch", "SelfParsedRdf", "CollisionSpaceHalfWidth", "CollisionSpaceHalfHeight", "BattleDurationSeconds", "SerializedBarrierPolygons", "SerializedStaticPatrolCues", "SerializedCompletelyStaticTraps", "SerializedStaticTriggers", "SerializedTrapLocalIdToColliderAttrs", "SerializedTriggerEditorIdToLocalId", "SeqNo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputBufferSnapshot), global::jtshared.InputBufferSnapshot.Parser, new[]{ "RefRenderFrameId", "UnconfirmedMask", "ToSendInputFrameDownsyncs", "ShouldForceResync", "PeerJoinIndex" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PatrolCue), global::jtshared.PatrolCue.Parser, new[]{ "Id", "FlAct", "FrAct", "FlCaptureFrames", "FrCaptureFrames", "FdAct", "FuAct", "FdCaptureFrames", "FuCaptureFrames", "CollisionTypeMask" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.VfxConfig), global::jtshared.VfxConfig.Parser, new[]{ "SpeciesId", "MotionType", "DurationType", "OnCharacter", "OnBullet", "OnTrap", "UsePixelatedVer", "Name" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletConfig), global::jtshared.BulletConfig.Parser, new[]{ "StartupFrames", "CancellableStFrame", "CancellableEdFrame", "ActiveFrames", "HitStunFrames", "BlockStunFrames", "PushbackVelX", "PushbackVelY", "Damage", "SelfLockVelX", "SelfLockVelY", "HitboxOffsetX", "HitboxOffsetY", "HitboxSizeX", "HitboxSizeY", "BlowUp", "SpeciesId", "ExplosionFrames", "BType", "MhType", "SimultaneousMultiHitCnt", "Speed", "DirX", "DirY", "CancelTransit", "RepeatQuota", "ActiveVfxSpeciesId", "ExplosionVfxSpeciesId", "AllowsWalking", "AllowsCrouching", "Hardness", "StartupInvinsibleFrames", "HitInvinsibleFrames", "ExplosionSpeciesId", "PerpAccMag", "DelaySelfVelToActive", "SpeedIfNotHit", "OmitSoftPushback", "HitboxSizeIncX", "HitboxSizeIncY", "RemainsUponHit", "RotatesAlongVelocity", "DefaultHardPushbackBounceQuota", "HardPushbackBounceNormFactor", "HardPushbackBounceSheerFactor", "IsPixelatedActiveVfx", "IsPixelatedExplostionVfx", "MhVanishOnMeleeHit", "DownSlopePrimerVelY", "MhUpdatesOriginPos", "BeamCollision", "AngularFrameVelCos", "AngularFrameVelSin", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "SelfLockVelYWhenFlying", "ElementalAttrs", "CancellableByInventorySlotC", "CancellableByInventorySlotD", "SpinAnchorX", "SpinAnchorY", "BeamVisualSizeY", "TouchExplosionBombCollision", "AirRidingGroundWave", "GroundImpactMeleeCollision", "WallImpactMeleeCollision", "MhInheritsSpin", "InitSpinCos", "InitSpinSin", "FinishingFrames", "NoExplosionOnHardPushback", "StartupVfxSpeciesId", "Ifc", "ReflectFireballXIfNotHarder", "RejectsReflectionFromAnotherBullet", "ProvidesXHardPushback", "ProvidesYHardPushbackTop", "ProvidesYHardPushbackBottom", "IgnoreSlopeDeceleration", "RotateOffenderWithSpin", "MhNotTriggerOnChHit", "MhNotTriggerOnHarderBulletHit", "MhNotTriggerOnHardPushbackHit", "HopperMissile", "BeamRendering", "MissileSearchIntervalPow2Minus1", "UseChOffsetRegardlessOfEmissionMh", "InplaceVanishExplosionSpeciesId", "AnimLoopingRdfOffset", "ExplosionAnimLoopingRdfOffset", "GaugeIncReductionRatio", "MhInheritsFramesInBlState", "GuardBreakerExtraHitCnt", "TakesDef1AsHardPushback", "CollisionTypeMask", "TakesGravity", "BuffConfig", "CharacterEmitSfxName", "FireballEmitSfxName", "ExplosionSfxName", "ActiveSfxName", "ExplosionOnFleshSfxName", "ExplosionOnRockSfxName", "ExplosionOnMetalSfxName", "ExplosionOnWoodSfxName" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Bullet), global::jtshared.Bullet.Parser, new[]{ "BlState", "FramesInBlState", "BulletLocalId", "OriginatedRenderFrameId", "OffenderJoinIndex", "OffenderTrapLocalId", "TeamId", "VertMovingTrapLocalIdUponActive", "RepeatQuotaLeft", "RemainingHardPushbackBounceQuota", "TargetCharacterJoinIndex", "DamageDealed", "ExplodedOnIfc", "X", "Y", "DirX", "DirY", "VelX", "VelY", "OriginatedX", "OriginatedY", "SpinCos", "SpinSin", "ActiveSkillHit", "SkillId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfig), global::jtshared.TrapConfig.Parser, new[]{ "SpeciesId", "ExplosionSpeciesId", "ExplosionFrames", "BlowUp", "Damage", "HitStunFrames", "HitInvinsibleFrames", "Deactivatable", "Hardness", "DeactivateUponTriggered", "ConstFrictionVelXTop", "ConstFrictionVelXBottom", "ConstFrictionVelYLeft", "ConstFrictionVelYRight", "PatrolCueRequiresFullContain", "SpinAnchorX", "SpinAnchorY", "AngularFrameVelCos", "AngularFrameVelSin", "IntrinsicSpinCos", "IntrinsicSpinSin", "Atk1UponTriggered", "Atk1SkillId", "IsRotary", "NoXFlipRendering", "SpeciesName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfigFromTiled), global::jtshared.TrapConfigFromTiled.Parser, new[]{ "SpeciesId", "Quota", "Speed", "DirX", "DirY", "SubscribesToId", "SubscribesToIdAfterInitialFire", "SubscribesToIdAlt", "BoxCw", "BoxCh", "InitNoAngularVel" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapColliderAttr), global::jtshared.TrapColliderAttr.Parser, new[]{ "HitboxOffsetX", "HitboxOffsetY", "HitboxSizeX", "HitboxSizeY", "ProvidesHardPushback", "ProvidesDamage", "ProvidesEscape", "ProvidesSlipJump", "ProhibitsWallGrabbing", "ForcesCrouching", "SpeciesId", "OnlyAllowsAlignedVelX", "OnlyAllowsAlignedVelY", "AsPatrolCue", "TcPc", "TrapLocalId", "CollisionTypeMask" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trap), global::jtshared.Trap.Parser, new[]{ "TrapLocalId", "PatrolCueAngularVelFlipMark", "ConfigFromTiled", "TrapState", "FramesInTrapState", "IsCompletelyStatic", "CapturedByPatrolCue", "FramesInPatrolCue", "WaivingPatrolCueId", "WaivingSpontaneousPatrol", "SubscribesToTriggerLocalId", "SubscribesToTriggerLocalIdAlt", "SpinCos", "SpinSin", "AngularFrameVelCos", "AngularFrameVelSin", "X", "Y", "DirX", "DirY", "VelX", "VelY" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfig), global::jtshared.TriggerConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "TriggerType", "CollisionTypeMask" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PeerUdpAddr), global::jtshared.PeerUdpAddr.Parser, new[]{ "Ip", "Port", "AuthKey", "SeqNo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleColliderInfo), global::jtshared.BattleColliderInfo.Parser, new[]{ "StageName", "BoundRoomId", "BattleDurationFrames", "InputFrameUpsyncDelayTolerance", "MaxChasingRenderFramesPerUpdate", "RollbackEstimatedDtMillis", "RollbackEstimatedDtNanos", "RenderBufferSize", "CollisionMinStep", "BoundRoomCapacity", "PreallocNpcCapacity", "PreallocBulletCapacity", "BattleUdpTunnel", "FrameLogEnabled" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "TrapsArr", "TriggersArr", "Pickables", "BackendUnconfirmedMask", "ShouldForceResync", "SpeciesIdList", "BulletLocalIdCounter", "NpcLocalIdCounter", "ParticipantChangeId", "PickableLocalIdCounter" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsResp), global::jtshared.WsResp.Parser, new[]{ "Ret", "Act", "Rdf", "InputFrameDownsyncBatch", "BciFrame", "PeerJoinIndex", "PeerUdpAddrList", "ErrMsg" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Skill), global::jtshared.Skill.Parser, new[]{ "BattleLocalId", "RecoveryFrames", "RecoveryFramesOnBlock", "RecoveryFramesOnHit", "TriggerType", "BoundChState", "BoundChStateOnHit", "MpDelta", "Id", "Hits", "SelfNonStockBuff" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.FrameLog), global::jtshared.FrameLog.Parser, new[]{ "Rdf", "ActuallyUsedIdf" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleResult), global::jtshared.BattleResult.Parser, new[]{ "WinnerJoinIndex", "WinnerBulletTeamId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.DebuffConfig), global::jtshared.DebuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "Type", "ArrIdx", "ImpactPerInterval", "ImpactInterval", "FrictionVelX", "FrictionVelY", "FrictionAccX", "FrictionAccY" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BuffConfig), global::jtshared.BuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "SpeedDelta", "HitboxSizeXDelta", "HitboxSizeYDelta", "DamageDelta", "DamageDeltaByPercentage", "CharacterHardnessDelta", "MeleeHardnessDelta", "FireballHardnessDelta", "Invinsible", "XformChSpeciesId", "RepelSoftPushback", "OmitGravity", "AutoDef1", "AssociatedDebuffs", "CharacterVfxSpeciesId", "IsPixelatedVfxOnCharacter" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Buff), global::jtshared.Buff.Parser, new[]{ "SpeciesId", "Stock", "OriginatedRenderFrameId", "OrigChSpeciesId", "OrigRepelSoftPushback", "OrigOmitGravity" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Debuff), global::jtshared.Debuff.Parser, new[]{ "SpeciesId", "Stock" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletImmuneRecord), global::jtshared.BulletImmuneRecord.Parser, new[]{ "BulletLocalId", "RemainingLifetimeRdfCount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConsumableConfig), global::jtshared.ConsumableConfig.Parser, new[]{ "SpeciesId", "RefillDelta", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSkillConfig), global::jtshared.PickableSkillConfig.Parser, new[]{ "SkillId", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InventorySlot), global::jtshared.InventorySlot.Parser, new[]{ "StockType", "Quota", "FramesToRecover", "DefaultQuota", "DefaultFramesToRecover", "BuffSpeciesId", "SkillId", "SkillIdAir", "GaugeCharged", "GaugeRequired", "FullChargeBuffSpeciesId", "FullChargeSkillId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Inventory), global::jtshared.Inventory.Parser, new[]{ "Slots" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleEquipment), global::jtshared.BattleEquipment.Parser, new[]{ "SpeciesId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerSettings), global::jtshared.PlayerSettings.Parser, new[]{ "SoundVolume" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerRegionProgress), global::jtshared.PlayerRegionProgress.Parser, new[]{ "RegionId", "CompletedLevelCount", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerLevelProgress), global::jtshared.PlayerLevelProgress.Parser, new[]{ "RegionId", "LevelId", "HighestScore", "ShortestFinishTimeAtHighestScore", "CharacterSpeciesIdAtHighestScore", "ShortestFinishTime", "ScoreAtShortestFinishTime", "CharacterSpeciesIdAtShortestFinishTime", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerChUnlockProgress), global::jtshared.PlayerChUnlockProgress.Parser, new[]{ "SpeciesId", "RemainingDependencies", "RemovedDependencies" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerStoryProgress), global::jtshared.PlayerStoryProgress.Parser, new[]{ "RegionProgressDict", "LevelProgressDict", "CursorRegionId", "CursorLevelId", "View", "SavedAtGmtMillis", "ChUnlockProgressDict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerOnlineArenaProgress), global::jtshared.PlayerOnlineArenaProgress.Parser, new[]{ "SavedAtGmtMillis", "PlayerId", "ChUnlockProgressDict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPointDialogLine), global::jtshared.StoryPointDialogLine.Parser, new[]{ "NarratorJoinIndex", "NarratorSpeciesId", "Content", "DownOrNot" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPointStep), global::jtshared.StoryPointStep.Parser, new[]{ "Lines", "NonctrlAliveRdfCount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPoint), global::jtshared.StoryPoint.Parser, new[]{ "Steps", "Nonctrl", "CutsceneName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.LevelStory), global::jtshared.LevelStory.Parser, new[]{ "Points" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializableConvexPolygon), global::jtshared.SerializableConvexPolygon.Parser, new[]{ "AnchorX", "AnchorY", "Points" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedCompletelyStaticPatrolCueCollider), global::jtshared.SerializedCompletelyStaticPatrolCueCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedCompletelyStaticTrapCollider), global::jtshared.SerializedCompletelyStaticTrapCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedCompletelyStaticTriggerCollider), global::jtshared.SerializedCompletelyStaticTriggerCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapColliderAttrArray), global::jtshared.TrapColliderAttrArray.Parser, new[]{ "List" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedTrapLocalIdToColliderAttrs), global::jtshared.SerializedTrapLocalIdToColliderAttrs.Parser, new[]{ "Dict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedTriggerEditorIdToLocalId), global::jtshared.SerializedTriggerEditorIdToLocalId.Parser, new[]{ "Dict", "Dict2" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfigFromTiled), global::jtshared.PickableConfigFromTiled.Parser, new[]{ "InitVirtualGridX", "InitVirtualGridY", "TakesGravity", "FirstShowRdfId", "RecurQuota", "RecurIntervalRdfCount", "LifetimeRdfCountPerOccurrence", "PickupType", "StockQuotaPerOccurrence", "SubscriptionId", "VfxSpeciesId", "ConsumableSpeciesId", "BuffSpeciesId", "SkillId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Pickable), global::jtshared.Pickable.Parser, new[]{ "PickableLocalId", "X", "Y", "ConfigFromTiled", "RemainingLifetimeRdfCount", "RemainingRecurQuota", "VelX", "VelY", "PkState", "FramesInPkState", "PickedByJoinIndex" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InjectedCmdConfig), global::jtshared.InjectedCmdConfig.Parser, new[]{ "CutoffRdfFrameId", "Op" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterSpawnerConfig), global::jtshared.CharacterSpawnerConfig.Parser, new[]{ "CutoffRdfFrameId", "SpeciesIdList", "InitOpList" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSpawnerConfig), global::jtshared.PickableSpawnerConfig.Parser, new[]{ "CutoffRdfFrameId", "SpeciesIdList", "InitOpList", "PickupTypeList" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerColliderAttr), global::jtshared.TriggerColliderAttr.Parser, new[]{ "TriggerLocalId", "SpeciesId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfigFromTiled), global::jtshared.TriggerConfigFromTiled.Parser, new[]{ "EditorId", "SpeciesId", "DelayedFrames", "RecoveryFrames", "BulletTeamId", "SubCycleTriggerFrames", "SubCycleQuota", "QuotaCap", "SubscribesToIdList", "SubscribesToExhaustedIdList", "NewRevivalX", "NewRevivalY", "InitDirX", "InitDirY", "PublishingEvtMaskUponExhausted", "CharacterSpawnerTimeSeq", "PickableSpawnerTimeSeq", "ForceCtrlRdfCount", "ForceCtrlCmd", "ReloadCollidersInNewPhase", "StoryPointId", "BgmId", "BossSpeciesSet", "IsBossSavepoint" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "EditorId", "TriggerLocalId", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "DirX", "SubCycleQuotaLeft", "State", "FramesInState", "X", "Y", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcKilledEvtMaskCounter", "SubscriberLocalIdsMask", "ExhaustSubscriberLocalIdsMask", "OffenderJoinIndex", "OffenderBulletTeamId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerMetaInfo), global::jtshared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RpcEndpointHolder), global::jtshared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null)
           }));
     }
     #endregion
@@ -987,7 +992,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[0]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1200,7 +1205,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[1]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1590,7 +1595,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[2]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1831,7 +1836,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[3]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1859,9 +1864,9 @@ namespace shared {
 
     /// <summary>Field number for the "params" field.</summary>
     public const int ParamsFieldNumber = 1;
-    private global::shared.SteamAuthenticateUserTicketPayloadParams params_;
+    private global::jtshared.SteamAuthenticateUserTicketPayloadParams params_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SteamAuthenticateUserTicketPayloadParams Params {
+    public global::jtshared.SteamAuthenticateUserTicketPayloadParams Params {
       get { return params_; }
       set {
         params_ = value;
@@ -1930,7 +1935,7 @@ namespace shared {
       }
       if (other.params_ != null) {
         if (params_ == null) {
-          Params = new global::shared.SteamAuthenticateUserTicketPayloadParams();
+          Params = new global::jtshared.SteamAuthenticateUserTicketPayloadParams();
         }
         Params.MergeFrom(other.Params);
       }
@@ -1947,7 +1952,7 @@ namespace shared {
             break;
           case 10: {
             if (params_ == null) {
-              Params = new global::shared.SteamAuthenticateUserTicketPayloadParams();
+              Params = new global::jtshared.SteamAuthenticateUserTicketPayloadParams();
             }
             input.ReadMessage(Params);
             break;
@@ -1966,7 +1971,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[4]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1994,9 +1999,9 @@ namespace shared {
 
     /// <summary>Field number for the "response" field.</summary>
     public const int ResponseFieldNumber = 1;
-    private global::shared.SteamAuthenticateUserTicketPayloadResp response_;
+    private global::jtshared.SteamAuthenticateUserTicketPayloadResp response_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SteamAuthenticateUserTicketPayloadResp Response {
+    public global::jtshared.SteamAuthenticateUserTicketPayloadResp Response {
       get { return response_; }
       set {
         response_ = value;
@@ -2065,7 +2070,7 @@ namespace shared {
       }
       if (other.response_ != null) {
         if (response_ == null) {
-          Response = new global::shared.SteamAuthenticateUserTicketPayloadResp();
+          Response = new global::jtshared.SteamAuthenticateUserTicketPayloadResp();
         }
         Response.MergeFrom(other.Response);
       }
@@ -2082,7 +2087,7 @@ namespace shared {
             break;
           case 10: {
             if (response_ == null) {
-              Response = new global::shared.SteamAuthenticateUserTicketPayloadResp();
+              Response = new global::jtshared.SteamAuthenticateUserTicketPayloadResp();
             }
             input.ReadMessage(Response);
             break;
@@ -2136,7 +2141,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[5]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2377,7 +2382,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[6]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3388,9 +3393,9 @@ namespace shared {
 
     /// <summary>Field number for the "Ifc" field.</summary>
     public const int IfcFieldNumber = 80;
-    private global::shared.IfaceCat ifc_ = 0;
+    private global::jtshared.IfaceCat ifc_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.IfaceCat Ifc {
+    public global::jtshared.IfaceCat Ifc {
       get { return ifc_; }
       set {
         ifc_ = value;
@@ -3622,21 +3627,21 @@ namespace shared {
 
     /// <summary>Field number for the "init_inventory_slots" field.</summary>
     public const int InitInventorySlotsFieldNumber = 101;
-    private static readonly pb::FieldCodec<global::shared.InventorySlot> _repeated_initInventorySlots_codec
-        = pb::FieldCodec.ForMessage(810, global::shared.InventorySlot.Parser);
-    private readonly pbc::RepeatedField<global::shared.InventorySlot> initInventorySlots_ = new pbc::RepeatedField<global::shared.InventorySlot>();
+    private static readonly pb::FieldCodec<global::jtshared.InventorySlot> _repeated_initInventorySlots_codec
+        = pb::FieldCodec.ForMessage(810, global::jtshared.InventorySlot.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.InventorySlot> initInventorySlots_ = new pbc::RepeatedField<global::jtshared.InventorySlot>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.InventorySlot> InitInventorySlots {
+    public pbc::RepeatedField<global::jtshared.InventorySlot> InitInventorySlots {
       get { return initInventorySlots_; }
     }
 
     /// <summary>Field number for the "btn_b_auto_unhold_ch_states" field.</summary>
     public const int BtnBAutoUnholdChStatesFieldNumber = 102;
-    private static readonly pb::FieldCodec<global::shared.CharacterState> _repeated_btnBAutoUnholdChStates_codec
-        = pb::FieldCodec.ForEnum(818, x => (int) x, x => (global::shared.CharacterState) x);
-    private readonly pbc::RepeatedField<global::shared.CharacterState> btnBAutoUnholdChStates_ = new pbc::RepeatedField<global::shared.CharacterState>();
+    private static readonly pb::FieldCodec<global::jtshared.CharacterState> _repeated_btnBAutoUnholdChStates_codec
+        = pb::FieldCodec.ForEnum(818, x => (int) x, x => (global::jtshared.CharacterState) x);
+    private readonly pbc::RepeatedField<global::jtshared.CharacterState> btnBAutoUnholdChStates_ = new pbc::RepeatedField<global::jtshared.CharacterState>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.CharacterState> BtnBAutoUnholdChStates {
+    public pbc::RepeatedField<global::jtshared.CharacterState> BtnBAutoUnholdChStates {
       get { return btnBAutoUnholdChStates_; }
     }
 
@@ -5244,7 +5249,7 @@ namespace shared {
             break;
           }
           case 640: {
-            Ifc = (global::shared.IfaceCat) input.ReadEnum();
+            Ifc = (global::jtshared.IfaceCat) input.ReadEnum();
             break;
           }
           case 648: {
@@ -5354,7 +5359,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[7]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5680,9 +5685,9 @@ namespace shared {
 
     /// <summary>Field number for the "character_state" field.</summary>
     public const int CharacterStateFieldNumber = 22;
-    private global::shared.CharacterState characterState_ = 0;
+    private global::jtshared.CharacterState characterState_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.CharacterState CharacterState {
+    public global::jtshared.CharacterState CharacterState {
       get { return characterState_; }
       set {
         characterState_ = value;
@@ -5799,9 +5804,9 @@ namespace shared {
 
     /// <summary>Field number for the "goal_as_npc" field.</summary>
     public const int GoalAsNpcFieldNumber = 32;
-    private global::shared.NpcGoal goalAsNpc_ = 0;
+    private global::jtshared.NpcGoal goalAsNpc_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.NpcGoal GoalAsNpc {
+    public global::jtshared.NpcGoal GoalAsNpc {
       get { return goalAsNpc_; }
       set {
         goalAsNpc_ = value;
@@ -6337,29 +6342,29 @@ namespace shared {
 
     /// <summary>Field number for the "buff_list" field.</summary>
     public const int BuffListFieldNumber = 90;
-    private static readonly pb::FieldCodec<global::shared.Buff> _repeated_buffList_codec
-        = pb::FieldCodec.ForMessage(722, global::shared.Buff.Parser);
-    private readonly pbc::RepeatedField<global::shared.Buff> buffList_ = new pbc::RepeatedField<global::shared.Buff>();
+    private static readonly pb::FieldCodec<global::jtshared.Buff> _repeated_buffList_codec
+        = pb::FieldCodec.ForMessage(722, global::jtshared.Buff.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Buff> buffList_ = new pbc::RepeatedField<global::jtshared.Buff>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Buff> BuffList {
+    public pbc::RepeatedField<global::jtshared.Buff> BuffList {
       get { return buffList_; }
     }
 
     /// <summary>Field number for the "debuff_list" field.</summary>
     public const int DebuffListFieldNumber = 91;
-    private static readonly pb::FieldCodec<global::shared.Debuff> _repeated_debuffList_codec
-        = pb::FieldCodec.ForMessage(730, global::shared.Debuff.Parser);
-    private readonly pbc::RepeatedField<global::shared.Debuff> debuffList_ = new pbc::RepeatedField<global::shared.Debuff>();
+    private static readonly pb::FieldCodec<global::jtshared.Debuff> _repeated_debuffList_codec
+        = pb::FieldCodec.ForMessage(730, global::jtshared.Debuff.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Debuff> debuffList_ = new pbc::RepeatedField<global::jtshared.Debuff>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Debuff> DebuffList {
+    public pbc::RepeatedField<global::jtshared.Debuff> DebuffList {
       get { return debuffList_; }
     }
 
     /// <summary>Field number for the "inventory" field.</summary>
     public const int InventoryFieldNumber = 92;
-    private global::shared.Inventory inventory_;
+    private global::jtshared.Inventory inventory_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.Inventory Inventory {
+    public global::jtshared.Inventory Inventory {
       get { return inventory_; }
       set {
         inventory_ = value;
@@ -6368,11 +6373,11 @@ namespace shared {
 
     /// <summary>Field number for the "bullet_immune_records" field.</summary>
     public const int BulletImmuneRecordsFieldNumber = 93;
-    private static readonly pb::FieldCodec<global::shared.BulletImmuneRecord> _repeated_bulletImmuneRecords_codec
-        = pb::FieldCodec.ForMessage(746, global::shared.BulletImmuneRecord.Parser);
-    private readonly pbc::RepeatedField<global::shared.BulletImmuneRecord> bulletImmuneRecords_ = new pbc::RepeatedField<global::shared.BulletImmuneRecord>();
+    private static readonly pb::FieldCodec<global::jtshared.BulletImmuneRecord> _repeated_bulletImmuneRecords_codec
+        = pb::FieldCodec.ForMessage(746, global::jtshared.BulletImmuneRecord.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.BulletImmuneRecord> bulletImmuneRecords_ = new pbc::RepeatedField<global::jtshared.BulletImmuneRecord>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.BulletImmuneRecord> BulletImmuneRecords {
+    public pbc::RepeatedField<global::jtshared.BulletImmuneRecord> BulletImmuneRecords {
       get { return bulletImmuneRecords_; }
     }
 
@@ -7381,7 +7386,7 @@ namespace shared {
       debuffList_.Add(other.debuffList_);
       if (other.inventory_ != null) {
         if (inventory_ == null) {
-          Inventory = new global::shared.Inventory();
+          Inventory = new global::jtshared.Inventory();
         }
         Inventory.MergeFrom(other.Inventory);
       }
@@ -7475,7 +7480,7 @@ namespace shared {
             break;
           }
           case 176: {
-            CharacterState = (global::shared.CharacterState) input.ReadEnum();
+            CharacterState = (global::jtshared.CharacterState) input.ReadEnum();
             break;
           }
           case 184: {
@@ -7515,7 +7520,7 @@ namespace shared {
             break;
           }
           case 256: {
-            GoalAsNpc = (global::shared.NpcGoal) input.ReadEnum();
+            GoalAsNpc = (global::jtshared.NpcGoal) input.ReadEnum();
             break;
           }
           case 269: {
@@ -7712,7 +7717,7 @@ namespace shared {
           }
           case 738: {
             if (inventory_ == null) {
-              Inventory = new global::shared.Inventory();
+              Inventory = new global::jtshared.Inventory();
             }
             input.ReadMessage(Inventory);
             break;
@@ -7740,7 +7745,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[8]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8037,7 +8042,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[9]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8222,7 +8227,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[10]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8437,7 +8442,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[11]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8548,19 +8553,19 @@ namespace shared {
 
     /// <summary>Field number for the "input_frame_upsync_batch" field.</summary>
     public const int InputFrameUpsyncBatchFieldNumber = 7;
-    private static readonly pb::FieldCodec<global::shared.InputFrameUpsync> _repeated_inputFrameUpsyncBatch_codec
-        = pb::FieldCodec.ForMessage(58, global::shared.InputFrameUpsync.Parser);
-    private readonly pbc::RepeatedField<global::shared.InputFrameUpsync> inputFrameUpsyncBatch_ = new pbc::RepeatedField<global::shared.InputFrameUpsync>();
+    private static readonly pb::FieldCodec<global::jtshared.InputFrameUpsync> _repeated_inputFrameUpsyncBatch_codec
+        = pb::FieldCodec.ForMessage(58, global::jtshared.InputFrameUpsync.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.InputFrameUpsync> inputFrameUpsyncBatch_ = new pbc::RepeatedField<global::jtshared.InputFrameUpsync>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.InputFrameUpsync> InputFrameUpsyncBatch {
+    public pbc::RepeatedField<global::jtshared.InputFrameUpsync> InputFrameUpsyncBatch {
       get { return inputFrameUpsyncBatch_; }
     }
 
     /// <summary>Field number for the "self_parsed_rdf" field.</summary>
     public const int SelfParsedRdfFieldNumber = 8;
-    private global::shared.RenderFrame selfParsedRdf_;
+    private global::jtshared.RenderFrame selfParsedRdf_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.RenderFrame SelfParsedRdf {
+    public global::jtshared.RenderFrame SelfParsedRdf {
       get { return selfParsedRdf_; }
       set {
         selfParsedRdf_ = value;
@@ -8602,49 +8607,49 @@ namespace shared {
 
     /// <summary>Field number for the "serialized_barrier_polygons" field.</summary>
     public const int SerializedBarrierPolygonsFieldNumber = 12;
-    private static readonly pb::FieldCodec<global::shared.SerializableConvexPolygon> _repeated_serializedBarrierPolygons_codec
-        = pb::FieldCodec.ForMessage(98, global::shared.SerializableConvexPolygon.Parser);
-    private readonly pbc::RepeatedField<global::shared.SerializableConvexPolygon> serializedBarrierPolygons_ = new pbc::RepeatedField<global::shared.SerializableConvexPolygon>();
+    private static readonly pb::FieldCodec<global::jtshared.SerializableConvexPolygon> _repeated_serializedBarrierPolygons_codec
+        = pb::FieldCodec.ForMessage(98, global::jtshared.SerializableConvexPolygon.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.SerializableConvexPolygon> serializedBarrierPolygons_ = new pbc::RepeatedField<global::jtshared.SerializableConvexPolygon>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.SerializableConvexPolygon> SerializedBarrierPolygons {
+    public pbc::RepeatedField<global::jtshared.SerializableConvexPolygon> SerializedBarrierPolygons {
       get { return serializedBarrierPolygons_; }
     }
 
     /// <summary>Field number for the "serialized_static_patrol_cues" field.</summary>
     public const int SerializedStaticPatrolCuesFieldNumber = 13;
-    private static readonly pb::FieldCodec<global::shared.SerializedCompletelyStaticPatrolCueCollider> _repeated_serializedStaticPatrolCues_codec
-        = pb::FieldCodec.ForMessage(106, global::shared.SerializedCompletelyStaticPatrolCueCollider.Parser);
-    private readonly pbc::RepeatedField<global::shared.SerializedCompletelyStaticPatrolCueCollider> serializedStaticPatrolCues_ = new pbc::RepeatedField<global::shared.SerializedCompletelyStaticPatrolCueCollider>();
+    private static readonly pb::FieldCodec<global::jtshared.SerializedCompletelyStaticPatrolCueCollider> _repeated_serializedStaticPatrolCues_codec
+        = pb::FieldCodec.ForMessage(106, global::jtshared.SerializedCompletelyStaticPatrolCueCollider.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticPatrolCueCollider> serializedStaticPatrolCues_ = new pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticPatrolCueCollider>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.SerializedCompletelyStaticPatrolCueCollider> SerializedStaticPatrolCues {
+    public pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticPatrolCueCollider> SerializedStaticPatrolCues {
       get { return serializedStaticPatrolCues_; }
     }
 
     /// <summary>Field number for the "serialized_completely_static_traps" field.</summary>
     public const int SerializedCompletelyStaticTrapsFieldNumber = 14;
-    private static readonly pb::FieldCodec<global::shared.SerializedCompletelyStaticTrapCollider> _repeated_serializedCompletelyStaticTraps_codec
-        = pb::FieldCodec.ForMessage(114, global::shared.SerializedCompletelyStaticTrapCollider.Parser);
-    private readonly pbc::RepeatedField<global::shared.SerializedCompletelyStaticTrapCollider> serializedCompletelyStaticTraps_ = new pbc::RepeatedField<global::shared.SerializedCompletelyStaticTrapCollider>();
+    private static readonly pb::FieldCodec<global::jtshared.SerializedCompletelyStaticTrapCollider> _repeated_serializedCompletelyStaticTraps_codec
+        = pb::FieldCodec.ForMessage(114, global::jtshared.SerializedCompletelyStaticTrapCollider.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTrapCollider> serializedCompletelyStaticTraps_ = new pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTrapCollider>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.SerializedCompletelyStaticTrapCollider> SerializedCompletelyStaticTraps {
+    public pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTrapCollider> SerializedCompletelyStaticTraps {
       get { return serializedCompletelyStaticTraps_; }
     }
 
     /// <summary>Field number for the "serialized_static_triggers" field.</summary>
     public const int SerializedStaticTriggersFieldNumber = 15;
-    private static readonly pb::FieldCodec<global::shared.SerializedCompletelyStaticTriggerCollider> _repeated_serializedStaticTriggers_codec
-        = pb::FieldCodec.ForMessage(122, global::shared.SerializedCompletelyStaticTriggerCollider.Parser);
-    private readonly pbc::RepeatedField<global::shared.SerializedCompletelyStaticTriggerCollider> serializedStaticTriggers_ = new pbc::RepeatedField<global::shared.SerializedCompletelyStaticTriggerCollider>();
+    private static readonly pb::FieldCodec<global::jtshared.SerializedCompletelyStaticTriggerCollider> _repeated_serializedStaticTriggers_codec
+        = pb::FieldCodec.ForMessage(122, global::jtshared.SerializedCompletelyStaticTriggerCollider.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTriggerCollider> serializedStaticTriggers_ = new pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTriggerCollider>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.SerializedCompletelyStaticTriggerCollider> SerializedStaticTriggers {
+    public pbc::RepeatedField<global::jtshared.SerializedCompletelyStaticTriggerCollider> SerializedStaticTriggers {
       get { return serializedStaticTriggers_; }
     }
 
     /// <summary>Field number for the "serialized_trap_local_id_to_collider_attrs" field.</summary>
     public const int SerializedTrapLocalIdToColliderAttrsFieldNumber = 16;
-    private global::shared.SerializedTrapLocalIdToColliderAttrs serializedTrapLocalIdToColliderAttrs_;
+    private global::jtshared.SerializedTrapLocalIdToColliderAttrs serializedTrapLocalIdToColliderAttrs_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SerializedTrapLocalIdToColliderAttrs SerializedTrapLocalIdToColliderAttrs {
+    public global::jtshared.SerializedTrapLocalIdToColliderAttrs SerializedTrapLocalIdToColliderAttrs {
       get { return serializedTrapLocalIdToColliderAttrs_; }
       set {
         serializedTrapLocalIdToColliderAttrs_ = value;
@@ -8653,9 +8658,9 @@ namespace shared {
 
     /// <summary>Field number for the "serialized_trigger_editor_id_to_local_id" field.</summary>
     public const int SerializedTriggerEditorIdToLocalIdFieldNumber = 18;
-    private global::shared.SerializedTriggerEditorIdToLocalId serializedTriggerEditorIdToLocalId_;
+    private global::jtshared.SerializedTriggerEditorIdToLocalId serializedTriggerEditorIdToLocalId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SerializedTriggerEditorIdToLocalId SerializedTriggerEditorIdToLocalId {
+    public global::jtshared.SerializedTriggerEditorIdToLocalId SerializedTriggerEditorIdToLocalId {
       get { return serializedTriggerEditorIdToLocalId_; }
       set {
         serializedTriggerEditorIdToLocalId_ = value;
@@ -8882,7 +8887,7 @@ namespace shared {
       inputFrameUpsyncBatch_.Add(other.inputFrameUpsyncBatch_);
       if (other.selfParsedRdf_ != null) {
         if (selfParsedRdf_ == null) {
-          SelfParsedRdf = new global::shared.RenderFrame();
+          SelfParsedRdf = new global::jtshared.RenderFrame();
         }
         SelfParsedRdf.MergeFrom(other.SelfParsedRdf);
       }
@@ -8901,13 +8906,13 @@ namespace shared {
       serializedStaticTriggers_.Add(other.serializedStaticTriggers_);
       if (other.serializedTrapLocalIdToColliderAttrs_ != null) {
         if (serializedTrapLocalIdToColliderAttrs_ == null) {
-          SerializedTrapLocalIdToColliderAttrs = new global::shared.SerializedTrapLocalIdToColliderAttrs();
+          SerializedTrapLocalIdToColliderAttrs = new global::jtshared.SerializedTrapLocalIdToColliderAttrs();
         }
         SerializedTrapLocalIdToColliderAttrs.MergeFrom(other.SerializedTrapLocalIdToColliderAttrs);
       }
       if (other.serializedTriggerEditorIdToLocalId_ != null) {
         if (serializedTriggerEditorIdToLocalId_ == null) {
-          SerializedTriggerEditorIdToLocalId = new global::shared.SerializedTriggerEditorIdToLocalId();
+          SerializedTriggerEditorIdToLocalId = new global::jtshared.SerializedTriggerEditorIdToLocalId();
         }
         SerializedTriggerEditorIdToLocalId.MergeFrom(other.SerializedTriggerEditorIdToLocalId);
       }
@@ -8955,7 +8960,7 @@ namespace shared {
           }
           case 66: {
             if (selfParsedRdf_ == null) {
-              SelfParsedRdf = new global::shared.RenderFrame();
+              SelfParsedRdf = new global::jtshared.RenderFrame();
             }
             input.ReadMessage(SelfParsedRdf);
             break;
@@ -8990,14 +8995,14 @@ namespace shared {
           }
           case 130: {
             if (serializedTrapLocalIdToColliderAttrs_ == null) {
-              SerializedTrapLocalIdToColliderAttrs = new global::shared.SerializedTrapLocalIdToColliderAttrs();
+              SerializedTrapLocalIdToColliderAttrs = new global::jtshared.SerializedTrapLocalIdToColliderAttrs();
             }
             input.ReadMessage(SerializedTrapLocalIdToColliderAttrs);
             break;
           }
           case 146: {
             if (serializedTriggerEditorIdToLocalId_ == null) {
-              SerializedTriggerEditorIdToLocalId = new global::shared.SerializedTriggerEditorIdToLocalId();
+              SerializedTriggerEditorIdToLocalId = new global::jtshared.SerializedTriggerEditorIdToLocalId();
             }
             input.ReadMessage(SerializedTriggerEditorIdToLocalId);
             break;
@@ -9020,7 +9025,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[12]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9074,11 +9079,11 @@ namespace shared {
 
     /// <summary>Field number for the "to_send_input_frame_downsyncs" field.</summary>
     public const int ToSendInputFrameDownsyncsFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::shared.InputFrameDownsync> _repeated_toSendInputFrameDownsyncs_codec
-        = pb::FieldCodec.ForMessage(26, global::shared.InputFrameDownsync.Parser);
-    private readonly pbc::RepeatedField<global::shared.InputFrameDownsync> toSendInputFrameDownsyncs_ = new pbc::RepeatedField<global::shared.InputFrameDownsync>();
+    private static readonly pb::FieldCodec<global::jtshared.InputFrameDownsync> _repeated_toSendInputFrameDownsyncs_codec
+        = pb::FieldCodec.ForMessage(26, global::jtshared.InputFrameDownsync.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.InputFrameDownsync> toSendInputFrameDownsyncs_ = new pbc::RepeatedField<global::jtshared.InputFrameDownsync>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.InputFrameDownsync> ToSendInputFrameDownsyncs {
+    public pbc::RepeatedField<global::jtshared.InputFrameDownsync> ToSendInputFrameDownsyncs {
       get { return toSendInputFrameDownsyncs_; }
     }
 
@@ -9253,7 +9258,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[13]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9649,7 +9654,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[14]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[14]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9695,9 +9700,9 @@ namespace shared {
 
     /// <summary>Field number for the "motion_type" field.</summary>
     public const int MotionTypeFieldNumber = 2;
-    private global::shared.VfxMotionType motionType_ = 0;
+    private global::jtshared.VfxMotionType motionType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.VfxMotionType MotionType {
+    public global::jtshared.VfxMotionType MotionType {
       get { return motionType_; }
       set {
         motionType_ = value;
@@ -9706,9 +9711,9 @@ namespace shared {
 
     /// <summary>Field number for the "duration_type" field.</summary>
     public const int DurationTypeFieldNumber = 3;
-    private global::shared.VfxDurationType durationType_ = 0;
+    private global::jtshared.VfxDurationType durationType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.VfxDurationType DurationType {
+    public global::jtshared.VfxDurationType DurationType {
       get { return durationType_; }
       set {
         durationType_ = value;
@@ -9933,11 +9938,11 @@ namespace shared {
             break;
           }
           case 16: {
-            MotionType = (global::shared.VfxMotionType) input.ReadEnum();
+            MotionType = (global::jtshared.VfxMotionType) input.ReadEnum();
             break;
           }
           case 24: {
-            DurationType = (global::shared.VfxDurationType) input.ReadEnum();
+            DurationType = (global::jtshared.VfxDurationType) input.ReadEnum();
             break;
           }
           case 32: {
@@ -9974,7 +9979,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[15]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10309,9 +10314,9 @@ namespace shared {
 
     /// <summary>Field number for the "b_type" field.</summary>
     public const int BTypeFieldNumber = 19;
-    private global::shared.BulletType bType_ = 0;
+    private global::jtshared.BulletType bType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BulletType BType {
+    public global::jtshared.BulletType BType {
       get { return bType_; }
       set {
         bType_ = value;
@@ -10320,9 +10325,9 @@ namespace shared {
 
     /// <summary>Field number for the "mh_type" field.</summary>
     public const int MhTypeFieldNumber = 20;
-    private global::shared.MultiHitType mhType_ = 0;
+    private global::jtshared.MultiHitType mhType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.MultiHitType MhType {
+    public global::jtshared.MultiHitType MhType {
       get { return mhType_; }
       set {
         mhType_ = value;
@@ -10996,9 +11001,9 @@ namespace shared {
 
     /// <summary>Field number for the "ifc" field.</summary>
     public const int IfcFieldNumber = 75;
-    private global::shared.IfaceCat ifc_ = 0;
+    private global::jtshared.IfaceCat ifc_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.IfaceCat Ifc {
+    public global::jtshared.IfaceCat Ifc {
       get { return ifc_; }
       set {
         ifc_ = value;
@@ -11266,9 +11271,9 @@ namespace shared {
 
     /// <summary>Field number for the "buff_config" field.</summary>
     public const int BuffConfigFieldNumber = 1031;
-    private global::shared.BuffConfig buffConfig_;
+    private global::jtshared.BuffConfig buffConfig_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BuffConfig BuffConfig {
+    public global::jtshared.BuffConfig BuffConfig {
       get { return buffConfig_; }
       set {
         buffConfig_ = value;
@@ -12669,7 +12674,7 @@ namespace shared {
       }
       if (other.buffConfig_ != null) {
         if (buffConfig_ == null) {
-          BuffConfig = new global::shared.BuffConfig();
+          BuffConfig = new global::jtshared.BuffConfig();
         }
         BuffConfig.MergeFrom(other.BuffConfig);
       }
@@ -12781,11 +12786,11 @@ namespace shared {
             break;
           }
           case 152: {
-            BType = (global::shared.BulletType) input.ReadEnum();
+            BType = (global::jtshared.BulletType) input.ReadEnum();
             break;
           }
           case 160: {
-            MhType = (global::shared.MultiHitType) input.ReadEnum();
+            MhType = (global::jtshared.MultiHitType) input.ReadEnum();
             break;
           }
           case 168: {
@@ -13005,7 +13010,7 @@ namespace shared {
             break;
           }
           case 600: {
-            Ifc = (global::shared.IfaceCat) input.ReadEnum();
+            Ifc = (global::jtshared.IfaceCat) input.ReadEnum();
             break;
           }
           case 608: {
@@ -13102,7 +13107,7 @@ namespace shared {
           }
           case 8250: {
             if (buffConfig_ == null) {
-              BuffConfig = new global::shared.BuffConfig();
+              BuffConfig = new global::jtshared.BuffConfig();
             }
             input.ReadMessage(BuffConfig);
             break;
@@ -13153,7 +13158,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[16]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13205,13 +13210,13 @@ namespace shared {
 
     /// <summary>Field number for the "bl_state" field.</summary>
     public const int BlStateFieldNumber = 1;
-    private global::shared.BulletState blState_ = 0;
+    private global::jtshared.BulletState blState_ = 0;
     /// <summary>
     /// Jargon reference https://www.thegamer.com/fighting-games-frame-data-explained/
     /// ALL lengths are in world coordinate
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BulletState BlState {
+    public global::jtshared.BulletState BlState {
       get { return blState_; }
       set {
         blState_ = value;
@@ -13353,9 +13358,9 @@ namespace shared {
 
     /// <summary>Field number for the "exploded_on_ifc" field.</summary>
     public const int ExplodedOnIfcFieldNumber = 13;
-    private global::shared.IfaceCat explodedOnIfc_ = 0;
+    private global::jtshared.IfaceCat explodedOnIfc_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.IfaceCat ExplodedOnIfc {
+    public global::jtshared.IfaceCat ExplodedOnIfc {
       get { return explodedOnIfc_; }
       set {
         explodedOnIfc_ = value;
@@ -13869,7 +13874,7 @@ namespace shared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            BlState = (global::shared.BulletState) input.ReadEnum();
+            BlState = (global::jtshared.BulletState) input.ReadEnum();
             break;
           }
           case 16: {
@@ -13917,7 +13922,7 @@ namespace shared {
             break;
           }
           case 104: {
-            ExplodedOnIfc = (global::shared.IfaceCat) input.ReadEnum();
+            ExplodedOnIfc = (global::jtshared.IfaceCat) input.ReadEnum();
             break;
           }
           case 117: {
@@ -13982,7 +13987,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[17]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14823,7 +14828,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[18]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[18]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15253,7 +15258,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[19]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[19]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15457,9 +15462,9 @@ namespace shared {
 
     /// <summary>Field number for the "tc_pc" field.</summary>
     public const int TcPcFieldNumber = 15;
-    private global::shared.PatrolCue tcPc_;
+    private global::jtshared.PatrolCue tcPc_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PatrolCue TcPc {
+    public global::jtshared.PatrolCue TcPc {
       get { return tcPc_; }
       set {
         tcPc_ = value;
@@ -15739,7 +15744,7 @@ namespace shared {
       }
       if (other.tcPc_ != null) {
         if (tcPc_ == null) {
-          TcPc = new global::shared.PatrolCue();
+          TcPc = new global::jtshared.PatrolCue();
         }
         TcPc.MergeFrom(other.TcPc);
       }
@@ -15818,7 +15823,7 @@ namespace shared {
           }
           case 122: {
             if (tcPc_ == null) {
-              TcPc = new global::shared.PatrolCue();
+              TcPc = new global::jtshared.PatrolCue();
             }
             input.ReadMessage(TcPc);
             break;
@@ -15849,7 +15854,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15923,9 +15928,9 @@ namespace shared {
 
     /// <summary>Field number for the "config_from_tiled" field.</summary>
     public const int ConfigFromTiledFieldNumber = 3;
-    private global::shared.TrapConfigFromTiled configFromTiled_;
+    private global::jtshared.TrapConfigFromTiled configFromTiled_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TrapConfigFromTiled ConfigFromTiled {
+    public global::jtshared.TrapConfigFromTiled ConfigFromTiled {
       get { return configFromTiled_; }
       set {
         configFromTiled_ = value;
@@ -15934,9 +15939,9 @@ namespace shared {
 
     /// <summary>Field number for the "trap_state" field.</summary>
     public const int TrapStateFieldNumber = 4;
-    private global::shared.TrapState trapState_ = 0;
+    private global::jtshared.TrapState trapState_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TrapState TrapState {
+    public global::jtshared.TrapState TrapState {
       get { return trapState_; }
       set {
         trapState_ = value;
@@ -16404,7 +16409,7 @@ namespace shared {
       }
       if (other.configFromTiled_ != null) {
         if (configFromTiled_ == null) {
-          ConfigFromTiled = new global::shared.TrapConfigFromTiled();
+          ConfigFromTiled = new global::jtshared.TrapConfigFromTiled();
         }
         ConfigFromTiled.MergeFrom(other.ConfigFromTiled);
       }
@@ -16486,13 +16491,13 @@ namespace shared {
           }
           case 26: {
             if (configFromTiled_ == null) {
-              ConfigFromTiled = new global::shared.TrapConfigFromTiled();
+              ConfigFromTiled = new global::jtshared.TrapConfigFromTiled();
             }
             input.ReadMessage(ConfigFromTiled);
             break;
           }
           case 32: {
-            TrapState = (global::shared.TrapState) input.ReadEnum();
+            TrapState = (global::jtshared.TrapState) input.ReadEnum();
             break;
           }
           case 40: {
@@ -16581,7 +16586,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -16634,9 +16639,9 @@ namespace shared {
 
     /// <summary>Field number for the "trigger_type" field.</summary>
     public const int TriggerTypeFieldNumber = 3;
-    private global::shared.TriggerType triggerType_ = 0;
+    private global::jtshared.TriggerType triggerType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TriggerType TriggerType {
+    public global::jtshared.TriggerType TriggerType {
       get { return triggerType_; }
       set {
         triggerType_ = value;
@@ -16781,7 +16786,7 @@ namespace shared {
             break;
           }
           case 24: {
-            TriggerType = (global::shared.TriggerType) input.ReadEnum();
+            TriggerType = (global::jtshared.TriggerType) input.ReadEnum();
             break;
           }
           case 32: {
@@ -16802,7 +16807,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17015,7 +17020,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[23]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[23]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17188,9 +17193,9 @@ namespace shared {
 
     /// <summary>Field number for the "battle_udp_tunnel" field.</summary>
     public const int BattleUdpTunnelFieldNumber = 1024;
-    private global::shared.PeerUdpAddr battleUdpTunnel_;
+    private global::jtshared.PeerUdpAddr battleUdpTunnel_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PeerUdpAddr BattleUdpTunnel {
+    public global::jtshared.PeerUdpAddr BattleUdpTunnel {
       get { return battleUdpTunnel_; }
       set {
         battleUdpTunnel_ = value;
@@ -17423,7 +17428,7 @@ namespace shared {
       }
       if (other.battleUdpTunnel_ != null) {
         if (battleUdpTunnel_ == null) {
-          BattleUdpTunnel = new global::shared.PeerUdpAddr();
+          BattleUdpTunnel = new global::jtshared.PeerUdpAddr();
         }
         BattleUdpTunnel.MergeFrom(other.BattleUdpTunnel);
       }
@@ -17491,7 +17496,7 @@ namespace shared {
           }
           case 8194: {
             if (battleUdpTunnel_ == null) {
-              BattleUdpTunnel = new global::shared.PeerUdpAddr();
+              BattleUdpTunnel = new global::jtshared.PeerUdpAddr();
             }
             input.ReadMessage(BattleUdpTunnel);
             break;
@@ -17514,7 +17519,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17567,11 +17572,11 @@ namespace shared {
 
     /// <summary>Field number for the "players_arr" field.</summary>
     public const int PlayersArrFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::shared.CharacterDownsync> _repeated_playersArr_codec
-        = pb::FieldCodec.ForMessage(18, global::shared.CharacterDownsync.Parser);
-    private readonly pbc::RepeatedField<global::shared.CharacterDownsync> playersArr_ = new pbc::RepeatedField<global::shared.CharacterDownsync>();
+    private static readonly pb::FieldCodec<global::jtshared.CharacterDownsync> _repeated_playersArr_codec
+        = pb::FieldCodec.ForMessage(18, global::jtshared.CharacterDownsync.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.CharacterDownsync> playersArr_ = new pbc::RepeatedField<global::jtshared.CharacterDownsync>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.CharacterDownsync> PlayersArr {
+    public pbc::RepeatedField<global::jtshared.CharacterDownsync> PlayersArr {
       get { return playersArr_; }
     }
 
@@ -17588,51 +17593,51 @@ namespace shared {
 
     /// <summary>Field number for the "bullets" field.</summary>
     public const int BulletsFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::shared.Bullet> _repeated_bullets_codec
-        = pb::FieldCodec.ForMessage(34, global::shared.Bullet.Parser);
-    private readonly pbc::RepeatedField<global::shared.Bullet> bullets_ = new pbc::RepeatedField<global::shared.Bullet>();
+    private static readonly pb::FieldCodec<global::jtshared.Bullet> _repeated_bullets_codec
+        = pb::FieldCodec.ForMessage(34, global::jtshared.Bullet.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Bullet> bullets_ = new pbc::RepeatedField<global::jtshared.Bullet>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Bullet> Bullets {
+    public pbc::RepeatedField<global::jtshared.Bullet> Bullets {
       get { return bullets_; }
     }
 
     /// <summary>Field number for the "npcs_arr" field.</summary>
     public const int NpcsArrFieldNumber = 5;
-    private static readonly pb::FieldCodec<global::shared.CharacterDownsync> _repeated_npcsArr_codec
-        = pb::FieldCodec.ForMessage(42, global::shared.CharacterDownsync.Parser);
-    private readonly pbc::RepeatedField<global::shared.CharacterDownsync> npcsArr_ = new pbc::RepeatedField<global::shared.CharacterDownsync>();
+    private static readonly pb::FieldCodec<global::jtshared.CharacterDownsync> _repeated_npcsArr_codec
+        = pb::FieldCodec.ForMessage(42, global::jtshared.CharacterDownsync.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.CharacterDownsync> npcsArr_ = new pbc::RepeatedField<global::jtshared.CharacterDownsync>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.CharacterDownsync> NpcsArr {
+    public pbc::RepeatedField<global::jtshared.CharacterDownsync> NpcsArr {
       get { return npcsArr_; }
     }
 
     /// <summary>Field number for the "traps_arr" field.</summary>
     public const int TrapsArrFieldNumber = 6;
-    private static readonly pb::FieldCodec<global::shared.Trap> _repeated_trapsArr_codec
-        = pb::FieldCodec.ForMessage(50, global::shared.Trap.Parser);
-    private readonly pbc::RepeatedField<global::shared.Trap> trapsArr_ = new pbc::RepeatedField<global::shared.Trap>();
+    private static readonly pb::FieldCodec<global::jtshared.Trap> _repeated_trapsArr_codec
+        = pb::FieldCodec.ForMessage(50, global::jtshared.Trap.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Trap> trapsArr_ = new pbc::RepeatedField<global::jtshared.Trap>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Trap> TrapsArr {
+    public pbc::RepeatedField<global::jtshared.Trap> TrapsArr {
       get { return trapsArr_; }
     }
 
     /// <summary>Field number for the "triggers_arr" field.</summary>
     public const int TriggersArrFieldNumber = 7;
-    private static readonly pb::FieldCodec<global::shared.Trigger> _repeated_triggersArr_codec
-        = pb::FieldCodec.ForMessage(58, global::shared.Trigger.Parser);
-    private readonly pbc::RepeatedField<global::shared.Trigger> triggersArr_ = new pbc::RepeatedField<global::shared.Trigger>();
+    private static readonly pb::FieldCodec<global::jtshared.Trigger> _repeated_triggersArr_codec
+        = pb::FieldCodec.ForMessage(58, global::jtshared.Trigger.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Trigger> triggersArr_ = new pbc::RepeatedField<global::jtshared.Trigger>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Trigger> TriggersArr {
+    public pbc::RepeatedField<global::jtshared.Trigger> TriggersArr {
       get { return triggersArr_; }
     }
 
     /// <summary>Field number for the "pickables" field.</summary>
     public const int PickablesFieldNumber = 10;
-    private static readonly pb::FieldCodec<global::shared.Pickable> _repeated_pickables_codec
-        = pb::FieldCodec.ForMessage(82, global::shared.Pickable.Parser);
-    private readonly pbc::RepeatedField<global::shared.Pickable> pickables_ = new pbc::RepeatedField<global::shared.Pickable>();
+    private static readonly pb::FieldCodec<global::jtshared.Pickable> _repeated_pickables_codec
+        = pb::FieldCodec.ForMessage(82, global::jtshared.Pickable.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Pickable> pickables_ = new pbc::RepeatedField<global::jtshared.Pickable>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.Pickable> Pickables {
+    public pbc::RepeatedField<global::jtshared.Pickable> Pickables {
       get { return pickables_; }
     }
 
@@ -17983,7 +17988,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18040,9 +18045,9 @@ namespace shared {
 
     /// <summary>Field number for the "rdf" field.</summary>
     public const int RdfFieldNumber = 3;
-    private global::shared.RenderFrame rdf_;
+    private global::jtshared.RenderFrame rdf_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.RenderFrame Rdf {
+    public global::jtshared.RenderFrame Rdf {
       get { return rdf_; }
       set {
         rdf_ = value;
@@ -18051,19 +18056,19 @@ namespace shared {
 
     /// <summary>Field number for the "input_frame_downsync_batch" field.</summary>
     public const int InputFrameDownsyncBatchFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::shared.InputFrameDownsync> _repeated_inputFrameDownsyncBatch_codec
-        = pb::FieldCodec.ForMessage(34, global::shared.InputFrameDownsync.Parser);
-    private readonly pbc::RepeatedField<global::shared.InputFrameDownsync> inputFrameDownsyncBatch_ = new pbc::RepeatedField<global::shared.InputFrameDownsync>();
+    private static readonly pb::FieldCodec<global::jtshared.InputFrameDownsync> _repeated_inputFrameDownsyncBatch_codec
+        = pb::FieldCodec.ForMessage(34, global::jtshared.InputFrameDownsync.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.InputFrameDownsync> inputFrameDownsyncBatch_ = new pbc::RepeatedField<global::jtshared.InputFrameDownsync>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.InputFrameDownsync> InputFrameDownsyncBatch {
+    public pbc::RepeatedField<global::jtshared.InputFrameDownsync> InputFrameDownsyncBatch {
       get { return inputFrameDownsyncBatch_; }
     }
 
     /// <summary>Field number for the "bci_frame" field.</summary>
     public const int BciFrameFieldNumber = 5;
-    private global::shared.BattleColliderInfo bciFrame_;
+    private global::jtshared.BattleColliderInfo bciFrame_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BattleColliderInfo BciFrame {
+    public global::jtshared.BattleColliderInfo BciFrame {
       get { return bciFrame_; }
       set {
         bciFrame_ = value;
@@ -18083,11 +18088,11 @@ namespace shared {
 
     /// <summary>Field number for the "peer_udp_addr_list" field.</summary>
     public const int PeerUdpAddrListFieldNumber = 7;
-    private static readonly pb::FieldCodec<global::shared.PeerUdpAddr> _repeated_peerUdpAddrList_codec
-        = pb::FieldCodec.ForMessage(58, global::shared.PeerUdpAddr.Parser);
-    private readonly pbc::RepeatedField<global::shared.PeerUdpAddr> peerUdpAddrList_ = new pbc::RepeatedField<global::shared.PeerUdpAddr>();
+    private static readonly pb::FieldCodec<global::jtshared.PeerUdpAddr> _repeated_peerUdpAddrList_codec
+        = pb::FieldCodec.ForMessage(58, global::jtshared.PeerUdpAddr.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.PeerUdpAddr> peerUdpAddrList_ = new pbc::RepeatedField<global::jtshared.PeerUdpAddr>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.PeerUdpAddr> PeerUdpAddrList {
+    public pbc::RepeatedField<global::jtshared.PeerUdpAddr> PeerUdpAddrList {
       get { return peerUdpAddrList_; }
     }
 
@@ -18223,14 +18228,14 @@ namespace shared {
       }
       if (other.rdf_ != null) {
         if (rdf_ == null) {
-          Rdf = new global::shared.RenderFrame();
+          Rdf = new global::jtshared.RenderFrame();
         }
         Rdf.MergeFrom(other.Rdf);
       }
       inputFrameDownsyncBatch_.Add(other.inputFrameDownsyncBatch_);
       if (other.bciFrame_ != null) {
         if (bciFrame_ == null) {
-          BciFrame = new global::shared.BattleColliderInfo();
+          BciFrame = new global::jtshared.BattleColliderInfo();
         }
         BciFrame.MergeFrom(other.BciFrame);
       }
@@ -18262,7 +18267,7 @@ namespace shared {
           }
           case 26: {
             if (rdf_ == null) {
-              Rdf = new global::shared.RenderFrame();
+              Rdf = new global::jtshared.RenderFrame();
             }
             input.ReadMessage(Rdf);
             break;
@@ -18273,7 +18278,7 @@ namespace shared {
           }
           case 42: {
             if (bciFrame_ == null) {
-              BciFrame = new global::shared.BattleColliderInfo();
+              BciFrame = new global::jtshared.BattleColliderInfo();
             }
             input.ReadMessage(BciFrame);
             break;
@@ -18304,7 +18309,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18386,9 +18391,9 @@ namespace shared {
 
     /// <summary>Field number for the "trigger_type" field.</summary>
     public const int TriggerTypeFieldNumber = 5;
-    private global::shared.SkillTriggerType triggerType_ = 0;
+    private global::jtshared.SkillTriggerType triggerType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SkillTriggerType TriggerType {
+    public global::jtshared.SkillTriggerType TriggerType {
       get { return triggerType_; }
       set {
         triggerType_ = value;
@@ -18397,9 +18402,9 @@ namespace shared {
 
     /// <summary>Field number for the "bound_ch_state" field.</summary>
     public const int BoundChStateFieldNumber = 6;
-    private global::shared.CharacterState boundChState_ = 0;
+    private global::jtshared.CharacterState boundChState_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.CharacterState BoundChState {
+    public global::jtshared.CharacterState BoundChState {
       get { return boundChState_; }
       set {
         boundChState_ = value;
@@ -18408,9 +18413,9 @@ namespace shared {
 
     /// <summary>Field number for the "bound_ch_state_on_hit" field.</summary>
     public const int BoundChStateOnHitFieldNumber = 7;
-    private global::shared.CharacterState boundChStateOnHit_ = 0;
+    private global::jtshared.CharacterState boundChStateOnHit_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.CharacterState BoundChStateOnHit {
+    public global::jtshared.CharacterState BoundChStateOnHit {
       get { return boundChStateOnHit_; }
       set {
         boundChStateOnHit_ = value;
@@ -18444,22 +18449,22 @@ namespace shared {
 
     /// <summary>Field number for the "hits" field.</summary>
     public const int HitsFieldNumber = 1024;
-    private static readonly pb::FieldCodec<global::shared.BulletConfig> _repeated_hits_codec
-        = pb::FieldCodec.ForMessage(8194, global::shared.BulletConfig.Parser);
-    private readonly pbc::RepeatedField<global::shared.BulletConfig> hits_ = new pbc::RepeatedField<global::shared.BulletConfig>();
+    private static readonly pb::FieldCodec<global::jtshared.BulletConfig> _repeated_hits_codec
+        = pb::FieldCodec.ForMessage(8194, global::jtshared.BulletConfig.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.BulletConfig> hits_ = new pbc::RepeatedField<global::jtshared.BulletConfig>();
     /// <summary>
     /// Hits within a "Skill" are automatically triggered
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.BulletConfig> Hits {
+    public pbc::RepeatedField<global::jtshared.BulletConfig> Hits {
       get { return hits_; }
     }
 
     /// <summary>Field number for the "self_non_stock_buff" field.</summary>
     public const int SelfNonStockBuffFieldNumber = 1025;
-    private global::shared.BuffConfig selfNonStockBuff_;
+    private global::jtshared.BuffConfig selfNonStockBuff_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BuffConfig SelfNonStockBuff {
+    public global::jtshared.BuffConfig SelfNonStockBuff {
       get { return selfNonStockBuff_; }
       set {
         selfNonStockBuff_ = value;
@@ -18641,7 +18646,7 @@ namespace shared {
       hits_.Add(other.hits_);
       if (other.selfNonStockBuff_ != null) {
         if (selfNonStockBuff_ == null) {
-          SelfNonStockBuff = new global::shared.BuffConfig();
+          SelfNonStockBuff = new global::jtshared.BuffConfig();
         }
         SelfNonStockBuff.MergeFrom(other.SelfNonStockBuff);
       }
@@ -18673,15 +18678,15 @@ namespace shared {
             break;
           }
           case 40: {
-            TriggerType = (global::shared.SkillTriggerType) input.ReadEnum();
+            TriggerType = (global::jtshared.SkillTriggerType) input.ReadEnum();
             break;
           }
           case 48: {
-            BoundChState = (global::shared.CharacterState) input.ReadEnum();
+            BoundChState = (global::jtshared.CharacterState) input.ReadEnum();
             break;
           }
           case 56: {
-            BoundChStateOnHit = (global::shared.CharacterState) input.ReadEnum();
+            BoundChStateOnHit = (global::jtshared.CharacterState) input.ReadEnum();
             break;
           }
           case 64: {
@@ -18698,7 +18703,7 @@ namespace shared {
           }
           case 8202: {
             if (selfNonStockBuff_ == null) {
-              SelfNonStockBuff = new global::shared.BuffConfig();
+              SelfNonStockBuff = new global::jtshared.BuffConfig();
             }
             input.ReadMessage(SelfNonStockBuff);
             break;
@@ -18717,7 +18722,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18746,9 +18751,9 @@ namespace shared {
 
     /// <summary>Field number for the "rdf" field.</summary>
     public const int RdfFieldNumber = 1;
-    private global::shared.RenderFrame rdf_;
+    private global::jtshared.RenderFrame rdf_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.RenderFrame Rdf {
+    public global::jtshared.RenderFrame Rdf {
       get { return rdf_; }
       set {
         rdf_ = value;
@@ -18757,9 +18762,9 @@ namespace shared {
 
     /// <summary>Field number for the "actually_used_idf" field.</summary>
     public const int ActuallyUsedIdfFieldNumber = 2;
-    private global::shared.InputFrameDownsync actuallyUsedIdf_;
+    private global::jtshared.InputFrameDownsync actuallyUsedIdf_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.InputFrameDownsync ActuallyUsedIdf {
+    public global::jtshared.InputFrameDownsync ActuallyUsedIdf {
       get { return actuallyUsedIdf_; }
       set {
         actuallyUsedIdf_ = value;
@@ -18837,13 +18842,13 @@ namespace shared {
       }
       if (other.rdf_ != null) {
         if (rdf_ == null) {
-          Rdf = new global::shared.RenderFrame();
+          Rdf = new global::jtshared.RenderFrame();
         }
         Rdf.MergeFrom(other.Rdf);
       }
       if (other.actuallyUsedIdf_ != null) {
         if (actuallyUsedIdf_ == null) {
-          ActuallyUsedIdf = new global::shared.InputFrameDownsync();
+          ActuallyUsedIdf = new global::jtshared.InputFrameDownsync();
         }
         ActuallyUsedIdf.MergeFrom(other.ActuallyUsedIdf);
       }
@@ -18860,14 +18865,14 @@ namespace shared {
             break;
           case 10: {
             if (rdf_ == null) {
-              Rdf = new global::shared.RenderFrame();
+              Rdf = new global::jtshared.RenderFrame();
             }
             input.ReadMessage(Rdf);
             break;
           }
           case 18: {
             if (actuallyUsedIdf_ == null) {
-              ActuallyUsedIdf = new global::shared.InputFrameDownsync();
+              ActuallyUsedIdf = new global::jtshared.InputFrameDownsync();
             }
             input.ReadMessage(ActuallyUsedIdf);
             break;
@@ -18886,7 +18891,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19043,7 +19048,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19092,9 +19097,9 @@ namespace shared {
 
     /// <summary>Field number for the "stock_type" field.</summary>
     public const int StockTypeFieldNumber = 2;
-    private global::shared.BuffStockType stockType_ = 0;
+    private global::jtshared.BuffStockType stockType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BuffStockType StockType {
+    public global::jtshared.BuffStockType StockType {
       get { return stockType_; }
       set {
         stockType_ = value;
@@ -19114,9 +19119,9 @@ namespace shared {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 4;
-    private global::shared.DebuffType type_ = 0;
+    private global::jtshared.DebuffType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.DebuffType Type {
+    public global::jtshared.DebuffType Type {
       get { return type_; }
       set {
         type_ = value;
@@ -19402,7 +19407,7 @@ namespace shared {
             break;
           }
           case 16: {
-            StockType = (global::shared.BuffStockType) input.ReadEnum();
+            StockType = (global::jtshared.BuffStockType) input.ReadEnum();
             break;
           }
           case 24: {
@@ -19410,7 +19415,7 @@ namespace shared {
             break;
           }
           case 32: {
-            Type = (global::shared.DebuffType) input.ReadEnum();
+            Type = (global::jtshared.DebuffType) input.ReadEnum();
             break;
           }
           case 40: {
@@ -19455,7 +19460,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19512,9 +19517,9 @@ namespace shared {
 
     /// <summary>Field number for the "stock_type" field.</summary>
     public const int StockTypeFieldNumber = 2;
-    private global::shared.BuffStockType stockType_ = 0;
+    private global::jtshared.BuffStockType stockType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.BuffStockType StockType {
+    public global::jtshared.BuffStockType StockType {
       get { return stockType_; }
       set {
         stockType_ = value;
@@ -20008,7 +20013,7 @@ namespace shared {
             break;
           }
           case 16: {
-            StockType = (global::shared.BuffStockType) input.ReadEnum();
+            StockType = (global::jtshared.BuffStockType) input.ReadEnum();
             break;
           }
           case 24: {
@@ -20094,7 +20099,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20363,7 +20368,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20523,7 +20528,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20680,7 +20685,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20893,7 +20898,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21078,7 +21083,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21117,9 +21122,9 @@ namespace shared {
 
     /// <summary>Field number for the "stock_type" field.</summary>
     public const int StockTypeFieldNumber = 1;
-    private global::shared.InventorySlotStockType stockType_ = 0;
+    private global::jtshared.InventorySlotStockType stockType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.InventorySlotStockType StockType {
+    public global::jtshared.InventorySlotStockType StockType {
       get { return stockType_; }
       set {
         stockType_ = value;
@@ -21454,7 +21459,7 @@ namespace shared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            StockType = (global::shared.InventorySlotStockType) input.ReadEnum();
+            StockType = (global::jtshared.InventorySlotStockType) input.ReadEnum();
             break;
           }
           case 16: {
@@ -21515,7 +21520,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21543,11 +21548,11 @@ namespace shared {
 
     /// <summary>Field number for the "slots" field.</summary>
     public const int SlotsFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::shared.InventorySlot> _repeated_slots_codec
-        = pb::FieldCodec.ForMessage(10, global::shared.InventorySlot.Parser);
-    private readonly pbc::RepeatedField<global::shared.InventorySlot> slots_ = new pbc::RepeatedField<global::shared.InventorySlot>();
+    private static readonly pb::FieldCodec<global::jtshared.InventorySlot> _repeated_slots_codec
+        = pb::FieldCodec.ForMessage(10, global::jtshared.InventorySlot.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.InventorySlot> slots_ = new pbc::RepeatedField<global::jtshared.InventorySlot>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.InventorySlot> Slots {
+    public pbc::RepeatedField<global::jtshared.InventorySlot> Slots {
       get { return slots_; }
     }
 
@@ -21636,7 +21641,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21768,7 +21773,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21897,7 +21902,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22097,7 +22102,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22465,7 +22470,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22634,7 +22639,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22668,27 +22673,27 @@ namespace shared {
 
     /// <summary>Field number for the "region_progress_dict" field.</summary>
     public const int RegionProgressDictFieldNumber = 1;
-    private static readonly pbc::MapField<int, global::shared.PlayerRegionProgress>.Codec _map_regionProgressDict_codec
-        = new pbc::MapField<int, global::shared.PlayerRegionProgress>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::shared.PlayerRegionProgress.Parser), 10);
-    private readonly pbc::MapField<int, global::shared.PlayerRegionProgress> regionProgressDict_ = new pbc::MapField<int, global::shared.PlayerRegionProgress>();
+    private static readonly pbc::MapField<int, global::jtshared.PlayerRegionProgress>.Codec _map_regionProgressDict_codec
+        = new pbc::MapField<int, global::jtshared.PlayerRegionProgress>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.PlayerRegionProgress.Parser), 10);
+    private readonly pbc::MapField<int, global::jtshared.PlayerRegionProgress> regionProgressDict_ = new pbc::MapField<int, global::jtshared.PlayerRegionProgress>();
     /// <summary>
     /// Including just unlocked regions with 0 progress
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::shared.PlayerRegionProgress> RegionProgressDict {
+    public pbc::MapField<int, global::jtshared.PlayerRegionProgress> RegionProgressDict {
       get { return regionProgressDict_; }
     }
 
     /// <summary>Field number for the "level_progress_dict" field.</summary>
     public const int LevelProgressDictFieldNumber = 2;
-    private static readonly pbc::MapField<int, global::shared.PlayerLevelProgress>.Codec _map_levelProgressDict_codec
-        = new pbc::MapField<int, global::shared.PlayerLevelProgress>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::shared.PlayerLevelProgress.Parser), 18);
-    private readonly pbc::MapField<int, global::shared.PlayerLevelProgress> levelProgressDict_ = new pbc::MapField<int, global::shared.PlayerLevelProgress>();
+    private static readonly pbc::MapField<int, global::jtshared.PlayerLevelProgress>.Codec _map_levelProgressDict_codec
+        = new pbc::MapField<int, global::jtshared.PlayerLevelProgress>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.PlayerLevelProgress.Parser), 18);
+    private readonly pbc::MapField<int, global::jtshared.PlayerLevelProgress> levelProgressDict_ = new pbc::MapField<int, global::jtshared.PlayerLevelProgress>();
     /// <summary>
     /// Including just unlocked levels with 0 progress 
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::shared.PlayerLevelProgress> LevelProgressDict {
+    public pbc::MapField<int, global::jtshared.PlayerLevelProgress> LevelProgressDict {
       get { return levelProgressDict_; }
     }
 
@@ -22716,9 +22721,9 @@ namespace shared {
 
     /// <summary>Field number for the "view" field.</summary>
     public const int ViewFieldNumber = 5;
-    private global::shared.PlayerStoryModeSelectView view_ = 0;
+    private global::jtshared.PlayerStoryModeSelectView view_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PlayerStoryModeSelectView View {
+    public global::jtshared.PlayerStoryModeSelectView View {
       get { return view_; }
       set {
         view_ = value;
@@ -22738,14 +22743,14 @@ namespace shared {
 
     /// <summary>Field number for the "ch_unlock_progress_dict" field.</summary>
     public const int ChUnlockProgressDictFieldNumber = 7;
-    private static readonly pbc::MapField<uint, global::shared.PlayerChUnlockProgress>.Codec _map_chUnlockProgressDict_codec
-        = new pbc::MapField<uint, global::shared.PlayerChUnlockProgress>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForMessage(18, global::shared.PlayerChUnlockProgress.Parser), 58);
-    private readonly pbc::MapField<uint, global::shared.PlayerChUnlockProgress> chUnlockProgressDict_ = new pbc::MapField<uint, global::shared.PlayerChUnlockProgress>();
+    private static readonly pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>.Codec _map_chUnlockProgressDict_codec
+        = new pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.PlayerChUnlockProgress.Parser), 58);
+    private readonly pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress> chUnlockProgressDict_ = new pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>();
     /// <summary>
     /// keyed by "species_id: uint32"
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<uint, global::shared.PlayerChUnlockProgress> ChUnlockProgressDict {
+    public pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress> ChUnlockProgressDict {
       get { return chUnlockProgressDict_; }
     }
 
@@ -22891,7 +22896,7 @@ namespace shared {
             break;
           }
           case 40: {
-            View = (global::shared.PlayerStoryModeSelectView) input.ReadEnum();
+            View = (global::jtshared.PlayerStoryModeSelectView) input.ReadEnum();
             break;
           }
           case 48: {
@@ -22916,7 +22921,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22968,14 +22973,14 @@ namespace shared {
 
     /// <summary>Field number for the "ch_unlock_progress_dict" field.</summary>
     public const int ChUnlockProgressDictFieldNumber = 3;
-    private static readonly pbc::MapField<uint, global::shared.PlayerChUnlockProgress>.Codec _map_chUnlockProgressDict_codec
-        = new pbc::MapField<uint, global::shared.PlayerChUnlockProgress>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForMessage(18, global::shared.PlayerChUnlockProgress.Parser), 26);
-    private readonly pbc::MapField<uint, global::shared.PlayerChUnlockProgress> chUnlockProgressDict_ = new pbc::MapField<uint, global::shared.PlayerChUnlockProgress>();
+    private static readonly pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>.Codec _map_chUnlockProgressDict_codec
+        = new pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.PlayerChUnlockProgress.Parser), 26);
+    private readonly pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress> chUnlockProgressDict_ = new pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress>();
     /// <summary>
     /// keyed by "species_id: uint32"
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<uint, global::shared.PlayerChUnlockProgress> ChUnlockProgressDict {
+    public pbc::MapField<uint, global::jtshared.PlayerChUnlockProgress> ChUnlockProgressDict {
       get { return chUnlockProgressDict_; }
     }
 
@@ -23096,7 +23101,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23315,7 +23320,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23344,11 +23349,11 @@ namespace shared {
 
     /// <summary>Field number for the "lines" field.</summary>
     public const int LinesFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::shared.StoryPointDialogLine> _repeated_lines_codec
-        = pb::FieldCodec.ForMessage(10, global::shared.StoryPointDialogLine.Parser);
-    private readonly pbc::RepeatedField<global::shared.StoryPointDialogLine> lines_ = new pbc::RepeatedField<global::shared.StoryPointDialogLine>();
+    private static readonly pb::FieldCodec<global::jtshared.StoryPointDialogLine> _repeated_lines_codec
+        = pb::FieldCodec.ForMessage(10, global::jtshared.StoryPointDialogLine.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.StoryPointDialogLine> lines_ = new pbc::RepeatedField<global::jtshared.StoryPointDialogLine>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.StoryPointDialogLine> Lines {
+    public pbc::RepeatedField<global::jtshared.StoryPointDialogLine> Lines {
       get { return lines_; }
     }
 
@@ -23464,7 +23469,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23494,11 +23499,11 @@ namespace shared {
 
     /// <summary>Field number for the "steps" field.</summary>
     public const int StepsFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::shared.StoryPointStep> _repeated_steps_codec
-        = pb::FieldCodec.ForMessage(10, global::shared.StoryPointStep.Parser);
-    private readonly pbc::RepeatedField<global::shared.StoryPointStep> steps_ = new pbc::RepeatedField<global::shared.StoryPointStep>();
+    private static readonly pb::FieldCodec<global::jtshared.StoryPointStep> _repeated_steps_codec
+        = pb::FieldCodec.ForMessage(10, global::jtshared.StoryPointStep.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.StoryPointStep> steps_ = new pbc::RepeatedField<global::jtshared.StoryPointStep>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.StoryPointStep> Steps {
+    public pbc::RepeatedField<global::jtshared.StoryPointStep> Steps {
       get { return steps_; }
     }
 
@@ -23647,7 +23652,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23675,11 +23680,11 @@ namespace shared {
 
     /// <summary>Field number for the "points" field.</summary>
     public const int PointsFieldNumber = 1;
-    private static readonly pbc::MapField<int, global::shared.StoryPoint>.Codec _map_points_codec
-        = new pbc::MapField<int, global::shared.StoryPoint>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::shared.StoryPoint.Parser), 10);
-    private readonly pbc::MapField<int, global::shared.StoryPoint> points_ = new pbc::MapField<int, global::shared.StoryPoint>();
+    private static readonly pbc::MapField<int, global::jtshared.StoryPoint>.Codec _map_points_codec
+        = new pbc::MapField<int, global::jtshared.StoryPoint>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.StoryPoint.Parser), 10);
+    private readonly pbc::MapField<int, global::jtshared.StoryPoint> points_ = new pbc::MapField<int, global::jtshared.StoryPoint>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::shared.StoryPoint> Points {
+    public pbc::MapField<int, global::jtshared.StoryPoint> Points {
       get { return points_; }
     }
 
@@ -23768,7 +23773,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23946,7 +23951,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23975,9 +23980,9 @@ namespace shared {
 
     /// <summary>Field number for the "attr" field.</summary>
     public const int AttrFieldNumber = 1;
-    private global::shared.PatrolCue attr_;
+    private global::jtshared.PatrolCue attr_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PatrolCue Attr {
+    public global::jtshared.PatrolCue Attr {
       get { return attr_; }
       set {
         attr_ = value;
@@ -23986,9 +23991,9 @@ namespace shared {
 
     /// <summary>Field number for the "polygon" field.</summary>
     public const int PolygonFieldNumber = 2;
-    private global::shared.SerializableConvexPolygon polygon_;
+    private global::jtshared.SerializableConvexPolygon polygon_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SerializableConvexPolygon Polygon {
+    public global::jtshared.SerializableConvexPolygon Polygon {
       get { return polygon_; }
       set {
         polygon_ = value;
@@ -24066,13 +24071,13 @@ namespace shared {
       }
       if (other.attr_ != null) {
         if (attr_ == null) {
-          Attr = new global::shared.PatrolCue();
+          Attr = new global::jtshared.PatrolCue();
         }
         Attr.MergeFrom(other.Attr);
       }
       if (other.polygon_ != null) {
         if (polygon_ == null) {
-          Polygon = new global::shared.SerializableConvexPolygon();
+          Polygon = new global::jtshared.SerializableConvexPolygon();
         }
         Polygon.MergeFrom(other.Polygon);
       }
@@ -24089,14 +24094,14 @@ namespace shared {
             break;
           case 10: {
             if (attr_ == null) {
-              Attr = new global::shared.PatrolCue();
+              Attr = new global::jtshared.PatrolCue();
             }
             input.ReadMessage(Attr);
             break;
           }
           case 18: {
             if (polygon_ == null) {
-              Polygon = new global::shared.SerializableConvexPolygon();
+              Polygon = new global::jtshared.SerializableConvexPolygon();
             }
             input.ReadMessage(Polygon);
             break;
@@ -24115,7 +24120,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24144,12 +24149,12 @@ namespace shared {
 
     /// <summary>Field number for the "attr" field.</summary>
     public const int AttrFieldNumber = 1;
-    private global::shared.TrapColliderAttr attr_;
+    private global::jtshared.TrapColliderAttr attr_;
     /// <summary>
     /// "TrapColliderAttr.collision_type_mask" is a little peculiar, it can be a composite of different COLLISION_*_INDEX_PREFIX, thus often NOT taken care of by the COLLIDABLE_PAIRS set 
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TrapColliderAttr Attr {
+    public global::jtshared.TrapColliderAttr Attr {
       get { return attr_; }
       set {
         attr_ = value;
@@ -24158,9 +24163,9 @@ namespace shared {
 
     /// <summary>Field number for the "polygon" field.</summary>
     public const int PolygonFieldNumber = 2;
-    private global::shared.SerializableConvexPolygon polygon_;
+    private global::jtshared.SerializableConvexPolygon polygon_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SerializableConvexPolygon Polygon {
+    public global::jtshared.SerializableConvexPolygon Polygon {
       get { return polygon_; }
       set {
         polygon_ = value;
@@ -24238,13 +24243,13 @@ namespace shared {
       }
       if (other.attr_ != null) {
         if (attr_ == null) {
-          Attr = new global::shared.TrapColliderAttr();
+          Attr = new global::jtshared.TrapColliderAttr();
         }
         Attr.MergeFrom(other.Attr);
       }
       if (other.polygon_ != null) {
         if (polygon_ == null) {
-          Polygon = new global::shared.SerializableConvexPolygon();
+          Polygon = new global::jtshared.SerializableConvexPolygon();
         }
         Polygon.MergeFrom(other.Polygon);
       }
@@ -24261,14 +24266,14 @@ namespace shared {
             break;
           case 10: {
             if (attr_ == null) {
-              Attr = new global::shared.TrapColliderAttr();
+              Attr = new global::jtshared.TrapColliderAttr();
             }
             input.ReadMessage(Attr);
             break;
           }
           case 18: {
             if (polygon_ == null) {
-              Polygon = new global::shared.SerializableConvexPolygon();
+              Polygon = new global::jtshared.SerializableConvexPolygon();
             }
             input.ReadMessage(Polygon);
             break;
@@ -24287,7 +24292,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24316,12 +24321,12 @@ namespace shared {
 
     /// <summary>Field number for the "attr" field.</summary>
     public const int AttrFieldNumber = 1;
-    private global::shared.TriggerColliderAttr attr_;
+    private global::jtshared.TriggerColliderAttr attr_;
     /// <summary>
     /// "collision_type_mask" can be derived from here
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TriggerColliderAttr Attr {
+    public global::jtshared.TriggerColliderAttr Attr {
       get { return attr_; }
       set {
         attr_ = value;
@@ -24330,9 +24335,9 @@ namespace shared {
 
     /// <summary>Field number for the "polygon" field.</summary>
     public const int PolygonFieldNumber = 2;
-    private global::shared.SerializableConvexPolygon polygon_;
+    private global::jtshared.SerializableConvexPolygon polygon_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.SerializableConvexPolygon Polygon {
+    public global::jtshared.SerializableConvexPolygon Polygon {
       get { return polygon_; }
       set {
         polygon_ = value;
@@ -24410,13 +24415,13 @@ namespace shared {
       }
       if (other.attr_ != null) {
         if (attr_ == null) {
-          Attr = new global::shared.TriggerColliderAttr();
+          Attr = new global::jtshared.TriggerColliderAttr();
         }
         Attr.MergeFrom(other.Attr);
       }
       if (other.polygon_ != null) {
         if (polygon_ == null) {
-          Polygon = new global::shared.SerializableConvexPolygon();
+          Polygon = new global::jtshared.SerializableConvexPolygon();
         }
         Polygon.MergeFrom(other.Polygon);
       }
@@ -24433,14 +24438,14 @@ namespace shared {
             break;
           case 10: {
             if (attr_ == null) {
-              Attr = new global::shared.TriggerColliderAttr();
+              Attr = new global::jtshared.TriggerColliderAttr();
             }
             input.ReadMessage(Attr);
             break;
           }
           case 18: {
             if (polygon_ == null) {
-              Polygon = new global::shared.SerializableConvexPolygon();
+              Polygon = new global::jtshared.SerializableConvexPolygon();
             }
             input.ReadMessage(Polygon);
             break;
@@ -24459,7 +24464,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24487,11 +24492,11 @@ namespace shared {
 
     /// <summary>Field number for the "list" field.</summary>
     public const int ListFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::shared.TrapColliderAttr> _repeated_list_codec
-        = pb::FieldCodec.ForMessage(10, global::shared.TrapColliderAttr.Parser);
-    private readonly pbc::RepeatedField<global::shared.TrapColliderAttr> list_ = new pbc::RepeatedField<global::shared.TrapColliderAttr>();
+    private static readonly pb::FieldCodec<global::jtshared.TrapColliderAttr> _repeated_list_codec
+        = pb::FieldCodec.ForMessage(10, global::jtshared.TrapColliderAttr.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.TrapColliderAttr> list_ = new pbc::RepeatedField<global::jtshared.TrapColliderAttr>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.TrapColliderAttr> List {
+    public pbc::RepeatedField<global::jtshared.TrapColliderAttr> List {
       get { return list_; }
     }
 
@@ -24580,7 +24585,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24608,11 +24613,11 @@ namespace shared {
 
     /// <summary>Field number for the "dict" field.</summary>
     public const int DictFieldNumber = 1;
-    private static readonly pbc::MapField<int, global::shared.TrapColliderAttrArray>.Codec _map_dict_codec
-        = new pbc::MapField<int, global::shared.TrapColliderAttrArray>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::shared.TrapColliderAttrArray.Parser), 10);
-    private readonly pbc::MapField<int, global::shared.TrapColliderAttrArray> dict_ = new pbc::MapField<int, global::shared.TrapColliderAttrArray>();
+    private static readonly pbc::MapField<int, global::jtshared.TrapColliderAttrArray>.Codec _map_dict_codec
+        = new pbc::MapField<int, global::jtshared.TrapColliderAttrArray>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.TrapColliderAttrArray.Parser), 10);
+    private readonly pbc::MapField<int, global::jtshared.TrapColliderAttrArray> dict_ = new pbc::MapField<int, global::jtshared.TrapColliderAttrArray>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::shared.TrapColliderAttrArray> Dict {
+    public pbc::MapField<int, global::jtshared.TrapColliderAttrArray> Dict {
       get { return dict_; }
     }
 
@@ -24701,7 +24706,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24740,11 +24745,11 @@ namespace shared {
 
     /// <summary>Field number for the "dict2" field.</summary>
     public const int Dict2FieldNumber = 2;
-    private static readonly pbc::MapField<int, global::shared.TriggerConfigFromTiled>.Codec _map_dict2_codec
-        = new pbc::MapField<int, global::shared.TriggerConfigFromTiled>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::shared.TriggerConfigFromTiled.Parser), 18);
-    private readonly pbc::MapField<int, global::shared.TriggerConfigFromTiled> dict2_ = new pbc::MapField<int, global::shared.TriggerConfigFromTiled>();
+    private static readonly pbc::MapField<int, global::jtshared.TriggerConfigFromTiled>.Codec _map_dict2_codec
+        = new pbc::MapField<int, global::jtshared.TriggerConfigFromTiled>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.TriggerConfigFromTiled.Parser), 18);
+    private readonly pbc::MapField<int, global::jtshared.TriggerConfigFromTiled> dict2_ = new pbc::MapField<int, global::jtshared.TriggerConfigFromTiled>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::shared.TriggerConfigFromTiled> Dict2 {
+    public pbc::MapField<int, global::jtshared.TriggerConfigFromTiled> Dict2 {
       get { return dict2_; }
     }
 
@@ -24842,7 +24847,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[56]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[56]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24963,9 +24968,9 @@ namespace shared {
 
     /// <summary>Field number for the "pickup_type" field.</summary>
     public const int PickupTypeFieldNumber = 8;
-    private global::shared.PickupType pickupType_ = 0;
+    private global::jtshared.PickupType pickupType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PickupType PickupType {
+    public global::jtshared.PickupType PickupType {
       get { return pickupType_; }
       set {
         pickupType_ = value;
@@ -25303,7 +25308,7 @@ namespace shared {
             break;
           }
           case 64: {
-            PickupType = (global::shared.PickupType) input.ReadEnum();
+            PickupType = (global::jtshared.PickupType) input.ReadEnum();
             break;
           }
           case 72: {
@@ -25344,7 +25349,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25415,9 +25420,9 @@ namespace shared {
 
     /// <summary>Field number for the "config_from_tiled" field.</summary>
     public const int ConfigFromTiledFieldNumber = 4;
-    private global::shared.PickableConfigFromTiled configFromTiled_;
+    private global::jtshared.PickableConfigFromTiled configFromTiled_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PickableConfigFromTiled ConfigFromTiled {
+    public global::jtshared.PickableConfigFromTiled ConfigFromTiled {
       get { return configFromTiled_; }
       set {
         configFromTiled_ = value;
@@ -25470,9 +25475,9 @@ namespace shared {
 
     /// <summary>Field number for the "pk_state" field.</summary>
     public const int PkStateFieldNumber = 9;
-    private global::shared.PickableState pkState_ = 0;
+    private global::jtshared.PickableState pkState_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.PickableState PkState {
+    public global::jtshared.PickableState PkState {
       get { return pkState_; }
       set {
         pkState_ = value;
@@ -25662,7 +25667,7 @@ namespace shared {
       }
       if (other.configFromTiled_ != null) {
         if (configFromTiled_ == null) {
-          ConfigFromTiled = new global::shared.PickableConfigFromTiled();
+          ConfigFromTiled = new global::jtshared.PickableConfigFromTiled();
         }
         ConfigFromTiled.MergeFrom(other.ConfigFromTiled);
       }
@@ -25712,7 +25717,7 @@ namespace shared {
           }
           case 34: {
             if (configFromTiled_ == null) {
-              ConfigFromTiled = new global::shared.PickableConfigFromTiled();
+              ConfigFromTiled = new global::jtshared.PickableConfigFromTiled();
             }
             input.ReadMessage(ConfigFromTiled);
             break;
@@ -25734,7 +25739,7 @@ namespace shared {
             break;
           }
           case 72: {
-            PkState = (global::shared.PickableState) input.ReadEnum();
+            PkState = (global::jtshared.PickableState) input.ReadEnum();
             break;
           }
           case 80: {
@@ -25759,7 +25764,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25916,7 +25921,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26090,7 +26095,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26155,11 +26160,11 @@ namespace shared {
 
     /// <summary>Field number for the "pickup_type_list" field.</summary>
     public const int PickupTypeListFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::shared.PickupType> _repeated_pickupTypeList_codec
-        = pb::FieldCodec.ForEnum(34, x => (int) x, x => (global::shared.PickupType) x);
-    private readonly pbc::RepeatedField<global::shared.PickupType> pickupTypeList_ = new pbc::RepeatedField<global::shared.PickupType>();
+    private static readonly pb::FieldCodec<global::jtshared.PickupType> _repeated_pickupTypeList_codec
+        = pb::FieldCodec.ForEnum(34, x => (int) x, x => (global::jtshared.PickupType) x);
+    private readonly pbc::RepeatedField<global::jtshared.PickupType> pickupTypeList_ = new pbc::RepeatedField<global::jtshared.PickupType>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.PickupType> PickupTypeList {
+    public pbc::RepeatedField<global::jtshared.PickupType> PickupTypeList {
       get { return pickupTypeList_; }
     }
 
@@ -26285,7 +26290,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26442,7 +26447,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26656,27 +26661,27 @@ namespace shared {
 
     /// <summary>Field number for the "character_spawner_time_seq" field.</summary>
     public const int CharacterSpawnerTimeSeqFieldNumber = 16;
-    private static readonly pb::FieldCodec<global::shared.CharacterSpawnerConfig> _repeated_characterSpawnerTimeSeq_codec
-        = pb::FieldCodec.ForMessage(130, global::shared.CharacterSpawnerConfig.Parser);
-    private readonly pbc::RepeatedField<global::shared.CharacterSpawnerConfig> characterSpawnerTimeSeq_ = new pbc::RepeatedField<global::shared.CharacterSpawnerConfig>();
+    private static readonly pb::FieldCodec<global::jtshared.CharacterSpawnerConfig> _repeated_characterSpawnerTimeSeq_codec
+        = pb::FieldCodec.ForMessage(130, global::jtshared.CharacterSpawnerConfig.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> characterSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig>();
     /// <summary>
     /// MUST Be configured by increasing "cutoff_rdf_frame_id"!
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.CharacterSpawnerConfig> CharacterSpawnerTimeSeq {
+    public pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> CharacterSpawnerTimeSeq {
       get { return characterSpawnerTimeSeq_; }
     }
 
     /// <summary>Field number for the "pickable_spawner_time_seq" field.</summary>
     public const int PickableSpawnerTimeSeqFieldNumber = 17;
-    private static readonly pb::FieldCodec<global::shared.PickableSpawnerConfig> _repeated_pickableSpawnerTimeSeq_codec
-        = pb::FieldCodec.ForMessage(138, global::shared.PickableSpawnerConfig.Parser);
-    private readonly pbc::RepeatedField<global::shared.PickableSpawnerConfig> pickableSpawnerTimeSeq_ = new pbc::RepeatedField<global::shared.PickableSpawnerConfig>();
+    private static readonly pb::FieldCodec<global::jtshared.PickableSpawnerConfig> _repeated_pickableSpawnerTimeSeq_codec
+        = pb::FieldCodec.ForMessage(138, global::jtshared.PickableSpawnerConfig.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> pickableSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.PickableSpawnerConfig>();
     /// <summary>
     /// MUST Be configured by increasing "cutoff_rdf_frame_id"!
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::shared.PickableSpawnerConfig> PickableSpawnerTimeSeq {
+    public pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> PickableSpawnerTimeSeq {
       get { return pickableSpawnerTimeSeq_; }
     }
 
@@ -27186,7 +27191,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -27329,9 +27334,9 @@ namespace shared {
 
     /// <summary>Field number for the "state" field.</summary>
     public const int StateFieldNumber = 10;
-    private global::shared.TriggerState state_ = 0;
+    private global::jtshared.TriggerState state_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::shared.TriggerState State {
+    public global::jtshared.TriggerState State {
       get { return state_; }
       set {
         state_ = value;
@@ -27780,7 +27785,7 @@ namespace shared {
             break;
           }
           case 80: {
-            State = (global::shared.TriggerState) input.ReadEnum();
+            State = (global::jtshared.TriggerState) input.ReadEnum();
             break;
           }
           case 88: {
@@ -27837,7 +27842,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28078,7 +28083,7 @@ namespace shared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::shared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

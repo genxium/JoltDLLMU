@@ -14,6 +14,7 @@
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
+using namespace jtshared;
 
 class JOLTC_EXPORT BaseBattle {
     public:
@@ -51,8 +52,8 @@ class JOLTC_EXPORT BaseBattle {
         uint64_t inactiveJoinMask; // realtime information
         int timerRdfId;
         int battleDurationFrames;
-        FrameRingBuffer<shared::RenderFrame> rdfBuffer;
-        FrameRingBuffer<shared::InputFrameDownsync> ifdBuffer;
+        FrameRingBuffer<RenderFrame> rdfBuffer;
+        FrameRingBuffer<InputFrameDownsync> ifdBuffer;
 
         std::vector<uint64_t> prefabbedInputList;
         std::vector<int> playerInputFrontIds;
@@ -104,13 +105,13 @@ class JOLTC_EXPORT BaseBattle {
 
 protected:
         // Backend & Frontend shared functions
-        void elapse1RdfForChd(shared::CharacterDownsync* chd);
+        void elapse1RdfForChd(CharacterDownsync* chd);
 
         int moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask, uint64_t& unconfirmedMask);
 
-        CharacterVirtual* getOrCreateCachedCharacterCollider(shared::CharacterDownsync* inCd, shared::CharacterConfig* inCc);
+        CharacterVirtual* getOrCreateCachedCharacterCollider(CharacterDownsync* inCd, CharacterConfig* inCc);
 
 private:
-    shared::CharacterConfig dummyCc;
+        CharacterConfig dummyCc;
 };
 

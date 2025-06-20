@@ -3,6 +3,8 @@
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <string>
 
+using namespace jtshared;
+
 // Backend & Frontend shared functions
 int BaseBattle::moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask, uint64_t& unconfirmedMask) {
     // [WARNING/BACKEND] This function MUST BE called while "inputBufferLock" is locked!
@@ -19,7 +21,7 @@ int BaseBattle::moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
         if (inputFrameId < ifdBuffer.StFrameId) {
             continue;
         }
-        shared::InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
+        InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
         if (nullptr == ifd) {
             throw std::runtime_error("[_moveForwardlastConsecutivelyAllConfirmedIfdId] inputFrameId=" + std::to_string(inputFrameId) + " doesn't exist for lastConsecutivelyAllConfirmedIfdId=" + std::to_string(lastConsecutivelyAllConfirmedIfdId) + ", proposedIfdStFrameId = " + std::to_string(proposedIfdStFrameId) + ", proposedIfdEdFrameId = " + std::to_string(proposedIfdEdFrameId) + ", inputBuffer = " + ifdBuffer.toSimpleStat());
         }
@@ -53,7 +55,7 @@ static inline bool		sEnhancedInternalEdgeRemoval = false;
 static inline bool		sCreateInnerBody = false;
 static inline bool		sPlayerCanPushOtherCharacters = true;
 static inline bool		sOtherCharactersCanPushPlayer = true;
-CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(shared::CharacterDownsync* cd, shared::CharacterConfig* cc) {
+CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsync* cd, CharacterConfig* cc) {
     auto capsuleKey = Vec3(1.0, cc->capsule_radius(), cc->capsule_half_height());
     RVec3Arg initialPos = RVec3Arg(cd->x(), cd->y(), 0);
     CharacterVirtual* chCollider = nullptr;
@@ -104,6 +106,6 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
     }
 }
 
-void BaseBattle::elapse1RdfForChd(shared::CharacterDownsync* chd) {
+void BaseBattle::elapse1RdfForChd(CharacterDownsync* chd) {
     
 }

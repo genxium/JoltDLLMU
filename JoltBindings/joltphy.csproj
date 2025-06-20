@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <TargetFramework>netstandard2.1</TargetFramework>
         <LangVersion>latest</LangVersion>
+        <DebugType>portable</DebugType>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS0028;CS0618;CS8500</NoWarn>        
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -17,19 +19,24 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <UnityPackageOutputPath>$(MSBuildThisFileDirectory)/../UnityPackageOutput</UnityPackageOutputPath>
+      <UnityPackageOutputPath>$(MSBuildThisFileDirectory)/../UnityPackageOutput/Runtime</UnityPackageOutputPath>
     </PropertyGroup>
 
     <Target Name="ExportAll" AfterTargets="AfterBuild">
-        <Copy SourceFiles="$(MSBuildThisFileDirectory)/SerializableData.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
-        <Copy SourceFiles="$(MSBuildThisFileDirectory)/JoltCSharpBindings.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
-        <Copy SourceFiles="$(MSBuildThisFileDirectory)/JoltcPrebuiltLoader.cs" DestinationFolder="$(UnityPackageOutputPath)/Runtime" />
+        <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(UnityPackageOutputPath)" />
+        <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(UnityPackageOutputPath)" />
+        <!--
+        <Copy SourceFiles="$(OutDir)Google.Protobuf.dll" DestinationFolder="$(UnityPackageOutputPath)" />
+        <Copy SourceFiles="$(OutDir)System.Runtime.CompilerServices.Unsafe.dll" DestinationFolder="$(UnityPackageOutputPath)" />
+        <Copy SourceFiles="$(OutDir)System.Collections.Immutable.dll" DestinationFolder="$(UnityPackageOutputPath)" />
+        -->
     </Target>
 
     <Target Name="PostClean" AfterTargets="Clean">
-        <Delete Files="$(UnityPackageOutputPath)/Runtime/SerializableData.cs" />
-        <Delete Files="$(UnityPackageOutputPath)/Runtime/JoltCSharpBindings.cs" />
-        <Delete Files="$(UnityPackageOutputPath)/Runtime/JoltcPrebuiltLoader.cs" />
+        <Delete Files="$(UnityPackageOutputPath)/$(AssemblyName).dll" />
+        <Delete Files="$(UnityPackageOutputPath)/$(AssemblyName).pdb" />
+        <Delete Files="$(UnityPackageOutputPath)/$(AssemblyName).dll.meta" />
+        <Delete Files="$(UnityPackageOutputPath)/$(AssemblyName).pdb.meta" />
     </Target>
 
 </Project>

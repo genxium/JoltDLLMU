@@ -4,6 +4,15 @@
 #include "BattleConsts.h"
 #include "joltc_export.h"
 
+/*
+[WARNING]
+
+This class is NOT thread-safe. 
+
+This class DOESN'T support resizing. 
+
+This class implicitly deallocates pointer-type element memory in destructor.
+*/
 template <class T>
 class JOLTC_EXPORT RingBuffer {
     public: 
@@ -13,19 +22,25 @@ class JOLTC_EXPORT RingBuffer {
         int Ed;        // write index, open index
         int St;        // read index, closed index
         int N;
-        int Cnt;       // the count of valid elements in the buffer, used mainly to distinguish what "st == ed" means for "Pop" and "Get" methods
-        std::vector<T> Eles;
+        int Cnt;       // the count of valid elements in the buffer, used mainly to distinguish what "St == Ed" means for "Pop" and "Get" methods
+        std::vector<T*> Eles;
     public:
         RingBuffer(int n);
         virtual ~RingBuffer();
-        bool Put(T item);
-        T* GetFirst();
-        T* GetLast();
-        T* Pop();
-        T* PopTail();
         int GetArrIdxByOffset(int offsetFromSt); 
         T* GetByOffset(int offsetFromSt);
+        T* GetFirst();
+        T* GetLast();
+
+        // [WARNING] Popping would NOT make any change to any "Eles[i]".
+        T* Pop(); 
+        T* PopTail(); 
+
+        // [WARNING] Only changes indexes, no deallocation.
         void Clear();
+
+        // [WARNING] Always returns a non-null pointer to the slot for assignment -- when the candidate slot is nullptr, heap memory allocation will occur.
+        T* DryPut();   
 }; 
 
 #include "RingBuffer.inl"

@@ -2,7 +2,7 @@ namespace joltphysics.Tests;
 
 using Google.Protobuf;
 using Google.Protobuf.Collections;
-using shared;
+using jtshared;
 using System;
 using System.Collections.Immutable;
 using System.Numerics;

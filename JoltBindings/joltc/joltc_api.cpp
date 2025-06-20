@@ -73,7 +73,7 @@ float const cDeltaTime = 1.0f / 60.0f;
 float const defaultThickness = 2.0f;
 float const defaultHalfThickness = defaultThickness * 0.5f;
 void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend) {
-    shared::WsReq initializerMapData;
+    jtshared::WsReq initializerMapData;
     std::string initializerMapDataStr(inBytes, inBytesCnt);
     initializerMapData.ParseFromString(initializerMapDataStr);
     auto staticColliderShapesFromTiled = initializerMapData.serialized_barrier_polygons();
@@ -147,7 +147,8 @@ void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend) {
         result = new BackendBattle(nPlayerCnt, DEFAULT_BACKEND_RENDER_BUFFER_SIZE, DEFAULT_BACKEND_INPUT_BUFFER_SIZE, physics_system, job_system);
     }
 
-    result->rdfBuffer.Put(startRdf);
+    RenderFrame* holder = result->rdfBuffer.DryPut();
+    holder->MergeFrom(startRdf);
     
     return result;
 }

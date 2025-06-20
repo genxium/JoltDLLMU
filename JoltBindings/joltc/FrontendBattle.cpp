@@ -109,8 +109,7 @@ void FrontendBattle::getOrPrefabInputFrameUpsync(int inputFrameId, bool canConfi
         while (ifdBuffer.EdFrameId <= inputFrameId) {
             // Fill the gap
             int gapInputFrameId = ifdBuffer.EdFrameId;
-            ifdBuffer.DryPut();
-            auto ifdHolder = ifdBuffer.GetByFrameId(gapInputFrameId);
+            auto ifdHolder = ifdBuffer.DryPut();
             if (nullptr == ifdHolder) {
                 std::string builder;
                 throw std::runtime_error("ifdBuffer was not fully pre-allocated for gapInputFrameId");

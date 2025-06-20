@@ -5,6 +5,7 @@
 #include <tuple>
 
 using namespace JPH;
+using namespace jtshared;
 
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
@@ -19,7 +20,7 @@ public:
     int localExtraInputDelayFrames = 0;
     int chaserRdfId;
     int chaserRdfIdLowerBound;
-    std::unordered_map<int, shared::RenderFrame> peerDownsyncedRdf;
+    std::unordered_map<int, RenderFrame> peerDownsyncedRdf;
 
     int selfJoinIndex = JOIN_INDEX_NOT_INITIALIZED;
     int selfJoinIndexArrIdx = JOIN_INDEX_ARR_IDX_NOT_INITIALIZED;

@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package shared;
+package jtshared;
 
 // Providing "csharp_namespace" to force generating lowercase namespace, reference https://protobuf.dev/programming-guides/proto3/#packages 
-option csharp_namespace = "shared";
+option csharp_namespace = "jtshared";
 
 enum BoxInterpolationType {
     UsePrev = 0; 
