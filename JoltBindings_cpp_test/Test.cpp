@@ -139,34 +139,57 @@ RenderFrame* mockStartRdf() {
     return startRdf;
 }
 
+char wsReqBuffer[(1 << 14)];
+
 // Program entry point
 int main(int argc, char** argv)
 {
     std::cout << "Starting" << std::endl;
-    /*
-    Float2 hull1[] = {
-        Float2(-100, 0),
-        Float2(0, -100),
-        Float2(100, 100),
-        Float2(100, 0),
-        Float2(0, -25),
+    
+    std::vector<float> hull1 = {
+        -100, 0,
+        0, -100,
+        100, 100,
+        100, 0,
+        0, -25,
     };
 
-    Float2 hull2[] = {
-        Float2(-200, 0),
-        Float2(0, -50),
-        Float2(75, 75),
-        Float2(0, -45),
+    std::vector<float> hull2 = {
+        -200, 0,
+        0, -50,
+        75, 75,
+        0, -45,
     };
 
-    StaticArray<Float2*, 2> hulls;
+    std::vector<std::vector<float>> hulls;
     hulls.push_back(hull1);
     hulls.push_back(hull2);
-    */
-
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
     auto startRdf = mockStartRdf();
+
+    WsReq wsReq;
+    for (auto hull : hulls) {
+        SerializableConvexPolygon* srcPolygon = wsReq.add_serialized_barrier_polygons();
+        for (auto xOrY : hull) {
+            srcPolygon->add_points(xOrY);
+        }
+    }
+
+    memset(wsReqBuffer, 0, sizeof(wsReqBuffer));
+    int byteSize = wsReq.ByteSize();
+    wsReq.SerializeToArray(wsReqBuffer, byteSize);
+    void* battle = APP_CreateBattle(wsReqBuffer, byteSize, true);
+    std::cout << "Created battle at pointer addr = " << battle << std::endl;
+    
+    int timerRdfId = 0;
+    while (30 > timerRdfId) {
+        bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, true);
+        std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << std::endl;
+        timerRdfId++;
+    }
+    
+    // clean up
     delete startRdf;
     JPH_Shutdown();
 	return 0;
