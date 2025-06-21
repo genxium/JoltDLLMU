@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
 
+if(POLICY CMP0177)
+  cmake_policy(SET CMP0177 NEW)
+endif()
+
 include(GNUInstallDirs)
 
 set(BUILD_SHARED_LIBS ON)

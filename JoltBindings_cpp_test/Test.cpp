@@ -68,7 +68,7 @@ RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int prea
     ret->set_bullet_local_id_counter(0);
 
     for (int i = 0; i < roomCapacity; i++) {
-        auto single = ret->add_players_arr(); 
+        auto single = ret->add_players_arr();
         NewPreallocatedCharacterDownsync(single, DEFAULT_PER_CHARACTER_BUFF_CAPACITY, DEFAULT_PER_CHARACTER_DEBUFF_CAPACITY, DEFAULT_PER_CHARACTER_INVENTORY_CAPACITY, DEFAULT_PER_CHARACTER_IMMUNE_BULLET_RECORD_CAPACITY);
     }
 
@@ -175,6 +175,7 @@ int main(int argc, char** argv)
             srcPolygon->add_points(xOrY);
         }
     }
+    wsReq.set_allocated_self_parsed_rdf(startRdf);
 
     memset(wsReqBuffer, 0, sizeof(wsReqBuffer));
     int byteSize = wsReq.ByteSize();

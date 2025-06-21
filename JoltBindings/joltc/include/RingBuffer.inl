@@ -104,10 +104,12 @@ inline void RingBuffer<T>::Clear() {
 
 template <typename T>
 inline T* RingBuffer<T>::DryPut() { 
-    T* candidateSlot = (N > Ed ? Eles[Ed] : Eles[0]);
-    if (nullptr == candidateSlot) {
-        candidateSlot = new T();
+    T** pSlot = (N > Ed ? &Eles[Ed] : &Eles[0]);
+    if (nullptr == *pSlot) {
+        *pSlot = new T();
     }
+    T* candidateSlot = (N > Ed ? Eles[Ed] : Eles[0]);
+
     Cnt++;
     Ed++;
 

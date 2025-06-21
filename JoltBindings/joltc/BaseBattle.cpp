@@ -74,10 +74,12 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
         settings->mSupportingVolume = Plane(Vec3::sAxisY(), -dummyCc.capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
         settings->mEnhancedInternalEdgeRemoval = sEnhancedInternalEdgeRemoval;
         settings->mInnerBodyShape = chShape;
-        settings->mInnerBodyLayer = MonInsObjectLayers::MOVING;
+        settings->mInnerBodyLayer = MyObjectLayers::MOVING;
 
         // Create character
         chCollider = new CharacterVirtual(settings, initialPos, Quat::sIdentity(), 0, phySys);
+        //chCollider->SetKinematic();
+        //chCollider->SetVelocity();
         auto [it2, res2] = cachedChColliders.try_emplace(capsuleKey, chCollider);
         if (!res2) {
             throw std::runtime_error("[_getOrCreateCachedCharacterCollider] failed to insert into preallocatedChColliders");
@@ -85,6 +87,8 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
     } else {
         chCollider = itChCollider->second;
         chCollider->SetPosition(initialPos);
+        //chCollider->SetKinematic();
+        //chCollider->SetVelocity();
         auto innerBodyID = chCollider->GetInnerBodyID();
         phySys->GetBodyInterface().AddBody(innerBodyID, EActivation::Activate);
     }

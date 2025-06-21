@@ -129,7 +129,7 @@ void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend) {
         See "MonsterInsight/joltphysics/RefConst_destructor_trick.md" for details.
         */
         RefConst<Shape> bodyShape = new MeshShape(bodyShapeSettings, shapeResult); 
-        BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MonInsObjectLayers::NON_MOVING);
+        BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
         body_interface.CreateAndAddBody(bodyCreationSettings, EActivation::DontActivate);
     }
 
