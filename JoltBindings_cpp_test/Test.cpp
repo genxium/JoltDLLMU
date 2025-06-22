@@ -1,7 +1,10 @@
 #include "joltc_export.h" // imports the "JOLTC_EXPORT" macro for "serializable_data.pb.h"
-#include "joltc_api.h" // imports the "JOLTC_EXPORT" macro for "serializable_data.pb.h"
 #include "serializable_data.pb.h"
+#include "joltc_api.h" 
 #include "BattleConsts.h"
+
+#include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
+#include "FrontendBattle.h"
 
 using namespace jtshared;
 
@@ -180,7 +183,7 @@ int main(int argc, char** argv)
     memset(wsReqBuffer, 0, sizeof(wsReqBuffer));
     int byteSize = wsReq.ByteSize();
     wsReq.SerializeToArray(wsReqBuffer, byteSize);
-    void* battle = APP_CreateBattle(wsReqBuffer, byteSize, true);
+    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(wsReqBuffer, byteSize, true));
     std::cout << "Created\nbattle = " << battle << std::endl;
     
     int timerRdfId = 0;

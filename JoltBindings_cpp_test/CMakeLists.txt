@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
-project(JoltDLLMU_cpp_test VERSION 0.0.1 LANGUAGES CXX)
+project(JoltBindings_cpp_test VERSION 0.0.1 LANGUAGES CXX)
+
+# Requires C++ 17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(POLICY CMP0177)
+  cmake_policy(SET CMP0177 NEW)
+endif()
 
 include(GNUInstallDirs)
 
@@ -16,6 +25,8 @@ set(CPP_TEST_SRC_FILES
 )
 
 add_executable(${TARGET_NAME} ${CPP_TEST_SRC_FILES})
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -33,6 +44,14 @@ target_link_libraries(${TARGET_NAME} PUBLIC
         protobuf::libprotobuf
         ${JOLTC_DLL_LIB}
 )
+
+#[[
+# For importing Jolt classes correctly with the macro "JPH_EXPORT" defined in "${PHYSICS_REPO_ROOT}/Jolt/Core/Core.h".
+target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
+if (WIN32)
+    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
+endif()
+]]
 
 # Set the debug/non-debug build flags
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
@@ -66,3 +85,5 @@ install(FILES
     ${PREBUILT_LIB_PATH}/joltc.dll
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> COMPONENT Dependencies
 )
+
+install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> OPTIONAL)

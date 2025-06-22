@@ -2,14 +2,13 @@
 
 #include "BaseBattle.h"
 #include <map>
-#include <tuple>
 
 using namespace JPH;
 using namespace jtshared;
 
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
-    inline FrontendBattle(const int aPlayersCnt, const int renderBufferSize, const int inputBufferSize, PhysicsSystem* aPhySys, JobSystemThreadPool* aJobSys) : BaseBattle(aPlayersCnt, renderBufferSize, inputBufferSize, aPhySys, aJobSys) {
+    FrontendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize) {
     }
 
     virtual ~FrontendBattle() {

@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
 
+# Requires C++ 17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(POLICY CMP0177)
   cmake_policy(SET CMP0177 NEW)
 endif()
@@ -38,12 +43,21 @@ if (BUILD_SHARED_LIBS)
     # [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
     if (MSVC)
         target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+        # Expand inline functions for easier debugging.
+        target_compile_options(${TARGET_NAME} PUBLIC
+            $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
+        )
     else()
         target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+        target_compile_options(${TARGET_NAME} PUBLIC
+            $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
+        )
     endif()
 else()
     add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
 endif()
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 target_sources(${TARGET_NAME} PRIVATE ${JOLT_PHYSICS_SRC_FILES})
@@ -72,7 +86,7 @@ install(TARGETS ${TARGET_NAME}
 
 # Regular headers below
 install(DIRECTORY 
-    ${JOLTC_ROOT}/include/
+    ${JOLTC_ROOT}/
 
     #DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
@@ -83,7 +97,7 @@ install(DIRECTORY
 )
 
 install(DIRECTORY  
-    ${JOLT_PHYSICS_ROOT}/ # [IMPORTANT] Use trailing slash '/' to reserve file hierarchy in DESTINATION
+    ${PHYSICS_REPO_ROOT}/ 
     
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include 
 

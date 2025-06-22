@@ -207,19 +207,6 @@ set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
 set(JOLTC_SRC_FILES
-    ${JOLTC_ROOT}/include/CollisionLayers.h
-    ${JOLTC_ROOT}/include/CollisionCallbacks.h
-    ${JOLTC_ROOT}/include/BackendBattle.h
-    ${JOLTC_ROOT}/include/BaseBattle.h
-    ${JOLTC_ROOT}/include/BattleConsts.h
-    ${JOLTC_ROOT}/include/RingBuffer.h
-    ${JOLTC_ROOT}/include/RingBuffer.inl
-    ${JOLTC_ROOT}/include/FrameRingBuffer.h
-    ${JOLTC_ROOT}/include/FrameRingBuffer.inl
-    ${JOLTC_ROOT}/include/FrontendBattle.h
-    ${JOLTC_ROOT}/include/joltc_api.h 
-    ${JOLTC_ROOT}/include/DebugLog.h 
-
     ${JOLTC_ROOT}/BackendBattle.cpp
     ${JOLTC_ROOT}/BaseBattle.cpp
     ${JOLTC_ROOT}/FrontendBattle.cpp

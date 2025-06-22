@@ -1,4 +1,5 @@
 #pragma once
+
 #include "joltc_export.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Reference.h>
@@ -11,6 +12,9 @@
 #include "FrameRingBuffer.h"
 #include "BattleConsts.h"
 #include "serializable_data.pb.h"
+
+#include "CollisionLayers.h"
+#include "CollisionCallbacks.h"
 #include <map>
 
 // All Jolt symbols are in the JPH namespace
@@ -19,33 +23,8 @@ using namespace jtshared;
 
 class JOLTC_EXPORT BaseBattle {
     public:
-        inline BaseBattle(int aPlayersCnt, const int renderBufferSize, const int inputBufferSize, PhysicsSystem* aPhySys, JobSystemThreadPool* aJobSys) : prefabbedInputList(aPlayersCnt, 0), playerInputFrontIds(aPlayersCnt, 0), playerInputFronts(aPlayersCnt, 0), rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize) {
-            playersCnt = aPlayersCnt;
-            allConfirmedMask = (U64_1 << playersCnt) - 1;
-            inactiveJoinMask = 0u;
-            timerRdfId = 0;
-            battleDurationFrames = 0;
-            phySys = aPhySys;
-            jobSys = aJobSys;
-            transientCurrJoinIndexToChdMap.reserve(playersCnt + DEFAULT_PREALLOC_NPC_CAPACITY);
-
-            dummyCc.set_capsule_radius(3.0);
-            dummyCc.set_capsule_half_height(10.0);
-        }
-
-        virtual ~BaseBattle() {
-            playersCnt = 0;
-            delete phySys;
-            delete jobSys;
-
-            /*
-            [WARNING] Unlike "std::vector" and "std::unordered_map", the customized containers "JPH::StaticArray" and "JPH::UnorderedMap" will deallocate their pointer-typed elements in their destructors.
-            - https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/Array.h#L337 -> https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/Array.h#L249
-            - https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/HashTable.h#L480 -> https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/HashTable.h#L497
-
-            However I only use "dynamicBodyIDs" to hold "BodyID" instances which are NOT pointer-typed and effectively freed once "JPH::StaticArray::clear()" is called, i.e. no need for the heavy duty "JPH::Array".
-            */
-        }
+        BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize); 
+        virtual ~BaseBattle();
 
     public:
         bool frameLogEnabled = false;
@@ -63,11 +42,18 @@ class JOLTC_EXPORT BaseBattle {
 
         int lastConsecutivelyAllConfirmedIfdId = -1;
 
+        BPLayerInterfaceImpl bpLayerInterface;
+        ObjectVsBroadPhaseLayerFilterImpl ovbLayerFilter;
+        ObjectLayerPairFilterImpl ovoLayerFilter;
+        MyBodyActivationListener bodyActivationListener;
+        MyContactListener contactListener;
         PhysicsSystem* phySys;
         JobSystemThreadPool* jobSys;
 
         StaticArray<BodyID, DEFAULT_PREALLOC_DYNAMIC_COLLIDER_CAPACITY> dynamicBodyIDs;
         UnorderedMap<Vec4, BoxShapeSettings*> cachedBoxShapeSettings; // Key is "{density, halfExtent}", where "convexRadius" is determined by "halfExtent"
+
+        // It's by design that "JPH::CharacterVirtual" instead of "JPH::Character" or even "JPH::Body" is used here, see "https://jrouwe.github.io/JoltPhysics/index.html#character-controllers" for their differences.
         UnorderedMap<Vec3, CharacterVirtual*> cachedChColliders; // Key is "{density, radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
 
     protected:

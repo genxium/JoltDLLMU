@@ -1,3 +1,4 @@
+#ifdef JPH_BUILD_SHARED_LIBRARY // [IMPORTANT] To avoid unexpected re-compiling of these function definitions with "define JOLTC_EXPORT __declspec(dllimport)" from user code.  
 template <typename T>
 inline FrameRingBuffer<T>::FrameRingBuffer(int n) : RingBuffer(n) {
     StFrameId = EdFrameId = 0;
@@ -46,3 +47,4 @@ inline T* FrameRingBuffer<T>::DryPut() {
     EdFrameId++;
     return ret;
 }
+#endif

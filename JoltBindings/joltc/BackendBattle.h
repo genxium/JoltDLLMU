@@ -6,7 +6,7 @@ using namespace JPH;
 
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
-    inline BackendBattle(const int aPlayersCnt, const int renderBufferSize, const int inputBufferSize, PhysicsSystem* aPhySys, JobSystemThreadPool* aJobSys) : BaseBattle(aPlayersCnt, renderBufferSize, inputBufferSize, aPhySys, aJobSys) {
+    BackendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize)  {
     }
 
     virtual ~BackendBattle() {

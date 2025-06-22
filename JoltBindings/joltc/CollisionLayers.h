@@ -4,6 +4,9 @@
 #pragma once
 
 #include "joltc_export.h"
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+using namespace JPH;
 
 ////////////////////////////////// App specific logic below //////////////////////////////////
 namespace MyObjectLayers

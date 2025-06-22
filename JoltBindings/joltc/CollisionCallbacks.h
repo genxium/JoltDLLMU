@@ -4,6 +4,10 @@
 #pragma once
 
 #include "joltc_export.h"
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/Body/BodyActivationListener.h>
+using namespace JPH;
+
 class JOLTC_EXPORT MyContactListener : public ContactListener
 {
     public:
