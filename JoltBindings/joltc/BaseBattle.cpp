@@ -2,6 +2,7 @@
 
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
@@ -57,7 +58,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     phySys->SetBodyActivationListener(&bodyActivationListener);
     phySys->SetContactListener(&contactListener);
     //phySys->SetSimCollideBodyVsBody(&myBodyCollisionPipe); // To omit unwanted body collisions, e.g. same team
-    BodyInterface &bi = phySys->GetBodyInterface();
+    bi = &(phySys->GetBodyInterface());
 
     auto staticColliderShapesFromTiled = initializerMapData.serialized_barrier_polygons();
     for (auto convexPolygon : staticColliderShapesFromTiled) {
@@ -92,7 +93,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
          */
         RefConst<Shape> bodyShape = new MeshShape(bodyShapeSettings, shapeResult); 
         BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-        bi.CreateAndAddBody(bodyCreationSettings, EActivation::DontActivate);
+        bi->CreateAndAddBody(bodyCreationSettings, EActivation::DontActivate);
     }
     phySys->OptimizeBroadPhase();
 
@@ -159,7 +160,7 @@ int BaseBattle::moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
 
 CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsync* cd, CharacterConfig* cc) {
     // TODO: Deallocate cache when resetting battle.
-    Vec3 capsuleKey(1.0, cc->capsule_radius(), cc->capsule_half_height());
+    CH_CACHE_KEY_T capsuleKey = { cc->capsule_radius(), cc->capsule_half_height() };
     CharacterVirtual* chCollider = nullptr;
     auto& it = cachedChColliders.find(capsuleKey);
     if (it == cachedChColliders.end()) {
@@ -178,18 +179,17 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
         settings->mInnerBodyShape = chShape;
         settings->mInnerBodyLayer = MyObjectLayers::MOVING; // A "CharacterVirtual" is by default translational only, no need to set EMotionType::Kinematic here, see https://jrouwe.github.io/JoltPhysics/index.html#character-controllers.
     
-        chCollider = new CharacterVirtual(settings, Vec3::sZero(), Quat::sIdentity(), 0, phySys);       
+        chCollider = new CharacterVirtual(settings, Vec3::sZero(), Quat::sIdentity(), cd->join_index(), phySys);       
     } else {
         auto dq = it->second;
         chCollider = dq.front();
         dq.pop_front();
         auto innerBodyID = chCollider->GetInnerBodyID();
-        phySys->GetBodyInterface().AddBody(innerBodyID, EActivation::Activate);
+        bi->AddBody(innerBodyID, EActivation::Activate);
     }
 
     chCollider->SetPosition(RVec3Arg(cd->x(), cd->y(), 0));
-    //chCollider->SetKinematic();
-    //chCollider->SetVelocity();
+    chCollider->SetLinearVelocity(RVec3Arg(cd->vel_x(), cd->vel_y(), 0));
 
     // must be active when created
     activeChColliders.push_back(chCollider);
@@ -200,53 +200,158 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
 void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) {
     for (int rdfId = fromRdfId; rdfId < toRdfId; rdfId++) {
         transientCurrJoinIndexToChdMap.clear();
+        
         auto rdf = rdfBuffer.GetByFrameId(rdfId);
+        RenderFrame* nextRdf = rdfBuffer.GetByFrameId(rdfId+1);
+        if (!nextRdf) {
+            nextRdf = rdfBuffer.DryPut();
+        }
+        nextRdf->MergeFrom(*rdf);
+        nextRdf->set_id(rdfId+1);
+        elapse1RdfForRdf(nextRdf);
         for (int i = 0; i < playersCnt; i++) {
             auto player = rdf->players_arr(i);
-            auto chCollider = getOrCreateCachedCharacterCollider(&player, &dummyCc);
+            CharacterConfig* cc = &dummyCc;
+            auto chCollider = getOrCreateCachedCharacterCollider(&player, cc);
             transientCurrJoinIndexToChdMap[player.join_index()] = &player;
         }
         phySys->Update(ESTIMATED_SECONDS_PER_FRAME, 1, tempAllocator, jobSys);
         for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
-            CharacterVirtual* single = it->GetPtr();
-            single->Update(cDeltaTime, phySys->GetGravity(), 
+            CharacterVirtual* single = *it;
+            // Settings for our update function
+            CharacterVirtual::ExtendedUpdateSettings chColliderExtUpdateSettings;
+            chColliderExtUpdateSettings.mStickToFloorStepDown = -single->GetUp() * chColliderExtUpdateSettings.mStickToFloorStepDown.Length();
+            chColliderExtUpdateSettings.mWalkStairsStepUp = single->GetUp() * chColliderExtUpdateSettings.mWalkStairsStepUp.Length();
+
+            single->ExtendedUpdate(cDeltaTime, phySys->GetGravity(), 
+                chColliderExtUpdateSettings,
                 phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
                 phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
                 {}, // BodyFilter
                 {}, // ShapeFilter
                 *tempAllocator);
+
+            int joinIndex = single->GetUserData();
+            CharacterDownsync* nextChd = mutableChdFromRdf(joinIndex, nextRdf);
+            CharacterConfig* cc = &dummyCc;
+
+            auto newPos = single->GetPosition();
+            auto newVel = single->IsSupported() 
+                ? 
+                (single->GetLinearVelocity() + single->GetGroundVelocity())
+                : 
+                (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity());
+
+            nextChd->set_in_air(!single->IsSupported());
+            nextChd->set_x(newPos.GetX());
+            nextChd->set_y(newPos.GetY());
+            nextChd->set_vel_x(newVel.GetX());
+            nextChd->set_vel_y(newVel.GetY());
         }
+
         while (!activeChColliders.empty()) {
             CharacterVirtual* front = activeChColliders.front();
             activeChColliders.pop_front(); 
-            auto underlyingShape = (CapsuleShape*)front->GetShape();
-            Vec3 capsuleKey(1.0, underlyingShape->GetRadius(), underlyingShape->GetHalfHeightOfCylinder());
+            bodyIDsToClear.push_back(front->GetInnerBodyID());
+            const Shape* associatedShape = front->GetShape();
+            const CapsuleShape* underlyingShape = static_cast<const CapsuleShape*>(front->GetShape());
+            CH_CACHE_KEY_T capsuleKey = { underlyingShape->GetRadius(), underlyingShape->GetHalfHeightOfCylinder() };
             auto& it = cachedChColliders.find(capsuleKey);
+            
             if (it == cachedChColliders.end()) {
                 // [REMINDER] Lifecycle of this stack-variable "dq" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
-                std::deque<Ref<CharacterVirtual>> dq = {front}; 
+                CH_COLLIDER_Q dq = {front}; 
                 cachedChColliders.insert(std::make_pair(capsuleKey, std::move(dq)));
             } else {
                 auto& cacheQue = it->second;
                 cacheQue.push_back(front);
             }
-        }  
+        }
 
+        bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        bodyIDsToClear.clear();
         // TODO: Update nextRdf by (rdf, phySys current body states of "dynamicBodyIDs"), then set back into "rdfBuffer" for rendering.
     }
 }
 
 void BaseBattle::Clear() {
-    activeChColliders.clear(); // [WARNING] The destructor of "CharacterVirtual" will remove its innerBody from phySys.
-    cachedChColliders.clear(); 
+    activeBlColliders.clear(); // By now there's no active bullet collider
 
-    // Remove other regular bodies.
+    // In case there's any active character collider left.
+    while (!activeChColliders.empty()) {
+        auto front = activeChColliders.front();
+        activeChColliders.pop_front(); 
+        delete front;
+    }
+
+    while (!cachedChColliders.empty()) {
+        for (auto it = cachedChColliders.cbegin(); it != cachedChColliders.cend(); ) {
+            auto dq = std::move(it->second);
+            while (!dq.empty()) {
+                auto front = dq.front();
+                dq.pop_front(); 
+                delete front;
+            }
+            it = cachedChColliders.erase(it++); 
+        }
+    }
+
+    // Remove other regular bodies, unexpected active bullet colliders will also be cleared here
     phySys->GetBodies(bodyIDsToClear);
-    phySys->GetBodyInterface().RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-    phySys->GetBodyInterface().DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
     bodyIDsToClear.clear();
 }
 
-void BaseBattle::elapse1RdfForChd(CharacterDownsync* chd) {
-    
+void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
+    for (int i = 0; i < playersCnt; i++) {
+        auto cd = rdf->mutable_players_arr(i);
+        elapse1RdfForChd(cd, &dummyCc); 
+    }
+    for (int i = 0; i < rdf->npcs_arr_size(); i++) {
+        auto cd = rdf->mutable_npcs_arr(i);
+        if (TERMINATING_CHARACTER_ID == cd->id()) break;
+        elapse1RdfForChd(cd, &dummyCc);
+    }
+}
+
+void BaseBattle::elapse1RdfForBl(Bullet* bl) {
+
+}
+
+void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, CharacterConfig* cc) {
+    cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover()-1 : 0));
+    cd->set_frames_captured_by_inertia((0 < cd->frames_captured_by_inertia() ? cd->frames_captured_by_inertia() - 1 : 0)); 
+    cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
+    cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
+    cd->set_frames_in_patrol_cue(0 < cd->frames_in_patrol_cue() ? cd->frames_in_patrol_cue() - 1 : 0);
+    cd->set_mp_regen_rdf_countdown(0 < cd->mp_regen_rdf_countdown() ? cd->mp_regen_rdf_countdown()-1 : 0);
+    auto mp = cd->mp();
+    if (0 >= cd->mp_regen_rdf_countdown()) {
+        mp += cc->mp_regen_per_interval();
+        if (mp >= cc->mp()) {
+            mp = cc->mp();
+        }
+        cd->set_mp_regen_rdf_countdown(cc->mp_regen_interval());
+    }
+    cd->set_frames_to_start_jump((0 < cd->frames_to_start_jump() ? cd->frames_to_start_jump() - 1 : 0));
+    cd->set_frames_since_last_damaged((0 < cd->frames_since_last_damaged() ? cd->frames_since_last_damaged() - 1 : 0));
+    if (0 >= cd->frames_since_last_damaged()) {
+        cd->set_damage_elemental_attrs(0);
+    }
+    cd->set_combo_frames_remained((0 < cd->combo_frames_remained() ? cd->combo_frames_remained() - 1 : 0));
+    if (0 >= cd->combo_frames_remained()) {
+        cd->set_combo_hit_cnt(0);
+    } 
+
+    cd->set_flying_rdf_countdown( (MAX_FLYING_RDF_CNT == cc->flying_quota_rdf_cnt() ? MAX_FLYING_RDF_CNT : (0 < cd->flying_rdf_countdown() ? cd->flying_rdf_countdown() - 1 : 0)));
+}
+
+CharacterDownsync* BaseBattle::mutableChdFromRdf(int joinIndex, RenderFrame* rdf) {
+    if (playersCnt >= joinIndex) {
+        return rdf->mutable_players_arr(joinIndex-1);
+    } else {
+        return rdf->mutable_npcs_arr(joinIndex-playersCnt-1);
+    }
 }

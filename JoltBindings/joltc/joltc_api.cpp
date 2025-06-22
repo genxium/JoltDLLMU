@@ -84,8 +84,16 @@ bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
     return true;
 }
 
-bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, int outBytesCntLimit) {
-    return false;
+bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, int* outBytesCntLimit) {
+    BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
+    RenderFrame* rdf = battle->rdfBuffer.GetByFrameId(inRdfId);
+    int byteSize = rdf->ByteSize();
+    if (byteSize > *outBytesCntLimit) {
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+    rdf->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
 }
 
 JPH_SUPPRESS_WARNING_POP

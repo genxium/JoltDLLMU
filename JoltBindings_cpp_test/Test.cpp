@@ -5,6 +5,7 @@
 
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "FrontendBattle.h"
+#include <google/protobuf/util/json_util.h>
 
 using namespace jtshared;
 
@@ -38,7 +39,7 @@ void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, i
 }
 
 void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-    single->set_id(TERMINATING_PLAYER_ID);
+    single->set_id(TERMINATING_CHARACTER_ID);
     single->set_join_index(JOIN_INDEX_NOT_INITIALIZED);
     for (int i = 0; i < buffCapacity; i++) {
         Buff* singleBuff = single->add_buff_list();
@@ -97,43 +98,43 @@ RenderFrame* mockStartRdf() {
     int npcLocalId = 1;
     int bulletLocalId = 1;
 
-    auto ch1 = startRdf->players_arr(0);
-    ch1.set_id(10);
-    ch1.set_join_index(1);
-    ch1.set_x(-100);
-    ch1.set_y(200);
-    ch1.set_revival_x(ch1.x());
-    ch1.set_revival_y(ch1.y());
-    ch1.set_speed(10);
-    ch1.set_character_state(CharacterState::InAirIdle1NoJump);
-    ch1.set_frames_to_recover(0);
-    ch1.set_dir_x(2);
-    ch1.set_dir_y(0);
-    ch1.set_vel_x(0);
-    ch1.set_vel_y(0);
-    ch1.set_in_air(true);
-    ch1.set_on_wall(false);
-    ch1.set_hp(100);
-    ch1.set_species_id(SPECIES_BLADEGIRL);
+    auto ch1 = startRdf->mutable_players_arr(0);
+    ch1->set_id(10);
+    ch1->set_join_index(1);
+    ch1->set_x(-100);
+    ch1->set_y(200);
+    ch1->set_revival_x(ch1->x());
+    ch1->set_revival_y(ch1->y());
+    ch1->set_speed(10);
+    ch1->set_character_state(CharacterState::InAirIdle1NoJump);
+    ch1->set_frames_to_recover(0);
+    ch1->set_dir_x(2);
+    ch1->set_dir_y(0);
+    ch1->set_vel_x(0);
+    ch1->set_vel_y(0);
+    ch1->set_in_air(true);
+    ch1->set_on_wall(false);
+    ch1->set_hp(100);
+    ch1->set_species_id(SPECIES_BLADEGIRL);
 
-    auto ch2 = startRdf->players_arr(1);
-    ch2.set_id(10);
-    ch2.set_join_index(2);
-    ch2.set_x(+100);
-    ch2.set_y(200);
-    ch2.set_revival_x(ch2.x());
-    ch2.set_revival_y(ch2.y());
-    ch2.set_speed(10);
-    ch2.set_character_state(CharacterState::InAirIdle1NoJump);
-    ch2.set_frames_to_recover(0);
-    ch2.set_dir_x(-2);
-    ch2.set_dir_y(0);
-    ch2.set_vel_x(0);
-    ch2.set_vel_y(0);
-    ch2.set_in_air(true);
-    ch2.set_on_wall(false);
-    ch2.set_hp(100);
-    ch2.set_species_id(SPECIES_BOUNTYHUNTER);
+    auto ch2 = startRdf->mutable_players_arr(1);
+    ch2->set_id(11);
+    ch2->set_join_index(2);
+    ch2->set_x(+100);
+    ch2->set_y(200);
+    ch2->set_revival_x(ch2->x());
+    ch2->set_revival_y(ch2->y());
+    ch2->set_speed(10);
+    ch2->set_character_state(CharacterState::InAirIdle1NoJump);
+    ch2->set_frames_to_recover(0);
+    ch2->set_dir_x(-2);
+    ch2->set_dir_y(0);
+    ch2->set_vel_x(0);
+    ch2->set_vel_y(0);
+    ch2->set_in_air(true);
+    ch2->set_on_wall(false);
+    ch2->set_hp(100);
+    ch2->set_species_id(SPECIES_BOUNTYHUNTER);
 
     startRdf->set_npc_local_id_counter(npcLocalId);
     startRdf->set_bullet_local_id_counter(bulletLocalId);
@@ -142,7 +143,9 @@ RenderFrame* mockStartRdf() {
     return startRdf;
 }
 
-char wsReqBuffer[(1 << 14)];
+const int pbBufferSizeLimit = (1 << 14);
+char wsReqBuffer[pbBufferSizeLimit];
+char rdfFetchBuffer[pbBufferSizeLimit];
 
 // Program entry point
 int main(int argc, char** argv)
@@ -186,15 +189,32 @@ int main(int argc, char** argv)
     FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(wsReqBuffer, byteSize, true));
     std::cout << "Created\nbattle = " << battle << std::endl;
     
+    jtshared::RenderFrame outRdf;
+    std::string outRdfStr;
     int timerRdfId = 0;
-    while (30 > timerRdfId) {
+    int loopRdfCnt = (1 << 11);
+    int printIntervalRdfCnt = (1 << 8);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    while (loopRdfCnt > timerRdfId) {
         bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, true);
-        std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << std::endl;
+        memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
+        int outBytesCnt = pbBufferSizeLimit;
+        APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
+        std::string initializerMapDataStr(rdfFetchBuffer, outBytesCnt);
+        outRdf.ParseFromString(initializerMapDataStr);
+        if (0 == (timerRdfId & printIntervalRdfCntMinus1)) {
+            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(outRdf, &outRdfStr);
+            if (status.ok()) {
+                std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", now outRdf=\n" << outRdfStr << std::endl;
+            } else {
+                std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting outRdf to JSON:" << status.ToString() << std::endl;
+            }
+        }
         timerRdfId++;
     }
     
     // clean up
-    delete startRdf;
+    // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
     JPH_Shutdown();
 	return 0;
 }

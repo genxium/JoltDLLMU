@@ -3,19 +3,35 @@
 #include "joltc_export.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Reference.h>
-#include <Jolt/Core/UnorderedMap.h>
+#include <Jolt/Math/Float2.h>
+
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Body/Body.h>
 #include "FrameRingBuffer.h"
 #include "BattleConsts.h"
 #include "serializable_data.pb.h"
 
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
+#include <vector>
 #include <map>
 #include <deque>
+
+#define BL_CACHE_KEY_T std::vector<float>
+#define BL_COLLIDER_Q std::deque<JPH::Body*>
+#define CH_CACHE_KEY_T std::vector<float>
+#define CH_COLLIDER_Q std::deque<JPH::CharacterVirtual*>
+typedef struct VectorFloatHasher {
+    std::size_t operator()(const std::vector<float>& v) const {
+        std::size_t seed = v.size(); // Start with the size of the vector
+        for (float i : v) {
+            seed ^= std::hash<float>()(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+    }
+} COLLIDER_HASH_KEY_T;
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
@@ -48,14 +64,17 @@ class JOLTC_EXPORT BaseBattle {
         MyBodyActivationListener bodyActivationListener;
         MyContactListener contactListener;
         PhysicsSystem* phySys;
+        BodyInterface* bi;
         JobSystemThreadPool* jobSys;
 
         StaticArray<BodyID, DEFAULT_PREALLOC_DYNAMIC_COLLIDER_CAPACITY> dynamicBodyIDs;
-        UnorderedMap<Vec4, BoxShapeSettings*> cachedBoxShapeSettings; // Key is "{density, halfExtent}", where "convexRadius" is determined by "halfExtent"
+
+        BL_COLLIDER_Q activeBlColliders;
+        std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{density, halfExtent}", where "convexRadius" is determined by "halfExtent"
 
         // It's by design that "JPH::CharacterVirtual" instead of "JPH::Character" or even "JPH::Body" is used here, see "https://jrouwe.github.io/JoltPhysics/index.html#character-controllers" for their differences.
-        std::deque<Ref<CharacterVirtual>> activeChColliders;
-        UnorderedMap<Vec3, std::deque<Ref<CharacterVirtual>>> cachedChColliders; // Key is "{density, radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
+        CH_COLLIDER_Q activeChColliders;
+        std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{density, radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
 
     protected:
         inline int ConvertToDynamicallyGeneratedDelayInputFrameId(int renderFrameId, int localExtraInputDelayFrames) {
@@ -98,7 +117,10 @@ protected:
         BodyIDVector bodyIDsToClear;
 
         // Backend & Frontend shared functions
-        void elapse1RdfForChd(CharacterDownsync* chd);
+        inline void elapse1RdfForRdf(RenderFrame* rdf);
+        inline void elapse1RdfForBl(Bullet* bl);
+        inline void elapse1RdfForChd(CharacterDownsync* cd, CharacterConfig* cc);
+        inline CharacterDownsync* mutableChdFromRdf(int joinIndex, RenderFrame* rdf);
 
         int moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask, uint64_t& unconfirmedMask);
 

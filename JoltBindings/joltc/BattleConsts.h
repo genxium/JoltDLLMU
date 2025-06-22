@@ -66,7 +66,7 @@ const int TERMINATING_INPUT_FRAME_ID = (-1027);
 const int TERMINATING_TRAP_ID = 0;
 const int TERMINATING_TRIGGER_ID = 0;
 const int TERMINATING_PICKABLE_LOCAL_ID = 0;
-const int TERMINATING_PLAYER_ID = 0;
+const int TERMINATING_CHARACTER_ID = 0;
 const int TERMINATING_BULLET_LOCAL_ID = 0;
 const int TERMINATING_BULLET_TEAM_ID = 0; // Default for proto int32 to save space
 const int DOWNSYNC_MSG_ACT_BATTLE_START = 0;
@@ -75,4 +75,5 @@ const uint32_t TERMINATING_BUFF_SPECIES_ID = 0; // Default for proto int32 to sa
 const uint32_t TERMINATING_DEBUFF_SPECIES_ID = 0;
 const uint32_t TERMINATING_CONSUMABLE_SPECIES_ID = 0; // Default for proto int32 to save space in "CharacterDownsync.killedToDropConsumableSpeciesId"
 
+const int MAX_FLYING_RDF_CNT = 999999999;
 #endif

@@ -27,6 +27,6 @@ Kindly note that in Jolt, the default gravity direction is negative-y.
 JPH_CAPI void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend);
 JPH_CAPI bool APP_DestroyBattle(void* inBattle, bool isFrontend);
 JPH_CAPI bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
-JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, int outBytesCntLimit);
+JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, int* outBytesCntLimit);
 
 #endif /* JOLT_C_H_ */
