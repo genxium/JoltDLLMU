@@ -33,14 +33,14 @@ class JOLTC_EXPORT RingBuffer {
         T* GetLast();
 
         // [WARNING] Popping would NOT make any change to any "Eles[i]".
-        T* Pop(); 
-        T* PopTail(); 
+        virtual T* Pop(); 
+        virtual T* PopTail(); 
 
         // [WARNING] Only changes indexes, no deallocation.
-        void Clear();
+        virtual void Clear();
 
         // [WARNING] Always returns a non-null pointer to the slot for assignment -- when the candidate slot is nullptr, heap memory allocation will occur.
-        T* DryPut();   
+        virtual T* DryPut();   
 }; 
 
 #include "RingBuffer.inl"
