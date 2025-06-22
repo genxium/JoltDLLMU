@@ -55,6 +55,8 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
 )
 
+install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+
 # For Visual Studio to pick up runtime dependent DLLs
 install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> COMPONENT Dependencies

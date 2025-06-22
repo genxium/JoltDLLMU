@@ -181,7 +181,7 @@ int main(int argc, char** argv)
     int byteSize = wsReq.ByteSize();
     wsReq.SerializeToArray(wsReqBuffer, byteSize);
     void* battle = APP_CreateBattle(wsReqBuffer, byteSize, true);
-    std::cout << "Created battle at pointer addr = " << battle << std::endl;
+    std::cout << "Created\nbattle = " << battle << std::endl;
     
     int timerRdfId = 0;
     while (30 > timerRdfId) {

@@ -11,6 +11,7 @@
 #include "FrameRingBuffer.h"
 #include "BattleConsts.h"
 #include "serializable_data.pb.h"
+#include <map>
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
@@ -26,6 +27,7 @@ class JOLTC_EXPORT BaseBattle {
             battleDurationFrames = 0;
             phySys = aPhySys;
             jobSys = aJobSys;
+            transientCurrJoinIndexToChdMap.reserve(playersCnt + DEFAULT_PREALLOC_NPC_CAPACITY);
 
             dummyCc.set_capsule_radius(3.0);
             dummyCc.set_capsule_half_height(10.0);
@@ -110,6 +112,8 @@ protected:
         int moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask, uint64_t& unconfirmedMask);
 
         CharacterVirtual* getOrCreateCachedCharacterCollider(CharacterDownsync* inCd, CharacterConfig* inCc);
+    
+        std::unordered_map<int, CharacterDownsync*> transientCurrJoinIndexToChdMap; // Mainly for "Bullet.offender_join_index" referencing characters, and avoiding the unnecessary [joinIndex change in `_leftShiftDeadNpcs` of DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/Battle_builders.cs#L580)
 
 private:
         CharacterConfig dummyCc;

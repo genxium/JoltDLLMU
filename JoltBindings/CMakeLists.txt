@@ -20,7 +20,7 @@ set(TARGET_NAME joltc)
 include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 
 if (BUILD_SHARED_LIBS)
-	add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
+    add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
 
     #Define macro named "JOLTC_EXPORT" for "PbClasses.cmake".
     include(GenerateExportHeader)
@@ -29,10 +29,10 @@ if (BUILD_SHARED_LIBS)
         EXPORT_FILE_NAME joltc_export.h
     ) # The file is supposed to be in "${CMAKE_CURRNET_BINARY_DIR}"
     
-	target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
-	target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
+    target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
+    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
     if (WIN32)
-	    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
+        target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
     endif()
 
     # [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
@@ -42,7 +42,7 @@ if (BUILD_SHARED_LIBS)
         target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
     endif()
 else()
-	add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
+    add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
 endif()
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
@@ -70,22 +70,33 @@ install(TARGETS ${TARGET_NAME}
     RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION}
 )
 
-install(FILES 
-    # Regular headers below
-	${JOLTC_ROOT}/include/CollisionLayers.h
-	${JOLTC_ROOT}/include/CollisionCallbacks.h
-	${JOLTC_ROOT}/include/BackendBattle.h
-	${JOLTC_ROOT}/include/BaseBattle.h
-	${JOLTC_ROOT}/include/BattleConsts.h
-	${JOLTC_ROOT}/include/FrameRingBuffer.h
-	${JOLTC_ROOT}/include/FrontendBattle.h
-    ${JOLTC_ROOT}/include/joltc_api.h 
-    ${JOLTC_ROOT}/include/DebugLog.h
+# Regular headers below
+install(DIRECTORY 
+    ${JOLTC_ROOT}/include/
 
-    # Special headers below
-	${PB_GEN_ROOT}/serializable_data.pb.h 
-    
     #DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
+
+    FILES_MATCHING 
+    PATTERN "*.h"
+    PATTERN "*.inl"
+)
+
+install(DIRECTORY  
+    ${JOLT_PHYSICS_ROOT}/ # [IMPORTANT] Use trailing slash '/' to reserve file hierarchy in DESTINATION
+    
+    DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include 
+
+    FILES_MATCHING 
+    PATTERN "*.h"
+    PATTERN "*.inl"
+)
+
+# Special headers below
+install(FILES 
+    ${PB_GEN_ROOT}/serializable_data.pb.h 
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h # generated header
+    
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
 )
 
@@ -94,10 +105,12 @@ install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
 )
 
+install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
+
 if (BUILD_SHARED_LIBS)
-	message(STATUS "  Library         SHARED")
+    message(STATUS "  Library         SHARED")
 else ()
-  	message(STATUS "  Library         STATIC")
+    message(STATUS "  Library         STATIC")
 endif ()
 
 if (CMAKE_GENERATOR_PLATFORM)

@@ -93,113 +93,113 @@ option(ENABLE_OBJECT_STREAM "Compile the ObjectStream class and RTTI attribute i
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Distribution")
 
 if (MSVC)
-	# Fill in the path to the asan libraries
-	set(CLANG_LIB_PATH "\"$(VSInstallDir)\\VC\\Tools\\Llvm\\x64\\lib\\clang\\${CMAKE_CXX_COMPILER_VERSION}\\lib\\windows\"")
+    # Fill in the path to the asan libraries
+    set(CLANG_LIB_PATH "\"$(VSInstallDir)\\VC\\Tools\\Llvm\\x64\\lib\\clang\\${CMAKE_CXX_COMPILER_VERSION}\\lib\\windows\"")
 
-	# 64 bit architecture
-	set(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE "x64")
+    # 64 bit architecture
+    set(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE "x64")
 
-	# Set general compiler flags
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus /Gm- /MP /nologo /diagnostics:classic /FC /fp:except- /Zc:inline")
+    # Set general compiler flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus /Gm- /MP /nologo /diagnostics:classic /FC /fp:except- /Zc:inline")
 
-	# Enable warnings
-	if (ENABLE_ALL_WARNINGS)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /WX")
-	endif()
+    # Enable warnings
+    if (ENABLE_ALL_WARNINGS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /WX")
+    endif()
 
-	# Set compiler flag for disabling RTTI
-	if (NOT CPP_RTTI_ENABLED)
-		# Set compiler flag for disabling RTTI
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
-	else()
-		# Set compiler flag for enabling RTTI
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR")
-	endif()
+    # Set compiler flag for disabling RTTI
+    if (NOT CPP_RTTI_ENABLED)
+        # Set compiler flag for disabling RTTI
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+    else()
+        # Set compiler flag for enabling RTTI
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR")
+    endif()
 
-	if (NOT CPP_EXCEPTIONS_ENABLED)
-		# Remove any existing compiler flag that enables exceptions
-		string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    if (NOT CPP_EXCEPTIONS_ENABLED)
+        # Remove any existing compiler flag that enables exceptions
+        string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
-		# Disable warning about STL and compiler-generated types using noexcept when exceptions are disabled
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4577")
-	else()
-		# Enable exceptions
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-	endif()
+        # Disable warning about STL and compiler-generated types using noexcept when exceptions are disabled
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4577")
+    else()
+        # Enable exceptions
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+    endif()
 
-	set(CMAKE_CXX_FLAGS_DISTRIBUTION "${CMAKE_CXX_FLAGS_RELEASE}")
+    set(CMAKE_CXX_FLAGS_DISTRIBUTION "${CMAKE_CXX_FLAGS_RELEASE}")
 
-	# Set linker flags
-	set(CMAKE_EXE_LINKER_FLAGS "/SUBSYSTEM:WINDOWS /ignore:4221")
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		if (CROSS_PLATFORM_DETERMINISTIC)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:precise")
-		else()
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast") # Clang doesn't use fast math because it cannot be turned off inside a single compilation unit
-		endif()
-	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /showFilenames")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments") # Clang emits warnings about unused arguments such as /MP and /GL
-	endif()
+    # Set linker flags
+    set(CMAKE_EXE_LINKER_FLAGS "/SUBSYSTEM:WINDOWS /ignore:4221")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        if (CROSS_PLATFORM_DETERMINISTIC)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:precise")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast") # Clang doesn't use fast math because it cannot be turned off inside a single compilation unit
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /showFilenames")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments") # Clang emits warnings about unused arguments such as /MP and /GL
+    endif()
 else()
-	# Enable warnings
-	if (ENABLE_ALL_WARNINGS)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-	endif()
+    # Enable warnings
+    if (ENABLE_ALL_WARNINGS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+    endif()
 
-	# Set compiler flag for disabling RTTI
-	if (NOT CPP_RTTI_ENABLED)
-		# Set compiler flag for disabling RTTI
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-	else()
-		# Set compiler flag for enabling RTTI
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
-	endif()
+    # Set compiler flag for disabling RTTI
+    if (NOT CPP_RTTI_ENABLED)
+        # Set compiler flag for disabling RTTI
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+    else()
+        # Set compiler flag for enabling RTTI
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
+    endif()
 
-	# Disable exception-handling
-	if (NOT CPP_EXCEPTIONS_ENABLED)
-		# Set compiler flag for disabling exception-handling
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
-	else()
-		# Set compiler flag for enabling exception-handling
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
-	endif()
+    # Disable exception-handling
+    if (NOT CPP_EXCEPTIONS_ENABLED)
+        # Set compiler flag for disabling exception-handling
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+    else()
+        # Set compiler flag for enabling exception-handling
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
+    endif()
 
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		# Also disable -Wstringop-overflow or it will generate false positives that can't be disabled from code when link-time optimizations are enabled
-		# Also turn off automatic fused multiply add contractions, there doesn't seem to be a way to do this selectively through the macro JPH_PRECISE_MATH_OFF
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stringop-overflow -ffp-contract=off")
-	else()
-		# Do not use -ffast-math since it cannot be turned off in a single compilation unit under clang, see Core.h
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-model=precise")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        # Also disable -Wstringop-overflow or it will generate false positives that can't be disabled from code when link-time optimizations are enabled
+        # Also turn off automatic fused multiply add contractions, there doesn't seem to be a way to do this selectively through the macro JPH_PRECISE_MATH_OFF
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stringop-overflow -ffp-contract=off")
+    else()
+        # Do not use -ffast-math since it cannot be turned off in a single compilation unit under clang, see Core.h
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-model=precise")
 
-		# On clang 14 and later we can turn off float contraction through a pragma, older versions and deterministic versions need it off always, see Core.h
-		if (CMAKE_CXX_COMPILER_VERSION LESS 14 OR CROSS_PLATFORM_DETERMINISTIC)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
-		endif()
+        # On clang 14 and later we can turn off float contraction through a pragma, older versions and deterministic versions need it off always, see Core.h
+        if (CMAKE_CXX_COMPILER_VERSION LESS 14 OR CROSS_PLATFORM_DETERMINISTIC)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
+        endif()
 
-		# Cross compiler flags
-		if (CROSS_COMPILE_ARM)
-			set(CMAKE_CXX_FLAGS "--target=aarch64-linux-gnu ${CMAKE_CXX_FLAGS}")
-		endif()
-	endif()
+        # Cross compiler flags
+        if (CROSS_COMPILE_ARM)
+            set(CMAKE_CXX_FLAGS "--target=aarch64-linux-gnu ${CMAKE_CXX_FLAGS}")
+        endif()
+    endif()
 
-	# See https://github.com/jrouwe/JoltPhysics/issues/922. When compiling with DOUBLE_PRECISION=YES and CMAKE_OSX_DEPLOYMENT_TARGET=10.12 clang triggers a warning that we silence here.
-	if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-allocation")
-	endif()
+    # See https://github.com/jrouwe/JoltPhysics/issues/922. When compiling with DOUBLE_PRECISION=YES and CMAKE_OSX_DEPLOYMENT_TARGET=10.12 clang triggers a warning that we silence here.
+    if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-allocation")
+    endif()
 
-	# Set compiler flags for various configurations
-	if (OVERRIDE_CXX_FLAGS)
-		set(CMAKE_CXX_FLAGS_DEBUG "")
-		set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-	endif()
-	set(CMAKE_CXX_FLAGS_DISTRIBUTION "${CMAKE_CXX_FLAGS_RELEASE}")
+    # Set compiler flags for various configurations
+    if (OVERRIDE_CXX_FLAGS)
+        set(CMAKE_CXX_FLAGS_DEBUG "")
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    endif()
+    set(CMAKE_CXX_FLAGS_DISTRIBUTION "${CMAKE_CXX_FLAGS_RELEASE}")
 
-	# Set linker flags
-	if (NOT ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows"))
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
-	endif()
+    # Set linker flags
+    if (NOT ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows"))
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+    endif()
 endif()
 
 # Set linker flags
@@ -207,19 +207,22 @@ set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
 set(JOLTC_SRC_FILES
-	${JOLTC_ROOT}/include/CollisionLayers.h
-	${JOLTC_ROOT}/include/CollisionCallbacks.h
-	${JOLTC_ROOT}/include/BackendBattle.h
-	${JOLTC_ROOT}/include/BaseBattle.h
-	${JOLTC_ROOT}/include/BattleConsts.h
-	${JOLTC_ROOT}/include/FrameRingBuffer.h
-	${JOLTC_ROOT}/include/FrontendBattle.h
-	${JOLTC_ROOT}/include/joltc_api.h 
-	${JOLTC_ROOT}/include/DebugLog.h 
+    ${JOLTC_ROOT}/include/CollisionLayers.h
+    ${JOLTC_ROOT}/include/CollisionCallbacks.h
+    ${JOLTC_ROOT}/include/BackendBattle.h
+    ${JOLTC_ROOT}/include/BaseBattle.h
+    ${JOLTC_ROOT}/include/BattleConsts.h
+    ${JOLTC_ROOT}/include/RingBuffer.h
+    ${JOLTC_ROOT}/include/RingBuffer.inl
+    ${JOLTC_ROOT}/include/FrameRingBuffer.h
+    ${JOLTC_ROOT}/include/FrameRingBuffer.inl
+    ${JOLTC_ROOT}/include/FrontendBattle.h
+    ${JOLTC_ROOT}/include/joltc_api.h 
+    ${JOLTC_ROOT}/include/DebugLog.h 
 
     ${JOLTC_ROOT}/BackendBattle.cpp
     ${JOLTC_ROOT}/BaseBattle.cpp
     ${JOLTC_ROOT}/FrontendBattle.cpp
-	${JOLTC_ROOT}/joltc_api.cpp
-	${JOLTC_ROOT}/DebugLog.cpp
+    ${JOLTC_ROOT}/joltc_api.cpp
+    ${JOLTC_ROOT}/DebugLog.cpp
 )

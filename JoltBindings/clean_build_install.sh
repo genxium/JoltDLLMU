@@ -13,15 +13,19 @@ echo "UnityPackageOutputPath=${UnityPackageOutputPath}"
 rm -rf $UnityPackageOutputPath/*.meta
 rm -rf $UnityPackageOutputPath/Runtime/*.meta
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.meta
-rm -rf $UnityPackageOutputPath/Runtime/Plugins/include/*.meta
 
 # Native part
-rm -rf $UnityPackageOutputPath/Runtime/Plugins/include/*.h 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.h
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.gliffy
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.inl
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.dll 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.pdb 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.lib 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.exp 
+
+# Delete header hierarchy
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/include/*
+echo "" > $UnityPackageOutputPath/Runtime/Plugins/include/.keep
 
 # Managed part
 rm -rf $UnityPackageOutputPath/Runtime/*.cs 
