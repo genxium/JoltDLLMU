@@ -2,40 +2,33 @@
 
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
 // STL includes
 #include <cstdarg>
 #include <thread>
+#include <utility>
 #include <string>
 
 using namespace jtshared;
 
-static inline uint cMaxBodies = 1024;
-static inline uint cNumBodyMutexes = 0;
-static inline uint cMaxBodyPairs = 1024;
-static inline uint cMaxContactConstraints = 1024;
+const float  cUpRotationX = 0;
+const float  cUpRotationZ = 0;
+const float  cMaxSlopeAngle = DegreesToRadians(45.0f);
+const float  cMaxStrength = 100.0f;
+const float  cCharacterPadding = 0.02f;
+const float  cPenetrationRecoverySpeed = 1.0f;
+const float  cPredictiveContactDistance = 0.1f;
+const bool   cEnableWalkStairs = true;
+const bool   cEnableStickToFloor = true;
+const bool   cEnhancedInternalEdgeRemoval = false;
+const bool   cCreateInnerBody = false;
+const bool   cPlayerCanPushOtherCharacters = true;
+const bool   cOtherCharactersCanPushPlayer = true;
 
-static inline float cDeltaTime = 1.0f / 60.0f;
-static inline float defaultThickness = 2.0f;
-static inline float defaultHalfThickness = defaultThickness * 0.5f;
-
-static inline EBackFaceMode sBackFaceMode = EBackFaceMode::CollideWithBackFaces;
-static inline float		sUpRotationX = 0;
-static inline float		sUpRotationZ = 0;
-static inline float		sMaxSlopeAngle = DegreesToRadians(45.0f);
-static inline float		sMaxStrength = 100.0f;
-static inline float		sCharacterPadding = 0.02f;
-static inline float		sPenetrationRecoverySpeed = 1.0f;
-static inline float		sPredictiveContactDistance = 0.1f;
-static inline bool		sEnableWalkStairs = true;
-static inline bool		sEnableStickToFloor = true;
-static inline bool		sEnhancedInternalEdgeRemoval = false;
-static inline bool		sCreateInnerBody = false;
-static inline bool		sPlayerCanPushOtherCharacters = true;
-static inline bool		sOtherCharactersCanPushPlayer = true;
-
+const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 
 BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize) {
     jtshared::WsReq initializerMapData;
@@ -58,6 +51,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     playerInputFronts.assign(playersCnt, 0); 
 
     ////////////////////////////////////////////// 2
+    bodyIDsToClear.reserve(cMaxBodies);
     phySys = new PhysicsSystem();
     phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
     phySys->SetBodyActivationListener(&bodyActivationListener);
@@ -79,10 +73,10 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
             auto x2 = convexPolygon.points(toI);
             auto y2 = convexPolygon.points(toI+1);
 
-            Float3 v1 = Float3(x1, y1, +defaultHalfThickness);
-            Float3 v2 = Float3(x1, y1, -defaultHalfThickness);
-            Float3 v3 = Float3(x2, y2, +defaultHalfThickness);
-            Float3 v4 = Float3(x2, y2, -defaultHalfThickness);
+            Float3 v1 = Float3(x1, y1, +cDefaultHalfThickness);
+            Float3 v2 = Float3(x1, y1, -cDefaultHalfThickness);
+            Float3 v3 = Float3(x2, y2, +cDefaultHalfThickness);
+            Float3 v4 = Float3(x2, y2, -cDefaultHalfThickness);
 
             triangles.push_back(Triangle(v2, v1, v3, 0)); // y: -, +, +
             triangles.push_back(Triangle(v3, v4, v2, 0)); // y: +, -, - 
@@ -113,6 +107,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
 }
 
 BaseBattle::~BaseBattle() {
+    Clear();
     playersCnt = 0;
     delete phySys;
     delete jobSys;
@@ -163,58 +158,93 @@ int BaseBattle::moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
 }
 
 CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsync* cd, CharacterConfig* cc) {
-    auto capsuleKey = Vec3(1.0, cc->capsule_radius(), cc->capsule_half_height());
-    RVec3Arg initialPos = RVec3Arg(cd->x(), cd->y(), 0);
+    // TODO: Deallocate cache when resetting battle.
+    Vec3 capsuleKey(1.0, cc->capsule_radius(), cc->capsule_half_height());
     CharacterVirtual* chCollider = nullptr;
-    auto itChCollider = cachedChColliders.find(capsuleKey);
-    if (itChCollider == cachedChColliders.end()) {
-        CapsuleShape* chShapeCenterAnchor = new CapsuleShape(dummyCc.capsule_half_height(), dummyCc.capsule_radius()); // transient, only created on stack for immediately transform
-        RefConst<Shape> chShape = RotatedTranslatedShapeSettings(Vec3(0, dummyCc.capsule_half_height() + dummyCc.capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor).Create().Get();
+    auto& it = cachedChColliders.find(capsuleKey);
+    if (it == cachedChColliders.end()) {
+        CapsuleShape* chShapeCenterAnchor = new CapsuleShape(cc->capsule_half_height(), cc->capsule_radius()); // transient, only created on stack for immediately transform
+        RefConst<Shape> chShape = RotatedTranslatedShapeSettings(Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor).Create().Get();
         Ref<CharacterVirtualSettings> settings = new CharacterVirtualSettings();
-        settings->mMaxSlopeAngle = sMaxSlopeAngle;
-        settings->mMaxStrength = sMaxStrength;
+        settings->mMaxSlopeAngle = cMaxSlopeAngle;
+        settings->mMaxStrength = cMaxStrength;
         settings->mShape = chShape;
-        settings->mBackFaceMode = sBackFaceMode;
-        settings->mCharacterPadding = sCharacterPadding;
-        settings->mPenetrationRecoverySpeed = sPenetrationRecoverySpeed;
-        settings->mPredictiveContactDistance = sPredictiveContactDistance;
-        settings->mSupportingVolume = Plane(Vec3::sAxisY(), -dummyCc.capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
-        settings->mEnhancedInternalEdgeRemoval = sEnhancedInternalEdgeRemoval;
+        settings->mBackFaceMode = cBackFaceMode;
+        settings->mCharacterPadding = cCharacterPadding;
+        settings->mPenetrationRecoverySpeed = cPenetrationRecoverySpeed;
+        settings->mPredictiveContactDistance = cPredictiveContactDistance;
+        settings->mSupportingVolume = Plane(Vec3::sAxisY(), -cc->capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
+        settings->mEnhancedInternalEdgeRemoval = cEnhancedInternalEdgeRemoval;
         settings->mInnerBodyShape = chShape;
-        settings->mInnerBodyLayer = MyObjectLayers::MOVING;
-
-        // Create character
-        chCollider = new CharacterVirtual(settings, initialPos, Quat::sIdentity(), 0, phySys);
-        //chCollider->SetKinematic();
-        //chCollider->SetVelocity();
-        auto [it2, res2] = cachedChColliders.try_emplace(capsuleKey, chCollider);
-        if (!res2) {
-            throw std::runtime_error("[_getOrCreateCachedCharacterCollider] failed to insert into preallocatedChColliders");
-        }
+        settings->mInnerBodyLayer = MyObjectLayers::MOVING; // A "CharacterVirtual" is by default translational only, no need to set EMotionType::Kinematic here, see https://jrouwe.github.io/JoltPhysics/index.html#character-controllers.
+    
+        chCollider = new CharacterVirtual(settings, Vec3::sZero(), Quat::sIdentity(), 0, phySys);       
     } else {
-        chCollider = itChCollider->second;
-        chCollider->SetPosition(initialPos);
-        //chCollider->SetKinematic();
-        //chCollider->SetVelocity();
+        auto dq = it->second;
+        chCollider = dq.front();
+        dq.pop_front();
         auto innerBodyID = chCollider->GetInnerBodyID();
         phySys->GetBodyInterface().AddBody(innerBodyID, EActivation::Activate);
     }
+
+    chCollider->SetPosition(RVec3Arg(cd->x(), cd->y(), 0));
+    //chCollider->SetKinematic();
+    //chCollider->SetVelocity();
+
+    // must be active when created
+    activeChColliders.push_back(chCollider);
+
     return chCollider;
 }
 
 void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) {
     for (int rdfId = fromRdfId; rdfId < toRdfId; rdfId++) {
+        transientCurrJoinIndexToChdMap.clear();
         auto rdf = rdfBuffer.GetByFrameId(rdfId);
         for (int i = 0; i < playersCnt; i++) {
             auto player = rdf->players_arr(i);
             auto chCollider = getOrCreateCachedCharacterCollider(&player, &dummyCc);
-            dynamicBodyIDs.push_back(chCollider->GetInnerBodyID());
+            transientCurrJoinIndexToChdMap[player.join_index()] = &player;
         }
         phySys->Update(ESTIMATED_SECONDS_PER_FRAME, 1, tempAllocator, jobSys);
+        for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
+            CharacterVirtual* single = it->GetPtr();
+            single->Update(cDeltaTime, phySys->GetGravity(), 
+                phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
+                phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
+                {}, // BodyFilter
+                {}, // ShapeFilter
+                *tempAllocator);
+        }
+        while (!activeChColliders.empty()) {
+            CharacterVirtual* front = activeChColliders.front();
+            activeChColliders.pop_front(); 
+            auto underlyingShape = (CapsuleShape*)front->GetShape();
+            Vec3 capsuleKey(1.0, underlyingShape->GetRadius(), underlyingShape->GetHalfHeightOfCylinder());
+            auto& it = cachedChColliders.find(capsuleKey);
+            if (it == cachedChColliders.end()) {
+                // [REMINDER] Lifecycle of this stack-variable "dq" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
+                std::deque<Ref<CharacterVirtual>> dq = {front}; 
+                cachedChColliders.insert(std::make_pair(capsuleKey, std::move(dq)));
+            } else {
+                auto& cacheQue = it->second;
+                cacheQue.push_back(front);
+            }
+        }  
+
         // TODO: Update nextRdf by (rdf, phySys current body states of "dynamicBodyIDs"), then set back into "rdfBuffer" for rendering.
-        phySys->GetBodyInterface().RemoveBodies(dynamicBodyIDs.data(), dynamicBodyIDs.size());
-        dynamicBodyIDs.clear();
     }
+}
+
+void BaseBattle::Clear() {
+    activeChColliders.clear(); // [WARNING] The destructor of "CharacterVirtual" will remove its innerBody from phySys.
+    cachedChColliders.clear(); 
+
+    // Remove other regular bodies.
+    phySys->GetBodies(bodyIDsToClear);
+    phySys->GetBodyInterface().RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    phySys->GetBodyInterface().DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    bodyIDsToClear.clear();
 }
 
 void BaseBattle::elapse1RdfForChd(CharacterDownsync* chd) {
