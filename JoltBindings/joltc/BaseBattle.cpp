@@ -30,6 +30,7 @@ const bool   cPlayerCanPushOtherCharacters = true;
 const bool   cOtherCharactersCanPushPlayer = true;
 
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
+static CH_CACHE_KEY_T chCacheKeyHolder = {0, 0};
 
 BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize) {
     jtshared::WsReq initializerMapData;
@@ -159,10 +160,9 @@ int BaseBattle::moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
 }
 
 CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsync* cd, CharacterConfig* cc) {
-    // TODO: Deallocate cache when resetting battle.
-    CH_CACHE_KEY_T capsuleKey = { cc->capsule_radius(), cc->capsule_half_height() };
+    calcChCacheKey(cc, chCacheKeyHolder);
     CharacterVirtual* chCollider = nullptr;
-    auto& it = cachedChColliders.find(capsuleKey);
+    auto& it = cachedChColliders.find(chCacheKeyHolder);
     if (it == cachedChColliders.end()) {
         CapsuleShape* chShapeCenterAnchor = new CapsuleShape(cc->capsule_half_height(), cc->capsule_radius()); // transient, only created on stack for immediately transform
         RefConst<Shape> chShape = RotatedTranslatedShapeSettings(Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor).Create().Get();
@@ -181,7 +181,7 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
     
         chCollider = new CharacterVirtual(settings, Vec3::sZero(), Quat::sIdentity(), cd->join_index(), phySys);       
     } else {
-        auto dq = it->second;
+        auto& dq = it->second;
         chCollider = dq.front();
         dq.pop_front();
         auto innerBodyID = chCollider->GetInnerBodyID();
@@ -216,8 +216,10 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             transientCurrJoinIndexToChdMap[player.join_index()] = &player;
         }
         phySys->Update(ESTIMATED_SECONDS_PER_FRAME, 1, tempAllocator, jobSys);
-        for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
-            CharacterVirtual* single = *it;
+        while (!activeChColliders.empty()) {
+            CharacterVirtual* single = activeChColliders.front();
+            activeChColliders.pop_front(); 
+
             // Settings for our update function
             CharacterVirtual::ExtendedUpdateSettings chColliderExtUpdateSettings;
             chColliderExtUpdateSettings.mStickToFloorStepDown = -single->GetUp() * chColliderExtUpdateSettings.mStickToFloorStepDown.Length();
@@ -233,7 +235,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
 
             int joinIndex = single->GetUserData();
             CharacterDownsync* nextChd = mutableChdFromRdf(joinIndex, nextRdf);
-            CharacterConfig* cc = &dummyCc;
+            CharacterConfig* cc = &dummyCc; // TODO: Find by "chd->species_id()"
 
             auto newPos = single->GetPosition();
             auto newVel = single->IsSupported() 
@@ -247,29 +249,23 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             nextChd->set_y(newPos.GetY());
             nextChd->set_vel_x(newVel.GetX());
             nextChd->set_vel_y(newVel.GetY());
-        }
-
-        while (!activeChColliders.empty()) {
-            CharacterVirtual* front = activeChColliders.front();
-            activeChColliders.pop_front(); 
-            bodyIDsToClear.push_back(front->GetInnerBodyID());
-            const Shape* associatedShape = front->GetShape();
-            const CapsuleShape* underlyingShape = static_cast<const CapsuleShape*>(front->GetShape());
-            CH_CACHE_KEY_T capsuleKey = { underlyingShape->GetRadius(), underlyingShape->GetHalfHeightOfCylinder() };
-            auto& it = cachedChColliders.find(capsuleKey);
+            
+            /////////////////////////////////////////////////// 
+            bodyIDsToClear.push_back(single->GetInnerBodyID());
+            calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
+            auto& it = cachedChColliders.find(chCacheKeyHolder);
             
             if (it == cachedChColliders.end()) {
                 // [REMINDER] Lifecycle of this stack-variable "dq" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
-                CH_COLLIDER_Q dq = {front}; 
-                cachedChColliders.insert(std::make_pair(capsuleKey, std::move(dq)));
+                CH_COLLIDER_Q dq = {single}; 
+                cachedChColliders.insert(std::make_pair(chCacheKeyHolder, std::move(dq)));
             } else {
                 auto& cacheQue = it->second;
-                cacheQue.push_back(front);
+                cacheQue.push_back(single);
             }
         }
 
         bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-        bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
         bodyIDsToClear.clear();
         // TODO: Update nextRdf by (rdf, phySys current body states of "dynamicBodyIDs"), then set back into "rdfBuffer" for rendering.
     }
@@ -282,7 +278,7 @@ void BaseBattle::Clear() {
     while (!activeChColliders.empty()) {
         auto front = activeChColliders.front();
         activeChColliders.pop_front(); 
-        delete front;
+        delete front; // Will call "bi->DestroyBody(front->GetInnerBodyID())" if still attached to "phySys"
     }
 
     while (!cachedChColliders.empty()) {
@@ -291,7 +287,7 @@ void BaseBattle::Clear() {
             while (!dq.empty()) {
                 auto front = dq.front();
                 dq.pop_front(); 
-                delete front;
+                delete front; 
             }
             it = cachedChColliders.erase(it++); 
         }
@@ -354,4 +350,9 @@ CharacterDownsync* BaseBattle::mutableChdFromRdf(int joinIndex, RenderFrame* rdf
     } else {
         return rdf->mutable_npcs_arr(joinIndex-playersCnt-1);
     }
+}
+
+void BaseBattle::calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioChCacheKey) {
+    ioChCacheKey[0] = cc->capsule_radius();
+    ioChCacheKey[1] = cc->capsule_half_height();
 }

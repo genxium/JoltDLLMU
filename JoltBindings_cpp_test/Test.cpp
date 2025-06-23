@@ -190,7 +190,7 @@ int main(int argc, char** argv)
     std::cout << "Created\nbattle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
-    std::string outRdfStr;
+    std::string outStr;
     int timerRdfId = 0;
     int loopRdfCnt = (1 << 11);
     int printIntervalRdfCnt = (1 << 8);
@@ -203,11 +203,13 @@ int main(int argc, char** argv)
         std::string initializerMapDataStr(rdfFetchBuffer, outBytesCnt);
         outRdf.ParseFromString(initializerMapDataStr);
         if (0 == (timerRdfId & printIntervalRdfCntMinus1)) {
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(outRdf, &outRdfStr);
+            auto firstPlayerChd = outRdf.players_arr(0);
+            outStr.clear();
+            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
             if (status.ok()) {
-                std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", now outRdf=\n" << outRdfStr << std::endl;
+                std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", now firstPlayerChd=\n" << outStr << std::endl;
             } else {
-                std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting outRdf to JSON:" << status.ToString() << std::endl;
+                std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
             }
         }
         timerRdfId++;

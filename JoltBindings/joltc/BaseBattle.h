@@ -128,6 +128,8 @@ protected:
 
         std::unordered_map<int, CharacterDownsync*> transientCurrJoinIndexToChdMap; // Mainly for "Bullet.offender_join_index" referencing characters, and avoiding the unnecessary [joinIndex change in `_leftShiftDeadNpcs` of DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/Battle_builders.cs#L580)
 
+        void calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioChCacheKey);
+
 private:
         CharacterConfig dummyCc;
 };
