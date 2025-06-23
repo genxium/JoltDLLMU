@@ -243,6 +243,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                 *tempAllocator);
 
             int joinIndex = single->GetUserData();
+            const CharacterDownsync& currChd = immutableChdFromRdf(joinIndex, currRdf);
             CharacterDownsync* nextChd = mutableChdFromRdf(joinIndex, nextRdf);
             CharacterConfig* cc = &dummyCc; // TODO: Find by "chd->species_id()"
 
@@ -253,7 +254,24 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                 :
                 (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity());
 
+            Vec3 newSelfVelXOnly(single->GetLinearVelocity().GetX(), 0, 0);
+            bool newSelfVelXNearZero = newSelfVelXOnly.IsNearZero();
             nextChd->set_in_air(!single->IsSupported());
+            if (single->IsSupported()) {
+                // TODO: Transit regarding whether or not it's in an "air attack" state.
+                if (newSelfVelXNearZero) {
+                    nextChd->set_ch_state(CharacterState::Idle1);
+                } else {
+                    nextChd->set_ch_state(CharacterState::Walking);
+                }
+            } else {
+                // TODO: Transit regarding whether or not it's in an "attack" or "proactive jumping" state 
+                nextChd->set_ch_state(CharacterState::InAirIdle1NoJump);
+            }
+
+            if (nextChd->ch_state() != currChd.ch_state()) {
+                nextChd->set_frames_in_ch_state(0);
+            } 
             nextChd->set_x(newPos.GetX());
             nextChd->set_y(newPos.GetY());
             nextChd->set_vel_x(newVel.GetX());

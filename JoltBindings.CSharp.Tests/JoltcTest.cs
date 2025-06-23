@@ -23,7 +23,7 @@ public class JoltcTest {
     {
         new Vector2[] {
             new Vector2(-100f, 0f),
-            new Vector2(0f, -100f),
+            new Vector2(0f, 100f),
             new Vector2(100f, 100f),
             new Vector2(100f, 0f),
             new Vector2(0f, -25f),
@@ -176,7 +176,7 @@ public class JoltcTest {
         ch1.RevivalX = 0;
         ch1.RevivalY = ch1.Y;
         ch1.Speed = 10f;
-        ch1.CharacterState = CharacterState.InAirIdle1NoJump;
+        ch1.ChState = CharacterState.InAirIdle1NoJump;
         ch1.FramesToRecover = 0;
         ch1.DirX = 2;
         ch1.DirY = 0;
@@ -195,7 +195,7 @@ public class JoltcTest {
         ch2.RevivalX = 0;
         ch2.RevivalY = -ch2.X;
         ch2.Speed = 10f;
-        ch2.CharacterState = CharacterState.InAirIdle1NoJump;
+        ch2.ChState = CharacterState.InAirIdle1NoJump;
         ch2.FramesToRecover = 0;
         ch2.DirX = 2;
         ch2.DirY = 0;

@@ -114,38 +114,39 @@ enum BulletState {
 }
 
 enum CharacterState {
-    Idle1 = 0;
-    Walking = 1;
-    TurnAround = 2;
-    Atked1 = 3;
-    InAirIdle1NoJump = 4;
-    InAirIdle1ByJump = 5;
-    InAirIdle2ByJump = 6;
-    InAirIdle1ByWallJump = 7;
-    InAirAtked1 = 8;
+    InvalidChState = 0;
+    Idle1 = 1;
+    Walking = 2;
+    TurnAround = 3;
+    Atked1 = 4;
+    InAirIdle1NoJump = 5;
+    InAirIdle1ByJump = 6;
+    InAirIdle2ByJump = 7;
+    InAirIdle1ByWallJump = 8;
+    InAirAtked1 = 9;
 
-    BlownUp1 = 9;
-    LayDown1 = 10;
-    GetUp1 = 11;
-    Dying = 12;
+    BlownUp1 = 10;
+    LayDown1 = 11;
+    GetUp1 = 12;
+    Dying = 13;
 
-    Dashing = 13;
-    Sliding = 14;
+    Dashing = 14;
+    Sliding = 15;
 
-    Dimmed = 15; // Pre-activated state for evtsub-based NPC 
-    TransformingInto = 16; // When at this state, the character has already completed transform, i.e. in new species_id
+    Dimmed = 16; // Pre-activated state for evtsub-based NPC 
+    TransformingInto = 17; // When at this state, the character has already completed transform, i.e. in new species_id
 
-    BackDashing = 17;
-    InAirWalking = 18;
+    BackDashing = 18;
+    InAirWalking = 19;
 
-    TransformingIntoFromDeath = 19; // When at this state, the character has already completed transform, i.e. in new species_id
-    WalkStopping = 20;
-    InAirWalkStopping = 21;
+    TransformingIntoFromDeath = 20; // When at this state, the character has already completed transform, i.e. in new species_id
+    WalkStopping = 21;
+    InAirWalkStopping = 22;
 
-    Parried = 22;
-    Awaking = 23;
-    GroundDodged = 24;
-    BackWalking = 25;
+    Parried = 23;
+    Awaking = 24;
+    GroundDodged = 25;
+    BackWalking = 26;
 
     OnWallIdle1 = 128; 
 
@@ -380,7 +381,7 @@ message CharacterDownsync {
 
     int32 btn_b_holding_rdf_count = 19;
 
-    CharacterState character_state = 22;
+    CharacterState ch_state = 22;
     int32 frames_in_ch_state = 23; // number of frames elapsed in the current character state   
     bool in_air = 24; // by design a standalone field only inferred by the collision result of "Step" instead of "character_state", because we need check the transition for "character_state" from this field, i.e. "in_air (prev -> curr)"  
     bool jump_triggered = 25;

@@ -107,7 +107,7 @@ RenderFrame* mockStartRdf() {
     ch1->set_revival_x(ch1->x());
     ch1->set_revival_y(ch1->y());
     ch1->set_speed(10);
-    ch1->set_character_state(CharacterState::InAirIdle1NoJump);
+    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch1->set_frames_to_recover(0);
     ch1->set_dir_x(2);
     ch1->set_dir_y(0);
@@ -126,7 +126,7 @@ RenderFrame* mockStartRdf() {
     ch2->set_revival_x(ch2->x());
     ch2->set_revival_y(ch2->y());
     ch2->set_speed(10);
-    ch2->set_character_state(CharacterState::InAirIdle1NoJump);
+    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch2->set_frames_to_recover(0);
     ch2->set_dir_x(-2);
     ch2->set_dir_y(0);
