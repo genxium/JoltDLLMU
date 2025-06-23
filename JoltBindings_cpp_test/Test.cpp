@@ -6,6 +6,7 @@
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "FrontendBattle.h"
 #include <google/protobuf/util/json_util.h>
+#include <chrono>
 
 using namespace jtshared;
 
@@ -195,6 +196,9 @@ int main(int argc, char** argv)
     int loopRdfCnt = (1 << 11);
     int printIntervalRdfCnt = (1 << 8);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    );
     while (loopRdfCnt > timerRdfId) {
         bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, true);
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
@@ -207,7 +211,12 @@ int main(int argc, char** argv)
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
             if (status.ok()) {
-                std::cout << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", now firstPlayerChd=\n" << outStr << std::endl;
+                std::chrono::milliseconds newNowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                );
+                std::chrono::milliseconds elapsed = newNowMillis - nowMillis;
+                std::cout << "Step result = " << stepped << " at elapsed=" << elapsed.count() << "/printIntervalRdfCntMinus1=" << printIntervalRdfCntMinus1 << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
+                nowMillis = newNowMillis;
             } else {
                 std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
             }

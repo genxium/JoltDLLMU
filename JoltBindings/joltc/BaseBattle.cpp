@@ -46,7 +46,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     battleDurationFrames = 0;
 
     RenderFrame* holder = rdfBuffer.DryPut();
-    holder->MergeFrom(startRdf);
+    holder->CopyFrom(startRdf);
 
     prefabbedInputList.assign(playersCnt, 0);   
     playerInputFrontIds.assign(playersCnt, 0); 
@@ -206,7 +206,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
         if (!nextRdf) {
             nextRdf = rdfBuffer.DryPut();
         }
-        nextRdf->MergeFrom(*rdf);
+        nextRdf->CopyFrom(*rdf);
         nextRdf->set_id(rdfId+1);
         elapse1RdfForRdf(nextRdf);
         for (int i = 0; i < playersCnt; i++) {
@@ -240,7 +240,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             auto newPos = single->GetPosition();
             auto newVel = single->IsSupported() 
                 ? 
-                (single->GetLinearVelocity() + single->GetGroundVelocity())
+                (RVec3Arg(single->GetLinearVelocity().GetX(), 0, 0) + single->GetGroundVelocity())
                 : 
                 (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity());
 
