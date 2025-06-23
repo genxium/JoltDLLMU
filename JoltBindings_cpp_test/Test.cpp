@@ -102,8 +102,8 @@ RenderFrame* mockStartRdf() {
     auto ch1 = startRdf->mutable_players_arr(0);
     ch1->set_id(10);
     ch1->set_join_index(1);
-    ch1->set_x(-100);
-    ch1->set_y(200);
+    ch1->set_x(-20);
+    ch1->set_y(2000);
     ch1->set_revival_x(ch1->x());
     ch1->set_revival_y(ch1->y());
     ch1->set_speed(10);
@@ -121,8 +121,8 @@ RenderFrame* mockStartRdf() {
     auto ch2 = startRdf->mutable_players_arr(1);
     ch2->set_id(11);
     ch2->set_join_index(2);
-    ch2->set_x(+100);
-    ch2->set_y(200);
+    ch2->set_x(+20);
+    ch2->set_y(3000);
     ch2->set_revival_x(ch2->x());
     ch2->set_revival_y(ch2->y());
     ch2->set_speed(10);
@@ -155,22 +155,14 @@ int main(int argc, char** argv)
     
     std::vector<float> hull1 = {
         -100, 0,
-        0, -100,
+        -100, 100,
         100, 100,
         100, 0,
         0, -25,
     };
 
-    std::vector<float> hull2 = {
-        -200, 0,
-        0, -50,
-        75, 75,
-        0, -45,
-    };
-
     std::vector<std::vector<float>> hulls;
     hulls.push_back(hull1);
-    hulls.push_back(hull2);
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
     auto startRdf = mockStartRdf();
@@ -194,7 +186,7 @@ int main(int argc, char** argv)
     std::string outStr;
     int timerRdfId = 0;
     int loopRdfCnt = (1 << 11);
-    int printIntervalRdfCnt = (1 << 8);
+    int printIntervalRdfCnt = (1 << 7);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
@@ -215,7 +207,7 @@ int main(int argc, char** argv)
                     std::chrono::system_clock::now().time_since_epoch()
                 );
                 std::chrono::milliseconds elapsed = newNowMillis - nowMillis;
-                std::cout << "Step result = " << stepped << " at elapsed=" << elapsed.count() << "/printIntervalRdfCntMinus1=" << printIntervalRdfCntMinus1 << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
+                std::cout << "Elapsed=" << elapsed.count() << "/rdfCnt=" << printIntervalRdfCntMinus1 << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
                 nowMillis = newNowMillis;
             } else {
                 std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;

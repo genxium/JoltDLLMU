@@ -31,6 +31,7 @@ const bool   cOtherCharactersCanPushPlayer = true;
 
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 static CH_CACHE_KEY_T chCacheKeyHolder = {0, 0};
+static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
 
 BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize) {
     jtshared::WsReq initializerMapData;
@@ -54,6 +55,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
 
     ////////////////////////////////////////////// 2
     bodyIDsToClear.reserve(cMaxBodies);
+    bodyIDsToAdd.reserve(cMaxBodies);
     phySys = new PhysicsSystem();
     phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
     phySys->SetBodyActivationListener(&bodyActivationListener);
@@ -104,8 +106,12 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     ////////////////////////////////////////////// 4
     transientCurrJoinIndexToChdMap.reserve(playersCnt + DEFAULT_PREALLOC_NPC_CAPACITY);
 
+    ////////////////////////////////////////////// 5 (to deprecate!)
     dummyCc.set_capsule_radius(3.0);
     dummyCc.set_capsule_half_height(10.0);
+
+    dummyBc.set_hitbox_size_x(12.0);
+    dummyBc.set_hitbox_size_y(18.0);
 }
 
 BaseBattle::~BaseBattle() {
@@ -181,11 +187,10 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(CharacterDownsy
     
         chCollider = new CharacterVirtual(settings, Vec3::sZero(), Quat::sIdentity(), cd->join_index(), phySys);       
     } else {
-        auto& dq = it->second;
-        chCollider = dq.front();
-        dq.pop_front();
-        auto innerBodyID = chCollider->GetInnerBodyID();
-        bi->AddBody(innerBodyID, EActivation::Activate);
+        auto& q = it->second;
+        chCollider = q.back();
+        q.pop_back();
+        bodyIDsToAdd.push_back(chCollider->GetInnerBodyID());
     }
 
     chCollider->SetPosition(RVec3Arg(cd->x(), cd->y(), 0));
@@ -201,31 +206,35 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
     for (int rdfId = fromRdfId; rdfId < toRdfId; rdfId++) {
         transientCurrJoinIndexToChdMap.clear();
         
-        auto rdf = rdfBuffer.GetByFrameId(rdfId);
+        auto currRdf = rdfBuffer.GetByFrameId(rdfId);
         RenderFrame* nextRdf = rdfBuffer.GetByFrameId(rdfId+1);
         if (!nextRdf) {
             nextRdf = rdfBuffer.DryPut();
         }
-        nextRdf->CopyFrom(*rdf);
+        nextRdf->CopyFrom(*currRdf);
         nextRdf->set_id(rdfId+1);
         elapse1RdfForRdf(nextRdf);
+
+        bodyIDsToAdd.clear();
         for (int i = 0; i < playersCnt; i++) {
-            auto player = rdf->players_arr(i);
+            auto player = currRdf->players_arr(i);
             CharacterConfig* cc = &dummyCc;
             auto chCollider = getOrCreateCachedCharacterCollider(&player, cc);
             transientCurrJoinIndexToChdMap[player.join_index()] = &player;
         }
+        if (!bodyIDsToAdd.empty()) {
+            auto layerState = bi->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
+            bi->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::Activate);
+        }
         phySys->Update(ESTIMATED_SECONDS_PER_FRAME, 1, tempAllocator, jobSys);
-        while (!activeChColliders.empty()) {
-            CharacterVirtual* single = activeChColliders.front();
-            activeChColliders.pop_front(); 
-
+        for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
+            CharacterVirtual* single = *it;
             // Settings for our update function
             CharacterVirtual::ExtendedUpdateSettings chColliderExtUpdateSettings;
             chColliderExtUpdateSettings.mStickToFloorStepDown = -single->GetUp() * chColliderExtUpdateSettings.mStickToFloorStepDown.Length();
             chColliderExtUpdateSettings.mWalkStairsStepUp = single->GetUp() * chColliderExtUpdateSettings.mWalkStairsStepUp.Length();
 
-            single->ExtendedUpdate(cDeltaTime, phySys->GetGravity(), 
+            single->ExtendedUpdate(cDeltaTime, phySys->GetGravity(),
                 chColliderExtUpdateSettings,
                 phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
                 phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
@@ -238,10 +247,10 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             CharacterConfig* cc = &dummyCc; // TODO: Find by "chd->species_id()"
 
             auto newPos = single->GetPosition();
-            auto newVel = single->IsSupported() 
-                ? 
+            auto newVel = single->IsSupported()
+                ?
                 (RVec3Arg(single->GetLinearVelocity().GetX(), 0, 0) + single->GetGroundVelocity())
-                : 
+                :
                 (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity());
 
             nextChd->set_in_air(!single->IsSupported());
@@ -249,25 +258,9 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             nextChd->set_y(newPos.GetY());
             nextChd->set_vel_x(newVel.GetX());
             nextChd->set_vel_y(newVel.GetY());
-            
-            /////////////////////////////////////////////////// 
-            bodyIDsToClear.push_back(single->GetInnerBodyID());
-            calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
-            auto& it = cachedChColliders.find(chCacheKeyHolder);
-            
-            if (it == cachedChColliders.end()) {
-                // [REMINDER] Lifecycle of this stack-variable "dq" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
-                CH_COLLIDER_Q dq = {single}; 
-                cachedChColliders.insert(std::make_pair(chCacheKeyHolder, std::move(dq)));
-            } else {
-                auto& cacheQue = it->second;
-                cacheQue.push_back(single);
-            }
         }
 
-        bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-        bodyIDsToClear.clear();
-        // TODO: Update nextRdf by (rdf, phySys current body states of "dynamicBodyIDs"), then set back into "rdfBuffer" for rendering.
+        batchRemoveFromPhySysAndCache(currRdf);
     }
 }
 
@@ -276,28 +269,28 @@ void BaseBattle::Clear() {
 
     // In case there's any active character collider left.
     while (!activeChColliders.empty()) {
-        auto front = activeChColliders.front();
-        activeChColliders.pop_front(); 
-        delete front; // Will call "bi->DestroyBody(front->GetInnerBodyID())" if still attached to "phySys"
+        auto single = activeChColliders.back();
+        activeChColliders.pop_back(); 
+        delete single; // Will call "bi->DestroyBody(single->GetInnerBodyID())" if still attached to "phySys"
     }
 
     while (!cachedChColliders.empty()) {
-        for (auto it = cachedChColliders.cbegin(); it != cachedChColliders.cend(); ) {
-            auto dq = std::move(it->second);
-            while (!dq.empty()) {
-                auto front = dq.front();
-                dq.pop_front(); 
-                delete front; 
+        for (auto it = cachedChColliders.begin(); it != cachedChColliders.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                auto single = q.back();
+                q.pop_back(); 
+                delete single; // Will call "bi->DestroyBody(single->GetInnerBodyID())" if still attached to "phySys"
             }
-            it = cachedChColliders.erase(it++); 
+            it = cachedChColliders.erase(it); 
         }
     }
 
     // Remove other regular bodies, unexpected active bullet colliders will also be cleared here
+    bodyIDsToClear.clear();
     phySys->GetBodies(bodyIDsToClear);
     bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
     bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-    bodyIDsToClear.clear();
 }
 
 void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
@@ -344,6 +337,14 @@ void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, CharacterConfig* cc) {
     cd->set_flying_rdf_countdown( (MAX_FLYING_RDF_CNT == cc->flying_quota_rdf_cnt() ? MAX_FLYING_RDF_CNT : (0 < cd->flying_rdf_countdown() ? cd->flying_rdf_countdown() - 1 : 0)));
 }
 
+const CharacterDownsync& BaseBattle::immutableChdFromRdf(int joinIndex, RenderFrame* rdf) {
+    if (playersCnt >= joinIndex) {
+        return rdf->players_arr(joinIndex - 1);
+    } else {
+        return rdf->players_arr(joinIndex - playersCnt - 1);
+    }
+}
+
 CharacterDownsync* BaseBattle::mutableChdFromRdf(int joinIndex, RenderFrame* rdf) {
     if (playersCnt >= joinIndex) {
         return rdf->mutable_players_arr(joinIndex-1);
@@ -352,7 +353,61 @@ CharacterDownsync* BaseBattle::mutableChdFromRdf(int joinIndex, RenderFrame* rdf
     }
 }
 
-void BaseBattle::calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioChCacheKey) {
-    ioChCacheKey[0] = cc->capsule_radius();
-    ioChCacheKey[1] = cc->capsule_half_height();
+void BaseBattle::calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioCacheKey) {
+    ioCacheKey[0] = cc->capsule_radius();
+    ioCacheKey[1] = cc->capsule_half_height();
+}
+
+void BaseBattle::calcBlCacheKey(BulletConfig* bc, BL_CACHE_KEY_T& ioCacheKey) {
+    ioCacheKey[0] = bc->hitbox_size_x();
+    ioCacheKey[1] = bc->hitbox_size_y();
+}
+
+void BaseBattle::batchRemoveFromPhySysAndCache(RenderFrame* currRdf) {
+    bodyIDsToClear.clear();
+    while (!activeChColliders.empty()) {
+        CharacterVirtual* single = activeChColliders.back();
+        activeChColliders.pop_back();
+        int joinIndex = single->GetUserData();
+        const CharacterDownsync& cd = immutableChdFromRdf(joinIndex, currRdf);
+        CharacterConfig* cc = &dummyCc; // TODO: Find by "cd.species_id()"
+
+        calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
+        auto& it = cachedChColliders.find(chCacheKeyHolder);
+
+        if (it == cachedChColliders.end()) {
+            // [REMINDER] Lifecycle of this stack-variable "q" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
+            CH_COLLIDER_Q q = { single };
+            cachedChColliders.emplace(chCacheKeyHolder, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
+
+        bodyIDsToClear.push_back(single->GetInnerBodyID());
+    }
+
+    while (!activeBlColliders.empty()) {
+        Body* single = activeBlColliders.back();
+        activeBlColliders.pop_back();
+        int blArrIdx = single->GetUserData();
+        const Bullet& bl = currRdf->bullets(blArrIdx);
+        BulletConfig* bc = &dummyBc; // TODO: Find by "cd.species_id()"
+
+        calcBlCacheKey(bc, blCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
+        auto& it = cachedBlColliders.find(blCacheKeyHolder);
+
+        if (it == cachedBlColliders.end()) {
+            // [REMINDER] Lifecycle of this stack-variable "q" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
+            BL_COLLIDER_Q q = { single };
+            cachedBlColliders.emplace(chCacheKeyHolder, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
+
+        bodyIDsToClear.push_back(single->GetID());
+    }
+
+    bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
 }

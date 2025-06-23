@@ -20,9 +20,9 @@
 #include <deque>
 
 #define BL_CACHE_KEY_T std::vector<float>
-#define BL_COLLIDER_Q std::deque<JPH::Body*>
+#define BL_COLLIDER_Q std::vector<JPH::Body*>
 #define CH_CACHE_KEY_T std::vector<float>
-#define CH_COLLIDER_Q std::deque<JPH::CharacterVirtual*>
+#define CH_COLLIDER_Q std::vector<JPH::CharacterVirtual*>
 typedef struct VectorFloatHasher {
     std::size_t operator()(const std::vector<float>& v) const {
         std::size_t seed = v.size(); // Start with the size of the vector
@@ -70,11 +70,11 @@ class JOLTC_EXPORT BaseBattle {
         StaticArray<BodyID, DEFAULT_PREALLOC_DYNAMIC_COLLIDER_CAPACITY> dynamicBodyIDs;
 
         BL_COLLIDER_Q activeBlColliders;
-        std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{density, halfExtent}", where "convexRadius" is determined by "halfExtent"
+        std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{halfExtent}", where "convexRadius" is determined by "halfExtent"
 
         // It's by design that "JPH::CharacterVirtual" instead of "JPH::Character" or even "JPH::Body" is used here, see "https://jrouwe.github.io/JoltPhysics/index.html#character-controllers" for their differences.
         CH_COLLIDER_Q activeChColliders;
-        std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{density, radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
+        std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
 
     protected:
         inline int ConvertToDynamicallyGeneratedDelayInputFrameId(int renderFrameId, int localExtraInputDelayFrames) {
@@ -115,11 +115,13 @@ class JOLTC_EXPORT BaseBattle {
 
 protected:
         BodyIDVector bodyIDsToClear;
+        BodyIDVector bodyIDsToAdd;
 
         // Backend & Frontend shared functions
         inline void elapse1RdfForRdf(RenderFrame* rdf);
         inline void elapse1RdfForBl(Bullet* bl);
         inline void elapse1RdfForChd(CharacterDownsync* cd, CharacterConfig* cc);
+        inline const CharacterDownsync& immutableChdFromRdf(int joinIndex, RenderFrame* rdf);
         inline CharacterDownsync* mutableChdFromRdf(int joinIndex, RenderFrame* rdf);
 
         int moveForwardlastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask, uint64_t& unconfirmedMask);
@@ -128,9 +130,12 @@ protected:
 
         std::unordered_map<int, CharacterDownsync*> transientCurrJoinIndexToChdMap; // Mainly for "Bullet.offender_join_index" referencing characters, and avoiding the unnecessary [joinIndex change in `_leftShiftDeadNpcs` of DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/Battle_builders.cs#L580)
 
-        void calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioChCacheKey);
+        void calcChCacheKey(CharacterConfig* cc, CH_CACHE_KEY_T& ioCacheKey);
+        void calcBlCacheKey(BulletConfig* bc, BL_CACHE_KEY_T& ioCacheKey);
 
+        void batchRemoveFromPhySysAndCache(RenderFrame* currRdf);
 private:
         CharacterConfig dummyCc;
+        BulletConfig dummyBc;
 };
 
