@@ -67,8 +67,6 @@ class JOLTC_EXPORT BaseBattle {
         BodyInterface* bi;
         JobSystemThreadPool* jobSys;
 
-        StaticArray<BodyID, DEFAULT_PREALLOC_DYNAMIC_COLLIDER_CAPACITY> dynamicBodyIDs;
-
         BL_COLLIDER_Q activeBlColliders;
         std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{halfExtent}", where "convexRadius" is determined by "halfExtent"
 
@@ -114,6 +112,7 @@ class JOLTC_EXPORT BaseBattle {
         void Clear();
 
 protected:
+        BodyIDVector staticColliderBodyIDs;
         BodyIDVector bodyIDsToClear;
         BodyIDVector bodyIDsToAdd;
 

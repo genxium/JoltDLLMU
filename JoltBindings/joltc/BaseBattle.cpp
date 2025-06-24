@@ -46,6 +46,7 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     timerRdfId = 0;
     battleDurationFrames = 0;
 
+    RenderFrame* skippedHolder = rdfBuffer.DryPut();
     RenderFrame* holder = rdfBuffer.DryPut();
     holder->CopyFrom(startRdf);
 
@@ -64,6 +65,8 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     bi = &(phySys->GetBodyInterface());
 
     auto staticColliderShapesFromTiled = initializerMapData.serialized_barrier_polygons();
+
+    staticColliderBodyIDs.clear();
     for (auto convexPolygon : staticColliderShapesFromTiled) {
         TriangleList triangles; 
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
@@ -94,10 +97,14 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
 
            See "MonsterInsight/joltphysics/RefConst_destructor_trick.md" for details.
          */
-        RefConst<Shape> bodyShape = new MeshShape(bodyShapeSettings, shapeResult); 
+        Shape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult); 
         BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-        bi->CreateAndAddBody(bodyCreationSettings, EActivation::DontActivate);
+        Body* body = bi->CreateBody(bodyCreationSettings);
+        staticColliderBodyIDs.push_back(body->GetID());
     }
+    auto layerState = bi->AddBodiesPrepare(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+    bi->AddBodiesFinalize(staticColliderBodyIDs.data(), staticColliderBodyIDs.size(), layerState, EActivation::DontActivate);
+
     phySys->OptimizeBroadPhase();
 
     ////////////////////////////////////////////// 3
@@ -223,8 +230,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             transientCurrJoinIndexToChdMap[player.join_index()] = &player;
         }
         if (!bodyIDsToAdd.empty()) {
-            auto layerState = bi->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
-            bi->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::Activate);
+            bi->ActivateBodies(bodyIDsToAdd.data(), bodyIDsToAdd.size());
         }
         phySys->Update(ESTIMATED_SECONDS_PER_FRAME, 1, tempAllocator, jobSys);
         for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
@@ -283,13 +289,11 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
 }
 
 void BaseBattle::Clear() {
-    activeBlColliders.clear(); // By now there's no active bullet collider
-
-    // In case there's any active character collider left.
+    // Cope with "CharacterVirtual*" instances first, they're special in that "~CharacterVirtual()" will call both "bi->RemoveBody(single->GetInnerBodyID())" and "bi->DestroyBody(single->GetInnerBodyID())" if applicable
     while (!activeChColliders.empty()) {
         auto single = activeChColliders.back();
-        activeChColliders.pop_back(); 
-        delete single; // Will call "bi->DestroyBody(single->GetInnerBodyID())" if still attached to "phySys"
+        activeChColliders.pop_back();
+        delete single;
     }
 
     while (!cachedChColliders.empty()) {
@@ -297,18 +301,41 @@ void BaseBattle::Clear() {
             auto& q = it->second;
             while (!q.empty()) {
                 auto single = q.back();
-                q.pop_back(); 
-                delete single; // Will call "bi->DestroyBody(single->GetInnerBodyID())" if still attached to "phySys"
+                q.pop_back();
+                delete single;
             }
-            it = cachedChColliders.erase(it); 
+            it = cachedChColliders.erase(it);
         }
     }
 
-    // Remove other regular bodies, unexpected active bullet colliders will also be cleared here
+    // In case there's any active left.
     bodyIDsToClear.clear();
-    phySys->GetBodies(bodyIDsToClear);
+    while (!activeBlColliders.empty()) {
+        auto single = activeBlColliders.back();
+        activeChColliders.pop_back();
+        bodyIDsToClear.push_back(single->GetID());
+    }
     bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
     bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+
+    // Cope with the inactive ones.
+    bodyIDsToClear.clear();
+    while (!cachedBlColliders.empty()) {
+        for (auto it = cachedBlColliders.begin(); it != cachedBlColliders.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                auto single = q.back();
+                q.pop_back();
+                bodyIDsToClear.push_back(single->GetID());
+            }
+            it = cachedBlColliders.erase(it);
+        }
+    }
+    bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+
+    // Cope with the static ones
+    bi->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+    bi->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
 }
 
 void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
@@ -404,13 +431,15 @@ void BaseBattle::batchRemoveFromPhySysAndCache(RenderFrame* currRdf) {
 
         bodyIDsToClear.push_back(single->GetInnerBodyID());
     }
-
+    bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    
+    bodyIDsToClear.clear();
     while (!activeBlColliders.empty()) {
         Body* single = activeBlColliders.back();
         activeBlColliders.pop_back();
         int blArrIdx = single->GetUserData();
         const Bullet& bl = currRdf->bullets(blArrIdx);
-        BulletConfig* bc = &dummyBc; // TODO: Find by "cd.species_id()"
+        BulletConfig* bc = &dummyBc; // TODO: Find by "bl.species_id()"
 
         calcBlCacheKey(bc, blCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
         auto& it = cachedBlColliders.find(blCacheKeyHolder);

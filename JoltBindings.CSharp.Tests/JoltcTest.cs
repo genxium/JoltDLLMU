@@ -16,32 +16,18 @@ public class JoltcTest {
         _logger = theLogger;
     }
 
-    private static float defaultThickness = 2.0f;
-    private static float defaultHalfThickness = defaultThickness * 0.5f;
-
     public static ImmutableArray<Vector2[]> hulls1 = ImmutableArray.Create<Vector2[]>().AddRange(new[]
     {
         new Vector2[] {
             new Vector2(-100f, 0f),
-            new Vector2(0f, 100f),
+            new Vector2(-100f, 100f),
             new Vector2(100f, 100f),
             new Vector2(100f, 0f),
             new Vector2(0f, -25f),
-        },
-        new Vector2[] {
-            new Vector2(-200f, 0f),
-            new Vector2(0f, -50f),
-            new Vector2(75f, 75f),
-            new Vector2(0f, -45f),
-        },
+        }
     });
 
-    public const int BATTLE_DYNAMICS_FPS = 60;
-    public const int DEFAULT_TIMEOUT_FOR_LAST_ALL_CONFIRMED_IFD = 10000; // in milliseconds
-
     // Deliberately NOT using enum for "room states" to make use of "C# CompareAndExchange" 
-    public const int ROOM_ID_NONE = 0;
-
     public const uint SPECIES_NONE_CH = 0;
     public const uint SPECIES_BLADEGIRL = 1;
     public const uint SPECIES_WITCHGIRL = 2;
@@ -55,26 +41,21 @@ public class JoltcTest {
     public const uint SPECIES_YELLOWCAT = 12;
     public const uint SPECIES_BLACKCAT = 13;
 
-
-    public static int TERMINATING_RENDER_FRAME_ID = (-1026);
-    public static int TERMINATING_INPUT_FRAME_ID = (-1027);
+    public static int TERMINATING_RENDER_FRAME_ID = 0;
+    public static int TERMINATING_INPUT_FRAME_ID = 0;
 
     public static int TERMINATING_TRAP_ID = 0;
     public static int TERMINATING_TRIGGER_ID = 0;
     public static int TERMINATING_PICKABLE_LOCAL_ID = 0;
-    public static int TERMINATING_PLAYER_ID = 0;
+    public static int TERMINATING_CHARACTER_ID = 0;
     public static int TERMINATING_BULLET_LOCAL_ID = 0;
     public static int TERMINATING_BULLET_TEAM_ID = 0; // Default for proto int32 to save space
     public static uint TERMINATING_BUFF_SPECIES_ID = 0; // Default for proto int32 to save space in "CharacterDownsync.killedToDropBuffSpeciesId"
     public static uint TERMINATING_DEBUFF_SPECIES_ID = 0;
     public static uint TERMINATING_CONSUMABLE_SPECIES_ID = 0; // Default for proto int32 to save space in "CharacterDownsync.killedToDropConsumableSpeciesId"
     public const int MAGIC_JOIN_INDEX_INVALID = 0;
-    public const int DOWNSYNC_MSG_ACT_BATTLE_START = 0;
+    public const int DOWNSYNC_MSG_ACT_BATTLE_START = 1;
 
-    public static int DEFAULT_PREALLOC_BULLET_CAPACITY = 48;
-    public static int DEFAULT_PREALLOC_TRAP_CAPACITY = 12;
-    public static int DEFAULT_PREALLOC_TRIGGER_CAPACITY = 15;
-    public static int DEFAULT_PREALLOC_PICKABLE_CAPACITY = 32;
     public static int DEFAULT_PER_CHARACTER_BUFF_CAPACITY = 1;
     public static int DEFAULT_PER_CHARACTER_DEBUFF_CAPACITY = 1;
     public static int DEFAULT_PER_CHARACTER_INVENTORY_CAPACITY = 3;
@@ -99,7 +80,7 @@ public class JoltcTest {
 
     public static CharacterDownsync NewPreallocatedCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
         var single = new CharacterDownsync();
-        single.Id = TERMINATING_PLAYER_ID;
+        single.Id = TERMINATING_CHARACTER_ID;
         single.KilledToDropBuffSpeciesId = TERMINATING_BUFF_SPECIES_ID;
         single.KilledToDropConsumableSpeciesId = TERMINATING_CONSUMABLE_SPECIES_ID;
         single.LastDamagedByJoinIndex = MAGIC_JOIN_INDEX_INVALID;
@@ -171,9 +152,9 @@ public class JoltcTest {
         var ch1 = startRdf.PlayersArr[0];
         ch1.Id = 10;
         ch1.JoinIndex = 1;
-        ch1.X = 0;
-        ch1.Y = 200f;
-        ch1.RevivalX = 0;
+        ch1.X = 50f;
+        ch1.Y = 2000f;
+        ch1.RevivalX = ch1.X;
         ch1.RevivalY = ch1.Y;
         ch1.Speed = 10f;
         ch1.ChState = CharacterState.InAirIdle1NoJump;
@@ -189,11 +170,11 @@ public class JoltcTest {
 
         var ch2 = startRdf.PlayersArr[1];
         ch2.Id = 10;
-        ch2.JoinIndex = -2;
-        ch2.X = 0;
-        ch2.Y = -200f;
-        ch2.RevivalX = 0;
-        ch2.RevivalY = -ch2.X;
+        ch2.JoinIndex = 2;
+        ch2.X = -50f;
+        ch2.Y = 2000f;
+        ch2.RevivalX = ch2.X;
+        ch2.RevivalY = ch2.Y;
         ch2.Speed = 10f;
         ch2.ChState = CharacterState.InAirIdle1NoJump;
         ch2.FramesToRecover = 0;
@@ -253,8 +234,8 @@ public class JoltcTest {
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
 
-            int timerRdfId = 0;
-            while (30 > timerRdfId) {
+            int timerRdfId = DOWNSYNC_MSG_ACT_BATTLE_START;
+            while (1024 > timerRdfId) {
                 bool stepped = JoltCSharp.Bindings.APP_Step(battle, timerRdfId, timerRdfId+1, true);
                 Assert.True(stepped);
                 timerRdfId++;

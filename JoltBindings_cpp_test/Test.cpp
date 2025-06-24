@@ -9,6 +9,7 @@
 #include <chrono>
 
 using namespace jtshared;
+using namespace std::chrono;
 
 static float defaultThickness = 2.0f;
 static float defaultHalfThickness = defaultThickness * 0.5f;
@@ -175,21 +176,22 @@ int main(int argc, char** argv)
         }
     }
     wsReq.set_allocated_self_parsed_rdf(startRdf);
+    bool isFrontend = true;
 
     memset(wsReqBuffer, 0, sizeof(wsReqBuffer));
     int byteSize = wsReq.ByteSize();
     wsReq.SerializeToArray(wsReqBuffer, byteSize);
-    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(wsReqBuffer, byteSize, true));
-    std::cout << "Created\nbattle = " << battle << std::endl;
+    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(wsReqBuffer, byteSize, isFrontend));
+    std::cout << "Created battle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
     std::string outStr;
-    int timerRdfId = 0;
+    int timerRdfId = DOWNSYNC_MSG_ACT_BATTLE_START;
     int loopRdfCnt = (1 << 11);
     int printIntervalRdfCnt = (1 << 7);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()
+    auto nowMillis = duration_cast<milliseconds>(
+        system_clock::now().time_since_epoch()
     );
     while (loopRdfCnt > timerRdfId) {
         bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, true);
@@ -198,16 +200,16 @@ int main(int argc, char** argv)
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         std::string initializerMapDataStr(rdfFetchBuffer, outBytesCnt);
         outRdf.ParseFromString(initializerMapDataStr);
-        if (0 == (timerRdfId & printIntervalRdfCntMinus1)) {
+        if (1 == timerRdfId || 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
             auto firstPlayerChd = outRdf.players_arr(0);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
             if (status.ok()) {
-                std::chrono::milliseconds newNowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()
+                auto newNowMillis = duration_cast<milliseconds>(
+                    system_clock::now().time_since_epoch()
                 );
-                std::chrono::milliseconds elapsed = newNowMillis - nowMillis;
-                std::cout << "Elapsed=" << elapsed.count() << "/rdfCnt=" << printIntervalRdfCntMinus1 << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
+                auto elapsed = newNowMillis - nowMillis;
+                std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
                 nowMillis = newNowMillis;
             } else {
                 std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
@@ -218,6 +220,8 @@ int main(int argc, char** argv)
     
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
+    bool destroyRes = APP_DestroyBattle(battle, isFrontend);
+    std::cout << "APP_DestroyBattle result=" << destroyRes << std::endl;
     JPH_Shutdown();
 	return 0;
 }

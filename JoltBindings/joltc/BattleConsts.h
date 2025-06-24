@@ -61,15 +61,16 @@ const int DEFAULT_PREALLOC_DYNAMIC_COLLIDER_CAPACITY = DEFAULT_PREALLOC_NPC_CAPA
 const int JOIN_INDEX_NOT_INITIALIZED = 0;
 const int JOIN_INDEX_ARR_IDX_NOT_INITIALIZED = JOIN_INDEX_NOT_INITIALIZED - 1;
 
-const int TERMINATING_RENDER_FRAME_ID = (-1026);
-const int TERMINATING_INPUT_FRAME_ID = (-1027);
+const int TERMINATING_RENDER_FRAME_ID = 0;
+const int TERMINATING_INPUT_FRAME_ID = 0; // [WARNING] Could be a caveat by design, as it forces all player inputs to be ignored when processing the 0-th InputFrameDownsync. 
 const int TERMINATING_TRAP_ID = 0;
 const int TERMINATING_TRIGGER_ID = 0;
 const int TERMINATING_PICKABLE_LOCAL_ID = 0;
 const int TERMINATING_CHARACTER_ID = 0;
 const int TERMINATING_BULLET_LOCAL_ID = 0;
 const int TERMINATING_BULLET_TEAM_ID = 0; // Default for proto int32 to save space
-const int DOWNSYNC_MSG_ACT_BATTLE_START = 0;
+
+const int DOWNSYNC_MSG_ACT_BATTLE_START = 1;
 
 const uint32_t TERMINATING_BUFF_SPECIES_ID = 0; // Default for proto int32 to save space in "CharacterDownsync.killedToDropBuffSpeciesId"
 const uint32_t TERMINATING_DEBUFF_SPECIES_ID = 0;
