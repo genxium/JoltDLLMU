@@ -134,6 +134,9 @@ protected:
 
         void batchRemoveFromPhySysAndCache(RenderFrame* currRdf);
 private:
+        Vec3 safeDeactiviatedPosition;
+
+        ////////////////////////////////////////////// (to deprecate!)
         CharacterConfig dummyCc;
         BulletConfig dummyBc;
 };

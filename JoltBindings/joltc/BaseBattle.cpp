@@ -113,6 +113,8 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     ////////////////////////////////////////////// 4
     transientCurrJoinIndexToChdMap.reserve(playersCnt + DEFAULT_PREALLOC_NPC_CAPACITY);
 
+    safeDeactiviatedPosition = Vec3(65535.0, -65535.0, 0);    
+
     ////////////////////////////////////////////// 5 (to deprecate!)
     dummyCc.set_capsule_radius(3.0);
     dummyCc.set_capsule_half_height(10.0);
@@ -429,6 +431,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(RenderFrame* currRdf) {
             cacheQue.push_back(single);
         }
 
+        single->SetPosition(safeDeactiviatedPosition); // [WARNING] To avoid spurious awakening by https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1275
         bodyIDsToClear.push_back(single->GetInnerBodyID());
     }
     bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());

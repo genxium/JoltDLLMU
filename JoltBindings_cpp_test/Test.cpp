@@ -188,7 +188,7 @@ int main(int argc, char** argv)
     std::string outStr;
     int timerRdfId = DOWNSYNC_MSG_ACT_BATTLE_START;
     int loopRdfCnt = (1 << 11);
-    int printIntervalRdfCnt = (1 << 7);
+    int printIntervalRdfCnt = (1 << 6);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     auto nowMillis = duration_cast<milliseconds>(
         system_clock::now().time_since_epoch()
