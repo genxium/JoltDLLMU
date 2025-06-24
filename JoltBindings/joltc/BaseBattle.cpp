@@ -419,7 +419,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(RenderFrame* currRdf) {
         const CharacterDownsync& cd = immutableChdFromRdf(joinIndex, currRdf);
         CharacterConfig* cc = &dummyCc; // TODO: Find by "cd.species_id()"
 
-        calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
+        calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "single" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
         auto& it = cachedChColliders.find(chCacheKeyHolder);
 
         if (it == cachedChColliders.end()) {
@@ -444,13 +444,12 @@ void BaseBattle::batchRemoveFromPhySysAndCache(RenderFrame* currRdf) {
         const Bullet& bl = currRdf->bullets(blArrIdx);
         BulletConfig* bc = &dummyBc; // TODO: Find by "bl.species_id()"
 
-        calcBlCacheKey(bc, blCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "front" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
+        calcBlCacheKey(bc, blCacheKeyHolder);         
         auto& it = cachedBlColliders.find(blCacheKeyHolder);
 
         if (it == cachedBlColliders.end()) {
-            // [REMINDER] Lifecycle of this stack-variable "q" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
             BL_COLLIDER_Q q = { single };
-            cachedBlColliders.emplace(chCacheKeyHolder, q);
+            cachedBlColliders.emplace(blCacheKeyHolder, q);
         } else {
             auto& cacheQue = it->second;
             cacheQue.push_back(single);
