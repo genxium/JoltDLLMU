@@ -25,11 +25,6 @@
     <Target Name="ExportAll" AfterTargets="AfterBuild">
         <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(UnityPackageOutputPath)" />
         <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(UnityPackageOutputPath)" />
-        <!--
-        <Copy SourceFiles="$(OutDir)Google.Protobuf.dll" DestinationFolder="$(UnityPackageOutputPath)" />
-        <Copy SourceFiles="$(OutDir)System.Runtime.CompilerServices.Unsafe.dll" DestinationFolder="$(UnityPackageOutputPath)" />
-        <Copy SourceFiles="$(OutDir)System.Collections.Immutable.dll" DestinationFolder="$(UnityPackageOutputPath)" />
-        -->
     </Target>
 
     <Target Name="PostClean" AfterTargets="Clean">

@@ -1,10 +1,18 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace JoltCSharp { 
+namespace JoltCSharp {
     public unsafe class Bindings {
         private const string JOLT_LIB = JoltcPrebuilt.Loader.JOLT_LIB;
         /* All defined in 'joltc.h'*/
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool ConfigConsts_Init(char* inBytes, int inBytesCnt);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -15,7 +23,7 @@ namespace JoltCSharp {
         public static extern bool JPH_Shutdown(); // Destroys default allocators
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern UIntPtr APP_CreateBattle(char* inBytes, int inBytesCnt, [MarshalAs(UnmanagedType.U1)] bool isFrontend);
+        public static extern UIntPtr APP_CreateBattle(char* inBytes, int inBytesCnt, [MarshalAs(UnmanagedType.U1)] bool isFrontend, [MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -27,7 +35,11 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool APP_GetRdf(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, int outBytesCntLimit);
+        public static extern bool APP_GetRdf(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, IntPtr outBytesCntLimit);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_UpsertCmd(UIntPtr inBattle, int inIfdId, uint inSingleJoinIndex, ulong inSingleInput, char* outBytesPreallocatedStart, IntPtr outBytesCntLimit, [MarshalAs(UnmanagedType.U1)] bool fromUdp, [MarshalAs(UnmanagedType.U1)] bool fromTcp, [MarshalAs(UnmanagedType.U1)] bool isFrontend);
 
         //------------------------------------------------------------------------------------------------
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl)]

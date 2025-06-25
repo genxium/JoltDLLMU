@@ -10,7 +10,8 @@
 #include <Jolt/Core/RTTI.h>
 #include <Jolt/Core/TempAllocator.h>
 
-#include "BattleConsts.h"
+#include "CppOnlyConsts.h"
+#include "PbConsts.h"
 #include "FrontendBattle.h"
 #include "BackendBattle.h"
 
@@ -19,6 +20,29 @@ JPH_SUPPRESS_WARNINGS
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
+
+const PrimitiveConsts* globalPrimitiveConsts = nullptr;
+const ConfigConsts* globalConfigConsts = nullptr;
+
+bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
+    if (nullptr != globalPrimitiveConsts) {
+        delete globalPrimitiveConsts;
+    }
+    PrimitiveConsts tmp;
+    tmp.ParseFromArray(inBytes, inBytesCnt);
+    globalPrimitiveConsts = new PrimitiveConsts(tmp);
+    return true;
+}
+
+bool ConfigConsts_Init(char* inBytes, int inBytesCnt) {
+    if (nullptr != globalConfigConsts) {
+        delete globalConfigConsts;
+    }
+    ConfigConsts tmp;
+    tmp.ParseFromArray(inBytes, inBytesCnt);
+    globalConfigConsts = new ConfigConsts(tmp);
+    return true;
+}
 
 static TempAllocatorImplWithMallocFallback* globalTempAllocator = nullptr;
 bool JPH_Init(int nBytesForTempAllocator)
@@ -54,12 +78,12 @@ bool JPH_Shutdown(void)
     return true;
 }
 
-void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend) {
+void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOnlineArenaMode) {
     BaseBattle* result = nullptr;
     if (isFrontend) {
-        result = new FrontendBattle(inBytes, inBytesCnt, DEFAULT_BACKEND_RENDER_BUFFER_SIZE, DEFAULT_BACKEND_INPUT_BUFFER_SIZE);
+        result = new FrontendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator, isOnlineArenaMode);
     } else {
-        result = new BackendBattle(inBytes, inBytesCnt, DEFAULT_BACKEND_RENDER_BUFFER_SIZE, DEFAULT_BACKEND_INPUT_BUFFER_SIZE);
+        result = new BackendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
     }
 
     return result;
@@ -74,12 +98,20 @@ bool APP_DestroyBattle(void* inBattle, bool isFrontend) {
     return true;
 }
 
-bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
+bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing, bool isFrontend) {
     auto battle = static_cast<BaseBattle*>(inBattle);
     battle->Step(fromRdfId, toRdfId, globalTempAllocator);
     if (isChasing) {
         auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
         frontendBattle->chaserRdfId = toRdfId;
+    } else {
+        if (isFrontend) {
+            auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+            frontendBattle->timerRdfId = toRdfId;
+        } else {
+            auto backendBattle = static_cast<BackendBattle*>(inBattle);
+            backendBattle->currDynamicsRdfId = toRdfId;
+        }
     }
     return true;
 }
@@ -93,6 +125,34 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, in
     }
     *outBytesCntLimit = byteSize;
     rdf->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
+}
+
+bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, int* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend) {
+    InputFrameDownsync* result = nullptr;
+    if (isFrontend) {
+        auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+        bool outExistingInputMutated = false;
+        result = frontendBattle->GetOrPrefabInputFrameDownsync(inIfdId, inSingleJoinIndex, inSingleInput, true, false, outExistingInputMutated);
+        if (outExistingInputMutated) {
+            frontendBattle->HandleIncorrectlyRenderedPrediction(inIfdId, true);
+        }
+    } else {
+        auto backendBattle = static_cast<BackendBattle*>(inBattle);
+        bool outExistingInputMutated = false;
+        result = backendBattle->GetOrPrefabInputFrameDownsync(inIfdId, inSingleJoinIndex, inSingleInput, fromUdp, fromTcp, outExistingInputMutated);
+    }
+
+    if (!result) {
+        return false;
+    }
+
+    int byteSize = result->ByteSize();
+    if (byteSize > *outBytesCntLimit) {
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+    result->SerializeToArray(outBytesPreallocatedStart, byteSize);
     return true;
 }
 

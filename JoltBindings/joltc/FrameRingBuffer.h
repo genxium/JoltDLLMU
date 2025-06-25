@@ -4,7 +4,7 @@
 #include <string>
 
 template <class T>
-class JOLTC_EXPORT FrameRingBuffer : RingBuffer<T> {
+class JOLTC_EXPORT FrameRingBuffer : public RingBuffer<T> {
     public:
         int EdFrameId;
         int StFrameId;

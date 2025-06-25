@@ -16,6 +16,7 @@ rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.meta
 
 # Native part
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.h
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.pb
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.gliffy
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.inl
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.dll 
