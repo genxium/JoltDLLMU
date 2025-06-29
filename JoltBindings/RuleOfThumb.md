@@ -27,10 +27,13 @@
           - each `CollideShapeResult` is translated into a `ContactManifold` by [merging](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1108) or [replacing](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1131) or [inserting](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1136) in `collector.mManifolds`, and 
           - each `ContactManifold` is [translated into a `ContactConstraint`](https://github.com/jrouwe/JoltPhysics/blob/master/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1126) by [mContactManager->AddContactConstraint](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1172), and 
           - [mIslandBuilder.LinkBodies](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1278)
+
 - The very key variable `CollideShapeResult` is created in a `XxxShape v.s. XxxShape` dependent manner, most notably [Convex v.s. Convex](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L45), here comes some similarity to [DLLMU-v2.3.4 SatResult calculation](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/Battle_geometry.cs#L66), where the `penetration_axis` is 
     - [first guessed to be center of mass difference between shape1 and shape2](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L72)
     - [then corrected by GJK algorithm](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L93)
     - [then corrected again by EPA algorithm](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L127)  
+
+- Kindly note that any [struct BodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyPair.h) instance found in broadphase is discarded if it doesn't create a `class ContactConstraint` instance (which keeps the body & shape pair information in memory for constraint solving later).
 
 - Finally about the solver for `non-penetration constraints`. 
     - For a rigid body, its `shape`, `mass` and `inertia tensor` should NOT change when resolving any constraint.

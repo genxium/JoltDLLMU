@@ -1,15 +1,19 @@
 #include "joltc_export.h" // imports the "JOLTC_EXPORT" macro for "serializable_data.pb.h"
 #include "serializable_data.pb.h"
 #include "joltc_api.h" 
-#include "BattleConsts.h"
+#include "PbConsts.h"
+#include "CppOnlyConsts.h"
 
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "FrontendBattle.h"
 #include <google/protobuf/util/json_util.h>
 #include <chrono>
+#include <fstream>
+#include <filesystem>
 
 using namespace jtshared;
 using namespace std::chrono;
+using namespace std::filesystem;
 
 static float defaultThickness = 2.0f;
 static float defaultHalfThickness = defaultThickness * 0.5f;
@@ -30,28 +34,24 @@ const uint32_t SPECIES_BLACKDOG = 11;
 const uint32_t SPECIES_YELLOWCAT = 12;
 const uint32_t SPECIES_BLACKCAT = 13;
 
-
-void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int offenderJoinIndex, int teamId, BulletState blState, int framesInBlState) {
+void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int teamId, BulletState blState, int framesInBlState) {
     single->set_bl_state(blState);
     single->set_frames_in_bl_state(framesInBlState);
-    single->set_bullet_local_id(bulletLocalId);
+    single->set_id(bulletLocalId);
     single->set_originated_render_frame_id(originatedRenderFrameId);
-    single->set_offender_join_index(offenderJoinIndex);
     single->set_team_id(teamId);
 }
 
 void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-    single->set_id(TERMINATING_CHARACTER_ID);
-    single->set_join_index(JOIN_INDEX_NOT_INITIALIZED);
     for (int i = 0; i < buffCapacity; i++) {
         Buff* singleBuff = single->add_buff_list();
-        singleBuff->set_species_id(TERMINATING_BUFF_SPECIES_ID);
-        singleBuff->set_originated_render_frame_id(TERMINATING_RENDER_FRAME_ID);
+        singleBuff->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
+        singleBuff->set_originated_render_frame_id(globalPrimitiveConsts->terminating_render_frame_id());
         singleBuff->set_orig_ch_species_id(SPECIES_NONE_CH);
     }
     for (int i = 0; i < debuffCapacity; i++) {
         Buff* singleDebuff = single->add_buff_list();
-        singleDebuff->set_species_id(TERMINATING_DEBUFF_SPECIES_ID);
+        singleDebuff->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
     }
     if (0 < inventoryCapacity) {
         Inventory* inv = single->mutable_inventory();
@@ -63,29 +63,39 @@ void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacit
 
     for (int i = 0; i < bulletImmuneRecordCapacity; i++) {
         auto singleRecord = single->add_bullet_immune_records();
-        singleRecord->set_bullet_local_id(TERMINATING_BULLET_LOCAL_ID);
+        singleRecord->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
         singleRecord->set_remaining_lifetime_rdf_count(0);
     }
 }
 
+void NewPreallocatedPlayerCharacterDownsync(PlayerCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
+    single->set_join_index(globalPrimitiveConsts->magic_join_index_invalid());
+    NewPreallocatedCharacterDownsync(single->mutable_chd(), buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
+}
+
+void NewPreallocatedNpcCharacterDownsync(NpcCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
+    single->set_id(globalPrimitiveConsts->terminating_character_id());
+    NewPreallocatedCharacterDownsync(single->mutable_chd(), buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
+}
+
 RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount) {
     auto ret = new RenderFrame();
-    ret->set_id(TERMINATING_RENDER_FRAME_ID);
-    ret->set_bullet_local_id_counter(0);
+    ret->set_id(globalPrimitiveConsts->terminating_render_frame_id());
+    ret->set_bullet_id_counter(0);
 
     for (int i = 0; i < roomCapacity; i++) {
         auto single = ret->add_players_arr();
-        NewPreallocatedCharacterDownsync(single, DEFAULT_PER_CHARACTER_BUFF_CAPACITY, DEFAULT_PER_CHARACTER_DEBUFF_CAPACITY, DEFAULT_PER_CHARACTER_INVENTORY_CAPACITY, DEFAULT_PER_CHARACTER_IMMUNE_BULLET_RECORD_CAPACITY);
+        NewPreallocatedPlayerCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), globalPrimitiveConsts->default_per_character_inventory_capacity(), globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
     }
 
     for (int i = 0; i < preallocNpcCount; i++) {
         auto single = ret->add_npcs_arr();
-        NewPreallocatedCharacterDownsync(single, DEFAULT_PER_CHARACTER_BUFF_CAPACITY, DEFAULT_PER_CHARACTER_DEBUFF_CAPACITY, 1, DEFAULT_PER_CHARACTER_IMMUNE_BULLET_RECORD_CAPACITY);
+        NewPreallocatedNpcCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), 1, globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
     }
 
     for (int i = 0; i < preallocBulletCount; i++) {
         auto single = ret->add_bullets();
-        NewBullet(single, TERMINATING_BULLET_LOCAL_ID, 0, 0, 0, BulletState::StartUp, 0);
+        NewBullet(single, globalPrimitiveConsts->terminating_bullet_id(), 0, 0, BulletState::StartUp, 0);
     }
 
     return ret;
@@ -94,19 +104,16 @@ RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int prea
 RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
-    startRdf->set_id(DOWNSYNC_MSG_ACT_BATTLE_START);
+    startRdf->set_id(globalPrimitiveConsts->downsync_msg_act_battle_start());
     startRdf->set_should_force_resync(false);
     int pickableLocalId = 1;
     int npcLocalId = 1;
     int bulletLocalId = 1;
 
-    auto ch1 = startRdf->mutable_players_arr(0);
-    ch1->set_id(10);
-    ch1->set_join_index(1);
+    auto playerCh1 = startRdf->mutable_players_arr(0);
+    auto ch1 = playerCh1->mutable_chd();
     ch1->set_x(-20);
     ch1->set_y(2000);
-    ch1->set_revival_x(ch1->x());
-    ch1->set_revival_y(ch1->y());
     ch1->set_speed(10);
     ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch1->set_frames_to_recover(0);
@@ -114,18 +121,16 @@ RenderFrame* mockStartRdf() {
     ch1->set_dir_y(0);
     ch1->set_vel_x(0);
     ch1->set_vel_y(0);
-    ch1->set_in_air(true);
-    ch1->set_on_wall(false);
     ch1->set_hp(100);
     ch1->set_species_id(SPECIES_BLADEGIRL);
+    playerCh1->set_join_index(1);
+    playerCh1->set_revival_x(ch1->x());
+    playerCh1->set_revival_y(ch1->y());
 
-    auto ch2 = startRdf->mutable_players_arr(1);
-    ch2->set_id(11);
-    ch2->set_join_index(2);
+    auto playerCh2 = startRdf->mutable_players_arr(1);
+    auto ch2 = playerCh2->mutable_chd();
     ch2->set_x(+20);
     ch2->set_y(3000);
-    ch2->set_revival_x(ch2->x());
-    ch2->set_revival_y(ch2->y());
     ch2->set_speed(10);
     ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch2->set_frames_to_recover(0);
@@ -133,32 +138,57 @@ RenderFrame* mockStartRdf() {
     ch2->set_dir_y(0);
     ch2->set_vel_x(0);
     ch2->set_vel_y(0);
-    ch2->set_in_air(true);
-    ch2->set_on_wall(false);
     ch2->set_hp(100);
     ch2->set_species_id(SPECIES_BOUNTYHUNTER);
+    playerCh2->set_join_index(2);
+    playerCh2->set_revival_x(ch2->x());
+    playerCh2->set_revival_y(ch2->y());
 
-    startRdf->set_npc_local_id_counter(npcLocalId);
-    startRdf->set_bullet_local_id_counter(bulletLocalId);
-    startRdf->set_pickable_local_id_counter(pickableLocalId);
+    startRdf->set_npc_id_counter(npcLocalId);
+    startRdf->set_bullet_id_counter(bulletLocalId);
+    startRdf->set_pickable_id_counter(pickableLocalId);
 
     return startRdf;
 }
 
 const int pbBufferSizeLimit = (1 << 14);
-char wsReqBuffer[pbBufferSizeLimit];
+char pbByteBuffer[pbBufferSizeLimit];
 char rdfFetchBuffer[pbBufferSizeLimit];
+char ifdFetchBuffer[pbBufferSizeLimit];
+
+std::map<int, uint64_t> testCmds1 = {
+    {0, 3},
+    {200, 4},
+    {700, 3},
+    {890, 19},
+    {910, 3},
+    {1200, 0}
+};
 
 // Program entry point
 int main(int argc, char** argv)
 {
     std::cout << "Starting" << std::endl;
-    
+    path exePath(argv[0]);
+
+    // Get the parent path (the directory containing the executable)
+    path executableFolder = exePath.parent_path();
+    std::ifstream primitiveConstsFin(executableFolder.string() + "/PrimitiveConsts.pb", std::ios::in | std::ios::binary);
+    if (!primitiveConstsFin.is_open()) {
+        std::cerr << "Failed to open PrimitiveConsts.pb" << std::endl;
+        exit(1);
+    }
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
+    primitiveConstsFin.read(pbByteBuffer, pbBufferSizeLimit);
+    size_t bytesRead = primitiveConstsFin.gcount(); // Get actual bytes read
+    PrimitiveConsts_Init(pbByteBuffer, bytesRead);
+    primitiveConstsFin.close();
+
     std::vector<float> hull1 = {
-        -100, 0,
-        -100, 100,
-        100, 100,
-        100, 0,
+        -1000, 0,
+        -1000, 1000,
+        1000, 1000,
+        1000, 0,
         0, -25,
     };
 
@@ -178,28 +208,40 @@ int main(int argc, char** argv)
     wsReq.set_allocated_self_parsed_rdf(startRdf);
     bool isFrontend = true;
 
-    memset(wsReqBuffer, 0, sizeof(wsReqBuffer));
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
     int byteSize = wsReq.ByteSize();
-    wsReq.SerializeToArray(wsReqBuffer, byteSize);
-    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(wsReqBuffer, byteSize, isFrontend));
+    wsReq.SerializeToArray(pbByteBuffer, byteSize);
+    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, byteSize, isFrontend, false));
     std::cout << "Created battle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
     std::string outStr;
-    int timerRdfId = DOWNSYNC_MSG_ACT_BATTLE_START;
-    int loopRdfCnt = (1 << 11);
-    int printIntervalRdfCnt = (1 << 6);
+    int timerRdfId = globalPrimitiveConsts->downsync_msg_act_battle_start();
+    int loopRdfCnt = 2048;
+    int printIntervalRdfCnt = (1 << 3);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     auto nowMillis = duration_cast<milliseconds>(
         system_clock::now().time_since_epoch()
     );
+    uint32_t inSingleJoinIndex = 1;
     while (loopRdfCnt > timerRdfId) {
-        bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, true);
-        memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
+        auto it = testCmds1.upper_bound(timerRdfId);
+        int noDelayIfdId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
+        if (it != testCmds1.begin()) {
+            --it;
+        }
+        uint64_t inSingleInput = it->second;
         int outBytesCnt = pbBufferSizeLimit;
+        bool cmdInjected = APP_UpsertCmd(battle, noDelayIfdId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, true, false, true);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", noDelayIfdId=" << noDelayIfdId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, false, true);
+        memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
+        outBytesCnt = pbBufferSizeLimit;
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
-        std::string initializerMapDataStr(rdfFetchBuffer, outBytesCnt);
-        outRdf.ParseFromString(initializerMapDataStr);
+        outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
         if (1 == timerRdfId || 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
             auto firstPlayerChd = outRdf.players_arr(0);
             outStr.clear();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include "BattleConsts.h"
 #include "joltc_export.h"
 
 /*

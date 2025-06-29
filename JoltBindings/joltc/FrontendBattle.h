@@ -8,7 +8,8 @@ using namespace jtshared;
 
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
-    FrontendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize) {
+    FrontendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
+        onlineArenaMode = isOnlineArenaMode;
     }
 
     virtual ~FrontendBattle() {
@@ -21,12 +22,15 @@ public:
     int chaserRdfIdLowerBound;
     std::unordered_map<int, RenderFrame> peerDownsyncedRdf;
 
-    int selfJoinIndex = JOIN_INDEX_NOT_INITIALIZED;
-    int selfJoinIndexArrIdx = JOIN_INDEX_ARR_IDX_NOT_INITIALIZED;
+    int selfJoinIndex = globalPrimitiveConsts->magic_join_index_invalid();
+    int selfJoinIndexArrIdx = globalPrimitiveConsts->magic_join_index_invalid()-1;
     uint64_t selfJoinIndexMask = 0u;
-    uint64_t allConfirmedMask = 0u;
+
+    void HandleIncorrectlyRenderedPrediction(int inputFrameId, bool fromUDP);
+    void OnWsRespReceived(char* inBytes, int inBytesCnt);
 
 protected:
-    void _handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromUDP);
-    void getOrPrefabInputFrameUpsync(int inputFrameId, bool canConfirmSelf, uint64_t inRealtimeSelfCmd, uint64_t* outSelfCmd, uint64_t* outPrevSelfCmd, uint64_t* outConfirmedList);
+    bool onlineArenaMode = false;
+    virtual bool preprocessIfdStEviction(int inputFrameId);
+    virtual void postprocessIfdStEviction();
 };

@@ -6,7 +6,7 @@ using namespace JPH;
 
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
-    BackendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize)  {
+    BackendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
     }
 
     virtual ~BackendBattle() {
@@ -15,9 +15,13 @@ public:
 public:
     int elongatedBattleDurationFrames;
     bool elongatedBattleDurationFramesShortenedOnce;
-    int curDynamicsRenderFrameId;
+    int currDynamicsRdfId;
     int lastForceResyncedRdfId;
     int nstDelayFrames;
+
+protected:
+    virtual bool preprocessIfdStEviction(int inputFrameId);
+    virtual void postprocessIfdStEviction();
 };
 
 /*
