@@ -33,7 +33,9 @@
     - [then corrected by GJK algorithm](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L93)
     - [then corrected again by EPA algorithm](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/ConvexShape.cpp#L127)  
 
-- Kindly note that any [struct BodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyPair.h) instance found in broadphase is discarded if it doesn't create a `class ContactConstraint` instance (which keeps the body & shape pair information in memory for constraint solving later).
+- Kindly note that any [struct BodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyPair.h) instance found in both broadphase & narrowphase is discarded if it doesn't create a `class ContactConstraint` instance (which keeps the body & shape pair information in memory for constraint solving later).
+
+- On the use of `class CharacterVirtual`, if [CharacterVirtual::mInnerBodyID](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L740) is not set then the `class CharacterVirtual` instance DOESN'T participate in `PhysicsSystem::Update(...)`, yet most of the pipeline analysis above still applies to [`CharacterVirtual::Update(...)` w.r.t. `CharacterVirtual::mSystem`](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L1382) -- except that [`CharacterVirtual::Update(...)` skips broadphase and starts only with narrowphase](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L396) (which is reasonable and still uses AABB to remove unnecessary collision checks).
 
 - Finally about the solver for `non-penetration constraints`. 
     - For a rigid body, its `shape`, `mass` and `inertia tensor` should NOT change when resolving any constraint.

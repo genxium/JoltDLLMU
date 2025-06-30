@@ -262,17 +262,17 @@ message CharacterConfig {
     float capsule_radius = 35;
     float capsule_half_height = 36;
 
-    float shrinked_scale_radius = 37;
-    float shrinked_scale_height = 38;
+    float shrinked_capsule_radius = 37;
+    float shrinked_capsule_half_height = 38;
 
-    float lay_down_scale_radius = 39;
-    float lay_down_scale_height = 40;
+    float lay_down_capsule_radius = 39;
+    float lay_down_capsule_half_height = 40;
 
-    float dying_scale_radius = 41;
-    float dying_scale_height = 42;
+    float dying_capsule_radius = 41;
+    float dying_capsule_half_height = 42;
 
-    float dimmed_scale_radius = 43;
-    float dimmed_scale_height = 44;
+    float dimmed_capsule_radius = 43;
+    float dimmed_capsule_half_height = 44;
 
     bool anti_gravity_when_idle = 45;
     int32 anti_gravity_frames_lingering = 46;
@@ -406,7 +406,7 @@ message CharacterDownsync {
     uint32 combo_hit_cnt = 37;
     int32 combo_frames_remained = 38;
 
-    uint32 last_damaged_by_ud = 39;
+    uint64 last_damaged_by_ud = 39;
     int32 last_damaged_by_bullet_team_id = 40;
     
     uint32 active_skill_id = 41;
@@ -454,7 +454,7 @@ message PlayerCharacterDownsync {
 message NpcCharacterDownsync {
     CharacterDownsync chd = 1;
 
-    int32 id = 2;
+    uint32 id = 2;
 
     int32 activated_rdf_id = 3;
     uint64 cached_cue_cmd = 4;
@@ -761,8 +761,7 @@ message Bullet {
 
     uint32 id = 25;
     int32 originated_render_frame_id = 4; // Copied from the first bullet for all subsequent bullets
-    uint32 offender_ud = 5; // Copied to favor collision handling of the dispatched bullet
-    uint32 offender_trap_id = 6;
+    uint64 offender_ud = 5; // Copied to favor collision handling of the dispatched bullet
     int32 team_id = 7;
 
     float x = 8;
@@ -1094,7 +1093,7 @@ message Debuff {
 }
 
 message BulletImmuneRecord {
-    int32 bullet_id = 1;
+    uint32 bullet_id = 1;
     int32 remaining_lifetime_rdf_count = 2;
 } 
 
@@ -1613,13 +1612,13 @@ message PrimitiveConsts {
 
     float ele_weakness_default_yield = 153;
     float ele_resistance_default_yield = 154;
+
+    int32 starting_render_frame_id = 155;
+    int32 starting_input_frame_id = 156;
 }
 
 message ConfigConsts {
     map<uint32, CharacterConfig> character_configs = 1;
     map<uint32, Skill> skill_configs = 2;
-    map<uint32, TrapConfig> trap_configs = 3;
-    map<uint32, TriggerConfig> trigger_configs = 4;
-    map<uint32, BuffConfig> buff_configs = 5;
-    map<uint32, DebuffConfig> debuff_configs = 6;
+    map<uint32, DebuffConfig> debuff_configs = 3;
 }

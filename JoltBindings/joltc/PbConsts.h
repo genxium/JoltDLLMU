@@ -15,7 +15,6 @@ extern JOLTC_EXPORT const ConfigConsts* globalConfigConsts;
 const std::unordered_set<CharacterState> onWallSet = {
     OnWallIdle1, 
     OnWallAtk1, 
-    InAirIdle1ByWallJump,
 };
 
 const std::unordered_set<CharacterState> proactiveJumpingSet = {
@@ -106,6 +105,7 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     InAirWalking,
     OnWallIdle1,
     Sliding,
+    Dashing,
     GroundDodged,
     CrouchIdle1,
     CrouchAtk1,

@@ -1,12 +1,19 @@
 ﻿using Google.Protobuf;
 using JoltCSharp;
+using jtshared;
 
 var outputDir = Environment.GetEnvironmentVariable("UNITY_RT_PLUGINS_OUTPATH");
 Console.WriteLine($"outputDir={outputDir}");
 if (null == outputDir) return;
-var pbConsts = new PbConsts();
-Console.WriteLine($"primitiveConsts.DefaultBackendInputBufferSize={pbConsts.primitiveConsts.DefaultBackendInputBufferSize}");
+Console.WriteLine($"DefaultBackendInputBufferSize={PbPrimitives.underlying.DefaultBackendInputBufferSize}");
 using (var output = File.Create(Path.Combine(outputDir, "PrimitiveConsts.pb"))) {
-    pbConsts.primitiveConsts.WriteTo(output);
+    PbPrimitives.underlying.WriteTo(output);
 }
-File.WriteAllBytes(Path.Combine(outputDir, "ConfigConsts.pb"), pbConsts.configConsts.ToByteArray());
+var configConsts = new ConfigConsts {};
+configConsts.CharacterConfigs.Add(PbCharacters.underlying);
+CharacterConfig bladeGirl;
+configConsts.CharacterConfigs.TryGetValue(PbPrimitives.SPECIES_BLADEGIRL, out bladeGirl);
+Console.WriteLine($"BladeGirl CapsuleRadius={bladeGirl.CapsuleRadius}");
+using (var output = File.Create(Path.Combine(outputDir, "ConfigConsts.pb"))) {
+    configConsts.WriteTo(output);
+}

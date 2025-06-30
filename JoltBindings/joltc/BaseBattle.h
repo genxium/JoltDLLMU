@@ -75,6 +75,15 @@ class JOLTC_EXPORT BaseBattle {
 
         // It's by design that "JPH::CharacterVirtual" instead of "JPH::Character" or even "JPH::Body" is used here, see "https://jrouwe.github.io/JoltPhysics/index.html#character-controllers" for their differences.
         CH_COLLIDER_Q activeChColliders;
+        /*
+         [TODO] 
+    
+         Make "cachedChColliders" keyed by "CharacterConfig.species_id()" to fit the need of multi-shape character (at different ch_state). 
+
+        It's by design that "ScaledShape" is NOT used here, because when mixed with translation and rotation, the order of affine transforms matters but is difficult to keep in mind. 
+
+        Moreover, by using this approach to manage multi-shape character I dropped the "shared shapes across bodies" feature of Jolt.
+        */
         std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
 
     public:
@@ -146,9 +155,9 @@ protected:
             return (ud & UD_PAYLOAD_STRIPPER);
         }
 
-        CharacterVirtual* getOrCreateCachedPlayerCollider(const PlayerCharacterDownsync& playerChd, const CharacterConfig* cc);
-        CharacterVirtual* getOrCreateCachedNpcCollider(const NpcCharacterDownsync& npcChd, const CharacterConfig* cc);
-        CharacterVirtual* getOrCreateCachedCharacterCollider(const CharacterConfig* inCc, uint64_t userData);
+        CharacterVirtual* getOrCreateCachedPlayerCollider(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer, const CharacterConfig* cc);
+        CharacterVirtual* getOrCreateCachedNpcCollider(const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc, const CharacterConfig* cc);
+        CharacterVirtual* getOrCreateCachedCharacterCollider(const CharacterConfig* inCc, float newRadius, float newHalfHeight, uint64_t userData);
 
         std::unordered_map<uint64_t, CharacterVirtual*> transientUdToCv; 
         std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID; // other than "CharacterVirtual.mInnerBodyID" 
@@ -256,16 +265,41 @@ protected:
 
         void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool isParalyzed, bool nextEffInAir);
 
-        void postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool cvInAir, bool cvOnWall, bool oldNextNotDashing, bool oldNextEffInAir);
+        void postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvInAir, bool cvOnWall, bool oldNextNotDashing, bool oldNextEffInAir);
         void leftShiftDeadNpcs(bool isChasing);
         void leftShiftDeadBullets(bool isChasing);
+
+        inline const CharacterConfig* getCc(uint32_t speciesId) {
+            auto& ccs = globalConfigConsts->character_configs();
+            if (!ccs.contains(speciesId)) {
+                return nullptr;
+            }
+            auto& v = ccs.at(speciesId);
+            return &v;
+        }
+
+        inline bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder);
+
+        inline bool isLengthNearZero(float length) {
+            return 1e-3 > length;
+        }
+
+        inline bool isLengthSquaredNearZero(float lengthSquared) {
+            return 1e-6 > lengthSquared;
+        }
+
+
+        CharacterVirtual* createDefaultCharacterCollider(const CharacterConfig* cc);
+
+        void preallocateBodies(const RenderFrame* startRdf);
+
+        inline void calcChdShape(const CharacterDownsync& currChd, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
 
 private:
         Vec3 safeDeactiviatedPosition;
         InputFrameDecoded ifDecodedHolder;
         
         ////////////////////////////////////////////// (to deprecate!)
-        CharacterConfig dummyCc;
         BulletConfig dummyBc;
 };
 
