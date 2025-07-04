@@ -1,18 +1,85 @@
 using jtshared;
 
-namespace JoltCSharp { 
-    public class PbConsts {
-        const int BATTLE_DYNAMICS_FPS = 60;
-        const int INPUT_SCALE_FRAMES = 2;
-        const int INPUT_SCALE = (1 << INPUT_SCALE_FRAMES);
-        const int FRONTEND_WS_RECV_BYTE_LENGTH = 8196;
-        const int JUMP_HOLDING_RDF_CNT_THRESHOLD_1 = (BATTLE_DYNAMICS_FPS >> 3) + (BATTLE_DYNAMICS_FPS >> 4);
-        const int JUMP_HOLDING_IFD_CNT_THRESHOLD_1 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_1 + INPUT_SCALE - 1) / INPUT_SCALE; // Ceiled  
+namespace JoltCSharp {
+    public class PbPrimitives {
+        public const uint HunterPistolWallId = 68, HunterPistolId = 71, HunterPistolAirId = 72, HunterDashingId = 78, HunterSlidingId = 132, HunterPistolCrouchId = 133, HunterDragonPunchId = 73, HunterAirSlashId = 74, MobileThunderCannonPrimerId = 143, MobileThunderCannonPrimerAirId = 144, MobileThunderCannonPrimerCrouchId = 145, MobileThunderCannonPrimerWallId = 146;
 
-        const int JUMP_HOLDING_RDF_CNT_THRESHOLD_2 = (BATTLE_DYNAMICS_FPS >> 1) + (BATTLE_DYNAMICS_FPS >> 4);
-        const int JUMP_HOLDING_IFD_CNT_THRESHOLD_2 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_2 + INPUT_SCALE - 1) / INPUT_SCALE;
+        public const uint SPECIES_NONE_CH = 0;
+        public const uint SPECIES_BLADEGIRL = 1;
+        public const uint SPECIES_WITCHGIRL = 2;
+        public const uint SPECIES_BRIGHTWITCH = 4;
+        public const uint SPECIES_MAGSWORDGIRL = 6;
+        public const uint SPECIES_BOUNTYHUNTER = 7;
+        public const uint SPECIES_SPEARWOMAN = 8;
+        public const uint SPECIES_LIGHTSPEARWOMAN = 9;
+        public const uint SPECIES_YELLOWDOG = 10;
+        public const uint SPECIES_BLACKDOG = 11;
+        public const uint SPECIES_YELLOWCAT = 12;
+        public const uint SPECIES_BLACKCAT = 13;
 
-        public PrimitiveConsts primitiveConsts = new PrimitiveConsts {
+        public const uint SPECIES_EKRAIL = 14;
+        public const uint SPECIES_SWORDMAN = 15;
+        public const uint SPECIES_FIRESWORDMAN = 16;
+        public const uint SPECIES_WANDWITCHGIRL = 17;
+
+        public const uint SPECIES_ANGEL = 18;
+        public const uint SPECIES_GH_WIZARD_MAN_RED = 19;
+
+        public const uint SPECIES_DEMON_FIRE_SLIME = 4096;
+        public const uint SPECIES_GOBLIN = 4097;
+        public const uint SPECIES_SKELEARCHER = 4098;
+        public const uint SPECIES_BAT = 4099;
+        public const uint SPECIES_FIREBAT = 4100;
+        public const uint SPECIES_RIDLEYDRAKE = 4101;
+        public const uint SPECIES_BOARWARRIOR = 4102;
+        public const uint SPECIES_BOAR = 4103;
+        public const uint SPECIES_SWORDMAN_BOSS = 4104;
+        public const uint SPECIES_FIRETOTEM = 4105;
+        public const uint SPECIES_BRICK1 = 4106;
+        public const uint SPECIES_DARKBEAMTOWER = 4107;
+        public const uint SPECIES_LIGHTGUARD_RED = 4108;
+        public const uint SPECIES_HEAVYGUARD_RED = 4109;
+        public const uint SPECIES_RIDERGUARD_RED = 4110;
+        public const uint SPECIES_STONE_GOLEM = 4111;
+        public const uint SPECIES_BOMBERGOBLIN = 4112;
+        public const uint SPECIES_ARCHERGUARD_RED = 4113;
+        public const uint SPECIES_FLYING_DEMON = 4114;
+        public const uint SPECIES_SUCCUBUS = 4115;
+
+        public const uint SPECIES_CMD_TRAINER = 4116;
+
+        // Non-interauctive
+        public const uint SPECIES_VIL_MALE1 = 8192;
+        public const uint SPECIES_VIL_MALE2 = 8193;
+        public const uint SPECIES_VIL_FEMALE1 = 8194;
+        public const uint SPECIES_VIL_FEMALE2 = 8195;
+        public const uint SPECIES_PINK_PIG = 8196;
+
+        public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
+        public const float DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE = 8.0f; // Currently only supports rectilinear rectangle shape.
+        public const float DEFAULT_SLIP_JUMP_CHARACTER_DROP = (DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE * 1.5f);
+
+
+        public const uint VISION_SEARCH_INTERVAL_IMMEDIATE_U = (1u << 0);
+        public const uint VISION_SEARCH_INTERVAL_FAST_U = (1u << 2);
+        public const uint VISION_SEARCH_INTERVAL_MID_U = (1u << 3);
+        public const uint VISION_SEARCH_INTERVAL_SLOW_U = (1u << 4);
+        public const int VISION_SEARCH_INTERVAL_IMMEDIATE = (int)VISION_SEARCH_INTERVAL_IMMEDIATE_U;
+        public const int VISION_SEARCH_INTERVAL_FAST = (int)VISION_SEARCH_INTERVAL_FAST_U;
+        public const int VISION_SEARCH_INTERVAL_MID = (int)VISION_SEARCH_INTERVAL_MID_U;
+        public const int VISION_SEARCH_INTERVAL_SLOW = (int)VISION_SEARCH_INTERVAL_SLOW_U;
+
+        public const int BATTLE_DYNAMICS_FPS = 60;
+        public const int INPUT_SCALE_FRAMES = 2;
+        public const int INPUT_SCALE = (1 << INPUT_SCALE_FRAMES);
+        public const int FRONTEND_WS_RECV_BYTE_LENGTH = 8196;
+        public const int JUMP_HOLDING_RDF_CNT_THRESHOLD_1 = (BATTLE_DYNAMICS_FPS >> 3) + (BATTLE_DYNAMICS_FPS >> 4);
+        public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_1 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_1 + INPUT_SCALE - 1) / INPUT_SCALE; // Ceiled  
+
+        public const int JUMP_HOLDING_RDF_CNT_THRESHOLD_2 = (BATTLE_DYNAMICS_FPS >> 1) + (BATTLE_DYNAMICS_FPS >> 4);
+        public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_2 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_2 + INPUT_SCALE - 1) / INPUT_SCALE;
+
+        public static PrimitiveConsts underlying = new PrimitiveConsts {
             BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
             DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
 
@@ -43,8 +110,8 @@ namespace JoltCSharp {
             UpsyncMsgActHolepunchBackendUdpTunnel = 3,
             UpsyncMsgActHolepunchPeerUdpAddr = 4,
 
-            TerminatingRenderFrameId = -1024,
-            TerminatingInputFrameId = -1024,
+            TerminatingRenderFrameId = 0,
+            TerminatingInputFrameId = 0,
 
             DownsyncMsgActBattleColliderInfo = 1,
             DownsyncMsgActInputBatch = 2,
@@ -100,7 +167,7 @@ namespace JoltCSharp {
             DefaultPickableConsumedAnimFrames = 30,
             DefaultPickableRisingVelY = 8f,
             DefaultPickableNonpickableStartupFrames = 45,
-            
+
             DefaultBlockStunFrames = 10,
             DefaultBlownupFramesForFlying = 30,
 
@@ -155,7 +222,7 @@ namespace JoltCSharp {
             PatternUpE = 10,
             PatternDownE = 11,
             PatternHoldE = 12,
-            
+
             PatternEHoldB = 13,
             PatternFrontEHoldB = 14,
             PatternBackEHoldB = 15,
@@ -184,7 +251,7 @@ namespace JoltCSharp {
             DebuffArrIdxElemental = 0,
 
             EstimatedSecondsPerRdf = (1.0f / BATTLE_DYNAMICS_FPS),
-            InputScale = INPUT_SCALE, 
+            InputScale = INPUT_SCALE,
             DefaultBackendInputBufferSize = ((30 * BATTLE_DYNAMICS_FPS) >> INPUT_SCALE_FRAMES) + 1,
 
             DefaultFramesToShowDamaged = (int)(1.2 * BATTLE_DYNAMICS_FPS),
@@ -196,15 +263,16 @@ namespace JoltCSharp {
             BtnBHoldingRdfCntThreshold1 = (BATTLE_DYNAMICS_FPS >> 2) + (BATTLE_DYNAMICS_FPS >> 3),
 
             JumpHoldingRdfCntThreshold1 = JUMP_HOLDING_RDF_CNT_THRESHOLD_1,
-            JumpHoldingIfdCntThreshold1 = JUMP_HOLDING_IFD_CNT_THRESHOLD_1, 
+            JumpHoldingIfdCntThreshold1 = JUMP_HOLDING_IFD_CNT_THRESHOLD_1,
 
             JumpHoldingRdfCntThreshold2 = JUMP_HOLDING_RDF_CNT_THRESHOLD_2,
             JumpHoldingIfdCntThreshold2 = JUMP_HOLDING_IFD_CNT_THRESHOLD_2,
 
             BtnEHoldingRdfCntThreshold1 = JUMP_HOLDING_RDF_CNT_THRESHOLD_2,
             BtnEHoldingIfdCntThreshold1 = JUMP_HOLDING_IFD_CNT_THRESHOLD_2,
-        };
 
-        public ConfigConsts configConsts = new ConfigConsts { };
+            StartingRenderFrameId = 1,
+            StartingInputFrameId = 1,
+        };
     }
 }

@@ -23,16 +23,7 @@ const int ROOM_ID_NONE = 0;
 
 const uint32_t SPECIES_NONE_CH = 0;
 const uint32_t SPECIES_BLADEGIRL = 1;
-const uint32_t SPECIES_WITCHGIRL = 2;
-const uint32_t SPECIES_BRIGHTWITCH = 4;
-const uint32_t SPECIES_MAGSWORDGIRL = 6;
 const uint32_t SPECIES_BOUNTYHUNTER = 7;
-const uint32_t SPECIES_SPEARWOMAN = 8;
-const uint32_t SPECIES_LIGHTSPEARWOMAN = 9;
-const uint32_t SPECIES_YELLOWDOG = 10;
-const uint32_t SPECIES_BLACKDOG = 11;
-const uint32_t SPECIES_YELLOWCAT = 12;
-const uint32_t SPECIES_BLACKCAT = 13;
 
 void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int teamId, BulletState blState, int framesInBlState) {
     single->set_bl_state(blState);
@@ -104,7 +95,7 @@ RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int prea
 RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
-    startRdf->set_id(globalPrimitiveConsts->downsync_msg_act_battle_start());
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     startRdf->set_should_force_resync(false);
     int pickableLocalId = 1;
     int npcLocalId = 1;
@@ -184,6 +175,17 @@ int main(int argc, char** argv)
     PrimitiveConsts_Init(pbByteBuffer, bytesRead);
     primitiveConstsFin.close();
 
+    std::ifstream configConstsFin(executableFolder.string() + "/ConfigConsts.pb", std::ios::in | std::ios::binary);
+    if (!configConstsFin.is_open()) {
+        std::cerr << "Failed to open ConfigConsts.pb" << std::endl;
+        exit(1);
+    }
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
+    configConstsFin.read(pbByteBuffer, pbBufferSizeLimit);
+    bytesRead = configConstsFin.gcount(); // Get actual bytes read
+    ConfigConsts_Init(pbByteBuffer, bytesRead);
+    primitiveConstsFin.close();
+
     std::vector<float> hull1 = {
         -1000, 0,
         -1000, 1000,
@@ -216,7 +218,7 @@ int main(int argc, char** argv)
     
     jtshared::RenderFrame outRdf;
     std::string outStr;
-    int timerRdfId = globalPrimitiveConsts->downsync_msg_act_battle_start();
+    int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 3);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -238,11 +240,12 @@ int main(int argc, char** argv)
             exit(1);
         }
         bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, false, true);
+        timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         outBytesCnt = pbBufferSizeLimit;
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
-        if (1 == timerRdfId || 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
+        if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
             auto firstPlayerChd = outRdf.players_arr(0);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
@@ -257,7 +260,6 @@ int main(int argc, char** argv)
                 std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
             }
         }
-        timerRdfId++;
     }
     
     // clean up

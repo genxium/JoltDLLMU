@@ -35,11 +35,11 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool APP_GetRdf(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, IntPtr outBytesCntLimit);
+        public static extern bool APP_GetRdf(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, int* outBytesCntLimit);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool APP_UpsertCmd(UIntPtr inBattle, int inIfdId, uint inSingleJoinIndex, ulong inSingleInput, char* outBytesPreallocatedStart, IntPtr outBytesCntLimit, [MarshalAs(UnmanagedType.U1)] bool fromUdp, [MarshalAs(UnmanagedType.U1)] bool fromTcp, [MarshalAs(UnmanagedType.U1)] bool isFrontend);
+        public static extern bool APP_UpsertCmd(UIntPtr inBattle, int inIfdId, uint inSingleJoinIndex, ulong inSingleInput, char* outBytesPreallocatedStart, int* outBytesCntLimit, [MarshalAs(UnmanagedType.U1)] bool fromUdp, [MarshalAs(UnmanagedType.U1)] bool fromTcp, [MarshalAs(UnmanagedType.U1)] bool isFrontend);
 
         //------------------------------------------------------------------------------------------------
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl)]
