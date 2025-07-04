@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
 project(JoltBindings_cpp_test VERSION 0.0.1 LANGUAGES CXX)
 
@@ -13,6 +13,11 @@ endif()
 
 include(GNUInstallDirs)
 
+if (WIN32)
+else()
+    set(CMAKE_CXX_COMPILER "/usr/bin/c++")
+endif()
+
 set(JOLT_BINDINGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../JoltBindings)
 set(PHYSICS_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../joltphysics_v5.3.0)
 set(PREBUILT_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins)
@@ -26,32 +31,36 @@ set(CPP_TEST_SRC_FILES
 
 add_executable(${TARGET_NAME} ${CPP_TEST_SRC_FILES})
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
-
 target_include_directories(${TARGET_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${PREBUILT_HEADER_PATH}>
 	$<INSTALL_INTERFACE:/include>)
 
-find_library(JOLTC_DLL_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
-add_library(JOLTC_DLL_LIB SHARED IMPORTED)
+find_library(JOLTC_SHARED_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
+add_library(JOLTC_SHARED_LIB SHARED IMPORTED)
 
-# [WARNING] Assuming that "protoc" is installed by "vcpkg install protobuf protobuf:x64-windows".
-set(protobuf_DIR "$ENV{VCPKG_INSTALLED_SHARE}/protobuf")
-find_package(protobuf CONFIG REQUIRED)
+# Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake"
+if (MSVC)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
+    if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
+        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
+    endif()
+    set(protobuf_DIR "$ENV{VCPKG_INSTALLED_SHARE}/protobuf")
+    find_package(protobuf CONFIG REQUIRED)
+else()
+    find_package(Protobuf REQUIRED)
+endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC 
+        ${JOLTC_SHARED_LIB}
         protobuf::libprotobuf
-        ${JOLTC_DLL_LIB}
 )
 
-#[[
-# For importing Jolt classes correctly with the macro "JPH_EXPORT" defined in "${PHYSICS_REPO_ROOT}/Jolt/Core/Core.h".
-target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
-if (WIN32)
-    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
+if (MSVC)
+else()
+    # Tells the linker to add the directory where the executable resides ($ORIGIN) to its search path for shared libraries.
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN'")
 endif()
-]]
 
 # Set the debug/non-debug build flags
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
@@ -65,29 +74,33 @@ install(TARGETS ${TARGET_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf
-    DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
-)
+set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_INSTALL_BINDIR}")
+if (MSVC) 
+    list(APPEND MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # This one is for Visual Studio to pick up runtime dependent DLLs
+endif()
 
-install(FILES 
-    ${PREBUILT_LIB_PATH}/joltc.dll
-    DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
-)
+foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
+    if (MSVC)
+        install(FILES ${PREBUILT_LIB_PATH}/$<IF:$<CONFIG:Debug>,libprotobufd.dll,libprotobuf.dll>
+                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+               )
 
-install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
-install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
-install(FILES ${PREBUILT_LIB_PATH}/ConfigConsts.pb DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+        install(FILES 
+                ${PREBUILT_LIB_PATH}/joltc.dll
+                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+                )
 
-# For Visual Studio to pick up runtime dependent DLLs
-install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> COMPONENT Dependencies
-)
+        install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${_rt_deps_destination} OPTIONAL)
+    else()
+      install(FILES ${PREBUILT_LIB_PATH}/libprotobuf.so
+          DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+      )
 
-install(FILES 
-    ${PREBUILT_LIB_PATH}/joltc.dll
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> COMPONENT Dependencies
-)
+      install(FILES ${PREBUILT_LIB_PATH}/libjoltc.so
+          DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+      )
+    endif()
 
-install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> OPTIONAL)
-install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> OPTIONAL)
-install(FILES ${PREBUILT_LIB_PATH}/ConfigConsts.pb DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> OPTIONAL)
+    install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
+    install(FILES ${PREBUILT_LIB_PATH}/ConfigConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
+endforeach()

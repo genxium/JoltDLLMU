@@ -133,7 +133,6 @@ public class JoltcTest {
         const int roomCapacity = 2;
         var startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
         startRdf.Id = primitives.StartingRenderFrameId;
-        startRdf.ShouldForceResync = false;
         uint pickableLocalId = 1;
         uint npcLocalId = 1;
         uint bulletLocalId = 1;
@@ -179,6 +178,26 @@ public class JoltcTest {
         return startRdf;
     }
 
+    void preemptyInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd) {
+        ifd.InputFrameId = primitives.TerminatingInputFrameId;
+        ifd.ConfirmedList = 0;
+        ifd.UdpConfirmedList = 0;
+        ifd.InputList.Clear();
+    }
+
+    void preemptyRenderFrameBeforeMerge(RenderFrame rdf) {
+        rdf.Id = primitives.TerminatingRenderFrameId;
+        rdf.PlayersArr.Clear();
+        rdf.NpcsArr.Clear();
+        rdf.Bullets.Clear();
+        rdf.TrapsArr.Clear();
+        rdf.TriggersArr.Clear();
+        rdf.Pickables.Clear();
+        rdf.BulletIdCounter = primitives.TerminatingBulletId;
+        rdf.NpcIdCounter = primitives.TerminatingCharacterId;
+        rdf.PickableIdCounter = primitives.TerminatingPickableId;
+        rdf.CountdownNanos = long.MaxValue;
+    }
 
     [Fact]
     public unsafe void TestSimpleAllocDealloc() {
@@ -234,16 +253,20 @@ public class JoltcTest {
             Assert.NotEqual(UIntPtr.Zero, battle);
             
             int timerRdfId = primitives.StartingRenderFrameId;
-            int outBytesCnt = 0;
+            long outBytesCnt = 0;
+            InputFrameDownsync ifdHolder = new InputFrameDownsync();
+            RenderFrame rdfHolder = new RenderFrame();
+
             fixed (byte* ifdFetchBufferPtr = ifdFetchBuffer) 
             fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer) {
                 while (4096 > timerRdfId) {
-                    int* outBytesCntPtr = &outBytesCnt;
+                    long* outBytesCntPtr = &outBytesCnt;
                     *outBytesCntPtr = pbBufferSizeLimit;
                     var noDelayIfdId = (timerRdfId >> primitives.InputScaleFrames);
                     bool cmdInjected = Bindings.APP_UpsertCmd(battle, noDelayIfdId, 1, 0, (char*)ifdFetchBufferPtr, outBytesCntPtr, true, false, true);
                     Assert.True(cmdInjected);
-                    InputFrameDownsync ifdHolder = InputFrameDownsync.Parser.ParseFrom(ifdFetchBuffer, 0, *outBytesCntPtr);
+                    preemptyInputFrameDownsyncBeforeMerge(ifdHolder);
+                    ifdHolder.MergeFrom(ifdFetchBuffer, 0, (int)(*outBytesCntPtr));
 
                     bool stepped = Bindings.APP_Step(battle, timerRdfId, timerRdfId + 1, true);
                     Assert.True(stepped);
@@ -253,16 +276,17 @@ public class JoltcTest {
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
-                    RenderFrame rdfHolder = RenderFrame.Parser.ParseFrom(rdfFetchBuffer, 0, *outBytesCntPtr);
-                    _logger.WriteLine(rdfHolder.ToString());
+                    preemptyRenderFrameBeforeMerge(rdfHolder);
+                    rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
+                    _logger.WriteLine(rdfHolder.PlayersArr.ToString());
                 }
             }
             
             // Clean up
-            bool destroyRes = JoltCSharp.Bindings.APP_DestroyBattle(battle, true);
+            bool destroyRes = Bindings.APP_DestroyBattle(battle, true);
             Assert.True(destroyRes);
             _logger.WriteLine($"Destroyed battle at pointer addr = 0x{battle:x} with result={destroyRes}");
-            bool shutdownRes = JoltCSharp.Bindings.JPH_Shutdown();
+            bool shutdownRes = Bindings.JPH_Shutdown();
             _logger.WriteLine($"Jolt infra shutdown result = {shutdownRes}");
         } else {
         }

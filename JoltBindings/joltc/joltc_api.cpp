@@ -116,10 +116,10 @@ bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing, bool i
     return true;
 }
 
-bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, int* outBytesCntLimit) {
+bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
     RenderFrame* rdf = battle->rdfBuffer.GetByFrameId(inRdfId);
-    int byteSize = rdf->ByteSize();
+    long byteSize = rdf->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
         return false;
     }
@@ -128,7 +128,7 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, in
     return true;
 }
 
-bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, int* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend) {
+bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, long* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend) {
     InputFrameDownsync* result = nullptr;
     if (isFrontend) {
         auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
@@ -147,7 +147,7 @@ bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint
         return false;
     }
 
-    int byteSize = result->ByteSize();
+    long byteSize = result->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
         return false;
     }

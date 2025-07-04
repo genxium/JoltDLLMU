@@ -4,6 +4,12 @@
 **/*.h.meta
 **/*.dir
 **/*.dir/**
+**/*.so.*
+**/*.so.*.meta
+**/*.so
+**/*.so.meta
+**/*.dylib
+**/*.dylib.meta
 **/*.dll
 **/*.dll.meta
 **/*.lib
