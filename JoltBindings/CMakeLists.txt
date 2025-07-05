@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
 project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
 
@@ -12,6 +12,11 @@ if(POLICY CMP0177)
 endif()
 
 include(GNUInstallDirs)
+
+if (WIN32)
+else()
+    set(CMAKE_CXX_COMPILER "/usr/bin/c++")
+endif()
 
 set(BUILD_SHARED_LIBS ON)
 
@@ -114,12 +119,21 @@ install(FILES
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
 )
 
-install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
-    #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
-    DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
-)
-
-install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
+if (MSVC)
+    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
+        #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
+        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
+    )
+    install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
+else()    
+    foreach (_file ${Protobuf_LIBRARIES}) # Magic variable set by "FindProtobuf -- find_package(Protobuf REQUIRED)". See https://cmake.org/cmake/help/latest/module/FindProtobuf.html#result-variables.
+        get_filename_component(_resolvedFile "${_file}" REALPATH)
+        get_filename_component(_destinationFilename "${_file}" NAME)
+        install(FILES ${_resolvedFile}
+            DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies RENAME ${_destinationFilename}
+        )
+    endforeach()
+endif()
 
 if (BUILD_SHARED_LIBS)
     message(STATUS "  Library         SHARED")

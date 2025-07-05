@@ -1,16 +1,16 @@
 #ifdef JPH_BUILD_SHARED_LIBRARY // [IMPORTANT] To avoid unexpected re-compiling of these function definitions with "define JOLTC_EXPORT __declspec(dllimport)" from user code.  
 template <typename T>
-inline FrameRingBuffer<T>::FrameRingBuffer(int n) : RingBuffer(n) {
+FrameRingBuffer<T>::FrameRingBuffer(int n) : RingBuffer<T>(n) {
     StFrameId = EdFrameId = 0;
 }
 
 template <typename T>
-inline FrameRingBuffer<T>::~FrameRingBuffer() {
+FrameRingBuffer<T>::~FrameRingBuffer() {
     // Calls base destructor (implicitly)
 }
 
 template <typename T>
-inline T* FrameRingBuffer<T>::Pop() {
+T* FrameRingBuffer<T>::Pop() {
     auto ret = RingBuffer<T>::Pop(); 
     if (nullptr != ret) {
         StFrameId++;
@@ -19,7 +19,7 @@ inline T* FrameRingBuffer<T>::Pop() {
 }
 
 template <typename T>
-inline T* FrameRingBuffer<T>::PopTail() {
+T* FrameRingBuffer<T>::PopTail() {
     auto ret = RingBuffer<T>::PopTail(); 
     if (nullptr != ret) {
         EdFrameId--;
@@ -28,21 +28,21 @@ inline T* FrameRingBuffer<T>::PopTail() {
 }
 
 template <typename T>
-inline T* FrameRingBuffer<T>::GetByFrameId(int frameId) {
+T* FrameRingBuffer<T>::GetByFrameId(int frameId) {
     if (frameId >= EdFrameId || frameId < StFrameId) {
         return nullptr;
     }
-    return GetByOffset(frameId - StFrameId);
+    return RingBuffer<T>::GetByOffset(frameId - StFrameId);
 }
 
 template <typename T>
-inline void FrameRingBuffer<T>::Clear() {
+void FrameRingBuffer<T>::Clear() {
     RingBuffer<T>::Clear();
     StFrameId = EdFrameId = 0;
 }
 
 template <typename T>
-inline T* FrameRingBuffer<T>::DryPut() {
+T* FrameRingBuffer<T>::DryPut() {
     auto ret = RingBuffer<T>::DryPut(); 
     EdFrameId++;
     return ret;

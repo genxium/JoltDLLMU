@@ -368,7 +368,7 @@ namespace jtshared {
             "b29tX2NhcGFjaXR5GAogASgFEh0KFXByZWFsbG9jX25wY19jYXBhY2l0eRgL",
             "IAEoBRIgChhwcmVhbGxvY19idWxsZXRfY2FwYWNpdHkYDCABKAUSMQoRYmF0",
             "dGxlX3VkcF90dW5uZWwYgAggASgLMhUuanRzaGFyZWQuUGVlclVkcEFkZHIS",
-            "GgoRZnJhbWVfbG9nX2VuYWJsZWQYgQggASgIIpIECgtSZW5kZXJGcmFtZRIK",
+            "GgoRZnJhbWVfbG9nX2VuYWJsZWQYgQggASgIIpsDCgtSZW5kZXJGcmFtZRIK",
             "CgJpZBgBIAEoBRI2CgtwbGF5ZXJzX2FychgCIAMoCzIhLmp0c2hhcmVkLlBs",
             "YXllckNoYXJhY3RlckRvd25zeW5jEhcKD2NvdW50ZG93bl9uYW5vcxgDIAEo",
             "AxIhCgdidWxsZXRzGAQgAygLMhAuanRzaGFyZWQuQnVsbGV0EjAKCG5wY3Nf",
@@ -377,16 +377,16 @@ namespace jtshared {
             "cnIYByADKAsyES5qdHNoYXJlZC5UcmlnZ2VyEiUKCXBpY2thYmxlcxgIIAMo",
             "CzISLmp0c2hhcmVkLlBpY2thYmxlEhkKEWJ1bGxldF9pZF9jb3VudGVyGAkg",
             "ASgNEhYKDm5wY19pZF9jb3VudGVyGAogASgNEhcKD3RyYXBfaWRfY291bnRl",
-            "chgLIAEoDRIbChNwaWNrYWJsZV9pZF9jb3VudGVyGAwgASgNEhcKD3NwZWNp",
-            "ZXNfaWRfbGlzdBgNIAMoDRIbChNzaG91bGRfZm9yY2VfcmVzeW5jGA4gASgI",
-            "EiAKGGJhY2tlbmRfdW5jb25maXJtZWRfbWFzaxgPIAEoBBIdChVwYXJ0aWNp",
-            "cGFudF9jaGFuZ2VfaWQYECABKAUilwIKBldzUmVzcBILCgNyZXQYASABKAUS",
-            "CwoDYWN0GAIgASgFEiIKA3JkZhgDIAEoCzIVLmp0c2hhcmVkLlJlbmRlckZy",
-            "YW1lEkAKGmlucHV0X2ZyYW1lX2Rvd25zeW5jX2JhdGNoGAQgAygLMhwuanRz",
-            "aGFyZWQuSW5wdXRGcmFtZURvd25zeW5jEi8KCWJjaV9mcmFtZRgFIAEoCzIc",
-            "Lmp0c2hhcmVkLkJhdHRsZUNvbGxpZGVySW5mbxIXCg9wZWVyX2pvaW5faW5k",
-            "ZXgYBiABKA0SMQoScGVlcl91ZHBfYWRkcl9saXN0GAcgAygLMhUuanRzaGFy",
-            "ZWQuUGVlclVkcEFkZHISEAoHZXJyX21zZxiAECABKAki+AIKBVNraWxsEhcK",
+            "chgLIAEoDRIbChNwaWNrYWJsZV9pZF9jb3VudGVyGAwgASgNIo4DCgZXc1Jl",
+            "c3ASCwoDcmV0GAEgASgFEgsKA2FjdBgCIAEoBRIiCgNyZGYYAyABKAsyFS5q",
+            "dHNoYXJlZC5SZW5kZXJGcmFtZRJAChppbnB1dF9mcmFtZV9kb3duc3luY19i",
+            "YXRjaBgEIAMoCzIcLmp0c2hhcmVkLklucHV0RnJhbWVEb3duc3luYxIvCgli",
+            "Y2lfZnJhbWUYBSABKAsyHC5qdHNoYXJlZC5CYXR0bGVDb2xsaWRlckluZm8S",
+            "FwoPcGVlcl9qb2luX2luZGV4GAYgASgNEjEKEnBlZXJfdWRwX2FkZHJfbGlz",
+            "dBgHIAMoCzIVLmp0c2hhcmVkLlBlZXJVZHBBZGRyEhcKD3NwZWNpZXNfaWRf",
+            "bGlzdBgIIAMoDRIbChNzaG91bGRfZm9yY2VfcmVzeW5jGAkgASgIEiAKGGJh",
+            "Y2tlbmRfdW5jb25maXJtZWRfbWFzaxgKIAEoBBIdChVwYXJ0aWNpcGFudF9j",
+            "aGFuZ2VfaWQYCyABKAUSEAoHZXJyX21zZxiAECABKAki+AIKBVNraWxsEhcK",
             "D3JlY292ZXJ5X2ZyYW1lcxgCIAEoBRIgChhyZWNvdmVyeV9mcmFtZXNfb25f",
             "YmxvY2sYAyABKAUSHgoWcmVjb3ZlcnlfZnJhbWVzX29uX2hpdBgEIAEoBRIw",
             "Cgx0cmlnZ2VyX3R5cGUYBSABKA4yGi5qdHNoYXJlZC5Ta2lsbFRyaWdnZXJU",
@@ -807,8 +807,8 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfig), global::jtshared.TriggerConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "TriggerType", "CollisionTypeMask" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PeerUdpAddr), global::jtshared.PeerUdpAddr.Parser, new[]{ "Ip", "Port", "AuthKey", "SeqNo" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleColliderInfo), global::jtshared.BattleColliderInfo.Parser, new[]{ "StageName", "BoundRoomId", "BattleDurationFrames", "InputFrameUpsyncDelayTolerance", "MaxChasingRenderFramesPerUpdate", "RollbackEstimatedDtMillis", "RollbackEstimatedDtNanos", "RenderBufferSize", "CollisionMinStep", "BoundRoomCapacity", "PreallocNpcCapacity", "PreallocBulletCapacity", "BattleUdpTunnel", "FrameLogEnabled" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "TrapsArr", "TriggersArr", "Pickables", "BulletIdCounter", "NpcIdCounter", "TrapIdCounter", "PickableIdCounter", "SpeciesIdList", "ShouldForceResync", "BackendUnconfirmedMask", "ParticipantChangeId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsResp), global::jtshared.WsResp.Parser, new[]{ "Ret", "Act", "Rdf", "InputFrameDownsyncBatch", "BciFrame", "PeerJoinIndex", "PeerUdpAddrList", "ErrMsg" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "TrapsArr", "TriggersArr", "Pickables", "BulletIdCounter", "NpcIdCounter", "TrapIdCounter", "PickableIdCounter" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsResp), global::jtshared.WsResp.Parser, new[]{ "Ret", "Act", "Rdf", "InputFrameDownsyncBatch", "BciFrame", "PeerJoinIndex", "PeerUdpAddrList", "SpeciesIdList", "ShouldForceResync", "BackendUnconfirmedMask", "ParticipantChangeId", "ErrMsg" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Skill), global::jtshared.Skill.Parser, new[]{ "RecoveryFrames", "RecoveryFramesOnBlock", "RecoveryFramesOnHit", "TriggerType", "BoundChState", "BoundChStateOnHit", "MpDelta", "Id", "Hits", "SelfNonStockBuff" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.FrameLog), global::jtshared.FrameLog.Parser, new[]{ "Rdf", "ActuallyUsedIdf" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleResult), global::jtshared.BattleResult.Parser, new[]{ "WinnerJoinIndex", "WinnerBulletTeamId" }, null, null, null),
@@ -17766,10 +17766,6 @@ namespace jtshared {
       npcIdCounter_ = other.npcIdCounter_;
       trapIdCounter_ = other.trapIdCounter_;
       pickableIdCounter_ = other.pickableIdCounter_;
-      speciesIdList_ = other.speciesIdList_.Clone();
-      shouldForceResync_ = other.shouldForceResync_;
-      backendUnconfirmedMask_ = other.backendUnconfirmedMask_;
-      participantChangeId_ = other.participantChangeId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -17904,52 +17900,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "species_id_list" field.</summary>
-    public const int SpeciesIdListFieldNumber = 13;
-    private static readonly pb::FieldCodec<uint> _repeated_speciesIdList_codec
-        = pb::FieldCodec.ForUInt32(106);
-    private readonly pbc::RepeatedField<uint> speciesIdList_ = new pbc::RepeatedField<uint>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<uint> SpeciesIdList {
-      get { return speciesIdList_; }
-    }
-
-    /// <summary>Field number for the "should_force_resync" field.</summary>
-    public const int ShouldForceResyncFieldNumber = 14;
-    private bool shouldForceResync_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ShouldForceResync {
-      get { return shouldForceResync_; }
-      set {
-        shouldForceResync_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "backend_unconfirmed_mask" field.</summary>
-    public const int BackendUnconfirmedMaskFieldNumber = 15;
-    private ulong backendUnconfirmedMask_;
-    /// <summary>
-    /// Indexed by "join_index", same compression concern as stated in InputFrameDownsync
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong BackendUnconfirmedMask {
-      get { return backendUnconfirmedMask_; }
-      set {
-        backendUnconfirmedMask_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "participant_change_id" field.</summary>
-    public const int ParticipantChangeIdFieldNumber = 16;
-    private int participantChangeId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int ParticipantChangeId {
-      get { return participantChangeId_; }
-      set {
-        participantChangeId_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as RenderFrame);
@@ -17975,10 +17925,6 @@ namespace jtshared {
       if (NpcIdCounter != other.NpcIdCounter) return false;
       if (TrapIdCounter != other.TrapIdCounter) return false;
       if (PickableIdCounter != other.PickableIdCounter) return false;
-      if(!speciesIdList_.Equals(other.speciesIdList_)) return false;
-      if (ShouldForceResync != other.ShouldForceResync) return false;
-      if (BackendUnconfirmedMask != other.BackendUnconfirmedMask) return false;
-      if (ParticipantChangeId != other.ParticipantChangeId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -17997,10 +17943,6 @@ namespace jtshared {
       if (NpcIdCounter != 0) hash ^= NpcIdCounter.GetHashCode();
       if (TrapIdCounter != 0) hash ^= TrapIdCounter.GetHashCode();
       if (PickableIdCounter != 0) hash ^= PickableIdCounter.GetHashCode();
-      hash ^= speciesIdList_.GetHashCode();
-      if (ShouldForceResync != false) hash ^= ShouldForceResync.GetHashCode();
-      if (BackendUnconfirmedMask != 0UL) hash ^= BackendUnconfirmedMask.GetHashCode();
-      if (ParticipantChangeId != 0) hash ^= ParticipantChangeId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -18044,19 +17986,6 @@ namespace jtshared {
         output.WriteRawTag(96);
         output.WriteUInt32(PickableIdCounter);
       }
-      speciesIdList_.WriteTo(output, _repeated_speciesIdList_codec);
-      if (ShouldForceResync != false) {
-        output.WriteRawTag(112);
-        output.WriteBool(ShouldForceResync);
-      }
-      if (BackendUnconfirmedMask != 0UL) {
-        output.WriteRawTag(120);
-        output.WriteUInt64(BackendUnconfirmedMask);
-      }
-      if (ParticipantChangeId != 0) {
-        output.WriteRawTag(128, 1);
-        output.WriteInt32(ParticipantChangeId);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -18088,16 +18017,6 @@ namespace jtshared {
       }
       if (PickableIdCounter != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PickableIdCounter);
-      }
-      size += speciesIdList_.CalculateSize(_repeated_speciesIdList_codec);
-      if (ShouldForceResync != false) {
-        size += 1 + 1;
-      }
-      if (BackendUnconfirmedMask != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(BackendUnconfirmedMask);
-      }
-      if (ParticipantChangeId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(ParticipantChangeId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -18133,16 +18052,6 @@ namespace jtshared {
       }
       if (other.PickableIdCounter != 0) {
         PickableIdCounter = other.PickableIdCounter;
-      }
-      speciesIdList_.Add(other.speciesIdList_);
-      if (other.ShouldForceResync != false) {
-        ShouldForceResync = other.ShouldForceResync;
-      }
-      if (other.BackendUnconfirmedMask != 0UL) {
-        BackendUnconfirmedMask = other.BackendUnconfirmedMask;
-      }
-      if (other.ParticipantChangeId != 0) {
-        ParticipantChangeId = other.ParticipantChangeId;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -18203,23 +18112,6 @@ namespace jtshared {
             PickableIdCounter = input.ReadUInt32();
             break;
           }
-          case 106:
-          case 104: {
-            speciesIdList_.AddEntriesFrom(input, _repeated_speciesIdList_codec);
-            break;
-          }
-          case 112: {
-            ShouldForceResync = input.ReadBool();
-            break;
-          }
-          case 120: {
-            BackendUnconfirmedMask = input.ReadUInt64();
-            break;
-          }
-          case 128: {
-            ParticipantChangeId = input.ReadInt32();
-            break;
-          }
         }
       }
     }
@@ -18258,6 +18150,10 @@ namespace jtshared {
       bciFrame_ = other.bciFrame_ != null ? other.bciFrame_.Clone() : null;
       peerJoinIndex_ = other.peerJoinIndex_;
       peerUdpAddrList_ = other.peerUdpAddrList_.Clone();
+      speciesIdList_ = other.speciesIdList_.Clone();
+      shouldForceResync_ = other.shouldForceResync_;
+      backendUnconfirmedMask_ = other.backendUnconfirmedMask_;
+      participantChangeId_ = other.participantChangeId_;
       errMsg_ = other.errMsg_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -18342,6 +18238,52 @@ namespace jtshared {
       get { return peerUdpAddrList_; }
     }
 
+    /// <summary>Field number for the "species_id_list" field.</summary>
+    public const int SpeciesIdListFieldNumber = 8;
+    private static readonly pb::FieldCodec<uint> _repeated_speciesIdList_codec
+        = pb::FieldCodec.ForUInt32(66);
+    private readonly pbc::RepeatedField<uint> speciesIdList_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<uint> SpeciesIdList {
+      get { return speciesIdList_; }
+    }
+
+    /// <summary>Field number for the "should_force_resync" field.</summary>
+    public const int ShouldForceResyncFieldNumber = 9;
+    private bool shouldForceResync_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool ShouldForceResync {
+      get { return shouldForceResync_; }
+      set {
+        shouldForceResync_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "backend_unconfirmed_mask" field.</summary>
+    public const int BackendUnconfirmedMaskFieldNumber = 10;
+    private ulong backendUnconfirmedMask_;
+    /// <summary>
+    /// Indexed by "join_index", same compression concern as stated in InputFrameDownsync
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong BackendUnconfirmedMask {
+      get { return backendUnconfirmedMask_; }
+      set {
+        backendUnconfirmedMask_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "participant_change_id" field.</summary>
+    public const int ParticipantChangeIdFieldNumber = 11;
+    private int participantChangeId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int ParticipantChangeId {
+      get { return participantChangeId_; }
+      set {
+        participantChangeId_ = value;
+      }
+    }
+
     /// <summary>Field number for the "err_msg" field.</summary>
     public const int ErrMsgFieldNumber = 2048;
     private string errMsg_ = "";
@@ -18373,6 +18315,10 @@ namespace jtshared {
       if (!object.Equals(BciFrame, other.BciFrame)) return false;
       if (PeerJoinIndex != other.PeerJoinIndex) return false;
       if(!peerUdpAddrList_.Equals(other.peerUdpAddrList_)) return false;
+      if(!speciesIdList_.Equals(other.speciesIdList_)) return false;
+      if (ShouldForceResync != other.ShouldForceResync) return false;
+      if (BackendUnconfirmedMask != other.BackendUnconfirmedMask) return false;
+      if (ParticipantChangeId != other.ParticipantChangeId) return false;
       if (ErrMsg != other.ErrMsg) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -18387,6 +18333,10 @@ namespace jtshared {
       if (bciFrame_ != null) hash ^= BciFrame.GetHashCode();
       if (PeerJoinIndex != 0) hash ^= PeerJoinIndex.GetHashCode();
       hash ^= peerUdpAddrList_.GetHashCode();
+      hash ^= speciesIdList_.GetHashCode();
+      if (ShouldForceResync != false) hash ^= ShouldForceResync.GetHashCode();
+      if (BackendUnconfirmedMask != 0UL) hash ^= BackendUnconfirmedMask.GetHashCode();
+      if (ParticipantChangeId != 0) hash ^= ParticipantChangeId.GetHashCode();
       if (ErrMsg.Length != 0) hash ^= ErrMsg.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -18423,6 +18373,19 @@ namespace jtshared {
         output.WriteUInt32(PeerJoinIndex);
       }
       peerUdpAddrList_.WriteTo(output, _repeated_peerUdpAddrList_codec);
+      speciesIdList_.WriteTo(output, _repeated_speciesIdList_codec);
+      if (ShouldForceResync != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(ShouldForceResync);
+      }
+      if (BackendUnconfirmedMask != 0UL) {
+        output.WriteRawTag(80);
+        output.WriteUInt64(BackendUnconfirmedMask);
+      }
+      if (ParticipantChangeId != 0) {
+        output.WriteRawTag(88);
+        output.WriteInt32(ParticipantChangeId);
+      }
       if (ErrMsg.Length != 0) {
         output.WriteRawTag(130, 128, 1);
         output.WriteString(ErrMsg);
@@ -18452,6 +18415,16 @@ namespace jtshared {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PeerJoinIndex);
       }
       size += peerUdpAddrList_.CalculateSize(_repeated_peerUdpAddrList_codec);
+      size += speciesIdList_.CalculateSize(_repeated_speciesIdList_codec);
+      if (ShouldForceResync != false) {
+        size += 1 + 1;
+      }
+      if (BackendUnconfirmedMask != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(BackendUnconfirmedMask);
+      }
+      if (ParticipantChangeId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ParticipantChangeId);
+      }
       if (ErrMsg.Length != 0) {
         size += 3 + pb::CodedOutputStream.ComputeStringSize(ErrMsg);
       }
@@ -18489,6 +18462,16 @@ namespace jtshared {
         PeerJoinIndex = other.PeerJoinIndex;
       }
       peerUdpAddrList_.Add(other.peerUdpAddrList_);
+      speciesIdList_.Add(other.speciesIdList_);
+      if (other.ShouldForceResync != false) {
+        ShouldForceResync = other.ShouldForceResync;
+      }
+      if (other.BackendUnconfirmedMask != 0UL) {
+        BackendUnconfirmedMask = other.BackendUnconfirmedMask;
+      }
+      if (other.ParticipantChangeId != 0) {
+        ParticipantChangeId = other.ParticipantChangeId;
+      }
       if (other.ErrMsg.Length != 0) {
         ErrMsg = other.ErrMsg;
       }
@@ -18535,6 +18518,23 @@ namespace jtshared {
           }
           case 58: {
             peerUdpAddrList_.AddEntriesFrom(input, _repeated_peerUdpAddrList_codec);
+            break;
+          }
+          case 66:
+          case 64: {
+            speciesIdList_.AddEntriesFrom(input, _repeated_speciesIdList_codec);
+            break;
+          }
+          case 72: {
+            ShouldForceResync = input.ReadBool();
+            break;
+          }
+          case 80: {
+            BackendUnconfirmedMask = input.ReadUInt64();
+            break;
+          }
+          case 88: {
+            ParticipantChangeId = input.ReadInt32();
             break;
           }
           case 16386: {

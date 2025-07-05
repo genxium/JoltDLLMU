@@ -96,7 +96,6 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    startRdf->set_should_force_resync(false);
     int pickableLocalId = 1;
     int npcLocalId = 1;
     int bulletLocalId = 1;
@@ -211,9 +210,9 @@ int main(int argc, char** argv)
     bool isFrontend = true;
 
     memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
-    int byteSize = wsReq.ByteSize();
+    long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
-    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, byteSize, isFrontend, false));
+    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, (int)byteSize, isFrontend, false));
     std::cout << "Created battle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
@@ -233,7 +232,7 @@ int main(int argc, char** argv)
             --it;
         }
         uint64_t inSingleInput = it->second;
-        int outBytesCnt = pbBufferSizeLimit;
+        long outBytesCnt = pbBufferSizeLimit;
         bool cmdInjected = APP_UpsertCmd(battle, noDelayIfdId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, true, false, true);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", noDelayIfdId=" << noDelayIfdId << ", inSingleInput=" << inSingleInput << std::endl;

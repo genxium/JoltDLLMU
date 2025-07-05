@@ -158,10 +158,11 @@ int BaseBattle::moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
             continue;
         }
         InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
+        /*
         if (nullptr == ifd) {
             throw std::runtime_error("[moveForwardlastConsecutivelyAllConfirmedIfdId] inputFrameId=" + std::to_string(inputFrameId) + " doesn't exist for lastConsecutivelyAllConfirmedIfdId=" + std::to_string(lastConsecutivelyAllConfirmedIfdId) + ", proposedIfdStFrameId = " + std::to_string(proposedIfdStFrameId) + ", proposedIfdEdFrameId = " + std::to_string(proposedIfdEdFrameId) + ", inputBuffer = " + ifdBuffer.toSimpleStat());
         }
-
+        */
         if (allConfirmedMask != (ifd->confirmed_list() | skippableJoinMask)) {
             break;
         }
@@ -198,7 +199,7 @@ CharacterVirtual* BaseBattle::getOrCreateCachedNpcCollider(const NpcCharacterDow
 CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(const CharacterConfig* cc, float newRadius, float newHalfHeight, uint64_t ud) {
     calcChCacheKey(cc, chCacheKeyHolder);
     CharacterVirtual* chCollider = nullptr;
-    auto& it = cachedChColliders.find(chCacheKeyHolder);
+    auto it = cachedChColliders.find(chCacheKeyHolder);
     if (it == cachedChColliders.end()) {
         chCollider = createDefaultCharacterCollider(cc);
     } else {
@@ -435,9 +436,11 @@ void BaseBattle::Clear() {
 }
 
 InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
+    /*
     if (globalPrimitiveConsts->magic_join_index_invalid() == inSingleJoinIndex) {
         throw std::runtime_error("GetOrPrefabInputFrameDownsync called with 'globalPrimitiveConsts->magic_join_index_invalid() == inSingleJoinIndex' is invalid!");
     }
+    */
 
     if (inIfdId < ifdBuffer.StFrameId) {
         // Obsolete #1
@@ -517,10 +520,12 @@ InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint3
         // Fill the gap
         int gapInputFrameId = ifdBuffer.EdFrameId;
         auto ifdHolder = ifdBuffer.DryPut();
+        /*
         if (nullptr == ifdHolder) {
             std::string builder;
             throw std::runtime_error("ifdBuffer was not fully pre-allocated for gapInputFrameId");
         }
+        */
         ifdHolder->set_input_frame_id(gapInputFrameId);
         ifdHolder->set_confirmed_list(0u); // To avoid RingBuff reuse contamination.
         ifdHolder->set_udp_confirmed_list(0u);
@@ -1062,7 +1067,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const RenderFrame* currRdf) {
         const CharacterConfig* cc = getCc(currChd.species_id());
 
         calcChCacheKey(cc, chCacheKeyHolder); // [WARNING] Don't use the underlying shape attached to "single" for capsuleKey forming, it's different from the values of corresponding "CharacterConfig*".
-        auto& it = cachedChColliders.find(chCacheKeyHolder);
+        auto it = cachedChColliders.find(chCacheKeyHolder);
 
         if (it == cachedChColliders.end()) {
             // [REMINDER] Lifecycle of this stack-variable "q" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
@@ -1086,7 +1091,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const RenderFrame* currRdf) {
         const BulletConfig* bc = &dummyBc; // TODO: Find by "bl.species_id()"
 
         calcBlCacheKey(bc, blCacheKeyHolder);
-        auto& it = cachedBlColliders.find(blCacheKeyHolder);
+        auto it = cachedBlColliders.find(blCacheKeyHolder);
 
         if (it == cachedBlColliders.end()) {
             BL_COLLIDER_Q q = { single };
@@ -1926,7 +1931,7 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf) {
         chCollider->SetLinearVelocity(Vec3::sZero()); // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set). 
 
         calcChCacheKey(cc, chCacheKeyHolder);
-        auto& it = cachedChColliders.find(chCacheKeyHolder);
+        auto it = cachedChColliders.find(chCacheKeyHolder);
         if (it == cachedChColliders.end()) {
             // [REMINDER] Lifecycle of this stack-variable "q" will end after exiting the current closure, thus if "cachedChColliders" is to retain it out of the current closure, some extra space is to be used.
             CH_COLLIDER_Q q = { chCollider };

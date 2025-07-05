@@ -971,11 +971,6 @@ message RenderFrame {
     uint32 npc_id_counter = 10;
     uint32 trap_id_counter = 11;
     uint32 pickable_id_counter = 12;
-
-    repeated uint32 species_id_list = 13;
-    bool should_force_resync = 14;
-    uint64 backend_unconfirmed_mask = 15; // Indexed by "join_index", same compression concern as stated in InputFrameDownsync
-    int32 participant_change_id = 16;
 }
 
 message WsResp {
@@ -986,6 +981,11 @@ message WsResp {
     BattleColliderInfo bci_frame = 5;
     uint32 peer_join_index = 6;
     repeated PeerUdpAddr peer_udp_addr_list = 7;
+
+    repeated uint32 species_id_list = 8;
+    bool should_force_resync = 9;
+    uint64 backend_unconfirmed_mask = 10; // Indexed by "join_index", same compression concern as stated in InputFrameDownsync
+    int32 participant_change_id = 11;
 
     string err_msg = 2048;
 }

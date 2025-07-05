@@ -20,8 +20,8 @@ class JOLTC_EXPORT FrameRingBuffer : public RingBuffer<T> {
         T* DryPut();
 
     public:
-        inline std::string toSimpleStat() {
-            std::string result = "StFrameId=" + std::to_string(StFrameId) + ", EdFrameId = " + std::to_string(EdFrameId) + ", Cnt / N = " + std::to_string(Cnt) + "/" + std::to_string(N);
+        std::string toSimpleStat() {
+            std::string result = "StFrameId=" + std::to_string(StFrameId) + ", EdFrameId = " + std::to_string(EdFrameId) + ", Cnt / N = " + std::to_string(this->Cnt) + "/" + std::to_string(this->N);
             return result;
         }
 }; 
