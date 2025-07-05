@@ -44,5 +44,5 @@ echo "Written PbConsts for generic import"
 if [[ "Linux" == $2 ]]; then
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings_cpp_test && ./build_and_install.sh $1"
 else
-    $basedir/JoltPhysics_cpp_test/build_and_install.sh $1
+    $basedir/JoltBindings_cpp_test/build_and_install.sh $1
 fi

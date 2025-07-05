@@ -40,7 +40,7 @@ namespace JoltcPrebuilt
                 protobufLibname = $"{PROTOBUF_LIB}{(isDebug ? "d" : "")}.dll";
                 libname = $"{JOLT_LIB}.dll";
             } else if (IsLinux()) {
-                protobufLibname = $"{PROTOBUF_LIB}{(isDebug ? "d" : "")}.so";
+                protobufLibname = $"{PROTOBUF_LIB}.so";
                 libname = $"lib{JOLT_LIB}.so";
             } else if (IsMacOS()) {
                 protobufLibname = $"{PROTOBUF_LIB}{(isDebug ? "d" : "")}.dylib";
