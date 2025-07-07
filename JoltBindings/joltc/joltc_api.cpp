@@ -15,6 +15,10 @@
 #include "FrontendBattle.h"
 #include "BackendBattle.h"
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 JPH_SUPPRESS_WARNING_PUSH
 JPH_SUPPRESS_WARNINGS
 
@@ -85,7 +89,9 @@ void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOn
     } else {
         result = new BackendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
     }
-
+#ifndef NDEBUG
+    Debug::Log("APP_CreateBattle/C++", DColor::Green);
+#endif
     return result;
 }
 
@@ -95,6 +101,9 @@ bool APP_DestroyBattle(void* inBattle, bool isFrontend) {
     } else {
         delete static_cast<BackendBattle*>(inBattle);
     }
+#ifndef NDEBUG
+    Debug::Log("APP_DestroyBattle/C++", DColor::Green);
+#endif
     return true;
 }
 

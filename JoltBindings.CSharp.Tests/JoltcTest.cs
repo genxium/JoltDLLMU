@@ -37,105 +37,14 @@ public class JoltcTest {
         }
     });
 
-    public static Bullet NewBullet(uint bulletId, int originatedRenderFrameId, ulong offenderUd, int teamId, BulletState blState, int framesInBlState) {
-        return new Bullet {
-            BlState = blState,
-            FramesInBlState = framesInBlState,
-            Id = bulletId,
-            OriginatedRenderFrameId = originatedRenderFrameId,
-            OffenderUd = offenderUd,
-            TeamId = teamId,
-            X = 0,
-            Y = 0,
-            DirX = 0,
-            DirY = 0,
-            VelX = 0,
-            VelY = 0
-        };
-    }
-
-    public static PlayerCharacterDownsync NewPreallocatedPlayerCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-        var single = new PlayerCharacterDownsync();
-        single.JoinIndex = primitives.MagicJoinIndexInvalid;
-        single.Chd = NewPreallocatedCharacterDownsync(buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
-        return single;
-    }
-
-    public static NpcCharacterDownsync NewPreallocatedNpcCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-        var single = new NpcCharacterDownsync();
-        single.Id = primitives.TerminatingCharacterId;
-        single.KilledToDropBuffSpeciesId = primitives.TerminatingBuffSpeciesId;
-        single.KilledToDropConsumableSpeciesId = primitives.TerminatingConsumableSpeciesId;
-        single.Chd = NewPreallocatedCharacterDownsync(buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
-        return single;
-    }
-
-    public static CharacterDownsync NewPreallocatedCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-        var single = new CharacterDownsync();
-        single.LastDamagedByUd = 0;
-        single.LastDamagedByBulletTeamId = primitives.TerminatingBulletTeamId;
-        for (int i = 0; i < buffCapacity; i++) {
-            var singleBuff = new Buff();
-            singleBuff.SpeciesId = primitives.TerminatingBuffSpeciesId;
-            singleBuff.OriginatedRenderFrameId = primitives.TerminatingRenderFrameId;
-            singleBuff.OrigChSpeciesId = PbPrimitives.SPECIES_NONE_CH;
-            single.BuffList.Add(singleBuff);
-        }
-        for (int i = 0; i < debuffCapacity; i++) {
-            var singleDebuff = new Debuff();
-            singleDebuff.SpeciesId = primitives.TerminatingDebuffSpeciesId;
-            single.DebuffList.Add(singleDebuff);
-        }
-        if (0 < inventoryCapacity) {
-            single.Inventory = new Inventory();
-            for (int i = 0; i < inventoryCapacity; i++) {
-                var singleSlot = new InventorySlot();
-                singleSlot.StockType = InventorySlotStockType.NoneIv;
-                single.Inventory.Slots.Add(singleSlot);
-            }
-        }
-        for (int i = 0; i < bulletImmuneRecordCapacity; i++) {
-            var singleRecord = new BulletImmuneRecord {
-                BulletId = primitives.TerminatingBulletId,
-                RemainingLifetimeRdfCount = 0,
-            };
-            single.BulletImmuneRecords.Add(singleRecord);
-        }
-
-        return single;
-    }
-
-    public static RenderFrame NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount) {
-        var ret = new RenderFrame();
-        ret.Id = primitives.TerminatingRenderFrameId;
-        ret.BulletIdCounter = 0;
-
-        for (int i = 0; i < roomCapacity; i++) {
-            var single = NewPreallocatedPlayerCharacterDownsync(primitives.DefaultPerCharacterBuffCapacity, primitives.DefaultPerCharacterDebuffCapacity, primitives.DefaultPerCharacterInventoryCapacity, primitives.DefaultPerCharacterImmuneBulletRecordCapacity);
-            ret.PlayersArr.Add(single);
-        }
-
-        for (int i = 0; i < preallocNpcCount; i++) {
-            var single = NewPreallocatedNpcCharacterDownsync(primitives.DefaultPerCharacterBuffCapacity, primitives.DefaultPerCharacterDebuffCapacity, 1, primitives.DefaultPerCharacterImmuneBulletRecordCapacity);
-            ret.NpcsArr.Add(single);
-        }
-
-        for (int i = 0; i < preallocBulletCount; i++) {
-            var single = NewBullet(primitives.TerminatingBulletId, 0, 0, 0, BulletState.StartUp, 0);
-            ret.Bullets.Add(single);
-        }
-
-
-        return ret;
-    }
 
     private RenderFrame mockStartRdf() {
         const int roomCapacity = 2;
-        var startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
+        var startRdf = Bindings.NewPreallocatedRdf(roomCapacity, 8, 128, primitives);
         startRdf.Id = primitives.StartingRenderFrameId;
-        uint pickableLocalId = 1;
-        uint npcLocalId = 1;
-        uint bulletLocalId = 1;
+        uint pickableIdCounter = 1;
+        uint npcIdCounter = 1;
+        uint bulletIdCounter = 1;
 
         var player1 = startRdf.PlayersArr[0];
         var ch1 = player1.Chd;
@@ -171,32 +80,11 @@ public class JoltcTest {
         ch2.Hp = 100;
         ch2.SpeciesId = PbPrimitives.SPECIES_BOUNTYHUNTER;
 
-        startRdf.NpcIdCounter = npcLocalId;
-        startRdf.BulletIdCounter = bulletLocalId;
-        startRdf.PickableIdCounter = pickableLocalId;
+        startRdf.NpcIdCounter = npcIdCounter;
+        startRdf.BulletIdCounter = bulletIdCounter;
+        startRdf.PickableIdCounter = pickableIdCounter;
         
         return startRdf;
-    }
-
-    void preemptyInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd) {
-        ifd.InputFrameId = primitives.TerminatingInputFrameId;
-        ifd.ConfirmedList = 0;
-        ifd.UdpConfirmedList = 0;
-        ifd.InputList.Clear();
-    }
-
-    void preemptyRenderFrameBeforeMerge(RenderFrame rdf) {
-        rdf.Id = primitives.TerminatingRenderFrameId;
-        rdf.PlayersArr.Clear();
-        rdf.NpcsArr.Clear();
-        rdf.Bullets.Clear();
-        rdf.TrapsArr.Clear();
-        rdf.TriggersArr.Clear();
-        rdf.Pickables.Clear();
-        rdf.BulletIdCounter = primitives.TerminatingBulletId;
-        rdf.NpcIdCounter = primitives.TerminatingCharacterId;
-        rdf.PickableIdCounter = primitives.TerminatingPickableId;
-        rdf.CountdownNanos = long.MaxValue;
     }
 
     [Fact]
@@ -265,7 +153,7 @@ public class JoltcTest {
                     var noDelayIfdId = (timerRdfId >> primitives.InputScaleFrames);
                     bool cmdInjected = Bindings.APP_UpsertCmd(battle, noDelayIfdId, 1, 0, (char*)ifdFetchBufferPtr, outBytesCntPtr, true, false, true);
                     Assert.True(cmdInjected);
-                    preemptyInputFrameDownsyncBeforeMerge(ifdHolder);
+                    Bindings.preemptyInputFrameDownsyncBeforeMerge(ifdHolder, primitives);
                     ifdHolder.MergeFrom(ifdFetchBuffer, 0, (int)(*outBytesCntPtr));
 
                     bool stepped = Bindings.APP_Step(battle, timerRdfId, timerRdfId + 1, true);
@@ -276,7 +164,7 @@ public class JoltcTest {
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
-                    preemptyRenderFrameBeforeMerge(rdfHolder);
+                    Bindings.preemptyRenderFrameBeforeMerge(rdfHolder, primitives);
                     rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
                     _logger.WriteLine(rdfHolder.PlayersArr.ToString());
                 }

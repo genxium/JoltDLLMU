@@ -154,8 +154,8 @@ namespace JoltCSharp {
             DefaultPerCharacterInventoryCapacity = 1,
             DefaultPerCharacterImmuneBulletRecordCapacity = 3,
 
-            GravityY = -9.8f, // Per second
-            GravityYJumpHolding = -4.9f,
+            GravityY = -0.52f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            GravityYJumpHolding = -0.28f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
 
             DefaultPatrolCueWaivingFrames = 150, // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
             NoPatrolCueId = 0,

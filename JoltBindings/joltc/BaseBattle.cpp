@@ -13,6 +13,10 @@
 #include <thread>
 #include <string>
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 using namespace jtshared;
 
 const float  cUpRotationX = 0;
@@ -63,7 +67,8 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
     phySys->SetBodyActivationListener(&bodyActivationListener);
     phySys->SetContactListener(&contactListener);
-    //phySys->SetSimCollideBodyVsBody(&myBodyCollisionPipe); // To omit unwanted body collisions, e.g. same team
+    phySys->SetGravity(Vec3(0, globalPrimitiveConsts->gravity_y(), 0));
+    //phySys->SetSimCollideBodyVsBody(&myBodyCollisionPipe); // To omit unwanted body collisions
     bi = &(phySys->GetBodyInterface());
 
     auto staticColliderShapesFromTiled = initializerMapData.serialized_barrier_polygons();
@@ -158,11 +163,7 @@ int BaseBattle::moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
             continue;
         }
         InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
-        /*
-        if (nullptr == ifd) {
-            throw std::runtime_error("[moveForwardlastConsecutivelyAllConfirmedIfdId] inputFrameId=" + std::to_string(inputFrameId) + " doesn't exist for lastConsecutivelyAllConfirmedIfdId=" + std::to_string(lastConsecutivelyAllConfirmedIfdId) + ", proposedIfdStFrameId = " + std::to_string(proposedIfdStFrameId) + ", proposedIfdEdFrameId = " + std::to_string(proposedIfdEdFrameId) + ", inputBuffer = " + ifdBuffer.toSimpleStat());
-        }
-        */
+
         if (allConfirmedMask != (ifd->confirmed_list() | skippableJoinMask)) {
             break;
         }
@@ -259,21 +260,22 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(const Character
     return chCollider;
 }
 
-void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterVirtual* cv) {
+void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterVirtual* cv, bool inJumpStartupOrJustEnded) {
     switch (nextChd->ch_state()) {
+        case Idle1:
         case Walking:
         case InAirIdle1NoJump:
         case InAirIdle1ByJump:
         case InAirIdle2ByJump:
         case InAirIdle1ByWallJump:
+            bool hasBeenOnWall = onWallSet.count(currChd.ch_state());
             // [WARNING] The "magic_frames_to_be_on_wall()" allows "InAirIdle1ByWallJump" to leave the current wall within a reasonable count of rdf count, instead of always forcing "InAirIdle1ByWallJump" to immediately stick back to the wall!
-            if (!isInJumpStartup(*nextChd, cc) && !isJumpStartupJustEnded(currChd, nextChd, cc) && globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state()) {
+            if (!inJumpStartupOrJustEnded && globalPrimitiveConsts->magic_frames_to_be_on_wall() <= currChd.frames_in_ch_state()) {
                 nextChd->set_ch_state(OnWallIdle1);
-                nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
-                nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
-                nextChd->set_vel_x(0);
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
-                resetJumpStartup(nextChd);
+            } else if (!inJumpStartupOrJustEnded && hasBeenOnWall) {
+                nextChd->set_ch_state(currChd.ch_state());
+                nextChd->set_vel_y(cc->wall_sliding_vel_y());
             }
             break;
     }
@@ -340,6 +342,10 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                 CharacterDownsync* nextChd = mutableNextChdFromUd(udt, payload);
                 const CharacterConfig* cc = getCc(nextChd->species_id());
 
+#ifndef NDEBUG
+                Vec3 preupdatePos = single->GetPosition();
+                Vec3 preupdateVel = single->GetLinearVelocity();
+#endif
                 single->ExtendedUpdate(dt, phySys->GetGravity(),
                     chColliderExtUpdateSettings,
                     phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
@@ -348,36 +354,48 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                     {}, // ShapeFilter
                     *tempAllocator);
 
+                bool currNotDashing = isNotDashing(currChd); 
+                bool currEffInAir = isEffInAir(currChd, currNotDashing); 
+
                 bool oldNextNotDashing = isNotDashing(*nextChd); 
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing); 
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
                 auto newPos = single->GetPosition();
-                bool cvOnGround = (CharacterBase::EGroundState::OnGround == single->GetGroundState());
-                auto newVel = single->IsSupported()
+                bool cvSupported = single->IsSupported();
+                auto newVel = cvSupported
                     ?
                     (RVec3Arg(single->GetLinearVelocity().GetX(), isProactivelyJumping ? single->GetLinearVelocity().GetY() : 0, 0) + single->GetGroundVelocity())
                     :
                     (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity() * dt);
 
-                Vec3 newSelfVelXOnly(single->GetLinearVelocity().GetX(), 0, 0);
-                bool newSelfVelXNearZero = newSelfVelXOnly.IsNearZero();
                 nextChd->set_x(newPos.GetX());
                 nextChd->set_y(newPos.GetY());
                 nextChd->set_vel_x(newVel.GetX());
                 nextChd->set_vel_y(newVel.GetY());
 
-                bool cvOnWall = false;
-                bool cvOnSteepGround = (CharacterBase::EGroundState::OnSteepGround == single->GetGroundState());
-                if (cvOnSteepGround) {
-                    bool steepEnoughToBeWall = isLengthSquaredNearZero(single->GetGroundNormal().Dot(Vec3::sAxisY()));
-                    cvOnWall = cc->on_wall_enabled() && steepEnoughToBeWall;
-                    if (cvOnWall) {
+                bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));  
+                bool cvOnWall = (CharacterBase::EGroundState::NotSupported == single->GetGroundState() && !single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
+                if (cvOnWall) {
+                    if (cc->on_wall_enabled()) {
                         // [WARNING] Will update "nextChd->vel_x() & nextChd->vel_y()".
-                        processWallGrabbingPostPhysicsUpdate(rdfId, currChd, nextChd, cc, single);
+                        processWallGrabbingPostPhysicsUpdate(rdfId, currChd, nextChd, cc, single, inJumpStartupOrJustEnded);
                     }
+                } 
+
+                bool cvInAir = (CharacterBase::EGroundState::InAir == single->GetGroundState() || CharacterBase::EGroundState::NotSupported == single->GetGroundState());
+                if (OnWallIdle1 == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state() && nextChd->x() != currChd.x()) {
+#ifndef NDEBUG
+                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") horizontal-position changed during OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Red);
+#endif
+                    nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
                 }
-                bool cvInAir = (CharacterBase::EGroundState::InAir == single->GetGroundState());
-                postStepSingleChdStateCorrection(currChd, nextChd, cc, cvInAir, cvOnWall, oldNextNotDashing, oldNextEffInAir);
+
+#ifndef NDEBUG
+                if (!cvOnWall && InAirIdle1ByWallJump != nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
+                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") dropping from OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Orange);
+                } 
+#endif
+                postStepSingleChdStateCorrection(currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded);
             break;
             }
         }
@@ -730,7 +748,6 @@ void BaseBattle::processJumpStarted(int currRdfId, const CharacterDownsync& curr
             nextChd->set_vel_x(xfac * cc->wall_jumping_init_vel_x());
             nextChd->set_vel_y(cc->wall_jumping_init_vel_y());
             nextChd->set_frames_to_recover(cc->wall_jumping_frames_to_recover()) ;
-            nextChd->set_ch_state(InAirIdle1ByWallJump) ;
         } else if (InAirIdle2ByJump == nextChd->ch_state()) {
             nextChd->set_vel_y(cc->jumping_init_vel_y());
         } else if (currChd.slip_jump_triggered()) {
@@ -742,7 +759,6 @@ void BaseBattle::processJumpStarted(int currRdfId, const CharacterDownsync& curr
             }
         } else {
             nextChd->set_vel_y(cc->jumping_init_vel_y());
-            nextChd->set_ch_state(InAirIdle1ByJump);
         }
 
         resetJumpStartup(nextChd);
@@ -1441,7 +1457,7 @@ void BaseBattle::processDelayedBulletSelfVel(int rdfId, const CharacterDownsync&
     }
 }
 
-void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvInAir, bool cvOnWall, bool oldNextNotDashing, bool oldNextEffInAir) {
+void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded) {
         CharacterState oldNextChState = nextChd->ch_state();
         const Skill* activeSkill = nullptr;
         const BulletConfig* activeBulletConfig = nullptr;
@@ -1699,6 +1715,26 @@ void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currC
                 nextChd->set_vel_x(0);
             }
         }
+
+        if (cvSupported && currEffInAir && !inJumpStartupOrJustEnded) {
+            // fall stopping
+#ifndef NDEBUG
+            Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") just landed.", DColor::Blue);
+#endif
+            nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
+            nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
+            resetJumpStartup(nextChd);
+        } else if (onWallSet.count(nextChd->ch_state()) && !onWallSet.count(currChd.ch_state())) {
+            nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
+            nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
+            resetJumpStartup(nextChd);
+        }
+
+#ifndef NDEBUG
+        if (InAirIdle1NoJump == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
+            Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") changed from OnWallIdle1 to " + std::to_string(nextChd->ch_state()) + ". cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir), DColor::Orange);
+        }
+#endif
 }
 
 void BaseBattle::leftShiftDeadNpcs(bool isChasing) {
