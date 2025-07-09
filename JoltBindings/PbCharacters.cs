@@ -4,7 +4,7 @@ using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
     public class PbCharacters {
-        
+
         /**
          [WARNING] 
 
@@ -20,8 +20,8 @@ namespace JoltCSharp {
             LayDownFramesToRecover = 12,
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
-            Speed = 2.3f,
-            JumpingInitVelY = (8f),
+            Speed = 2.3f * BATTLE_DYNAMICS_FPS,
+            JumpingInitVelY = 8f * BATTLE_DYNAMICS_FPS, 
             InertiaFramesToRecover = 4,
             DashingEnabled = true,
             SlidingEnabled = true,
@@ -29,9 +29,9 @@ namespace JoltCSharp {
             CrouchingEnabled = true,
             CrouchingAtkEnabled = true, // It's actually weird to have "false == CrouchingAtkEnabled && true == CrouchingEnabled", but flexibility provided anyway
             WallJumpingFramesToRecover = 8,
-            WallJumpingInitVelX = (2.5f),
-            WallJumpingInitVelY =  (8f),
-            WallSlidingVelY = (-1f),
+            WallJumpingInitVelX = (2.5f) * BATTLE_DYNAMICS_FPS,
+            WallJumpingInitVelY =  (8f) * BATTLE_DYNAMICS_FPS,
+            WallSlidingVelY = (-1f) * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (8.0f),
             VisionOffsetY = (5.0f),
             VisionSizeX = (220.0f),
@@ -50,7 +50,7 @@ namespace JoltCSharp {
             ProactiveJumpStartupFrames = 4,
             Hardness = 5,
             HasDimmedAnim = true,
-            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
             SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
             SlipJumpCharacterDropY = DEFAULT_SLIP_JUMP_CHARACTER_DROP,
             DefaultAirDashQuota = 1,
@@ -58,7 +58,7 @@ namespace JoltCSharp {
             GroundDodgeEnabledByRdfCntFromBeginning = 12, 
             GroundDodgedFramesInvinsible = 25, 
             GroundDodgedFramesToRecover = 30, 
-            GroundDodgedSpeed = (4.0f), 
+            GroundDodgedSpeed = (4.0f) * BATTLE_DYNAMICS_FPS, 
             GaugeIncWhenKilled = 80,
             Ifc = IfaceCat.Flesh,
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
@@ -72,8 +72,8 @@ namespace JoltCSharp {
             LayDownFramesToRecover = 16,
             GetUpInvinsibleFrames = 34,
             GetUpFramesToRecover = 30,
-            Speed = (2.3f),
-            JumpingInitVelY = (8.9f),
+            Speed = (2.3f) * BATTLE_DYNAMICS_FPS,
+            JumpingInitVelY = (8.9f) * BATTLE_DYNAMICS_FPS,
             InertiaFramesToRecover = 4,
             VisionOffsetX = (8.0f),
             VisionOffsetY = (16.0f),
@@ -94,14 +94,14 @@ namespace JoltCSharp {
             CrouchingAtkEnabled = true,
             OnWallEnabled = true,
             WallJumpingFramesToRecover = 8,
-            WallJumpingInitVelX = (2.5f),
-            WallJumpingInitVelY = (8),
-            WallSlidingVelY = (-1),
+            WallJumpingInitVelX = (2.5f) * BATTLE_DYNAMICS_FPS,
+            WallJumpingInitVelY = (8f) * BATTLE_DYNAMICS_FPS,
+            WallSlidingVelY = (-1) * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
             ProactiveJumpStartupFrames = 4,
             Hardness = 5,
-            MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y,
+            MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
             SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
             SlipJumpCharacterDropY = DEFAULT_SLIP_JUMP_CHARACTER_DROP,
             DefaultAirDashQuota = 1,
@@ -111,7 +111,7 @@ namespace JoltCSharp {
             GroundDodgeEnabledByRdfCntFromBeginning = 12,
             GroundDodgedFramesInvinsible = 25,
             GroundDodgedFramesToRecover = 30,
-            GroundDodgedSpeed = (4.0f),
+            GroundDodgedSpeed = (4.0f) * BATTLE_DYNAMICS_FPS,
             Atk1UsesMagazine = true,
             Atk1Magazine = new InventorySlotConfig {
                 StockType = InventorySlotStockType.TimedMagazineIv,

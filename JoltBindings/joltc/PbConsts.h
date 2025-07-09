@@ -34,6 +34,7 @@ const std::unordered_set<CharacterState> inAirSet = {
     InAirAtked1,
     BlownUp1,
     OnWallIdle1,
+    OnWallAtk1,
     InAirWalking,
     InAirWalkStopping,
     Dashing // Yes dashing is an InAir state even if you dashed on the ground :)

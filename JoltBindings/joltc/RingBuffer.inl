@@ -120,7 +120,7 @@ inline T* RingBuffer<T>::DryPut() {
     Cnt++;
     Ed++;
 
-    if (Ed >= N) {
+    if (Ed > N) {
         Ed -= N; // Deliberately not using "%" operator for performance concern
     }
     return candidateSlot;

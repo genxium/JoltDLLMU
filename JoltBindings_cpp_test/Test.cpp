@@ -3,6 +3,7 @@
 #include "joltc_api.h" 
 #include "PbConsts.h"
 #include "CppOnlyConsts.h"
+#include "DebugLog.h"
 
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "FrontendBattle.h"
@@ -102,8 +103,8 @@ RenderFrame* mockStartRdf() {
 
     auto playerCh1 = startRdf->mutable_players_arr(0);
     auto ch1 = playerCh1->mutable_chd();
-    ch1->set_x(-20);
-    ch1->set_y(2000);
+    ch1->set_x(-85);
+    ch1->set_y(200);
     ch1->set_speed(10);
     ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch1->set_frames_to_recover(0);
@@ -119,8 +120,8 @@ RenderFrame* mockStartRdf() {
 
     auto playerCh2 = startRdf->mutable_players_arr(1);
     auto ch2 = playerCh2->mutable_chd();
-    ch2->set_x(+20);
-    ch2->set_y(3000);
+    ch2->set_x(+90);
+    ch2->set_y(300);
     ch2->set_speed(10);
     ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch2->set_frames_to_recover(0);
@@ -148,12 +149,28 @@ char ifdFetchBuffer[pbBufferSizeLimit];
 
 std::map<int, uint64_t> testCmds1 = {
     {0, 3},
-    {200, 4},
-    {700, 3},
-    {890, 19},
-    {910, 3},
+    {227, 0},
+    {228, 16},
+    {251, 0},
+    {252, 16},
+    {699, 0},
+    {700, 20},
+    {720, 4},
+    {739, 4},
+    {740, 20},
+    {760, 4},
+    {780, 20},
+    {781, 4},
+    {820, 20},
+    {821, 4},
+    {910, 4},
+    {1100, 4},
     {1200, 0}
 };
+
+void DebugLogCb(const char* message, int color, int size) {
+    std::cout << message << std::endl;
+}
 
 // Program entry point
 int main(int argc, char** argv)
@@ -186,17 +203,32 @@ int main(int argc, char** argv)
     primitiveConstsFin.close();
 
     std::vector<float> hull1 = {
-        -1000, 0,
-        -1000, 1000,
-        1000, 1000,
-        1000, 0,
-        0, -25,
+        -100, 0,
+        -100, 100,
+        100, 100,
+        100, 0
     };
 
-    std::vector<std::vector<float>> hulls;
-    hulls.push_back(hull1);
+    std::vector<float> hull2 = {
+        -200, 0,
+        -200, 1000,
+        -100, 1000,
+        -100, 0
+    };
+
+    std::vector<float> hull3 = {
+        200, 0,
+        200, 1000,
+        100, 1000,
+        100, 0
+    };
+
+    std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
+    
+    RegisterDebugCallback(DebugLogCb);
+
     auto startRdf = mockStartRdf();
 
     WsReq wsReq;
@@ -218,24 +250,25 @@ int main(int argc, char** argv)
     jtshared::RenderFrame outRdf;
     std::string outStr;
     int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 2048;
-    int printIntervalRdfCnt = (1 << 3);
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 0);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     auto nowMillis = duration_cast<milliseconds>(
         system_clock::now().time_since_epoch()
     );
     uint32_t inSingleJoinIndex = 1;
     while (loopRdfCnt > timerRdfId) {
-        auto it = testCmds1.upper_bound(timerRdfId);
-        int noDelayIfdId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
-        if (it != testCmds1.begin()) {
-            --it;
-        }
+        auto it = testCmds1.lower_bound(timerRdfId);
+        int toGenerateInputFrameId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
         uint64_t inSingleInput = it->second;
         long outBytesCnt = pbBufferSizeLimit;
-        bool cmdInjected = APP_UpsertCmd(battle, noDelayIfdId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, true, false, true);
+
+        int nextRdfToGenerateInputFrameId = ((timerRdfId + 1) >> globalPrimitiveConsts->input_scale_frames());
+        bool isLastRdfInIfdCoverage = (nextRdfToGenerateInputFrameId == (toGenerateInputFrameId + 1));
+
+        bool cmdInjected = APP_UpsertCmd(battle, toGenerateInputFrameId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, isLastRdfInIfdCoverage, false, true);
         if (!cmdInjected) {
-            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", noDelayIfdId=" << noDelayIfdId << ", inSingleInput=" << inSingleInput << std::endl;
+            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", toGenerateInputFrameId=" << toGenerateInputFrameId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
         bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, false, true);

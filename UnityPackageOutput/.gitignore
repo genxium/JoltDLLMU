@@ -52,3 +52,5 @@ Debug
 Debug/**
 Release
 Release/**
+**/*.meta
+*.meta
