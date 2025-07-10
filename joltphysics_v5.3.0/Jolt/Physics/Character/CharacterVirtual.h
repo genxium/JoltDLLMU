@@ -60,6 +60,8 @@ public:
 
 	/// Layer that the inner rigid body will be added to
 	ObjectLayer							mInnerBodyLayer = 0;
+
+    bool                                mInnerBodyCollideKinematicVsNonDynamic = false;
 };
 
 /// This class contains settings that allow you to override the behavior of a character's collision response
@@ -380,6 +382,8 @@ public:
 	/// @param inAllocator An allocator for temporary allocations. All memory will be freed by the time this function returns.
 	void								ExtendedUpdate(float inDeltaTime, Vec3Arg inGravity, const ExtendedUpdateSettings &inSettings, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
+	void								PostSimulation(float inDeltaTime, Vec3Arg old_position, Vec3Arg old_vel, bool onGroundBeforeUpdate, Vec3Arg inGravity, const ExtendedUpdateSettings &inSettings, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
+
 	/// This function can be used after a character has teleported to determine the new contacts with the world.
 	void								RefreshContacts(const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
@@ -523,6 +527,8 @@ public:
 	{
 		return HasCollidedWith(inCharacter->GetID());
 	}
+
+	
 
 private:
 	// Sorting predicate for making contact order deterministic

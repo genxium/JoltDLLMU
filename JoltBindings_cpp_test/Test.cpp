@@ -251,7 +251,7 @@ int main(int argc, char** argv)
     std::string outStr;
     int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
-    int printIntervalRdfCnt = (1 << 0);
+    int printIntervalRdfCnt = (1 << 1);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     auto nowMillis = duration_cast<milliseconds>(
         system_clock::now().time_since_epoch()
@@ -259,6 +259,9 @@ int main(int argc, char** argv)
     uint32_t inSingleJoinIndex = 1;
     while (loopRdfCnt > timerRdfId) {
         auto it = testCmds1.lower_bound(timerRdfId);
+        if (it == testCmds1.end()) {
+            --it;
+        }
         int toGenerateInputFrameId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
         uint64_t inSingleInput = it->second;
         long outBytesCnt = pbBufferSizeLimit;
