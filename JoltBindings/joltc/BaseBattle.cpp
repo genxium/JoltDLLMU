@@ -225,6 +225,8 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(const Character
         2. This function "getOrCreateCachedCharacterCollider" is only used in a single-threaded context (i.e. as a preparation before the multi-threaded "PhysicsSystem::Update" or "CharacterVirtual::Update").
         3. Operator "=" for "RefConst<Shape>" would NOT call "Release()" when the new pointer address is the same as the old one. 
         */
+        Vec3Arg previousShapeCom = shape->GetCenterOfMass();
+        
         int oldShapeRefCnt = shape->GetRefCount();
         int oldInnerShapeRefCnt = innerShape->GetRefCount();
 
@@ -249,6 +251,20 @@ CharacterVirtual* BaseBattle::getOrCreateCachedCharacterCollider(const Character
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
         int newShapeRefCnt = newShape->GetRefCount();
         JPH_ASSERT(oldShapeRefCnt == newShapeRefCnt);
+
+#ifdef useCustomizedInnerBodyHandling
+        if (!chCollider->GetInnerBodyID().IsInvalid()) {
+            RefConst<Shape> innerBodyShape = bi->GetShape(chCollider->GetInnerBodyID()); 
+            JPH_ASSERT(innerBodyShape.GetPtr() == newShape);
+            int oldInnerBodyShapeRefCnt = innerBodyShape->GetRefCount();
+            while (newShape->GetRefCount() < oldInnerBodyShapeRefCnt) newShape->AddRef();
+            while (newShape->GetRefCount() > oldInnerBodyShapeRefCnt) newShape->Release();
+            int newShapeRefCnt = newShape->GetRefCount();
+            JPH_ASSERT(oldInnerBodyShapeRefCnt == newShapeRefCnt);
+            bi->InvalidateContactCache(chCollider->GetInnerBodyID());
+            bi->NotifyShapeChanged(chCollider->GetInnerBodyID(), previousShapeCom, true, EActivation::DontActivate);
+        }
+#endif
     }
 
     transientUdToCv[ud] = chCollider;
@@ -308,6 +324,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
         auto delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
         processPlayerInputs(currRdf, nextRdf, delayedIfd);
 
+        bodyIDsToAdd.clear();
         for (int i = 0; i < playersCnt; i++) {
             const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
             PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i);
@@ -320,19 +337,34 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
             // [WARNING] Reset the possibly reused "CharacterVirtual*/Body*" before physics update.
             chCollider->SetPosition(RVec3Arg(nextChd->x(), nextChd->y(), 0));
             chCollider->SetLinearVelocity(RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), 0)); // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set). 
+
+#ifdef useCustomizedInnerBodyHandling
+            if (!chCollider->GetInnerBodyID().IsInvalid()) {
+                bodyIDsToAdd.push_back(chCollider->GetInnerBodyID());
+                RVec3 justifiedInnerBodyPosition = chCollider->GetPosition() + (chCollider->GetRotation() * chCollider->GetShapeOffset() + chCollider->GetCharacterPadding() * chCollider->GetUp());
+                bi->SetPosition(chCollider->GetInnerBodyID(), justifiedInnerBodyPosition, EActivation::DontActivate);
+                bi->SetLinearVelocity(chCollider->GetInnerBodyID(), chCollider->GetLinearVelocity());
+            }
+#endif
+        }
+
+        if (!bodyIDsToAdd.empty()) {
+            bi->ActivateBodies(bodyIDsToAdd.data(), bodyIDsToAdd.size());
         }
 
         float dt = globalPrimitiveConsts->estimated_seconds_per_rdf();
-        phySys->Update(dt, 1, tempAllocator, jobSys); // [REMINDER] The "class CharacterVirtual" instances DON'T participate in "phySys->Update(...)" as they are NOT filled with valid "mInnerBodyID" by design. See "RuleOfThumb.md" for details. 
+        phySys->Update(dt, 1, tempAllocator, jobSys); // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details. 
         for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
             CharacterVirtual* single = *it;
+            // Settings for our update function
+
+            uint64_t ud = single->GetUserData();
+            uint64_t udt = getUDT(ud);
+
             // Settings for our update function
             CharacterVirtual::ExtendedUpdateSettings chColliderExtUpdateSettings;
             chColliderExtUpdateSettings.mStickToFloorStepDown = -single->GetUp() * chColliderExtUpdateSettings.mStickToFloorStepDown.Length();
             chColliderExtUpdateSettings.mWalkStairsStepUp = single->GetUp() * chColliderExtUpdateSettings.mWalkStairsStepUp.Length();
-
-            uint64_t ud = single->GetUserData();
-            uint64_t udt = getUDT(ud);
 
             switch (udt) {
             case UDT_PLAYER:
@@ -342,25 +374,43 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                 CharacterDownsync* nextChd = mutableNextChdFromUd(udt, payload);
                 const CharacterConfig* cc = getCc(nextChd->species_id());
 
-#ifndef NDEBUG
-                Vec3 preupdatePos = single->GetPosition();
-                Vec3 preupdateVel = single->GetLinearVelocity();
-#endif
+                Vec3 preupdatePos(nextChd->x(), nextChd->y(), 0);
+                Vec3 preupdateVel(nextChd->vel_x(), nextChd->vel_y(), 0);
+
+                bool currNotDashing = isNotDashing(currChd);
+                bool currEffInAir = isEffInAir(currChd, currNotDashing);
+                bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
+                bool onGroundBeforeUpdate = !currEffInAir || (InAirIdle1ByJump == currChd.ch_state() && inJumpStartupOrJustEnded);
+
+#ifdef useCustomizedInnerBodyHandling
+                // NOT WORKING YET!
+                if (!single->GetInnerBodyID().IsInvalid()) {
+                    RVec3 rawNewInnerBodyPosition = bi->GetPosition(single->GetInnerBodyID());
+                    RVec3 justifiedCvPosition = rawNewInnerBodyPosition - (single->GetRotation() * single->GetShapeOffset() + single->GetCharacterPadding() * single->GetUp());
+                    single->SetPosition(justifiedCvPosition);
+                    single->SetLinearVelocity(bi->GetLinearVelocity(single->GetInnerBodyID()));
+                    single->PostSimulation(dt, preupdatePos, preupdateVel, onGroundBeforeUpdate, phySys->GetGravity(),
+                        chColliderExtUpdateSettings,
+                        phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
+                        phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
+                        {}, // BodyFilter
+                        {}, // ShapeFilter
+                        *tempAllocator);
+                }
+#else
                 single->ExtendedUpdate(dt, phySys->GetGravity(),
-                    chColliderExtUpdateSettings,
-                    phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
-                    phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
-                    {}, // BodyFilter
-                    {}, // ShapeFilter
-                    *tempAllocator);
+                        chColliderExtUpdateSettings,
+                        phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
+                        phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
+                        {}, // BodyFilter
+                        {}, // ShapeFilter
+                        *tempAllocator);
+#endif
 
-                bool currNotDashing = isNotDashing(currChd); 
-                bool currEffInAir = isEffInAir(currChd, currNotDashing); 
-
+                Vec3 newPos = single->GetPosition();
                 bool oldNextNotDashing = isNotDashing(*nextChd); 
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing); 
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
-                auto newPos = single->GetPosition();
                 bool cvSupported = single->IsSupported();
                 auto newVel = cvSupported
                     ?
@@ -373,7 +423,6 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                 nextChd->set_vel_x(newVel.GetX());
                 nextChd->set_vel_y(newVel.GetY());
 
-                bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));  
                 bool cvOnWall = (CharacterBase::EGroundState::NotSupported == single->GetGroundState() && !single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
                 if (cvOnWall) {
                     if (cc->on_wall_enabled()) {
@@ -392,8 +441,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
 
 #ifndef NDEBUG
                 if (!cvOnWall && InAirIdle1ByWallJump != nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
-                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") dropping from OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Orange);
-                } 
+                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") dropping from OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Orange); } 
 #endif
                 postStepSingleChdStateCorrection(currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded);
             break;
@@ -405,6 +453,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
 }
 
 void BaseBattle::Clear() {
+    // [WARNING] No need to explicitly remove "CharacterVirtual.mInnerBodyID"s, the destructor "~CharacterVirtual" will take care of it. 
     while (!activeChColliders.empty()) {
         auto single = activeChColliders.back();
         activeChColliders.pop_back();
@@ -1075,6 +1124,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const RenderFrame* currRdf) {
     // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
     transientUdToCv.clear(); 
     transientUdToBodyID.clear();
+    bodyIDsToClear.clear();
     while (!activeChColliders.empty()) {
         CharacterVirtual* single = activeChColliders.back();
         activeChColliders.pop_back();
@@ -1095,10 +1145,14 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const RenderFrame* currRdf) {
         }
         single->SetRotation(Quat::sIdentity());
         single->SetLinearVelocity(Vec3::sZero());
-        single->SetPosition(safeDeactiviatedPosition); // [WARNING] To avoid spurious awakening of "mInnerBodyID" by https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1275 -- BUT not very useful because we don't use "mInnerBodyID" in this game, see comments around "BaseBattle::createDefaultCharacterCollider(...)."
+        single->SetPosition(safeDeactiviatedPosition); // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
+#ifdef useCustomizedInnerBodyHandling
+        if (!single->GetInnerBodyID().IsInvalid()) {
+            bodyIDsToClear.push_back(single->GetInnerBodyID());
+        }
+#endif
     }
 
-    bodyIDsToClear.clear();
     while (!activeBlColliders.empty()) {
         Body* single = activeBlColliders.back();
         activeBlColliders.pop_back();
@@ -1117,10 +1171,15 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const RenderFrame* currRdf) {
             cacheQue.push_back(single);
         }
 
+        bi->SetPositionAndRotation(single->GetID()
+                                , safeDeactiviatedPosition // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
+                                , Quat::sIdentity()
+                                , EActivation::DontActivate);
+	    bi->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
         bodyIDsToClear.push_back(single->GetID());
     }
 
-    bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
 }
 
 void BaseBattle::derivePlayerOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ioIfDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
@@ -1926,6 +1985,13 @@ void BaseBattle::useInventorySlot(int rdfId, int patternId, const CharacterDowns
     */
 }
 
+#
+/*
+[WARNING] 
+
+"useCustomizedInnerBodyHandling" is NOT WORKING YET, see [TODO] below.
+*/
+
 CharacterVirtual* BaseBattle::createDefaultCharacterCollider(const CharacterConfig* cc) {
     CapsuleShape* chShapeCenterAnchor = new CapsuleShape(cc->capsule_half_height(), cc->capsule_radius()); // lifecycle to be held by "RotatedTranslatedShape::mInnerShape"
     RotatedTranslatedShape* chShape = new RotatedTranslatedShape(Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor); // lifecycle to be held by "CharacterVirtual::mShape"
@@ -1939,15 +2005,18 @@ CharacterVirtual* BaseBattle::createDefaultCharacterCollider(const CharacterConf
     settings.mSupportingVolume = Plane(Vec3::sAxisY(), -cc->capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
     settings.mEnhancedInternalEdgeRemoval = cEnhancedInternalEdgeRemoval;
     settings.mShape = chShape;
-
-    /* 
-    [WARNING] 
-    
-    Deliberately NOT setting "mInnerBodyShape", we'll handle "Character - AnyOtherObjectType" collision by "CharacterContactListener CharacterVirtual::mListener" while leaving the handling of "AnyOtherObjectType - AnyOtherObjectType" to "PhysicsSystem::sBodyVsBodyHandler". 
-
-    By NOT having a "CharacterVirtual.mInnerBodyID" attached to "phySys->GetBodyInterface()", it's easier to handle "batchRemoveFromPhySysAndCache(...)".
-    */
-    settings.mInnerBodyShape = nullptr; 
+#ifdef useCustomizedInnerBodyHandling
+        settings.mInnerBodyShape = chShape;   
+        settings.mInnerBodyLayer = MyObjectLayers::MOVING;   
+        settings.mInnerBodyCollideKinematicVsNonDynamic = true; // [WARNING] Might be CPU intensive, use it with caution and profiling support!   
+        /*
+        [TODO] 
+        
+        Even with "mInnerBodyCollideKinematicVsNonDynamic = true", I still need a customized ContactConstraint solver for "Kinematics(CharacterVirtual.mInnerBodyID) v.s. NonDynamics" to make "useCustomizedInnerBodyHandling" useful (i.e. in "OnContactAdded" and "OnContactPersisted" callbacks), because the default WOULDN'T create ContactConstraint for "NonDynamics v.s. NonDynamics", see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1108. 
+        */
+#else
+        settings.mInnerBodyShape = nullptr; // [WARNING] Assigning "nullptr" here will result in "true == CharacterVirtual::GetInnerBodyID()::IsInvalid()".  
+#endif
 
     // A "CharacterVirtual" is by default translational only, no need to set "EMotionType::Kinematic" here, see https://jrouwe.github.io/JoltPhysics/index.html#character-controllers.
 
@@ -1955,7 +2024,6 @@ CharacterVirtual* BaseBattle::createDefaultCharacterCollider(const CharacterConf
 }
 
 void BaseBattle::preallocateBodies(const RenderFrame* currRdf) {
-    bodyIDsToClear.clear();
     for (int i = 0; i < playersCnt; i++) {
         const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
         const CharacterDownsync& currChd = currPlayer.chd();
