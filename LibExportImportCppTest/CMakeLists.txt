@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
-project(JoltBindings_cpp_test VERSION 0.0.1 LANGUAGES CXX)
+project(LibExportImportCppTest VERSION 0.0.1 LANGUAGES CXX)
 
 # Requires C++ 17
 set(CMAKE_CXX_STANDARD 17)
@@ -23,7 +23,7 @@ set(PHYSICS_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../joltphysics_v5.3.0)
 set(PREBUILT_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins)
 set(PREBUILT_HEADER_PATH ${PREBUILT_LIB_PATH}/include)
 
-set(TARGET_NAME cpp_test)
+set(TARGET_NAME LibExportImportCppTest)
 
 set(CPP_TEST_SRC_FILES 
     Test.cpp

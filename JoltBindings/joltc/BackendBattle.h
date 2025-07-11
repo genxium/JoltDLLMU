@@ -1,16 +1,23 @@
-#pragma once
+#ifndef BACKEND_BATTLE_H_
+#define BACKEND_BATTLE_H_ 1
 
 #include "BaseBattle.h"
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
 
 using namespace JPH;
 
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
-    BackendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(inBytes, inBytesCnt, renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
+    BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
     }
 
     virtual ~BackendBattle() {
         // Calls base destructor (implicitly)
+#ifndef NDEBUG
+        Debug::Log("~BackendBattle/C++", DColor::Green);
+#endif
     }
 public:
     int elongatedBattleDurationFrames;
@@ -19,9 +26,16 @@ public:
     int lastForceResyncedRdfId;
     int nstDelayFrames;
 
+public:
+    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+    bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+    bool ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+    virtual void Step(int fromRdfId, int toRdfId);
+    virtual bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData);
+
 protected:
-    virtual bool preprocessIfdStEviction(int inputFrameId);
-    virtual void postprocessIfdStEviction();
+    DownsyncSnapshot* produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, int withRefRdfId);
+    void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
 };
 
 /*
@@ -30,3 +44,5 @@ The "ifdBufferLock" will be managed on C# side because "sending IfdBatchSnapshot
 - "markConfirmationIfApplicable" & "produceIfdBatchSnapshot" should be on C++
 - "inactiveMask" should be maintained by C#/OnPlayerXxx callbacks
 */
+
+#endif

@@ -39,5 +39,6 @@ echo "" > $UnityPackageOutputPath/Runtime/Plugins/include/.keep
 # Managed part
 rm -rf $UnityPackageOutputPath/Runtime/*.cs 
 
-# Also delete "cmakeout" for the cpp_test 
-rm -rf $basedir/JoltBindings_cpp_test/cmakeout 
+# Also delete "cmakeout" for "LibExportImportCppTest"  
+LibExportImportCppTestName=LibExportImportCppTest
+rm -rf $basedir/$LibExportImportCppTestName/cmakeout 

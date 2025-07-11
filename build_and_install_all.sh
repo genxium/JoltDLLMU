@@ -14,6 +14,10 @@ basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 JoltBindings_basedir="$basedir"/JoltBindings
 unity_package_output_basedir="$basedir"/UnityPackageOutput
 
+echo "Writing PbConsts for generic import..."
+cd $basedir/PbConstsWriter && dotnet build -c $1 && dotnet run --environment UNITY_RT_PLUGINS_OUTPATH=$unity_package_output_basedir/Runtime/Plugins -c $1
+echo "Written PbConsts for generic import"
+
 clibname="joltc.dll"
 if [[ "Linux" == $2 ]]; then 
   clibname="libjoltc.so"
@@ -37,12 +41,9 @@ protoc -I=$JoltBindings_basedir --csharp_out=$JoltBindings_basedir serializable_
 cd $JoltBindings_basedir && dotnet build -c $1
 echo "Built joltphysics.dll for CSharp bindings"
 
-echo "Writing PbConsts for generic import..."
-cd $basedir/PbConstsWriter && dotnet build -c $1 && dotnet run --environment UNITY_RT_PLUGINS_OUTPATH=$unity_package_output_basedir/Runtime/Plugins -c $1
-echo "Written PbConsts for generic import"
-
+LibExportImportCppTestName=LibExportImportCppTest
 if [[ "Linux" == $2 ]]; then
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings_cpp_test && ./build_and_install.sh $1"
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1"
 else
-    $basedir/JoltBindings_cpp_test/build_and_install.sh $1
+    $basedir/$LibExportImportCppTestName/build_and_install.sh $1
 fi

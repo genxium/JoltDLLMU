@@ -187,6 +187,7 @@ namespace JoltCSharp {
             NoSkillHit = 0,
 
             NoLockVel = -65535f,
+            SpeciesNoneCh = 0,
 
             TerminatingCharacterId = 0,
             TerminatingTrapId = 0,

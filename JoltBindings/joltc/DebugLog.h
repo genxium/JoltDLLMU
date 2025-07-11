@@ -1,7 +1,6 @@
 #ifndef DEBUG_LOG_H_
 #define DEBUG_LOG_H_ 1
 
-#pragma once
 #include <stdio.h>
 #include <string>
 #include <sstream>

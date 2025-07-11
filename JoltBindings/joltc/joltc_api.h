@@ -13,14 +13,14 @@
 #ifdef JPH_SHARED_LIBRARY
 	#ifdef JPH_BUILD_SHARED_LIBRARY
 		// While building the shared library, we must export these symbols
-		#if defined(JPH_PLATFORM_WINDOWS) && !defined(JPH_COMPILER_MINGW)
+		#if defined(_WIN32) && !defined(JPH_COMPILER_MINGW)
 			#define JOLTC_API_EXPORT __declspec(dllexport)
 		#else
 			#define JOLTC_API_EXPORT __attribute__ ((visibility ("default")))
 		#endif
 	#else
 		// When linking against Jolt, we must import these symbols
-		#if defined(JPH_PLATFORM_WINDOWS) && !defined(JPH_COMPILER_MINGW)
+		#if defined(_WIN32) && !defined(JPH_COMPILER_MINGW)
 			#define JOLTC_API_EXPORT __declspec(dllimport)
 		#else
 			#define JOLTC_API_EXPORT __attribute__ ((visibility ("default")))
@@ -42,10 +42,19 @@ JPH_CAPI bool JPH_Shutdown(void);
 /*
 Kindly note that in Jolt, the default gravity direction is negative-y.
 */
-JPH_CAPI void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOnlineArenaMode);
-JPH_CAPI bool APP_DestroyBattle(void* inBattle, bool isFrontend);
-JPH_CAPI bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing, bool isFrontend);
+JPH_CAPI bool APP_DestroyBattle(void* inBattle);
 JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
-JPH_CAPI bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, long* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend);
+
+JPH_CAPI void* BACKEND_CreateBattle();
+JPH_CAPI bool BACKEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit); // [WARNING] Possibly writes "DownsyncSnapshot" into "outBytesPreallocatedStart" 
+JPH_CAPI bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+
+JPH_CAPI void* FRONTEND_CreateBattle(char* inBytes, int inBytesCnt, bool isOnlineArenaMode, int inSelfJoinIndex);
+JPH_CAPI bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput);
+JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp);
+JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit, int withRefRdfId);
+JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt);
+JPH_CAPI bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
 
 #endif /* JOLT_C_H_ */

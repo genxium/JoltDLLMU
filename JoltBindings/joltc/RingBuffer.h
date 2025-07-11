@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RING_BUFFER_H_
+#define RING_BUFFER_H_ 1
 
 #include <vector>
 #include "joltc_export.h"
@@ -43,3 +44,5 @@ class JOLTC_EXPORT RingBuffer {
 }; 
 
 #include "RingBuffer.inl"
+
+#endif

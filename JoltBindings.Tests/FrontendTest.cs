@@ -9,7 +9,7 @@ using System.Collections.Immutable;
 using System.Numerics;
 using Xunit.Abstractions;
 
-public class JoltcTest {
+public class FrontendTest {
     // Reference https://xunit.net/docs/capturing-output.html
 
     private readonly ITestOutputHelper _logger;
@@ -18,12 +18,10 @@ public class JoltcTest {
 
     const int pbBufferSizeLimit = (1 << 14);
     byte[] rdfFetchBuffer;
-    byte[] ifdFetchBuffer;
 
-    public JoltcTest(ITestOutputHelper theLogger) {
+    public FrontendTest(ITestOutputHelper theLogger) {
         _logger = theLogger;
         rdfFetchBuffer = new byte[pbBufferSizeLimit];
-        ifdFetchBuffer = new byte[pbBufferSizeLimit];
     }
     
     public static ImmutableArray<Vector2[]> hulls1 = ImmutableArray.Create<Vector2[]>().AddRange(new[]
@@ -135,32 +133,26 @@ public class JoltcTest {
 
             UIntPtr battle = UIntPtr.Zero;
             fixed (byte* bufferPtr = buffer) {
-                 battle = Bindings.APP_CreateBattle((char*)bufferPtr, buffer.Length, true, false);
+                 battle = Bindings.FRONTEND_CreateBattle((char*)bufferPtr, buffer.Length, false, 1);
                  _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
             
             int timerRdfId = primitives.StartingRenderFrameId;
             long outBytesCnt = 0;
-            InputFrameDownsync ifdHolder = new InputFrameDownsync();
             RenderFrame rdfHolder = new RenderFrame();
 
-            fixed (byte* ifdFetchBufferPtr = ifdFetchBuffer) 
             fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer) {
                 while (4096 > timerRdfId) {
-                    long* outBytesCntPtr = &outBytesCnt;
-                    *outBytesCntPtr = pbBufferSizeLimit;
-                    var noDelayIfdId = (timerRdfId >> primitives.InputScaleFrames);
-                    bool cmdInjected = Bindings.APP_UpsertCmd(battle, noDelayIfdId, 1, 0, (char*)ifdFetchBufferPtr, outBytesCntPtr, true, false, true);
+                    bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0);
                     Assert.True(cmdInjected);
-                    Bindings.preemptyInputFrameDownsyncBeforeMerge(ifdHolder, primitives);
-                    ifdHolder.MergeFrom(ifdFetchBuffer, 0, (int)(*outBytesCntPtr));
 
-                    bool stepped = Bindings.APP_Step(battle, timerRdfId, timerRdfId + 1, true);
+                    bool stepped = Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
                     Assert.True(stepped);
                     
                     timerRdfId++;
 
+                    long* outBytesCntPtr = &outBytesCnt;
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
@@ -171,7 +163,7 @@ public class JoltcTest {
             }
             
             // Clean up
-            bool destroyRes = Bindings.APP_DestroyBattle(battle, true);
+            bool destroyRes = Bindings.APP_DestroyBattle(battle);
             Assert.True(destroyRes);
             _logger.WriteLine($"Destroyed battle at pointer addr = 0x{battle:x} with result={destroyRes}");
             bool shutdownRes = Bindings.JPH_Shutdown();
