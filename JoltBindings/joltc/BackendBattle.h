@@ -19,9 +19,16 @@ public:
     int lastForceResyncedRdfId;
     int nstDelayFrames;
 
+public:
+    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+    bool ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit, int withRefRdfId);
+    virtual void Step(int fromRdfId, int toRdfId);
+
 protected:
     virtual bool preprocessIfdStEviction(int inputFrameId);
-    virtual void postprocessIfdStEviction();
+    virtual int postprocessIfdStEviction();
+    DownsyncSnapshot* produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, int withRefRdfId);
+    void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
 };
 
 /*

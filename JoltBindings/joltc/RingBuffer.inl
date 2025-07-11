@@ -9,11 +9,14 @@ inline RingBuffer<T>::RingBuffer(int n) {
 
 template <typename T>
 inline RingBuffer<T>::~RingBuffer() {
+    // [WARNING] It's inconvenient to use Google Protobuf Arena Allocation on this "RingBuffer<T>" for general purpose, therefore individual allocation in "DryPut()" and deallocation here are used.
+
     while (0 < Cnt) {
         T* front = Pop();
         delete front;
         front = nullptr;
     }
+
     Clear();
 }
 

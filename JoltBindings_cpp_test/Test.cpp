@@ -145,7 +145,6 @@ RenderFrame* mockStartRdf() {
 const int pbBufferSizeLimit = (1 << 14);
 char pbByteBuffer[pbBufferSizeLimit];
 char rdfFetchBuffer[pbBufferSizeLimit];
-char ifdFetchBuffer[pbBufferSizeLimit];
 
 std::map<int, uint64_t> testCmds1 = {
     {0, 3},
@@ -244,7 +243,8 @@ int main(int argc, char** argv)
     memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
     long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
-    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, (int)byteSize, isFrontend, false));
+    int selfJoinIndex = 1;
+    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, (int)byteSize, isFrontend, false, selfJoinIndex));
     std::cout << "Created battle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
@@ -262,22 +262,16 @@ int main(int argc, char** argv)
         if (it == testCmds1.end()) {
             --it;
         }
-        int toGenerateInputFrameId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
         uint64_t inSingleInput = it->second;
-        long outBytesCnt = pbBufferSizeLimit;
-
-        int nextRdfToGenerateInputFrameId = ((timerRdfId + 1) >> globalPrimitiveConsts->input_scale_frames());
-        bool isLastRdfInIfdCoverage = (nextRdfToGenerateInputFrameId == (toGenerateInputFrameId + 1));
-
-        bool cmdInjected = APP_UpsertCmd(battle, toGenerateInputFrameId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, isLastRdfInIfdCoverage, false, true);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(battle, inSingleInput);
         if (!cmdInjected) {
-            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", toGenerateInputFrameId=" << toGenerateInputFrameId << ", inSingleInput=" << inSingleInput << std::endl;
+            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, false, true);
+        bool stepped = FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
         timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
-        outBytesCnt = pbBufferSizeLimit;
+        long outBytesCnt = pbBufferSizeLimit;
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
         if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {

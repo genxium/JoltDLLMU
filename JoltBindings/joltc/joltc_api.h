@@ -42,10 +42,18 @@ JPH_CAPI bool JPH_Shutdown(void);
 /*
 Kindly note that in Jolt, the default gravity direction is negative-y.
 */
-JPH_CAPI void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOnlineArenaMode);
+JPH_CAPI void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOnlineArenaMode, int inSelfJoinIndex);
 JPH_CAPI bool APP_DestroyBattle(void* inBattle, bool isFrontend);
-JPH_CAPI bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing, bool isFrontend);
 JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
-JPH_CAPI bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, long* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend);
+
+JPH_CAPI bool BACKEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit); // [WARNING] Possibly writes "DownsyncSnapshot" into "outBytesPreallocatedStart" 
+JPH_CAPI bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit, int withRefRdfId);
+JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+
+JPH_CAPI bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput);
+JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp);
+JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit, int withRefRdfId);
+JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt);
+JPH_CAPI bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
 
 #endif /* JOLT_C_H_ */

@@ -38,11 +38,11 @@ static CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
 static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
 
 BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), globalTempAllocator(inGlobalTempAllocator) {
-    jtshared::WsReq initializerMapData;
-    initializerMapData.ParseFromArray(inBytes, inBytesCnt);
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    initializerMapData->ParseFromArray(inBytes, inBytesCnt);
 
     ////////////////////////////////////////////// 1
-    auto startRdf = initializerMapData.self_parsed_rdf();
+    auto startRdf = initializerMapData->self_parsed_rdf();
     playersCnt = startRdf.players_arr_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
     inactiveJoinMask = 0u;
@@ -71,10 +71,10 @@ BaseBattle::BaseBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int 
     //phySys->SetSimCollideBodyVsBody(&myBodyCollisionPipe); // To omit unwanted body collisions
     bi = &(phySys->GetBodyInterface());
 
-    auto staticColliderShapesFromTiled = initializerMapData.serialized_barrier_polygons();
+    auto staticColliderShapesFromTiled = initializerMapData->serialized_barrier_polygons();
 
     staticColliderBodyIDs.clear();
-    for (auto convexPolygon : staticColliderShapesFromTiled) {
+    for (const SerializableConvexPolygon& convexPolygon : staticColliderShapesFromTiled) {
         TriangleList triangles;
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
             auto fromI = pi;
@@ -151,10 +151,10 @@ BaseBattle::~BaseBattle() {
 int BaseBattle::moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask) {
     // [WARNING/BACKEND] This function MUST BE called while "inputBufferLock" is locked!
 
-    int incCnt = 0;
-    int proposedIfdStFrameId = lastConsecutivelyAllConfirmedIfdId + 1;
+    int oldLcacIfdId = lcacIfdId;
+    int proposedIfdStFrameId = lcacIfdId + 1;
     if (proposedIfdStFrameId >= proposedIfdEdFrameId) {
-        return incCnt;
+        return oldLcacIfdId;
     }
 
     for (int inputFrameId = proposedIfdStFrameId; inputFrameId < proposedIfdEdFrameId; inputFrameId++) {
@@ -168,15 +168,14 @@ int BaseBattle::moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
             break;
         }
 
-        incCnt += 1;
         ifd->set_confirmed_list(allConfirmedMask);
-        if (lastConsecutivelyAllConfirmedIfdId < inputFrameId) {
+        if (lcacIfdId < inputFrameId) {
             // Such that "lastConsecutivelyAllConfirmedIfdId" is monotonic.
-            lastConsecutivelyAllConfirmedIfdId = inputFrameId;
+            lcacIfdId = inputFrameId;
         }
     }
 
-    return incCnt;
+    return oldLcacIfdId;
 }
 
 CharacterVirtual* BaseBattle::getOrCreateCachedPlayerCollider(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer, const CharacterConfig* cc) {
@@ -297,7 +296,7 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
     }
 }
 
-void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) {
+void BaseBattle::Step(int fromRdfId, int toRdfId) {
     for (int rdfId = fromRdfId; rdfId < toRdfId; rdfId++) {
         transientJoinIndexToCurrPlayer.clear();
         transientJoinIndexToNextPlayer.clear();
@@ -353,7 +352,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
         }
 
         float dt = globalPrimitiveConsts->estimated_seconds_per_rdf();
-        phySys->Update(dt, 1, tempAllocator, jobSys); // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details. 
+        phySys->Update(dt, 1, globalTempAllocator, jobSys); // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details. 
         for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
             CharacterVirtual* single = *it;
             // Settings for our update function
@@ -395,7 +394,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                         phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
                         {}, // BodyFilter
                         {}, // ShapeFilter
-                        *tempAllocator);
+                        *globalTempAllocator);
                 }
 #else
                 single->ExtendedUpdate(dt, phySys->GetGravity(),
@@ -404,7 +403,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator) 
                         phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
                         {}, // BodyFilter
                         {}, // ShapeFilter
-                        *tempAllocator);
+                        *globalTempAllocator);
 #endif
 
                 Vec3 newPos = single->GetPosition();
@@ -503,12 +502,7 @@ void BaseBattle::Clear() {
 }
 
 InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
-    /*
-    if (globalPrimitiveConsts->magic_join_index_invalid() == inSingleJoinIndex) {
-        throw std::runtime_error("GetOrPrefabInputFrameDownsync called with 'globalPrimitiveConsts->magic_join_index_invalid() == inSingleJoinIndex' is invalid!");
-    }
-    */
-
+    
     if (inIfdId < ifdBuffer.StFrameId) {
         // Obsolete #1
         return nullptr;
@@ -553,10 +547,6 @@ InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint3
         return existingInputFrame;
     }
 
-    bool allowedToDryPut = preprocessIfdStEviction(inIfdId);
-    if (!allowedToDryPut) {
-        return nullptr;
-    }
     memset(prefabbedInputList.data(), 0, playersCnt * sizeof(uint64_t));
     for (int k = 0; k < playersCnt; ++k) {
         if (existingInputFrame) {
@@ -604,6 +594,7 @@ InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint3
             inputList->Add(prefabbedInput);
         }
     }
+
     auto ret = ifdBuffer.GetLast();
     if (fromTcp) {
         ret->set_confirmed_list(initConfirmedList);
@@ -616,7 +607,6 @@ InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint3
         playerInputFronts[inSingleJoinIndex-1] = inSingleInput;
     }
     
-    postprocessIfdStEviction();
     return ret;
 }
 

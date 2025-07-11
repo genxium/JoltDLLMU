@@ -20,6 +20,7 @@
 #include <vector>
 #include <map>
 #include <deque>
+#include <google/protobuf/arena.h>
 
 #define BL_CACHE_KEY_T std::vector<float>
 #define BL_COLLIDER_Q std::vector<JPH::Body*>
@@ -45,11 +46,12 @@ class JOLTC_EXPORT BaseBattle {
         virtual ~BaseBattle();
 
     public:
+        google::protobuf::Arena pbTempAllocator;
         TempAllocator* globalTempAllocator;
         bool frameLogEnabled = false;
         int playersCnt;
-        uint64_t allConfirmedMask; 
-        uint64_t inactiveJoinMask; // realtime information
+        uint64_t allConfirmedMask;
+        atomic<uint64_t> inactiveJoinMask; // realtime information
         int timerRdfId;
         int battleDurationFrames;
         FrameRingBuffer<RenderFrame> rdfBuffer;
@@ -59,7 +61,10 @@ class JOLTC_EXPORT BaseBattle {
         std::vector<int> playerInputFrontIds;
         std::vector<uint64_t> playerInputFronts;
 
-        int lastConsecutivelyAllConfirmedIfdId = -1;
+        /*
+        [WARNING/BACKEND] At any point of time it's guaranteed that "lcacIfdId + 1 >= ifdBuffer.StFrameId", i.e. if "StFrameId eviction upon DryPut() of ifdBuffer" occurs, then "lcacIfdId" should also be incremented (along with "currDynamicsRdfId").
+        */
+        int lcacIfdId = -1; // short for "last consecutively all confirmed IfdId"
 
         BPLayerInterfaceImpl bpLayerInterface;
         ObjectVsBroadPhaseLayerFilterImpl ovbLayerFilter;
@@ -87,22 +92,26 @@ class JOLTC_EXPORT BaseBattle {
         std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
 
     public:
-        inline int ConvertToDynamicallyGeneratedDelayInputFrameId(int renderFrameId, int localExtraInputDelayFrames) {
-            return ((renderFrameId+localExtraInputDelayFrames) >> globalPrimitiveConsts->input_scale_frames());
-        }
-
-        inline int ConvertToDelayedInputFrameId(int renderFrameId) {
-            if (renderFrameId < globalPrimitiveConsts->input_delay_frames()) {
+        inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
+            if (rdfId < delayRdfCnt) {
                 return 0;
             }
-            return ((renderFrameId - globalPrimitiveConsts->input_delay_frames()) >> globalPrimitiveConsts->input_scale_frames());
+            return ((rdfId-delayRdfCnt) >> globalPrimitiveConsts->input_scale_frames());
         }
 
-        inline int ConvertToFirstUsedRenderFrameId(int inputFrameId) {
+        inline static int ConvertToGeneratingIfdId(int renderFrameId, int localExtraInputDelayFrames = 0) {
+            return ConvertToIfdId(renderFrameId, -localExtraInputDelayFrames);
+        }
+
+        inline static int ConvertToDelayedInputFrameId(int renderFrameId) {
+            return ConvertToIfdId(renderFrameId, globalPrimitiveConsts->input_delay_frames());
+        }
+
+        inline static int ConvertToFirstUsedRenderFrameId(int inputFrameId) {
             return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_scale_frames());
         }
 
-        inline int ConvertToLastUsedRenderFrameId(int inputFrameId) {
+        inline static int ConvertToLastUsedRenderFrameId(int inputFrameId) {
             return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_delay_frames() + (1 << globalPrimitiveConsts->input_scale_frames()) - 1);
         }
 
@@ -114,7 +123,7 @@ class JOLTC_EXPORT BaseBattle {
             inactiveJoinMask |= calcJoinIndexMask(joinIndex);
         }
 
-        void Step(int fromRdfId, int toRdfId, TempAllocator* tempAllocator);
+        virtual void Step(int fromRdfId, int toRdfId);
 
         void Clear();
 
@@ -133,7 +142,6 @@ protected:
         inline void elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* cc);
              
         int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
-
 
         inline uint64_t calcUserData(const PlayerCharacterDownsync& playerChd) {
             return UDT_PLAYER + playerChd.join_index();
@@ -228,9 +236,6 @@ protected:
         }
 
         inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing);
-
-        virtual bool preprocessIfdStEviction(int inputFrameId) = 0;
-        virtual void postprocessIfdStEviction() = 0;
 
         void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
