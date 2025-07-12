@@ -85,17 +85,18 @@ bool BackendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool
                 // This edge case makes no contribution to "DownsyncSnapshot* result", because it hasn't called "moveForwardLastConsecutivelyAllConfirmedIfdId" by far and all "<= lcacIfdId" elements should've already been broadcasted.  
             } else {
                 // This is the worst possible case, we have to start evicting from "ifdBuffer.StFrameId" as well as forcing the advancement of "lcacIfdId & currDynamicsRdfId".
-                JPH_ASSERT(lcacIfdId + 1 == ifdBuffer.StFrameId);
                 int gapCnt = (ifdId - ifdBuffer.EdFrameId + 1);
                 JPH_ASSERT(1 == gapCnt || (1 < gapCnt && 0 == i)); // The only case where "1 < gapCnt" should come with "0 == i". 
+                int oldLcacIfdId = lcacIfdId; 
+                JPH_ASSERT(oldLcacIfdId+1 == ifdBuffer.StFrameId);
+                lcacIfdId += gapCnt; // i.e. "ifdBuffer.StFrameId" will be incremented by the same amount later in "ifdBuffer.DryPut()".
                 if (nullptr == result) {
                     // No need to specify an accurate "unconfirmedMask" in this worst case
-                    result = produceDownsyncSnapshot(allConfirmedMask, ifdBuffer.StFrameId, ifdBuffer.StFrameId + gapCnt, globalPrimitiveConsts->terminating_render_frame_id());
+                    result = produceDownsyncSnapshot(allConfirmedMask, oldLcacIfdId+1, lcacIfdId+1, globalPrimitiveConsts->terminating_render_frame_id());
                 } else {
                     auto resultIfdBatchHolder = result->mutable_ifd_batch();
                     resultIfdBatchHolder->UnsafeArenaAddAllocated(ifdBuffer.GetFirst()); // Intentionally NOT using "RepeatedField<>::AddAllocated" because the "resultIfdBatchHolder" is arena-allocated but "ifdBuffer.GetFirst()" is not
                 }
-                lcacIfdId += gapCnt; // i.e. "ifdBuffer.StFrameId" will be incremented by the same amount later in "ifdBuffer.DryPut()".
             }
             int nextDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
             Step(currDynamicsRdfId, nextDynamicsRdfId);
@@ -126,6 +127,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool
         }
         *outBytesCntLimit = byteSize;
         result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    } else {
+        *outBytesCntLimit = 0;
     }
 
     return true;
