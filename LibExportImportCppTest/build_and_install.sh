@@ -11,8 +11,8 @@ if [ "Debug" != $1 ] && [ "Release" != $1 ]; then
 fi
 
 basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "Building cpp_test"
+echo "Building LibExportImportCppTest..."
 cmakeprojdir=$basedir/cmakeout
 mkdir -p $cmakeprojdir
 cd $cmakeprojdir && cmake .. && cmake --build . -j 8 --config $1 && cmake --install . -j 8 --prefix=$basedir/cmakeout --config $1  
-echo "Built cpp_test"
+echo "Built LibExportImportCppTest"

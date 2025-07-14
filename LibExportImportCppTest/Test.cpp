@@ -16,86 +16,12 @@ using namespace jtshared;
 using namespace std::chrono;
 using namespace std::filesystem;
 
-static float defaultThickness = 2.0f;
-static float defaultHalfThickness = defaultThickness * 0.5f;
-
-// Deliberately NOT using enum for "room states" to make use of "C# CompareAndExchange" 
-const int ROOM_ID_NONE = 0;
-
-const uint32_t SPECIES_NONE_CH = 0;
 const uint32_t SPECIES_BLADEGIRL = 1;
 const uint32_t SPECIES_BOUNTYHUNTER = 7;
 
-void NewBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int teamId, BulletState blState, int framesInBlState) {
-    single->set_bl_state(blState);
-    single->set_frames_in_bl_state(framesInBlState);
-    single->set_id(bulletLocalId);
-    single->set_originated_render_frame_id(originatedRenderFrameId);
-    single->set_team_id(teamId);
-}
-
-void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-    for (int i = 0; i < buffCapacity; i++) {
-        Buff* singleBuff = single->add_buff_list();
-        singleBuff->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
-        singleBuff->set_originated_render_frame_id(globalPrimitiveConsts->terminating_render_frame_id());
-        singleBuff->set_orig_ch_species_id(SPECIES_NONE_CH);
-    }
-    for (int i = 0; i < debuffCapacity; i++) {
-        Buff* singleDebuff = single->add_buff_list();
-        singleDebuff->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
-    }
-    if (0 < inventoryCapacity) {
-        Inventory* inv = single->mutable_inventory();
-        for (int i = 0; i < inventoryCapacity; i++) {
-            auto singleSlot = inv->add_slots();
-            singleSlot->set_stock_type(InventorySlotStockType::NoneIv);
-        }
-    }
-
-    for (int i = 0; i < bulletImmuneRecordCapacity; i++) {
-        auto singleRecord = single->add_bullet_immune_records();
-        singleRecord->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
-        singleRecord->set_remaining_lifetime_rdf_count(0);
-    }
-}
-
-void NewPreallocatedPlayerCharacterDownsync(PlayerCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-    single->set_join_index(globalPrimitiveConsts->magic_join_index_invalid());
-    NewPreallocatedCharacterDownsync(single->mutable_chd(), buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
-}
-
-void NewPreallocatedNpcCharacterDownsync(NpcCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity) {
-    single->set_id(globalPrimitiveConsts->terminating_character_id());
-    NewPreallocatedCharacterDownsync(single->mutable_chd(), buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity);
-}
-
-RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount) {
-    auto ret = new RenderFrame();
-    ret->set_id(globalPrimitiveConsts->terminating_render_frame_id());
-    ret->set_bullet_id_counter(0);
-
-    for (int i = 0; i < roomCapacity; i++) {
-        auto single = ret->add_players_arr();
-        NewPreallocatedPlayerCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), globalPrimitiveConsts->default_per_character_inventory_capacity(), globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
-    }
-
-    for (int i = 0; i < preallocNpcCount; i++) {
-        auto single = ret->add_npcs_arr();
-        NewPreallocatedNpcCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), 1, globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
-    }
-
-    for (int i = 0; i < preallocBulletCount; i++) {
-        auto single = ret->add_bullets();
-        NewBullet(single, globalPrimitiveConsts->terminating_bullet_id(), 0, 0, BulletState::StartUp, 0);
-    }
-
-    return ret;
-}
-
 RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
-    auto startRdf = NewPreallocatedRdf(roomCapacity, 8, 128);
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     int pickableLocalId = 1;
     int npcLocalId = 1;
@@ -145,7 +71,6 @@ RenderFrame* mockStartRdf() {
 const int pbBufferSizeLimit = (1 << 14);
 char pbByteBuffer[pbBufferSizeLimit];
 char rdfFetchBuffer[pbBufferSizeLimit];
-char ifdFetchBuffer[pbBufferSizeLimit];
 
 std::map<int, uint64_t> testCmds1 = {
     {0, 3},
@@ -239,19 +164,19 @@ int main(int argc, char** argv)
         }
     }
     wsReq.set_allocated_self_parsed_rdf(startRdf);
-    bool isFrontend = true;
 
     memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
     long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
-    FrontendBattle* battle = static_cast<FrontendBattle*>(APP_CreateBattle(pbByteBuffer, (int)byteSize, isFrontend, false));
+    int selfJoinIndex = 1;
+    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(pbByteBuffer, (int)byteSize, false, selfJoinIndex));
     std::cout << "Created battle = " << battle << std::endl;
     
     jtshared::RenderFrame outRdf;
     std::string outStr;
     int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
-    int printIntervalRdfCnt = (1 << 1);
+    int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     auto nowMillis = duration_cast<milliseconds>(
         system_clock::now().time_since_epoch()
@@ -262,22 +187,16 @@ int main(int argc, char** argv)
         if (it == testCmds1.end()) {
             --it;
         }
-        int toGenerateInputFrameId = (timerRdfId >> globalPrimitiveConsts->input_scale_frames());
         uint64_t inSingleInput = it->second;
-        long outBytesCnt = pbBufferSizeLimit;
-
-        int nextRdfToGenerateInputFrameId = ((timerRdfId + 1) >> globalPrimitiveConsts->input_scale_frames());
-        bool isLastRdfInIfdCoverage = (nextRdfToGenerateInputFrameId == (toGenerateInputFrameId + 1));
-
-        bool cmdInjected = APP_UpsertCmd(battle, toGenerateInputFrameId, inSingleJoinIndex, inSingleInput, ifdFetchBuffer, &outBytesCnt, isLastRdfInIfdCoverage, false, true);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(battle, inSingleInput);
         if (!cmdInjected) {
-            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", toGenerateInputFrameId=" << toGenerateInputFrameId << ", inSingleInput=" << inSingleInput << std::endl;
+            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        bool stepped = APP_Step(battle, timerRdfId, timerRdfId + 1, false, true);
+        bool stepped = FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
         timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
-        outBytesCnt = pbBufferSizeLimit;
+        long outBytesCnt = pbBufferSizeLimit;
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
         if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
@@ -299,7 +218,7 @@ int main(int argc, char** argv)
     
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
-    bool destroyRes = APP_DestroyBattle(battle, isFrontend);
+    bool destroyRes = APP_DestroyBattle(battle);
     std::cout << "APP_DestroyBattle result=" << destroyRes << std::endl;
     JPH_Shutdown();
 	return 0;

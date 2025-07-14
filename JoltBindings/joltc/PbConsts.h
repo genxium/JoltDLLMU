@@ -1,7 +1,5 @@
 #ifndef PB_CONSTS_H
-#define PB_CONSTS_H
-
-#pragma once
+#define PB_CONSTS_H 1
 
 #include "serializable_data.pb.h"
 #include "joltc_export.h"

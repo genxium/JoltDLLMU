@@ -1,7 +1,5 @@
 #ifndef CPP_ONLY_CONSTS_H
-#define CPP_ONLY_CONSTS_H
-
-#pragma once
+#define CPP_ONLY_CONSTS_H 1
 
 /*
 The "const nomenclature" is as follows.
@@ -17,6 +15,13 @@ This is chosen on purpose to align with Jolt Physics engine v5.3.0.
 
 const uint64_t U64_0 = static_cast<uint64_t>(0);
 const uint64_t U64_1 = static_cast<uint64_t>(1);
+const uint64_t U64_15 = static_cast<uint64_t>(15);
+const uint64_t U64_16 = static_cast<uint64_t>(16);
+const uint64_t U64_32 = static_cast<uint64_t>(32);
+const uint64_t U64_64 = static_cast<uint64_t>(64);
+const uint64_t U64_128 = static_cast<uint64_t>(128);
+const uint64_t U64_256 = static_cast<uint64_t>(256);
+
 const uint64_t U64_MAX = 0xFFFFFFFFFFFFFFFF;
 
 const uint64_t UDT_STRIPPER = 0xFFFFFFFF00000000; // UDT = "User Data Type"

@@ -82,46 +82,24 @@ bool JPH_Shutdown(void)
     return true;
 }
 
-void* APP_CreateBattle(char* inBytes, int inBytesCnt, bool isFrontend, bool isOnlineArenaMode) {
-    BaseBattle* result = nullptr;
-    if (isFrontend) {
-        result = new FrontendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator, isOnlineArenaMode);
-    } else {
-        result = new BackendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
-    }
+void* FRONTEND_CreateBattle(char* inBytes, int inBytesCnt, bool isOnlineArenaMode, int inSelfJoinIndex) {
+    FrontendBattle* result = new FrontendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator, isOnlineArenaMode, inSelfJoinIndex);
 #ifndef NDEBUG
-    Debug::Log("APP_CreateBattle/C++", DColor::Green);
+    Debug::Log("FRONTEND_CreateBattle/C++", DColor::Green);
 #endif
     return result;
 }
 
-bool APP_DestroyBattle(void* inBattle, bool isFrontend) {
-    if (isFrontend) {
-        delete static_cast<FrontendBattle*>(inBattle);
-    } else {
-        delete static_cast<BackendBattle*>(inBattle);
-    }
+void* BACKEND_CreateBattle() {
+    BackendBattle* result = new BackendBattle(512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
 #ifndef NDEBUG
-    Debug::Log("APP_DestroyBattle/C++", DColor::Green);
+    Debug::Log("BACKEND_CreateBattle/C++", DColor::Green);
 #endif
-    return true;
+    return result;
 }
 
-bool APP_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing, bool isFrontend) {
-    auto battle = static_cast<BaseBattle*>(inBattle);
-    battle->Step(fromRdfId, toRdfId, globalTempAllocator);
-    if (isChasing) {
-        auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-        frontendBattle->chaserRdfId = toRdfId;
-    } else {
-        if (isFrontend) {
-            auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-            frontendBattle->timerRdfId = toRdfId;
-        } else {
-            auto backendBattle = static_cast<BackendBattle*>(inBattle);
-            backendBattle->currDynamicsRdfId = toRdfId;
-        }
-    }
+bool APP_DestroyBattle(void* inBattle) {
+    delete static_cast<BaseBattle*>(inBattle);
     return true;
 }
 
@@ -137,31 +115,56 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, lo
     return true;
 }
 
-bool APP_UpsertCmd(void* inBattle, int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, char* outBytesPreallocatedStart, long* outBytesCntLimit, bool fromUdp, bool fromTcp, bool isFrontend) {
+bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    return backendBattle->ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, stIfdId, edIfdId, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
+}
+
+bool BACKEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    return backendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit);
+}
+
+bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    backendBattle->Step(fromRdfId, toRdfId);
+    return true;
+}
+
+bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+
+    int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(frontendBattle->timerRdfId);
+    int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(frontendBattle->timerRdfId+1);
+    bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
+
     InputFrameDownsync* result = nullptr;
-    if (isFrontend) {
-        auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-        bool outExistingInputMutated = false;
-        result = frontendBattle->GetOrPrefabInputFrameDownsync(inIfdId, inSingleJoinIndex, inSingleInput, true, false, outExistingInputMutated);
-        if (outExistingInputMutated) {
-            frontendBattle->HandleIncorrectlyRenderedPrediction(inIfdId, true);
-        }
-    } else {
-        auto backendBattle = static_cast<BackendBattle*>(inBattle);
-        bool outExistingInputMutated = false;
-        result = backendBattle->GetOrPrefabInputFrameDownsync(inIfdId, inSingleJoinIndex, inSingleInput, fromUdp, fromTcp, outExistingInputMutated);
+    bool outExistingInputMutated = false;
+    result = frontendBattle->GetOrPrefabInputFrameDownsync(toGenIfdId, frontendBattle->selfJoinIndex, inSingleInput, isLastRdfInIfdCoverage, false, outExistingInputMutated);
+    if (outExistingInputMutated) {
+        frontendBattle->HandleIncorrectlyRenderedPrediction(toGenIfdId, true);
     }
 
     if (!result) {
         return false;
     }
 
-    long byteSize = result->ByteSizeLong();
-    if (byteSize > *outBytesCntLimit) {
-        return false;
-    }
-    *outBytesCntLimit = byteSize;
-    result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
+}
+
+bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt, fromUdp, fromTcp);
+}
+
+bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt);
+}
+
+bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    frontendBattle->Step(fromRdfId, toRdfId, isChasing);
     return true;
 }
 

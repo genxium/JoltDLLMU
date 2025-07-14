@@ -1,8 +1,6 @@
 #ifndef COLLISION_CALLBACKS_H_
 #define COLLISION_CALLBACKS_H_ 1
 
-#pragma once
-
 #include "joltc_export.h"
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RING_BUFFER_MT_H_
+#define RING_BUFFER_MT_H_ 1
 
 #include <vector>
 #include <atomic>
@@ -44,3 +45,5 @@ class JOLTC_EXPORT RingBufferMt {
 }; 
 
 #include "RingBufferMt.inl"
+
+#endif

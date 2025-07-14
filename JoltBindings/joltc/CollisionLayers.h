@@ -1,8 +1,6 @@
 #ifndef COLLISION_LAYERS_H_
 #define COLLISION_LAYERS_H_ 1
 
-#pragma once
-
 #include "joltc_export.h"
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
