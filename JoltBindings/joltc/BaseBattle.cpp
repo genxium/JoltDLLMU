@@ -226,7 +226,7 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
     }
 }
 
-void BaseBattle::Step(int fromRdfId, int toRdfId) {
+void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
     for (int rdfId = fromRdfId; rdfId < toRdfId; rdfId++) {
         transientJoinIndexToCurrPlayer.clear();
         transientJoinIndexToNextPlayer.clear();
@@ -251,6 +251,10 @@ void BaseBattle::Step(int fromRdfId, int toRdfId) {
 
         int delayedIfdId = ConvertToDelayedInputFrameId(rdfId);
         auto delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        if (nullptr == delayedIfd && nullptr != virtualIfds) {
+            auto ifdBatchPayload = virtualIfds->mutable_ifd_batch();
+            delayedIfd = ifdBatchPayload->Mutable(delayedIfdId - virtualIfds->st_ifd_id());
+        }
         JPH_ASSERT(nullptr != delayedIfd);
         processPlayerInputs(currRdf, nextRdf, delayedIfd);
 
@@ -535,17 +539,14 @@ InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint3
         return existingInputFrame;
     }
 
+    JPH_ASSERT(ifdBuffer.EdFrameId <= inIfdId); // Hence any "k" suffices "playerInputFrontIds[k] < ifdBuffer.EdFrameId <= inIfdId"
+
     memset(prefabbedInputList.data(), 0, playersCnt * sizeof(uint64_t));
     for (int k = 0; k < playersCnt; ++k) {
-        if (existingInputFrame) {
-            prefabbedInputList[k] = existingInputFrame->input_list(k);
-        } else if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
+        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
             prefabbedInputList[k] = 0;
-        } else if (playerInputFrontIds[k] <= inIfdId) {
+        } else {
             prefabbedInputList[k] = playerInputFronts[k];
-        } else if (previousInputFrameDownsync) {
-            // When "playerInputFrontIds[k] > inIfdId", don't use it to predict a historical input!
-            prefabbedInputList[k] = previousInputFrameDownsync->input_list(k);
         }
         /*
            [WARNING]

@@ -77,6 +77,7 @@ void DebugLogCb(const char* message, int color, int size) {
     std::cout << message << std::endl;
 }
 
+int outStEvictedCnt = 0;
 bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     
@@ -89,7 +90,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
 
     long outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 31 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
     
     UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
@@ -100,7 +101,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt);
+    reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
     UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
@@ -111,7 +112,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt);
+    reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(30 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
 
     UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
@@ -122,7 +123,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    reusedBattle->OnUpsyncSnapshotReceived(a3, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    reusedBattle->OnUpsyncSnapshotReceived(a3, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(70 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
 
     UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
@@ -133,7 +134,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    reusedBattle->OnUpsyncSnapshotReceived(b2, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    reusedBattle->OnUpsyncSnapshotReceived(b2, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(70 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 201 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
     std::cout << "Passed TestCase1" << std::endl;
@@ -152,7 +153,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
 
     long outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    bool upserted = reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    bool upserted = reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 301 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
@@ -164,7 +165,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    upserted = reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt);
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 401 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
     
@@ -176,7 +177,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    upserted = reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt);
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(upserted);
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 62 == reusedBattle->ifdBuffer.StFrameId && 513 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
 
@@ -188,7 +189,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    upserted = reusedBattle->OnUpsyncSnapshotReceived(a3, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(a3, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(upserted);
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
@@ -200,7 +201,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    upserted = reusedBattle->OnUpsyncSnapshotReceived(b2, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(b2, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(!upserted);
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
@@ -212,11 +213,133 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     }
     outBytesCnt = pbBufferSizeLimit;
     memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
-    upserted = reusedBattle->OnUpsyncSnapshotReceived(a4, false, true, downsyncSnapshotByteBuffer, &outBytesCnt);
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(a4, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
     JPH_ASSERT(upserted);
     JPH_ASSERT(512 == reusedBattle->lcacIfdId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
 
     std::cout << "Passed TestCase2" << std::endl;
+    return true;
+}
+
+bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+    reusedBattle->ResetStartRdf(initializerMapData);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    a1->set_join_index(1);
+    a1->set_st_ifd_id(0);
+    for (int ifdId = 0; ifdId <= 120; ifdId++) {
+        a1->add_cmd_list(0);
+    }
+
+    long outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    bool upserted = reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 121 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
+ 
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    b1->set_join_index(2);
+    b1->set_st_ifd_id(0);
+    for (int ifdId = 0; ifdId <= 120; ifdId++) {
+        b1->add_cmd_list(0);
+    }
+    outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(120 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 121 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt); 
+    downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
+    JPH_ASSERT(121 == downsyncSnapshotHolder->ifd_batch_size());
+
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    a2->set_join_index(1);
+    a2->set_st_ifd_id(459);
+    for (int ifdId = 459; ifdId <= 600; ifdId++) {
+        a2->add_cmd_list(16);
+    }
+    outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(149 == reusedBattle->lcacIfdId && 150 == reusedBattle->ifdBuffer.StFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
+    downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
+    JPH_ASSERT(29 == downsyncSnapshotHolder->ifd_batch_size()); // [WARNING] There're 29 ifds, i.e. from 121 to 149 forced out of "ifdBuffer.StFrameId"
+
+    std::cout << "Passed TestCase3" << std::endl;
+    return true;
+}
+
+bool runTestCase4(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+    reusedBattle->ResetStartRdf(initializerMapData);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    long outBytesCnt = pbBufferSizeLimit;
+
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    a1->set_join_index(1);
+    a1->set_st_ifd_id(459);
+    for (int ifdId = 459; ifdId <= 600; ifdId++) {
+        a1->add_cmd_list(16);
+    }
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    bool upserted = reusedBattle->OnUpsyncSnapshotReceived(a1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(149 == reusedBattle->lcacIfdId && 150 == reusedBattle->ifdBuffer.StFrameId && 601 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
+    downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
+    JPH_ASSERT(150 == outStEvictedCnt); // "gapCnt == 9" && "regularlyEvictedCnt == 141 == 600-459"
+    JPH_ASSERT(outStEvictedCnt == downsyncSnapshotHolder->ifd_batch_size() && 0 == downsyncSnapshotHolder->st_ifd_id()); // [0, 149]
+
+    std::cout << "Passed TestCase4" << std::endl;
+    return true;
+}
+
+bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+    reusedBattle->ResetStartRdf(initializerMapData);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    long outBytesCnt = pbBufferSizeLimit;
+
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    a1->set_join_index(1);
+    a1->set_st_ifd_id(0);
+    for (int ifdId = 0; ifdId <= 2; ifdId++) {
+        a1->add_cmd_list(16);
+    }
+    outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    bool upserted = reusedBattle->OnUpsyncSnapshotReceived(a1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 3 == reusedBattle->ifdBuffer.EdFrameId && 3 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
+
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    b1->set_join_index(2);
+    b1->set_st_ifd_id(0);
+    for (int ifdId = 0; ifdId <= 2; ifdId++) {
+        b1->add_cmd_list(0);
+    }
+    outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(b1, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(2 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 3 == reusedBattle->ifdBuffer.EdFrameId && 3 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
+    downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
+    JPH_ASSERT(3 == downsyncSnapshotHolder->ifd_batch_size() && 0 == downsyncSnapshotHolder->st_ifd_id()); // [0, 2]
+
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    a2->set_join_index(1);
+    a2->set_st_ifd_id(459);
+    for (int ifdId = 459; ifdId <= 600; ifdId++) {
+        a2->add_cmd_list(16);
+    }
+    outBytesCnt = pbBufferSizeLimit;
+    memset(downsyncSnapshotByteBuffer, 0, sizeof(downsyncSnapshotByteBuffer));
+    upserted = reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &outStEvictedCnt);
+    JPH_ASSERT(upserted);
+    JPH_ASSERT(149 == reusedBattle->lcacIfdId && 150 == reusedBattle->ifdBuffer.StFrameId && 601 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
+    downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
+    JPH_ASSERT(150 == outStEvictedCnt); // Same as TestCase4
+    JPH_ASSERT(147 == downsyncSnapshotHolder->ifd_batch_size() && 3 == downsyncSnapshotHolder->st_ifd_id()); // [3, 149]
+
+    std::cout << "Passed TestCase5" << std::endl;
     return true;
 }
 
@@ -291,6 +414,9 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
     runTestCase1(battle, initializerMapData);
     runTestCase2(battle, initializerMapData);
+    runTestCase3(battle, initializerMapData);
+    runTestCase4(battle, initializerMapData);
+    runTestCase5(battle, initializerMapData);
 
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"

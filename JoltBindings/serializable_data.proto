@@ -1531,6 +1531,7 @@ message PrimitiveConsts {
     uint32 no_skill = 90;
     int32 no_skill_hit = 91;
     uint32 species_none_ch = 92;
+    uint32 upsync_st_ifd_id_tolerance = 93;
     float no_lock_vel = 94;
     int32 debuff_arr_idx_elemental = 95;
 

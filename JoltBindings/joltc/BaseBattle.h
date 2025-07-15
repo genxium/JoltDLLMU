@@ -124,7 +124,7 @@ class JOLTC_EXPORT BaseBattle {
             inactiveJoinMask |= calcJoinIndexMask(joinIndex);
         }
 
-        virtual void Step(int fromRdfId, int toRdfId);
+        virtual void Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
         void Clear();
 
