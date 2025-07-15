@@ -188,6 +188,7 @@ namespace JoltCSharp {
 
             NoLockVel = -65535f,
             SpeciesNoneCh = 0,
+            UpsyncStIfdIdTolerance = 8,
 
             TerminatingCharacterId = 0,
             TerminatingTrapId = 0,
