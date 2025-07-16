@@ -6,27 +6,30 @@ bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
     return res;
 }
 
-DownsyncSnapshot* BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, int withRefRdf) {
-    JPH_ASSERT(edIfdId > stIfdId);
+void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** pOutResult) {
     JPH_ASSERT(stIfdId >= ifdBuffer.StFrameId);
     JPH_ASSERT(edIfdId <= ifdBuffer.EdFrameId);
-    DownsyncSnapshot* result = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
-    result->set_st_ifd_id(stIfdId);
-    result->set_unconfirmed_mask(unconfirmedMask);
-    auto resultIfdBatchHolder = result->mutable_ifd_batch();
-    for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
-        InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId); 
-        resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); // Intentionally NOT using "RepeatedField<>::AddAllocated" because the "resultIfdBatchHolder" is arena-allocated but "ifd" is not
-    }
+    JPH_ASSERT(stIfdId <= edIfdId);
+    if (nullptr == *pOutResult) {
+        *pOutResult = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        (*pOutResult)->set_unconfirmed_mask(unconfirmedMask);
+        (*pOutResult)->set_st_ifd_id(stIfdId);
+        if (withRefRdf) {
+            (*pOutResult)->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf()" is de-coupled from "DownsyncSnapshot.ifd_batch()", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf()" is using one of "DownsyncSnapshot.ifd_batch()" for frontend. 
 
-    if (withRefRdf) {
-        result->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf()" is de-coupled from "DownsyncSnapshot.ifd_batch()", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf()" is using one of "DownsyncSnapshot.ifd_batch()" for frontend. 
-
-        RenderFrame* refRdf = rdfBuffer.GetByFrameId(currDynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
-        JPH_ASSERT (nullptr != refRdf);
-        result->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
+            RenderFrame* refRdf = rdfBuffer.GetByFrameId(currDynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
+            JPH_ASSERT(nullptr != refRdf);
+            (*pOutResult)->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
+        }
     }
-    return result;
+    DownsyncSnapshot* result = *pOutResult;
+    if (stIfdId < edIfdId) {
+        auto resultIfdBatchHolder = result->mutable_ifd_batch();
+        for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
+            InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId); 
+            resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); // Intentionally NOT using "RepeatedField<>::AddAllocated" because the "resultIfdBatchHolder" is arena-allocated but "ifd" is not
+        }
+    }
 }
 
 void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot) {
@@ -93,16 +96,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
                 int downsyncSnapshotStThisRound = oldLcacIfdId+1;
                 int targetDownsyncSnapshotEdThisRound = lcacIfdId+1;
                 int initDownsyncSnapshotEdThisRound = (targetDownsyncSnapshotEdThisRound < ifdBuffer.EdFrameId ? targetDownsyncSnapshotEdThisRound : ifdBuffer.EdFrameId);
-                if (nullptr == result) {
-                    result = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
-                    result->set_unconfirmed_mask(allConfirmedMask); // No need to specify an accurate "unconfirmedMask" in this worst case
-                    result->set_st_ifd_id(downsyncSnapshotStThisRound);
-                }
-                auto resultIfdBatchHolder = result->mutable_ifd_batch();
-                for (int ifdId = downsyncSnapshotStThisRound; ifdId < initDownsyncSnapshotEdThisRound; ++ifdId) {
-                    resultIfdBatchHolder->UnsafeArenaAddAllocated(ifdBuffer.GetByFrameId(ifdId)); // Intentionally NOT using "RepeatedField<>::AddAllocated" because the "resultIfdBatchHolder" is arena-allocated but "ifdBuffer.GetByFrameId(ifdId)" is not
-                }
-                int gapCntThisRound = targetDownsyncSnapshotEdThisRound - initDownsyncSnapshotEdThisRound;
+                produceDownsyncSnapshot(allConfirmedMask, downsyncSnapshotStThisRound, initDownsyncSnapshotEdThisRound, false, &result); // No need to specify an accurate "unconfirmedMask" in this worst case
+                int gapCntThisRound = (targetDownsyncSnapshotEdThisRound - initDownsyncSnapshotEdThisRound);
                 while (0 < gapCntThisRound) {
                     auto resultIfdBatchHolder = result->mutable_ifd_batch();
                     InputFrameDownsync* virtualIfd = resultIfdBatchHolder->Add(); // [REMINDER] Will allocate in the same arena
@@ -133,15 +128,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
             inNewAllConfirmedTrend = false;
             int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal); // If "ifdBuffer" is not full, then "lcacIfdId" might've never advanced during the current traversal
             if (oldLcacIfdId < lcacIfdId) {
-                if (nullptr == result) {
-                    uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
-                    result = produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false);
-                } else {
-                    auto resultIfdBatchHolder = result->mutable_ifd_batch();
-                    for (int ifdId = oldLcacIfdId + 1; ifdId <= lcacIfdId; ++ifdId) {
-                        resultIfdBatchHolder->UnsafeArenaAddAllocated(ifdBuffer.GetByFrameId(ifdId));
-                    }
-                }
+                uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
+                produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false, &result);
                 // As long as "currDynamicsRdfId" can still find its "delayedIfd" to use, i.e. no "StFrameId eviction upon DryPut() of ifdBuffer" occurs, we try to AVOID calling "Step(...)" as much as possible.
             }
         }
@@ -153,15 +141,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
         // Wrap up
         int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
         if (oldLcacIfdId < lcacIfdId) {
-            if (nullptr == result) {
-                uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
-                result = produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false);
-            } else {
-                auto resultIfdBatchHolder = result->mutable_ifd_batch();
-                for (int ifdId = oldLcacIfdId + 1; ifdId <= lcacIfdId; ++ifdId) {
-                    resultIfdBatchHolder->UnsafeArenaAddAllocated(ifdBuffer.GetByFrameId(ifdId));
-                }
-            }
+            uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
+            produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false, &result);
         }
     }
 
@@ -182,7 +163,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
 }
 
 bool BackendBattle::ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
-    DownsyncSnapshot* result = produceDownsyncSnapshot(unconfirmedMask, stIfdId, edIfdId, withRefRdf);
+    DownsyncSnapshot* result = nullptr;
+    produceDownsyncSnapshot(unconfirmedMask, stIfdId, edIfdId, withRefRdf, &result);
 
     long byteSize = result->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {

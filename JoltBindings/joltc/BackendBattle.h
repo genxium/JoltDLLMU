@@ -34,7 +34,7 @@ public:
     virtual bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData);
 
 protected:
-    DownsyncSnapshot* produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, int withRefRdfId);
+    void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);
     void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
 };
 
