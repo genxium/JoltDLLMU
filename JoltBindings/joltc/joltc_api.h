@@ -53,7 +53,7 @@ JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
 JPH_CAPI void* FRONTEND_CreateBattle(char* inBytes, int inBytesCnt, bool isOnlineArenaMode, int inSelfJoinIndex);
 JPH_CAPI bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput);
 JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp);
-JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit, int withRefRdfId);
+JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt);
 JPH_CAPI bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
 

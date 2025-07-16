@@ -63,7 +63,11 @@ class JOLTC_EXPORT BaseBattle {
         std::vector<uint64_t> playerInputFronts;
 
         /*
-        [WARNING/BACKEND] At any point of time it's guaranteed that "lcacIfdId + 1 >= ifdBuffer.StFrameId", i.e. if "StFrameId eviction upon DryPut() of ifdBuffer" occurs, then "lcacIfdId" should also be incremented (along with "currDynamicsRdfId").
+        [WARNING/BACKEND] At any point of time it's maintained that "lcacIfdId + 1 >= ifdBuffer.StFrameId", i.e. if "StFrameId eviction upon DryPut() of ifdBuffer" occurs, then "lcacIfdId" should also be incremented (along with "currDynamicsRdfId"). 
+
+        A known impact of this design is that we MUST de-couple the use of "DownsyncSnapshot.ref_rdf()" from "DownsyncSnapshot.ifd_batch()" for frontend (i.e. upon player re-join) because "ifdBuffer.GetByFrameId(lcacIfdId)" might be null. 
+
+        Moreover, it's INTENTIONALLY DESIGNED NOT to maintain "lcacIfdId >= ifdBuffer.StFrameId" because in the extreme case of "StFrameId eviction upon DryPut()" we COULDN'T PREDICT when "postEvictionStFrameId" becomes all-confirmed. See codes of "BackendBattle::OnUpsyncSnapshotReceived(...)" for details. 
         */
         int lcacIfdId = -1; // short for "last consecutively all confirmed IfdId"
 

@@ -20,9 +20,9 @@ DownsyncSnapshot* BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMas
     }
 
     if (withRefRdf) {
-        int refRdfId = ConvertToLastUsedRenderFrameId(edIfdId-1); // Such that the "RefRdf" always has EXACTLY 1 InputFrameDownsync to use upon reception on frontend.
-        result->set_ref_rdf_id(refRdfId);
-        RenderFrame* refRdf = rdfBuffer.GetByFrameId(refRdfId); // NOT arena-allocated, needs later manual release of ownership
+        result->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf()" is de-coupled from "DownsyncSnapshot.ifd_batch()", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf()" is using one of "DownsyncSnapshot.ifd_batch()" for frontend. 
+
+        RenderFrame* refRdf = rdfBuffer.GetByFrameId(currDynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
         JPH_ASSERT (nullptr != refRdf);
         result->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
     }
