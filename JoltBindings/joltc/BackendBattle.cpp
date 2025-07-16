@@ -39,15 +39,15 @@ void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* down
     }
 }
 
-bool BackendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt) {
+bool BackendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt) {
     UpsyncSnapshot* upsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
     upsyncSnapshot->ParseFromArray(inBytes, inBytesCnt);
-    return OnUpsyncSnapshotReceived(upsyncSnapshot, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outStEvictedCnt);
+    return OnUpsyncSnapshotReceived(upsyncSnapshot, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outForceConfirmedStEvictedCnt);
 }
 
-bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt) {
+bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt) {
     int peerJoinIndex = upsyncSnapshot->join_index();
-    (*outStEvictedCnt) = 0;
+    (*outForceConfirmedStEvictedCnt) = 0;
     DownsyncSnapshot* result = nullptr;
     int cmdListSize = upsyncSnapshot->cmd_list_size();
     bool isTooAdvanced = (ifdBuffer.StFrameId + ifdBuffer.N + globalPrimitiveConsts->upsync_st_ifd_id_tolerance()) < (upsyncSnapshot->st_ifd_id()); // When "ifdBuffer" is not full, we have "ifdBuffer.StFrameId + ifdBuffer.N >= ifdBuffer.EdFrameId"  
@@ -86,10 +86,10 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
 
                 At ifdBuffer = "-1 | [0, ..., 450] 451)", given incoming "ifdId = 459", the ifdBuffer should become "8 | [9, ..., 459] 460)".
                 */
-                
+                int alreadyConfirmedCntThisRound = (lcacIfdId + 1 - ifdBuffer.StFrameId);
+                (*outForceConfirmedStEvictedCnt) += toEvictCnt - alreadyConfirmedCntThisRound;
                 lcacIfdId = postEvictionStFrameId-1; // i.e. "ifdBuffer.StFrameId" will be incremented by the same amount later in "ifdBuffer.DryPut()".
                 JPH_ASSERT(lcacIfdId < ifdId);
-                (*outStEvictedCnt) += toEvictCnt;
                 int downsyncSnapshotStThisRound = oldLcacIfdId+1;
                 int targetDownsyncSnapshotEdThisRound = lcacIfdId+1;
                 int initDownsyncSnapshotEdThisRound = (targetDownsyncSnapshotEdThisRound < ifdBuffer.EdFrameId ? targetDownsyncSnapshotEdThisRound : ifdBuffer.EdFrameId);
@@ -153,9 +153,15 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
         // Wrap up
         int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
         if (oldLcacIfdId < lcacIfdId) {
-            uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
-            result = produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false);
-            // [WARNING] No longer needed to call "Step(...)" because traversal of the whole "cmd_list" has ended
+            if (nullptr == result) {
+                uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
+                result = produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false);
+            } else {
+                auto resultIfdBatchHolder = result->mutable_ifd_batch();
+                for (int ifdId = oldLcacIfdId + 1; ifdId <= lcacIfdId; ++ifdId) {
+                    resultIfdBatchHolder->UnsafeArenaAddAllocated(ifdBuffer.GetByFrameId(ifdId));
+                }
+            }
         }
     }
 
