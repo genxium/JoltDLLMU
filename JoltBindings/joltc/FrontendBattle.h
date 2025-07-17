@@ -12,42 +12,50 @@ using namespace jtshared;
 
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
-    FrontendBattle(char* inBytes, int inBytesCnt, int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode, int inSelfJoinIndex) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
-        ResetStartRdf(inBytes, inBytesCnt);
-
+    FrontendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
         onlineArenaMode = isOnlineArenaMode;
-
-        selfJoinIndex = inSelfJoinIndex;
-        selfJoinIndexArrIdx = inSelfJoinIndex - 1;
-        selfJoinIndexMask = (U64_1 << selfJoinIndexArrIdx);
     }
 
     virtual ~FrontendBattle() {
         // Calls base destructor (implicitly)
 #ifndef NDEBUG
-        Debug::Log("~BackendBattle/C++", DColor::Green);
+        Debug::Log("~FrontendBattle/C++", DColor::Green);
 #endif
     }
 
 public:
     int localExtraInputDelayFrames = 0;
-    int chaserRdfId;
-    int chaserRdfIdLowerBound;
-    std::unordered_map<int, RenderFrame> peerDownsyncedRdf;
-
+    int chaserRdfId = globalPrimitiveConsts->terminating_render_frame_id();
+    int chaserRdfIdLowerBound = globalPrimitiveConsts->terminating_render_frame_id();
+    int lastSentIfdId = -1;
     int selfJoinIndex = globalPrimitiveConsts->magic_join_index_invalid();
     int selfJoinIndexArrIdx = globalPrimitiveConsts->magic_join_index_invalid()-1;
     uint64_t selfJoinIndexMask = 0u;
 
-    void RegulateCmdBeforeRender(); // [WARNING] Implicitly calls "HandleIncorrectlyRenderedPrediction" if needed
-    void HandleIncorrectlyRenderedPrediction(int inputFrameId, bool fromUdp);
-    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt);
-    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp);
+    bool UpsertSelfCmd(uint64_t inSingleInput);
 
-    void Step(int fromRdfId, int toRdfId, bool isChasing);
+    UpsyncSnapshot* ProduceUpsyncSnapshot();
+
+    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt);
+    bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot);
+
+    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt);
+    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt);
+
+    void Step(int fromRdfId, int toRdfId, bool isChasing); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
+
+    bool ResetStartRdf(char* inBytes, int inBytesCnt, int inSelfJoinIndex);
+    bool ResetStartRdf(const WsReq* initializerMapData, int inSelfJoinIndex);
 
 protected:
     bool onlineArenaMode = false;
+
+    void regulateCmdBeforeRender(); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
+
+    void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromUdp);
+
+    DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
+    UpsyncSnapshot* upsyncSnapshotHolder = nullptr;
 };
 
 #endif

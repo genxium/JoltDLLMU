@@ -53,6 +53,9 @@ class JOLTC_EXPORT BaseBattle {
         int playersCnt;
         uint64_t allConfirmedMask;
         atomic<uint64_t> inactiveJoinMask; // realtime information
+        /*
+        [WARNING/FRONTEND] At any point of time it's maintained that "timerRdfId >= rdfBuffer.StFrameId", for obvious reason. 
+        */
         int timerRdfId;
         int battleDurationFrames;
         FrameRingBuffer<RenderFrame> rdfBuffer;
@@ -65,9 +68,12 @@ class JOLTC_EXPORT BaseBattle {
         /*
         [WARNING/BACKEND] At any point of time it's maintained that "lcacIfdId + 1 >= ifdBuffer.StFrameId", i.e. if "StFrameId eviction upon DryPut() of ifdBuffer" occurs, then "lcacIfdId" should also be incremented (along with "currDynamicsRdfId"). 
 
-        A known impact of this design is that we MUST de-couple the use of "DownsyncSnapshot.ref_rdf()" from "DownsyncSnapshot.ifd_batch()" for frontend (i.e. upon player re-join) because "ifdBuffer.GetByFrameId(lcacIfdId)" might be null. 
+        A known impact of this design is that we MUST de-couple the use of "DownsyncSnapshot.ref_rdf" from "DownsyncSnapshot.ifd_batch" for frontend (e.g. upon player re-join or regular refRdf broadcast) because "ifdBuffer.GetByFrameId(lcacIfdId)" might be null. 
 
         Moreover, it's INTENTIONALLY DESIGNED NOT to maintain "lcacIfdId >= ifdBuffer.StFrameId" because in the extreme case of "StFrameId eviction upon DryPut()" we COULDN'T PREDICT when "postEvictionStFrameId" becomes all-confirmed. See codes of "BackendBattle::OnUpsyncSnapshotReceived(...)" for details. 
+        */
+        /*
+           [WARNING/FRONTEND] At any point of time it's maintained that "lcacIfdId + 1 >= ifdBuffer.StFrameId", i.e. if "StFrameId eviction upon DryPut() of ifdBuffer" occurs, then "lcacIfdId" should also be incremented, but NOT along with anything else -- it's much simpler than the backend counterpart because we don't produce "DownsyncSnapshot" and the handling of "DownsyncSnapshot.ref_rdf & DownsyncSnapshot.ifd_batch" are now de-coupled on frontend.
         */
         int lcacIfdId = -1; // short for "last consecutively all confirmed IfdId"
 
@@ -132,9 +138,7 @@ class JOLTC_EXPORT BaseBattle {
 
         void Clear();
 
-        InputFrameDownsync* GetOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
-    
-        bool ResetStartRdf(char* inBytes, int inBytesCnt);
+        virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
         virtual bool ResetStartRdf(const WsReq* initializerMapData);
 
         static void NewPreallocatedBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int teamId, BulletState blState, int framesInBlState);
@@ -227,6 +231,8 @@ protected:
 
         }
 
+        InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
+    
         void batchPutIntoPhySysFromCache(const RenderFrame* currRdf, RenderFrame* nextRdf);
         void batchRemoveFromPhySysAndCache(const RenderFrame* currRdf);
 

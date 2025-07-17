@@ -1,5 +1,9 @@
 #include "BackendBattle.h"
 
+bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
+    return BaseBattle::ResetStartRdf(inBytes, inBytesCnt);
+}
+
 bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
     currDynamicsRdfId = timerRdfId;
@@ -15,10 +19,9 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
         (*pOutResult)->set_unconfirmed_mask(unconfirmedMask);
         (*pOutResult)->set_st_ifd_id(stIfdId);
         if (withRefRdf) {
-            (*pOutResult)->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf()" is de-coupled from "DownsyncSnapshot.ifd_batch()", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf()" is using one of "DownsyncSnapshot.ifd_batch()" for frontend. 
-
             RenderFrame* refRdf = rdfBuffer.GetByFrameId(currDynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
             JPH_ASSERT(nullptr != refRdf);
+            (*pOutResult)->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
             (*pOutResult)->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
         }
     }
@@ -122,7 +125,7 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
         }
         bool outExistingInputMutated = false;
         bool canConfirmTcp = (fromUdp || fromTcp); // Backend doesn't care about whether it's from TCP or UDP, either can set "ifd.confirmed_list"
-        InputFrameDownsync* ifd = GetOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, canConfirmTcp, canConfirmTcp, outExistingInputMutated);
+        InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, canConfirmTcp, canConfirmTcp, outExistingInputMutated);
         if (inNewAllConfirmedTrend && ifd->confirmed_list() != allConfirmedMask) {
             // [WARNING] "StFrameId eviction upon DryPut() of ifdBuffer" might occur even during "inNewAllConfirmedTrend", but that'll be captured in the "if (!willUpdateExisting && ifdBufferFull)" block. 
             inNewAllConfirmedTrend = false;

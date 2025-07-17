@@ -31,7 +31,9 @@ public:
     bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt);
     bool ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
     virtual void Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
-    virtual bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData);
+
+    virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
+    virtual bool ResetStartRdf(const WsReq* initializerMapData);
 
 protected:
     void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);

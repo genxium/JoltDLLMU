@@ -129,7 +129,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     reusedBattle->OnUpsyncSnapshotReceived(a3, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt);
     JPH_ASSERT(70 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
-    JPH_ASSERT(31 == downsyncSnapshotHolder->st_ifd_id() && 40 == downsyncSnapshotHolder->ifd_batch_size()); // [31, 70]
+    JPH_ASSERT(31 == downsyncSnapshotHolder->st_ifd_id() && 40 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [31, 70]
 
     UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
     b2->set_join_index(2);
@@ -188,7 +188,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 62 == reusedBattle->ifdBuffer.StFrameId && 513 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 < outBytesCnt);
     JPH_ASSERT(0 == forceConfirmedStEvictedCnt); // i.e. all regularly confirmed and evicted, no force-confirmation occurred
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
-    JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 301 == downsyncSnapshotHolder->ifd_batch_size()); // [0, 300]
+    JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 301 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [0, 300]
 
     UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
     a3->set_join_index(1);

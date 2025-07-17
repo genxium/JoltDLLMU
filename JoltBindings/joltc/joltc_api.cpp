@@ -82,12 +82,17 @@ bool JPH_Shutdown(void)
     return true;
 }
 
-void* FRONTEND_CreateBattle(char* inBytes, int inBytesCnt, bool isOnlineArenaMode, int inSelfJoinIndex) {
-    FrontendBattle* result = new FrontendBattle(inBytes, inBytesCnt, 512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator, isOnlineArenaMode, inSelfJoinIndex);
+void* FRONTEND_CreateBattle(bool isOnlineArenaMode) {
+    FrontendBattle* result = new FrontendBattle(512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator, isOnlineArenaMode);
 #ifndef NDEBUG
     Debug::Log("FRONTEND_CreateBattle/C++", DColor::Green);
 #endif
     return result;
+}
+
+bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, int inSelfJoinIndex) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    return frontendBattle->ResetStartRdf(inBytes, inBytesCnt, inSelfJoinIndex);
 }
 
 void* BACKEND_CreateBattle() {
@@ -96,6 +101,11 @@ void* BACKEND_CreateBattle() {
     Debug::Log("BACKEND_CreateBattle/C++", DColor::Green);
 #endif
     return result;
+}
+
+bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    return backendBattle->ResetStartRdf(inBytes, inBytesCnt);
 }
 
 bool APP_DestroyBattle(void* inBattle) {
@@ -133,33 +143,22 @@ bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
 
 bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-
-    int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(frontendBattle->timerRdfId);
-    int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(frontendBattle->timerRdfId+1);
-    bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
-
-    InputFrameDownsync* result = nullptr;
-    bool outExistingInputMutated = false;
-    result = frontendBattle->GetOrPrefabInputFrameDownsync(toGenIfdId, frontendBattle->selfJoinIndex, inSingleInput, isLastRdfInIfdCoverage, false, outExistingInputMutated);
-    if (outExistingInputMutated) {
-        frontendBattle->HandleIncorrectlyRenderedPrediction(toGenIfdId, true);
-    }
-
-    if (!result) {
-        return false;
-    }
-
-    return true;
+    return frontendBattle->UpsertSelfCmd(inSingleInput);
 }
 
-bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp) {
+bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt, fromUdp, fromTcp);
+    return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt);
 }
 
-bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt) {
+bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    // TODO
+    return false;
+}
+
+bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt);
+    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt);
 }
 
 bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
