@@ -154,3 +154,8 @@ set(TARGET_BACKEND_TEST ON)
 if (TARGET_BACKEND_TEST) 
     include(${JOLT_BINDINGS_ROOT}/CppTests/Backend/Backend.cmake)
 endif()
+
+set(TARGET_FRONTEND_TEST ON)
+if (TARGET_FRONTEND_TEST) 
+    include(${JOLT_BINDINGS_ROOT}/CppTests/Frontend/Frontend.cmake)
+endif()
