@@ -943,7 +943,6 @@ message BattlePrepareInfo {
     int32 bound_room_id = 2;
     int64 battle_duration_frames = 3;
     int32 input_frame_upsync_delay_tolerance = 4;
-    int32 max_chasing_render_frames_per_update = 5;
     double rollback_estimated_dt_millis = 6;
     int64 rollback_estimated_dt_nanos = 7;
 
@@ -1521,6 +1520,7 @@ message PrimitiveConsts {
     int32 input_delay_frames = 82; // in the count of render frames
     int32 default_backend_input_buffer_size = 83; 
 
+    int32 max_chasing_render_frames_per_update = 84;
     int32 magic_frames_to_be_on_wall = 86;
 
     int32 dying_frames_to_recover = 87; // MUST BE SAME FOR EVERY CHARACTER FOR FAIRNESS!

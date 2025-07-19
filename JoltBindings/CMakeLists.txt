@@ -62,8 +62,6 @@ else()
     add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
 endif()
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
-
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 target_sources(${TARGET_NAME} PRIVATE ${JOLT_PHYSICS_SRC_FILES})
 

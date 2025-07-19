@@ -175,7 +175,7 @@ namespace JoltCSharp {
             DefaultFramesDelayedOfBossSavepoint = 8,
             InputDelayFrames = 2, // in the count of render frames
             InputScaleFrames = INPUT_SCALE_FRAMES, // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
-
+            MaxChasingRenderFramesPerUpdate = 8,
             MagicFramesToBeOnWall = 12,
 
             DyingFramesToRecover = 100, // MUST BE SAME FOR EVERY CHARACTER FOR FAIRNESS!

@@ -139,7 +139,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             }
             targetHolder->CopyFrom(refIfd);
             targetHolder->set_confirmed_list(allConfirmedMask);
-
+            
             for (int k = 0; k < playersCnt; ++k) {
                 if (ifdId > playerInputFrontIds[k]) {
                     playerInputFrontIds[k] = ifdId;
@@ -151,6 +151,8 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 firstIncorrectlyPredictedIfdId = ifdId;
             }
         }
+
+        moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, 0);
     }
 
     if (shouldDragTimerRdfIdForward || shouldDragTimerRdfUsingDelayedIfdIdForward) {
@@ -293,13 +295,13 @@ void FrontendBattle::regulateCmdBeforeRender() {
 }
 
 void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFrameId, bool fromUdp) {
-    if (globalPrimitiveConsts->terminating_input_frame_id() == mismatchedInputFrameId) return;
+    if (0 > mismatchedInputFrameId) return;
     int timerRdfId1 = ConvertToFirstUsedRenderFrameId(mismatchedInputFrameId);
     if (timerRdfId1 >= chaserRdfId) return;
     // By now timerRdfId1 < chaserRdfId, it's pretty impossible that "timerRdfId1 > timerRdfId" but we're still checking.
     if (timerRdfId1 > timerRdfId) return; // The incorrect prediction is not yet rendered, no visual impact for player.
     int timerRdfId2 = ConvertToLastUsedRenderFrameId(mismatchedInputFrameId);
-    if (timerRdfId2 < chaserRdfIdLowerBound) {
+    if (timerRdfId2 <= chaserRdfIdLowerBound) {
         /*
            [WARNING]
 
@@ -319,7 +321,10 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
        --------------------------------------------------------
      */
 
-    // The actual rollback-and-chase would later be executed in "Update()". 
+    // The actual rollback-and-chase would later be executed in "Step(...)".
+    if (timerRdfId1 < rdfBuffer.StFrameId) {
+        timerRdfId1 = rdfBuffer.StFrameId; // [WARNING] One of the edge cases here, just wait for the next "refRdf".
+    }
     chaserRdfId = timerRdfId1;
 }
 

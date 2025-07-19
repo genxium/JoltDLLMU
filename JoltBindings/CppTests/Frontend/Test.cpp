@@ -12,6 +12,7 @@
 #include <fstream>
 #include <filesystem>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/repeated_field.h>
 google::protobuf::Arena pbTempAllocator;
 
 using namespace jtshared;
@@ -98,12 +99,99 @@ std::map<int, uint64_t> testCmds1 = {
     {1200, 0}
 };
 
+uint64_t getSelfCmdByRdfId(int rdfId) {
+    auto it = testCmds1.lower_bound(rdfId);
+    if (it == testCmds1.end()) {
+        --it;
+    }
+    return it->second;
+}
+
+uint64_t getSelfCmdByIfdId(int ifdId) {
+    int rdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(ifdId);
+    return getSelfCmdByRdfId(rdfId);
+}
+
 std::string outStr;
+std::string player1OutStr, player2OutStr;
 bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex);
-    
-    std::unordered_map<int, UpsyncSnapshot*> incomingUpsyncSnapshots; // key is "timerRdfId"; random order of "UpsyncSnapshot.st_ifd_id", relatively big packet loss
+
+    std::unordered_map<int, UpsyncSnapshot*> incomingUpsyncSnapshots; // key is "timerRdfId"; random order of "UpsyncSnapshot.st_ifd_id", relatively big packet loss 
+    {
+        int receivedTimerRdfId = 120;
+        int receivedEdIfdId = 26;
+        int receivedStIfdId = 13;
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        peerUpsyncSnapshot->set_join_index(2);
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId); 
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        incomingUpsyncSnapshots[receivedTimerRdfId] = peerUpsyncSnapshot; 
+    } 
+    {
+        int receivedTimerRdfId = 155;
+        int receivedEdIfdId = 13;
+        int receivedStIfdId = 0;
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        peerUpsyncSnapshot->set_join_index(2);
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId); 
+        for (int ifdId = receivedStIfdId; ifdId < (receivedEdIfdId >> 1); ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        for (int ifdId = (receivedEdIfdId >> 1); ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(19);
+        }
+        incomingUpsyncSnapshots[receivedTimerRdfId] = peerUpsyncSnapshot; 
+    }
+    {
+        int receivedTimerRdfId = 500;
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 29;
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        peerUpsyncSnapshot->set_join_index(2);
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < (receivedEdIfdId >> 1); ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        for (int ifdId = (receivedEdIfdId >> 1); ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(19);
+        }
+        incomingUpsyncSnapshots[receivedTimerRdfId] = peerUpsyncSnapshot;
+    }
+    {
+        int receivedTimerRdfId = 560;
+        int receivedEdIfdId = 29;
+        int receivedStIfdId = 26;
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        peerUpsyncSnapshot->set_join_index(2);
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(2);
+        }
+        incomingUpsyncSnapshots[receivedTimerRdfId] = peerUpsyncSnapshot;
+    }
+
     std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots; // key is "timerRdfId"; non-descending order of "DownsyncSnapshot.st_ifd_id" (see comments on "inputBufferLock" in "joltc_api.h"), relatively small packet loss
+    {
+        int receivedTimerRdfId = 180;
+        int receivedEdIfdId = 26;
+        int receivedStIfdId = 0;
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(
+                6 > ifdId ? 
+                4 
+                : 
+                (13 > ifdId ? 19 : 4)
+            );
+        }
+        incomingDownsyncSnapshots[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
 
     int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -111,16 +199,48 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > timerRdfId) {
-        auto it = testCmds1.lower_bound(timerRdfId);
-        if (it == testCmds1.end()) {
-            --it;
+        if (incomingDownsyncSnapshots.count(timerRdfId)) {
+            DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots[timerRdfId];
+            int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt);
+            outStr.clear();
+            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
+            std::cout << "@timerRdfId = " << timerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
+            if (0 == srvDownsyncSnapshot->st_ifd_id()) {
+                JPH_ASSERT(25 == reusedBattle->lcacIfdId);
+            }
         }
-        uint64_t inSingleInput = it->second;
+        if (incomingUpsyncSnapshots.count(timerRdfId)) {
+            UpsyncSnapshot* peerUpsyncSnapshot = incomingUpsyncSnapshots[timerRdfId]; 
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot);
+            outStr.clear();
+            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*peerUpsyncSnapshot, &outStr);
+            std::cout << "@timerRdfId = " << timerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
+            if (13 == peerUpsyncSnapshot->st_ifd_id()) {
+                JPH_ASSERT(54 == reusedBattle->chaserRdfId);
+                JPH_ASSERT(-1 == reusedBattle->lcacIfdId);
+            } else if (0 == peerUpsyncSnapshot->st_ifd_id()) {
+                JPH_ASSERT(2 == reusedBattle->chaserRdfId);
+                JPH_ASSERT(-1 == reusedBattle->lcacIfdId);
+            } else if (29 == peerUpsyncSnapshot->st_ifd_id()) {
+                JPH_ASSERT(118 == reusedBattle->chaserRdfId);
+                JPH_ASSERT(25 == reusedBattle->lcacIfdId);
+            } else if (26 == peerUpsyncSnapshot->st_ifd_id()) {
+                JPH_ASSERT(106 == reusedBattle->chaserRdfId);
+                JPH_ASSERT(25 == reusedBattle->lcacIfdId);
+            }
+        }
+        uint64_t inSingleInput = getSelfCmdByRdfId(timerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
+        int chaserRdfIdEd = reusedBattle->chaserRdfId + globalPrimitiveConsts->max_chasing_render_frames_per_update();
+        if (chaserRdfIdEd > timerRdfId) {
+            chaserRdfIdEd = timerRdfId;
+        }
+        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
         bool stepped = FRONTEND_Step(reusedBattle, timerRdfId, timerRdfId + 1, false);
         timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
@@ -128,12 +248,13 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         APP_GetRdf(reusedBattle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
         if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
-            auto firstPlayerChd = outRdf->players_arr(0);
-            outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
-            if (!status.ok()) {
-                std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
-            }
+            player1OutStr.clear();
+            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+
+            player2OutStr.clear();
+            google::protobuf::util::Status status2 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+
+            std::cout << "@timerRdfId = " << timerRdfId << "\nplayer1 = \n" << player1OutStr << "\nplayer2 = \n" << player2OutStr << std::endl;
         }
     }
 
