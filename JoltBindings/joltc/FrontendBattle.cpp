@@ -44,9 +44,10 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     *outPostTimerRdfEvictedCnt = 0;
     *outPostTimerRdfDelayedIfdEvictedCnt = 0;
     int refRdfId = downsyncSnapshot->ref_rdf_id();
+    int oldChaserRdfIdLowerBound = chaserRdfIdLowerBound;
     if (downsyncSnapshot->has_ref_rdf()) {
         const RenderFrame& refRdf = downsyncSnapshot->ref_rdf();
-        if (refRdfId >= chaserRdfIdLowerBound) {
+        if (refRdfId >= oldChaserRdfIdLowerBound) {
             bool willEvictRdfSt = (refRdfId >= rdfBuffer.StFrameId + rdfBuffer.N);
             if (willEvictRdfSt) {
                 int toEvictRdfCnt = (refRdfId - rdfBuffer.StFrameId - rdfBuffer.N + 1);
@@ -63,7 +64,8 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 holder->set_id(gapRdfId);
             }
             
-            RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId); 
+            RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId);
+            JPH_ASSERT(nullptr != targetHolder);
             targetHolder->CopyFrom(refRdf);
 
             chaserRdfId = refRdfId;
@@ -83,7 +85,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 continue;
             }
             int lastUsedRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(ifdId);
-            if (lastUsedRdfId <= chaserRdfIdLowerBound) {
+            if (lastUsedRdfId <= oldChaserRdfIdLowerBound) {
                 // obsolete
                 continue;
             }
@@ -113,11 +115,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                             *outPostTimerRdfDelayedIfdEvictedCnt = (postEvictionIfdStFrameId - delayedIfdId); // Will pick the LAST value
                         }
                     }
-
-                    bool shouldDragLcacIfdIdForward = (lcacIfdId + 1 < postEvictionIfdStFrameId); // Usually "delayedIfdId > lcacIfdId" therefore "willDragTimerRdfUsingDelayedIfdIdForward" implies "shouldDragLcacIfdIdForward", but I'm being rigorous here... 
-                    if (shouldDragLcacIfdIdForward) {
-                        lcacIfdId = postEvictionIfdStFrameId-1; // Will pick the LAST value
-                    }
+                    // [WARNING] No need to check "shouldDragLcacIfdIdForward" here, it'll be assigned by "ifdId" at the current iteration.
                 }
 
                 while (ifdBuffer.EdFrameId <= ifdId) {
@@ -139,7 +137,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             }
             targetHolder->CopyFrom(refIfd);
             targetHolder->set_confirmed_list(allConfirmedMask);
-
+            
             for (int k = 0; k < playersCnt; ++k) {
                 if (ifdId > playerInputFrontIds[k]) {
                     playerInputFrontIds[k] = ifdId;
@@ -150,6 +148,8 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             if (-1 == firstIncorrectlyPredictedIfdId && existingInputMutated) {
                 firstIncorrectlyPredictedIfdId = ifdId;
             }
+        
+            lcacIfdId = ifdId;
         }
     }
 
@@ -293,13 +293,13 @@ void FrontendBattle::regulateCmdBeforeRender() {
 }
 
 void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFrameId, bool fromUdp) {
-    if (globalPrimitiveConsts->terminating_input_frame_id() == mismatchedInputFrameId) return;
+    if (0 > mismatchedInputFrameId) return;
     int timerRdfId1 = ConvertToFirstUsedRenderFrameId(mismatchedInputFrameId);
     if (timerRdfId1 >= chaserRdfId) return;
     // By now timerRdfId1 < chaserRdfId, it's pretty impossible that "timerRdfId1 > timerRdfId" but we're still checking.
     if (timerRdfId1 > timerRdfId) return; // The incorrect prediction is not yet rendered, no visual impact for player.
     int timerRdfId2 = ConvertToLastUsedRenderFrameId(mismatchedInputFrameId);
-    if (timerRdfId2 < chaserRdfIdLowerBound) {
+    if (timerRdfId2 <= chaserRdfIdLowerBound) {
         /*
            [WARNING]
 
@@ -319,7 +319,10 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
        --------------------------------------------------------
      */
 
-    // The actual rollback-and-chase would later be executed in "Update()". 
+    // The actual rollback-and-chase would later be executed in "Step(...)".
+    if (timerRdfId1 < rdfBuffer.StFrameId) {
+        timerRdfId1 = rdfBuffer.StFrameId; // [WARNING] One of the edge cases here, just wait for the next "refRdf".
+    }
     chaserRdfId = timerRdfId1;
 }
 
