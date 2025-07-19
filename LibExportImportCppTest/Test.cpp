@@ -169,8 +169,11 @@ int main(int argc, char** argv)
     long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
     int selfJoinIndex = 1;
-    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(pbByteBuffer, (int)byteSize, false, selfJoinIndex));
+    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(false));
     std::cout << "Created battle = " << battle << std::endl;
+
+    bool resetStartRdfRes = FRONTEND_ResetStartRdf(battle, pbByteBuffer, (int)byteSize, selfJoinIndex);
+    std::cout << "resetStartRdfRes = " << resetStartRdfRes << std::endl;
     
     jtshared::RenderFrame outRdf;
     std::string outStr;

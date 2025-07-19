@@ -493,110 +493,6 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     return true;
 }
 
-InputFrameDownsync* BaseBattle::GetOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
-    
-    if (inIfdId < ifdBuffer.StFrameId) {
-        // Obsolete #1
-        return nullptr;
-    }
-
-    int inSingleJoinIndexArrIdx = (inSingleJoinIndex - 1);
-    int inSingleJoinMask = calcJoinIndexMask(inSingleJoinIndex);
-    auto existingInputFrame = ifdBuffer.GetByFrameId(inIfdId);
-    auto previousInputFrameDownsync = ifdBuffer.GetByFrameId(inIfdId - 1);
-
-    bool alreadyTcpConfirmed = existingInputFrame && (0 < (existingInputFrame->confirmed_list() & inSingleJoinMask));
-    if (alreadyTcpConfirmed) {
-        // Obsolete #2
-        return existingInputFrame;
-    }
-
-    // By now "false == alreadyTcpConfirmed" 
-    bool alreadyUdpConfirmed = existingInputFrame && (0 < (existingInputFrame->udp_confirmed_list() & inSingleJoinMask));
-    if (alreadyUdpConfirmed) {
-        if (!fromTcp) {
-            // [WARNING] Only Tcp incoming inputs can override UdpConfirmed inputs
-            return existingInputFrame;
-        }
-    }
-
-    if (existingInputFrame && !fromTcp && !fromUdp) {
-        return existingInputFrame;
-    }
-
-    if (nullptr != existingInputFrame) {
-        auto existingSingleInputAtSameIfd = existingInputFrame->input_list(inSingleJoinIndexArrIdx);
-        existingInputFrame->set_input_list(inSingleJoinIndexArrIdx, inSingleInput);
-        if (fromUdp) {
-            existingInputFrame->set_udp_confirmed_list(existingInputFrame->udp_confirmed_list() | inSingleJoinMask);
-        }
-        if (fromTcp) {
-            existingInputFrame->set_confirmed_list(existingInputFrame->confirmed_list() | inSingleJoinMask);
-        }
-        if (existingSingleInputAtSameIfd != inSingleInput) {
-            outExistingInputMutated = true;
-        }
-        return existingInputFrame;
-    }
-
-    JPH_ASSERT(ifdBuffer.EdFrameId <= inIfdId); // Hence any "k" suffices "playerInputFrontIds[k] < ifdBuffer.EdFrameId <= inIfdId"
-
-    memset(prefabbedInputList.data(), 0, playersCnt * sizeof(uint64_t));
-    for (int k = 0; k < playersCnt; ++k) {
-        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
-            prefabbedInputList[k] = 0;
-        } else {
-            prefabbedInputList[k] = playerInputFronts[k];
-        }
-        /*
-           [WARNING]
-
-           All "critical input predictions (i.e. BtnA/B/C/D/E)" are now handled only in "UpdateInputFrameInPlaceUponDynamics", which is called just before rendering "playerRdf" -- the only timing that matters for smooth graphcis perception of (human) players.
-         */
-    }
-
-    prefabbedInputList[inSingleJoinIndexArrIdx] = inSingleInput;
-
-    uint64_t initConfirmedList = 0;
-    if (fromUdp || fromTcp) {
-        initConfirmedList = inSingleJoinMask;
-    }
-
-    while (ifdBuffer.EdFrameId <= inIfdId) {
-        // Fill the gap
-        int gapInputFrameId = ifdBuffer.EdFrameId;
-        auto ifdHolder = ifdBuffer.DryPut();
-        /*
-        if (nullptr == ifdHolder) {
-            std::string builder;
-            throw std::runtime_error("ifdBuffer was not fully pre-allocated for gapInputFrameId");
-        }
-        */
-        ifdHolder->set_confirmed_list(0u); // To avoid RingBuff reuse contamination.
-        ifdHolder->set_udp_confirmed_list(0u);
-        
-        auto inputList = ifdHolder->mutable_input_list();
-        inputList->Clear();
-        for (auto& prefabbedInput : prefabbedInputList) {
-            inputList->Add(prefabbedInput);
-        }
-    }
-
-    auto ret = ifdBuffer.GetLast();
-    if (fromTcp) {
-        ret->set_confirmed_list(initConfirmedList);
-    }
-    if (fromUdp) {
-        ret->set_udp_confirmed_list(initConfirmedList);
-    }
-    if (inIfdId > playerInputFrontIds[inSingleJoinIndex-1]) {
-        playerInputFrontIds[inSingleJoinIndex-1] = inIfdId;
-        playerInputFronts[inSingleJoinIndex-1] = inSingleInput;
-    }
-    
-    return ret;
-}
-
 bool BaseBattle::isEffInAir(const CharacterDownsync& chd, bool notDashing) {
     return (inAirSet.count(chd.ch_state()) && notDashing);
 }
@@ -1095,6 +991,105 @@ void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* 
     }
 
     cd->set_flying_rdf_countdown((globalPrimitiveConsts->max_flying_rdf_cnt() == cc->flying_quota_rdf_cnt() ? globalPrimitiveConsts->max_flying_rdf_cnt() : (0 < cd->flying_rdf_countdown() ? cd->flying_rdf_countdown() - 1 : 0)));
+}
+
+InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
+    
+    if (inIfdId < ifdBuffer.StFrameId) {
+        // Obsolete #1
+        return nullptr;
+    }
+
+    int inSingleJoinIndexArrIdx = (inSingleJoinIndex - 1);
+    int inSingleJoinMask = calcJoinIndexMask(inSingleJoinIndex);
+    auto existingInputFrame = ifdBuffer.GetByFrameId(inIfdId);
+    auto previousInputFrameDownsync = ifdBuffer.GetByFrameId(inIfdId - 1);
+
+    bool alreadyTcpConfirmed = existingInputFrame && (0 < (existingInputFrame->confirmed_list() & inSingleJoinMask));
+    if (alreadyTcpConfirmed) {
+        // Obsolete #2
+        return existingInputFrame;
+    }
+
+    // By now "false == alreadyTcpConfirmed" 
+    bool alreadyUdpConfirmed = existingInputFrame && (0 < (existingInputFrame->udp_confirmed_list() & inSingleJoinMask));
+    if (alreadyUdpConfirmed) {
+        if (!fromTcp) {
+            // [WARNING] Only Tcp incoming inputs can override UdpConfirmed inputs
+            return existingInputFrame;
+        }
+    }
+
+    if (existingInputFrame && !fromTcp && !fromUdp) {
+        return existingInputFrame;
+    }
+
+    if (nullptr != existingInputFrame) {
+        auto existingSingleInputAtSameIfd = existingInputFrame->input_list(inSingleJoinIndexArrIdx);
+        existingInputFrame->set_input_list(inSingleJoinIndexArrIdx, inSingleInput);
+        if (fromUdp) {
+            existingInputFrame->set_udp_confirmed_list(existingInputFrame->udp_confirmed_list() | inSingleJoinMask);
+        }
+        if (fromTcp) {
+            existingInputFrame->set_confirmed_list(existingInputFrame->confirmed_list() | inSingleJoinMask);
+        }
+        if (existingSingleInputAtSameIfd != inSingleInput) {
+            outExistingInputMutated = true;
+        }
+        return existingInputFrame;
+    }
+
+    JPH_ASSERT(ifdBuffer.EdFrameId <= inIfdId); // Hence any "k" suffices "playerInputFrontIds[k] < ifdBuffer.EdFrameId <= inIfdId"
+
+    memset(prefabbedInputList.data(), 0, playersCnt * sizeof(uint64_t));
+    for (int k = 0; k < playersCnt; ++k) {
+        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
+            prefabbedInputList[k] = 0;
+        } else {
+            prefabbedInputList[k] = playerInputFronts[k];
+        }
+        /*
+           [WARNING]
+
+           All "critical input predictions (i.e. BtnA/B/C/D/E)" are now handled only in "UpdateInputFrameInPlaceUponDynamics", which is called just before rendering "playerRdf" -- the only timing that matters for smooth graphcis perception of (human) players.
+         */
+    }
+
+    prefabbedInputList[inSingleJoinIndexArrIdx] = inSingleInput;
+
+    uint64_t initConfirmedList = 0;
+    if (fromUdp || fromTcp) {
+        initConfirmedList = inSingleJoinMask;
+    }
+
+    while (ifdBuffer.EdFrameId <= inIfdId) {
+        // Fill the gap
+        auto ifdHolder = ifdBuffer.DryPut();
+        JPH_ASSERT(nullptr != ifdHolder);
+        ifdHolder->set_confirmed_list(0u); // To avoid RingBuff reuse contamination.
+        ifdHolder->set_udp_confirmed_list(0u);
+        
+        auto inputList = ifdHolder->mutable_input_list();
+        inputList->Clear();
+        for (auto& prefabbedInput : prefabbedInputList) {
+            inputList->Add(prefabbedInput);
+        }
+    }
+
+    auto ret = ifdBuffer.GetLast();
+    if (fromTcp) {
+        ret->set_confirmed_list(initConfirmedList);
+    }
+    if (fromUdp) {
+        ret->set_udp_confirmed_list(initConfirmedList);
+    }
+
+    if (inIfdId > playerInputFrontIds[inSingleJoinIndexArrIdx]) {
+        playerInputFrontIds[inSingleJoinIndexArrIdx] = inIfdId;
+        playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
+    }
+    
+    return ret;
 }
 
 void BaseBattle::batchPutIntoPhySysFromCache(const RenderFrame* currRdf, RenderFrame* nextRdf) {

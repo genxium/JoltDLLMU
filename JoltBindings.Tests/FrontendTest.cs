@@ -133,8 +133,10 @@ public class FrontendTest {
 
             UIntPtr battle = UIntPtr.Zero;
             fixed (byte* bufferPtr = buffer) {
-                 battle = Bindings.FRONTEND_CreateBattle((char*)bufferPtr, buffer.Length, false, 1);
+                 battle = Bindings.FRONTEND_CreateBattle(false);
                  _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
+                 bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, 1);
+                 _logger.WriteLine($"ResetStartRdf finished for battle at pointer addr = 0x{battle:x}, res={res}");
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
             
