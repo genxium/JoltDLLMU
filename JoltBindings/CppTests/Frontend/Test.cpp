@@ -149,17 +149,40 @@ std::map<int, uint64_t> testCmds1 = {
     {1200, 0}
 };
 
-uint64_t getSelfCmdByRdfId(int rdfId) {
-    auto it = testCmds1.lower_bound(rdfId);
-    if (it == testCmds1.end()) {
+std::map<int, uint64_t> testCmds4 = {
+    {0, 3},
+    {227, 0},
+    {228, 16},
+    {231, 16},
+    {251, 0},
+    {252, 16},
+    {699, 0},
+    {700, 20},
+    {720, 4},
+    {739, 4},
+    {740, 20},
+    {770, 4},
+    {775, 4},
+    {790, 20},
+    {795, 4},
+    {820, 20},
+    {821, 4},
+    {910, 4},
+    {1100, 4},
+    {1200, 0}
+};
+
+uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
+    auto it = testCmds.lower_bound(rdfId);
+    if (it == testCmds.end()) {
         --it;
     }
     return it->second;
 }
 
-uint64_t getSelfCmdByIfdId(int ifdId) {
+uint64_t getSelfCmdByIfdId(std::map<int, uint64_t>& testCmds, int ifdId) {
     int rdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(ifdId);
-    return getSelfCmdByRdfId(rdfId);
+    return getSelfCmdByRdfId(testCmds, rdfId);
 }
 
 std::unordered_map<int, UpsyncSnapshot*> incomingUpsyncSnapshots1; // key is "timerRdfId"; random order of "UpsyncSnapshot.st_ifd_id", relatively big packet loss 
@@ -238,7 +261,7 @@ void initTest1Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 6 > ifdId ?
                 4
@@ -256,7 +279,7 @@ void initTest1Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 29 > ifdId ?
                 2
@@ -335,7 +358,7 @@ void initTest2Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 6 > ifdId ?
                 4
@@ -355,7 +378,7 @@ void initTest2Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 mid > ifdId ?
                 19
@@ -437,7 +460,7 @@ void initTest3Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 6 > ifdId ?
                 4
@@ -457,7 +480,7 @@ void initTest3Data() {
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
-            ifdBatch->add_input_list(getSelfCmdByIfdId(ifdId));
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
             ifdBatch->add_input_list(
                 mid > ifdId ?
                 19
@@ -516,7 +539,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 JPH_ASSERT(25 == reusedBattle->lcacIfdId);
             }
         }
-        uint64_t inSingleInput = getSelfCmdByRdfId(outerTimerRdfId);
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds1, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
@@ -597,7 +620,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             }
         }
         int oldIfdEdFrameId = reusedBattle->ifdBuffer.EdFrameId;
-        uint64_t inSingleInput = getSelfCmdByRdfId(outerTimerRdfId);
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds1, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
@@ -682,7 +705,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             }
         }
         int oldIfdEdFrameId = reusedBattle->ifdBuffer.EdFrameId;
-        uint64_t inSingleInput = getSelfCmdByRdfId(outerTimerRdfId);
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds1, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
@@ -722,7 +745,7 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
-        uint64_t inSingleInput = getSelfCmdByRdfId(outerTimerRdfId);
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
@@ -825,12 +848,12 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    //initTest1Data();
-    //runTestCase1(battle, initializerMapData, selfJoinIndex);
-    //initTest2Data();
-    //runTestCase2(battle, initializerMapData, selfJoinIndex);
-    //initTest3Data();
-    //runTestCase3(battle, initializerMapData, selfJoinIndex);
+    initTest1Data();
+    runTestCase1(battle, initializerMapData, selfJoinIndex);
+    initTest2Data();
+    runTestCase2(battle, initializerMapData, selfJoinIndex);
+    initTest3Data();
+    runTestCase3(battle, initializerMapData, selfJoinIndex);
     runTestCase4(battle, initializerMapData, selfJoinIndex);
 
     // clean up
