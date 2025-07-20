@@ -84,12 +84,6 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 // obsolete
                 continue;
             }
-            int lastUsedRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(ifdId);
-            if (lastUsedRdfId <= oldChaserRdfIdLowerBound) {
-                // obsolete
-                continue;
-            }
-
             bool existingInputMutated = false;
             InputFrameDownsync* targetHolder = ifdBuffer.GetByFrameId(ifdId); 
             const InputFrameDownsync& refIfd = downsyncSnapshot->ifd_batch(i);
@@ -182,11 +176,6 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsh
     for (int i = 0; i < cmdListSize; ++i) {
         int ifdId = upsyncSnapshot->st_ifd_id() + i;
         if (ifdId <= lcacIfdId) {
-            // obsolete
-            continue;
-        }
-        int lastUsedRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(ifdId);
-        if (lastUsedRdfId <= chaserRdfIdLowerBound) {
             // obsolete
             continue;
         }
