@@ -15,6 +15,7 @@ JoltBindings_basedir="$basedir"/JoltBindings
 unity_package_output_basedir="$basedir"/UnityPackageOutput
 
 echo "Writing PbConsts for generic import..."
+protoc -I=$JoltBindings_basedir --csharp_out=$JoltBindings_basedir serializable_data.proto 
 cd $basedir/PbConstsWriter && dotnet build -c $1 && dotnet run --environment UNITY_RT_PLUGINS_OUTPATH=$unity_package_output_basedir/Runtime/Plugins -c $1
 echo "Written PbConsts for generic import"
 
@@ -37,7 +38,6 @@ fi
 echo "Built $clibname with JoltPhysics engine"
 
 echo "Building joltphysics.dll for CSharp bindings..."
-protoc -I=$JoltBindings_basedir --csharp_out=$JoltBindings_basedir serializable_data.proto 
 cd $JoltBindings_basedir && dotnet build -c $1
 echo "Built joltphysics.dll for CSharp bindings"
 

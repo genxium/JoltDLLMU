@@ -1,26 +1,26 @@
-set(BACKEND_TEST_ROOT ${JOLT_BINDINGS_ROOT}/CppTests/Backend)
+set(FRONTEND_TEST_ROOT ${JOLT_BINDINGS_ROOT}/CppTests/Frontend)
 
 # Source files
-set(BACKEND_TEST_SRC_FILES
-	${BACKEND_TEST_ROOT}/Test.cpp
+set(FRONTEND_TEST_SRC_FILES
+	${FRONTEND_TEST_ROOT}/Test.cpp
 )
 
 # Group source files
-source_group(TREE ${BACKEND_TEST_ROOT} FILES ${BACKEND_TEST_SRC_FILES})
+source_group(TREE ${FRONTEND_TEST_ROOT} FILES ${FRONTEND_TEST_SRC_FILES})
 
-add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
-target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
+add_executable(FrontendTest ${FRONTEND_TEST_SRC_FILES})
+target_link_libraries(FrontendTest LINK_PUBLIC ${TARGET_NAME})
 
-target_link_libraries(BackendTest PUBLIC 
+target_link_libraries(FrontendTest PUBLIC 
     protobuf::libprotobuf
 )
 
 if (MSVC)
-    #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BackendTest)
-    target_link_options(BackendTest PUBLIC "/SUBSYSTEM:CONSOLE")
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT FrontendTest)
+    target_link_options(FrontendTest PUBLIC "/SUBSYSTEM:CONSOLE")
 endif()
 
-target_include_directories(BackendTest PUBLIC
+target_include_directories(FrontendTest PUBLIC
 	$<BUILD_INTERFACE:${PHYSICS_REPO_ROOT}>
     $<BUILD_INTERFACE:${JOLT_BINDINGS_ROOT}/joltc>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> # for generated header
@@ -34,7 +34,7 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
-        install(FILES $<TARGET_PDB_FILE:BackendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
+        install(FILES $<TARGET_PDB_FILE:FrontendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
     else()    
         foreach (_file ${Protobuf_LIBRARIES}) # Magic variable set by "FindProtobuf -- find_package(Protobuf REQUIRED)". See https://cmake.org/cmake/help/latest/module/FindProtobuf.html#result-variables.
             get_filename_component(_resolvedFile "${_file}" REALPATH)

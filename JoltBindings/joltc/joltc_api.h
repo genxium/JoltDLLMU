@@ -52,7 +52,7 @@ These "BACKEND_Xxx" functions DON'T apply any lock by themselves.
 
 The equivalent to [DLLMU-v2.3.4 "inputBufferLock"](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L144) will be handled in C# because I/O will be handled there. 
 
-Note that in addition to guarding write-operations to "inputBuffer/ifdBuffer", "inputBufferLock" MUST also guard "sending of DownsyncSnapshot" to preserve "order of message generation", i.e. order of "DownsyncSnapshot.ifd_batch" received on frontend via TCP, see https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1371 for more information.
+Note that in addition to guarding write-operations to "inputBuffer/ifdBuffer", "inputBufferLock" MUST also guard "sending of DownsyncSnapshot" to preserve the same "order of message sending" as the "order of message generation", i.e. order of "DownsyncSnapshot.st_ifd_id" received on frontend via TCP must be non-descending, see https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1371 for more information.
 */
 JPH_CAPI void* BACKEND_CreateBattle();
 JPH_CAPI bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt);

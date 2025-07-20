@@ -1084,7 +1084,7 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
         ret->set_udp_confirmed_list(initConfirmedList);
     }
 
-    if (inIfdId > playerInputFrontIds[inSingleJoinIndexArrIdx]) {
+    if (inIfdId > playerInputFrontIds[inSingleJoinIndexArrIdx] && (fromTcp || fromUdp)) {
         playerInputFrontIds[inSingleJoinIndexArrIdx] = inIfdId;
         playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
     }
