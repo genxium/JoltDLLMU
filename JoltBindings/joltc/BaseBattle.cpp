@@ -268,12 +268,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
 
             uint64_t ud = single->GetUserData();
             uint64_t udt = getUDT(ud);
-
-            // Settings for our update function
-            CharacterVirtual::ExtendedUpdateSettings chColliderExtUpdateSettings;
-            chColliderExtUpdateSettings.mStickToFloorStepDown = -single->GetUp() * chColliderExtUpdateSettings.mStickToFloorStepDown.Length();
-            chColliderExtUpdateSettings.mWalkStairsStepUp = single->GetUp() * chColliderExtUpdateSettings.mWalkStairsStepUp.Length();
-
+            
             switch (udt) {
             case UDT_PLAYER:
             case UDT_NPC:
@@ -306,15 +301,15 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                         *globalTempAllocator);
                 }
 #else
-                single->ExtendedUpdate(dt, phySys->GetGravity(),
-                        chColliderExtUpdateSettings,
+                single->Update(dt, phySys->GetGravity(),
                         phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING),
                         phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING),
                         {}, // BodyFilter
                         {}, // ShapeFilter
                         *globalTempAllocator);
-#endif
 
+                // [WARNING] As there's no effective API to clear "CharacterVirtual.mActiveContacts" during "batchRemove/batchPut", the use of "CharacterVirtual::CancelVelocityTowardsSteepSlopes" at the beginning of "CharacterVirtual::ExtendedUpdate" will use cached "CharacterVirtual.mActiveContacts" which results in WRONG "wall-norm-velocity cancellation during rollback".
+#endif
                 Vec3 newPos = single->GetPosition();
                 bool oldNextNotDashing = isNotDashing(*nextChd); 
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing); 
@@ -1100,13 +1095,13 @@ void BaseBattle::batchPutIntoPhySysFromCache(const RenderFrame* currRdf, RenderF
         CharacterDownsync* nextChd = nextPlayer->mutable_chd();
 
         const CharacterConfig* cc = getCc(nextChd->species_id());
-        auto chCollider = getOrCreateCachedPlayerCollider(currPlayer, cc, nextPlayer);
+        CharacterVirtual* chCollider = getOrCreateCachedPlayerCollider(currPlayer, cc, nextPlayer);
         auto ud = calcUserData(currPlayer);
 
         // [WARNING] Reset the possibly reused "CharacterVirtual*/Body*" before physics update.
         chCollider->SetPosition(RVec3Arg(nextChd->x(), nextChd->y(), 0));
         chCollider->SetLinearVelocity(RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), 0)); // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set). 
-
+        chCollider->GetActiveContacts();
 #ifdef useCustomizedInnerBodyHandling
         if (!chCollider->GetInnerBodyID().IsInvalid()) {
             bodyIDsToAdd.push_back(chCollider->GetInnerBodyID());

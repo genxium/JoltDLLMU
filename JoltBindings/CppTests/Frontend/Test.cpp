@@ -131,6 +131,7 @@ std::map<int, uint64_t> testCmds1 = {
     {0, 3},
     {227, 0},
     {228, 16},
+    {231, 16},
     {251, 0},
     {252, 16},
     {699, 0},
@@ -551,7 +552,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1536;
-    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
@@ -638,7 +639,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
-    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
@@ -713,6 +714,46 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
+bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 0);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        int chaserRdfIdEd = reusedBattle->chaserRdfId + globalPrimitiveConsts->max_chasing_render_frames_per_update();
+        if (chaserRdfIdEd > outerTimerRdfId) {
+            chaserRdfIdEd = outerTimerRdfId;
+        }
+        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
+        int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(outerTimerRdfId);
+        InputFrameDownsync* delayedIfd = reusedBattle->ifdBuffer.GetByFrameId(delayedIfdId);
+        bool stepped = FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        outerTimerRdfId++;
+        memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
+        long outBytesCnt = pbBufferSizeLimit;
+        APP_GetRdf(reusedBattle, outerTimerRdfId, rdfFetchBuffer, &outBytesCnt);
+        outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
+        if (0 < outerTimerRdfId && 0 == (outerTimerRdfId & printIntervalRdfCntMinus1)) {
+            player1OutStr.clear();
+            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            outStr.clear();
+            status1 = google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
+            std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\ndelayedIfd=" << outStr << std::endl;
+        }
+    }
+
+    std::cout << "Passed TestCase4" << std::endl;
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -784,12 +825,13 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    initTest1Data();
-    runTestCase1(battle, initializerMapData, selfJoinIndex);
-    initTest2Data();
-    runTestCase2(battle, initializerMapData, selfJoinIndex);
-    initTest3Data();
-    runTestCase3(battle, initializerMapData, selfJoinIndex);
+    //initTest1Data();
+    //runTestCase1(battle, initializerMapData, selfJoinIndex);
+    //initTest2Data();
+    //runTestCase2(battle, initializerMapData, selfJoinIndex);
+    //initTest3Data();
+    //runTestCase3(battle, initializerMapData, selfJoinIndex);
+    runTestCase4(battle, initializerMapData, selfJoinIndex);
 
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"

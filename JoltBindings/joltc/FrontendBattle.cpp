@@ -5,9 +5,14 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput) {
     int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
     int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId+1);
     bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
-
+    bool changedFromPrevSelfCmd = false;
+    auto prevIfd = ifdBuffer.GetByFrameId(toGenIfdId-1);
+    if (nullptr != prevIfd) {
+        changedFromPrevSelfCmd = (prevIfd->input_list(selfJoinIndexArrIdx) != inSingleInput);
+    }
+    bool canConfirmUDP = (isLastRdfInIfdCoverage || changedFromPrevSelfCmd);
     bool outExistingInputMutated = false;
-    InputFrameDownsync* result = getOrPrefabInputFrameDownsync(toGenIfdId, selfJoinIndex, inSingleInput, isLastRdfInIfdCoverage, false, outExistingInputMutated);
+    InputFrameDownsync* result = getOrPrefabInputFrameDownsync(toGenIfdId, selfJoinIndex, inSingleInput, canConfirmUDP, false, outExistingInputMutated);
     if (outExistingInputMutated) {
         handleIncorrectlyRenderedPrediction(toGenIfdId, true);
     }
@@ -322,12 +327,13 @@ bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, int inSelfJoin
 }
 
 bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, int inSelfJoinIndex) {
-    chaserRdfId = globalPrimitiveConsts->terminating_render_frame_id();
-    chaserRdfIdLowerBound = globalPrimitiveConsts->terminating_render_frame_id();
     lastSentIfdId = -1; 
     selfJoinIndex = inSelfJoinIndex;
     selfJoinIndexArrIdx = inSelfJoinIndex - 1;
     selfJoinIndexMask = (U64_1 << selfJoinIndexArrIdx);
     
-    return BaseBattle::ResetStartRdf(initializerMapData);
+    bool res = BaseBattle::ResetStartRdf(initializerMapData);
+
+    chaserRdfId = chaserRdfIdLowerBound = timerRdfId;
+    return res;
 }
