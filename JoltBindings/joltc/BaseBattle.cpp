@@ -215,7 +215,8 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
         case InAirIdle1ByWallJump:
             bool hasBeenOnWall = onWallSet.count(currChd.ch_state());
             // [WARNING] The "magic_frames_to_be_on_wall()" allows "InAirIdle1ByWallJump" to leave the current wall within a reasonable count of rdf count, instead of always forcing "InAirIdle1ByWallJump" to immediately stick back to the wall!
-            if (!inJumpStartupOrJustEnded && globalPrimitiveConsts->magic_frames_to_be_on_wall() <= currChd.frames_in_ch_state()) {
+            bool enoughFramesInChState = InAirIdle2ByJump == nextChd->ch_state() ? (globalPrimitiveConsts->magic_frames_to_be_on_wall() * 3) < currChd.frames_in_ch_state() : globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state();
+            if (!inJumpStartupOrJustEnded && enoughFramesInChState) {
                 nextChd->set_ch_state(OnWallIdle1);
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
             } else if (!inJumpStartupOrJustEnded && hasBeenOnWall) {
