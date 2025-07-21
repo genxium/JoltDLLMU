@@ -215,7 +215,12 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
         case InAirIdle1ByWallJump:
             bool hasBeenOnWall = onWallSet.count(currChd.ch_state());
             // [WARNING] The "magic_frames_to_be_on_wall()" allows "InAirIdle1ByWallJump" to leave the current wall within a reasonable count of rdf count, instead of always forcing "InAirIdle1ByWallJump" to immediately stick back to the wall!
-            bool enoughFramesInChState = InAirIdle2ByJump == nextChd->ch_state() ? globalPrimitiveConsts->magic_frames_to_be_on_wall_air_jump() < currChd.frames_in_ch_state() : globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state();
+            bool enoughFramesInChState = InAirIdle2ByJump == currChd.ch_state() 
+                                         ? 
+                                        globalPrimitiveConsts->magic_frames_to_be_on_wall_air_jump() < currChd.frames_in_ch_state() 
+                                        : 
+                                        globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state();
+
             if (!inJumpStartupOrJustEnded && enoughFramesInChState) {
                 nextChd->set_ch_state(OnWallIdle1);
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
@@ -320,27 +325,28 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 bool oldNextNotDashing = isNotDashing(*nextChd); 
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing); 
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
-                bool cvSupported = single->IsSupported();
+                bool cvOnWall = (!single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
+                bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
+                auto cvGroundState = single->GetGroundState();
                 auto newVel = cvSupported
                     ?
                     (RVec3Arg(single->GetLinearVelocity().GetX(), isProactivelyJumping ? single->GetLinearVelocity().GetY() : 0, 0) + single->GetGroundVelocity())
                     :
-                    ((nextChd->omit_gravity() || cc->omit_gravity() || isProactivelyJumping) ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity() * dt);
+                    ((nextChd->omit_gravity() || cc->omit_gravity() || inJumpStartupOrJustEnded) ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity() * dt);
 
                 nextChd->set_x(newPos.GetX());
                 nextChd->set_y(newPos.GetY());
                 nextChd->set_vel_x(newVel.GetX());
                 nextChd->set_vel_y(newVel.GetY());
 
-                bool cvOnWall = (CharacterBase::EGroundState::NotSupported == single->GetGroundState() && !single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
-                if (cvOnWall) {
+                if (cvOnWall) { 
                     if (cc->on_wall_enabled()) {
                         // [WARNING] Will update "nextChd->vel_x() & nextChd->vel_y()".
                         processWallGrabbingPostPhysicsUpdate(rdfId, currChd, nextChd, cc, single, inJumpStartupOrJustEnded);
                     }
-                } 
+                }
 
-                bool cvInAir = (CharacterBase::EGroundState::InAir == single->GetGroundState() || CharacterBase::EGroundState::NotSupported == single->GetGroundState());
+                bool cvInAir = (CharacterBase::EGroundState::InAir == cvGroundState || CharacterBase::EGroundState::NotSupported == cvGroundState || cvOnWall);
                 if (OnWallIdle1 == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state() && nextChd->x() != currChd.x()) {
 #ifndef NDEBUG
                     Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") horizontal-position changed during OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Red);
@@ -350,9 +356,10 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
 
 #ifndef NDEBUG
                 if (!cvOnWall && InAirIdle1ByWallJump != nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
-                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") dropping from OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Orange); } 
+                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", preupdateVel=(" + std::to_string(preupdateVel.GetX()) + ", " + std::to_string(preupdateVel.GetY()) + "), preupdatePos=(" + std::to_string(preupdatePos.GetX()) + ", " + std::to_string(preupdatePos.GetY()) + ") dropping from OnWallIdle1 to newPos (" + std::to_string(newPos.GetX()) + ", " + std::to_string(newPos.GetY()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", groundNormal=(" + std::to_string(single->GetGroundNormal().GetX()) + ", " + std::to_string(single->GetGroundNormal().GetY()) + ")", DColor::Orange); 
+                }
 #endif
-                postStepSingleChdStateCorrection(currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded);
+                postStepSingleChdStateCorrection(currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
             break;
             }
         }
@@ -653,6 +660,9 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
                 if (!cc->isolated_air_jump_and_dash_quota() && 0 < nextChd->remaining_air_dash_quota()) {
                     nextChd->set_remaining_air_dash_quota(nextChd->remaining_air_dash_quota() - 1);
                 }
+#ifndef NDEBUG
+                Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") becomes InAirIdle2ByJump from " + std::to_string(currChd.ch_state()), DColor::Orange);
+#endif
             }
         } else {
             // [WARNING] Including "slip_jump_triggered()" here
@@ -673,6 +683,9 @@ void BaseBattle::processJumpStarted(int currRdfId, const CharacterDownsync& curr
             nextChd->set_frames_to_recover(cc->wall_jumping_frames_to_recover()) ;
         } else if (InAirIdle2ByJump == nextChd->ch_state()) {
             nextChd->set_vel_y(cc->jumping_init_vel_y());
+#ifndef NDEBUG
+            Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") sets vel_y for InAirIdle2ByJump = " + std::to_string(nextChd->vel_y()), DColor::Orange);
+#endif
         } else if (currChd.slip_jump_triggered()) {
             nextChd->set_vel_y(0);
             if (currChd.omit_gravity() && !cc->omit_gravity() && cc->jump_holding_to_fly()) {
@@ -1527,7 +1540,7 @@ void BaseBattle::processDelayedBulletSelfVel(int rdfId, const CharacterDownsync&
     }
 }
 
-void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded) {
+void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState) {
         CharacterState oldNextChState = nextChd->ch_state();
         const Skill* activeSkill = nullptr;
         const BulletConfig* activeBulletConfig = nullptr;
@@ -1801,6 +1814,10 @@ void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currC
         }
 
 #ifndef NDEBUG
+        if (InAirIdle2ByJump == oldNextChState && InAirIdle2ByJump != nextChd->ch_state()) {
+            Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") revoked from InAirIdle2ByJump to " + std::to_string(nextChd->ch_state()) + ", nextVel=(" +  std::to_string(nextChd->vel_x()) + "," + std::to_string(nextChd->vel_y()) + "). cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir) + ", cvGroundState=" + std::to_string((int)cvGroundState), DColor::Red);
+        }
+
         if (InAirIdle1NoJump == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
             Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") changed from OnWallIdle1 to " + std::to_string(nextChd->ch_state()) + ". cvSupported=" + std::to_string(cvSupported) + ", cvOnWall=" + std::to_string(cvOnWall) + ", cvInAir=" + std::to_string(cvInAir), DColor::Orange);
         }
