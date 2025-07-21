@@ -580,7 +580,7 @@ namespace jtshared {
             "CnNwZWNpZXNfaWQYBCABKA0SDwoHcm9vbV9pZBgFIAEoBSJzChFScGNFbmRw",
             "b2ludEhvbGRlchIKCgJpZBgBIAEoDRIaChJleHRlcm5hbF9hZGRyX2hvc3QY",
             "AiABKAkSGgoSZXh0ZXJuYWxfYWRkcl9wb3J0GAMgASgNEhoKEmludGVybmFs",
-            "X2FkZHJfaG9zdBgEIAEoCSLYKwoPUHJpbWl0aXZlQ29uc3RzEhsKE2JhdHRs",
+            "X2FkZHJfaG9zdBgEIAEoCSKFLAoPUHJpbWl0aXZlQ29uc3RzEhsKE2JhdHRs",
             "ZV9keW5hbWljc19mcHMYASABKAUSMgoqZGVmYXVsdF90aW1lb3V0X2Zvcl9s",
             "YXN0X2FsbF9jb25maXJtZWRfaWZkGAIgASgFEhQKDHJvb21faWRfbm9uZRgD",
             "IAEoBRIdChVyb29tX3N0YXRlX2ltcG9zc2libGUYBCABKAUSFwoPcm9vbV9z",
@@ -655,7 +655,8 @@ namespace jtshared {
             "BRIaChJpbnB1dF9kZWxheV9mcmFtZXMYUiABKAUSKQohZGVmYXVsdF9iYWNr",
             "ZW5kX2lucHV0X2J1ZmZlcl9zaXplGFMgASgFEiwKJG1heF9jaGFzaW5nX3Jl",
             "bmRlcl9mcmFtZXNfcGVyX3VwZGF0ZRhUIAEoBRIiChptYWdpY19mcmFtZXNf",
-            "dG9fYmVfb25fd2FsbBhWIAEoBRIfChdkeWluZ19mcmFtZXNfdG9fcmVjb3Zl",
+            "dG9fYmVfb25fd2FsbBhVIAEoBRIrCiNtYWdpY19mcmFtZXNfdG9fYmVfb25f",
+            "d2FsbF9haXJfanVtcBhWIAEoBRIfChdkeWluZ19mcmFtZXNfdG9fcmVjb3Zl",
             "chhXIAEoBRIhChlwYXJyaWVkX2ZyYW1lc190b19yZWNvdmVyGFggASgFEisK",
             "I3BhcnJpZWRfZnJhbWVzX3RvX3N0YXJ0X2NhbmNlbGxhYmxlGFkgASgFEhAK",
             "CG5vX3NraWxsGFogASgNEhQKDG5vX3NraWxsX2hpdBhbIAEoBRIXCg9zcGVj",
@@ -848,7 +849,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "EditorId", "Id", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "DirX", "SubCycleQuotaLeft", "State", "FramesInState", "X", "Y", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcKilledEvtMaskCounter", "SubscriberIdsMask", "ExhaustSubscriberIdsMask", "OffenderUd", "OffenderBulletTeamId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerMetaInfo), global::jtshared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RpcEndpointHolder), global::jtshared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "DefaultTimeoutForLastAllConfirmedIfd", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "NpcFleeGracePeriodRdfCnt", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "TerminatingEvtsubId", "MagicEvtsubIdDummy", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "NoVfxId", "DefaultPickableHitboxSizeX", "DefaultPickableHitboxSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableNonpickableStartupFrames", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "SpeciesNoneCh", "UpsyncStIfdIdTolerance", "NoLockVel", "DebuffArrIdxElemental", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "SpAtkLookupFrames", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "EleNone", "EleFire", "EleWater", "EleThunder", "EleRock", "EleWind", "EleIce", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "DefaultTimeoutForLastAllConfirmedIfd", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "NpcFleeGracePeriodRdfCnt", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "TerminatingEvtsubId", "MagicEvtsubIdDummy", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "NoVfxId", "DefaultPickableHitboxSizeX", "DefaultPickableHitboxSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableNonpickableStartupFrames", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "SpeciesNoneCh", "UpsyncStIfdIdTolerance", "NoLockVel", "DebuffArrIdxElemental", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "SpAtkLookupFrames", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "EleNone", "EleFire", "EleWater", "EleThunder", "EleRock", "EleWind", "EleIce", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConfigConsts), global::jtshared.ConfigConsts.Parser, new[]{ "CharacterConfigs", "SkillConfigs", "DebuffConfigs" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, })
           }));
     }
@@ -28621,6 +28622,7 @@ namespace jtshared {
       defaultBackendInputBufferSize_ = other.defaultBackendInputBufferSize_;
       maxChasingRenderFramesPerUpdate_ = other.maxChasingRenderFramesPerUpdate_;
       magicFramesToBeOnWall_ = other.magicFramesToBeOnWall_;
+      magicFramesToBeOnWallAirJump_ = other.magicFramesToBeOnWallAirJump_;
       dyingFramesToRecover_ = other.dyingFramesToRecover_;
       parriedFramesToRecover_ = other.parriedFramesToRecover_;
       parriedFramesToStartCancellable_ = other.parriedFramesToStartCancellable_;
@@ -29648,13 +29650,24 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "magic_frames_to_be_on_wall" field.</summary>
-    public const int MagicFramesToBeOnWallFieldNumber = 86;
+    public const int MagicFramesToBeOnWallFieldNumber = 85;
     private int magicFramesToBeOnWall_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int MagicFramesToBeOnWall {
       get { return magicFramesToBeOnWall_; }
       set {
         magicFramesToBeOnWall_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "magic_frames_to_be_on_wall_air_jump" field.</summary>
+    public const int MagicFramesToBeOnWallAirJumpFieldNumber = 86;
+    private int magicFramesToBeOnWallAirJump_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int MagicFramesToBeOnWallAirJump {
+      get { return magicFramesToBeOnWallAirJump_; }
+      set {
+        magicFramesToBeOnWallAirJump_ = value;
       }
     }
 
@@ -30544,6 +30557,7 @@ namespace jtshared {
       if (DefaultBackendInputBufferSize != other.DefaultBackendInputBufferSize) return false;
       if (MaxChasingRenderFramesPerUpdate != other.MaxChasingRenderFramesPerUpdate) return false;
       if (MagicFramesToBeOnWall != other.MagicFramesToBeOnWall) return false;
+      if (MagicFramesToBeOnWallAirJump != other.MagicFramesToBeOnWallAirJump) return false;
       if (DyingFramesToRecover != other.DyingFramesToRecover) return false;
       if (ParriedFramesToRecover != other.ParriedFramesToRecover) return false;
       if (ParriedFramesToStartCancellable != other.ParriedFramesToStartCancellable) return false;
@@ -30705,6 +30719,7 @@ namespace jtshared {
       if (DefaultBackendInputBufferSize != 0) hash ^= DefaultBackendInputBufferSize.GetHashCode();
       if (MaxChasingRenderFramesPerUpdate != 0) hash ^= MaxChasingRenderFramesPerUpdate.GetHashCode();
       if (MagicFramesToBeOnWall != 0) hash ^= MagicFramesToBeOnWall.GetHashCode();
+      if (MagicFramesToBeOnWallAirJump != 0) hash ^= MagicFramesToBeOnWallAirJump.GetHashCode();
       if (DyingFramesToRecover != 0) hash ^= DyingFramesToRecover.GetHashCode();
       if (ParriedFramesToRecover != 0) hash ^= ParriedFramesToRecover.GetHashCode();
       if (ParriedFramesToStartCancellable != 0) hash ^= ParriedFramesToStartCancellable.GetHashCode();
@@ -31125,8 +31140,12 @@ namespace jtshared {
         output.WriteInt32(MaxChasingRenderFramesPerUpdate);
       }
       if (MagicFramesToBeOnWall != 0) {
-        output.WriteRawTag(176, 5);
+        output.WriteRawTag(168, 5);
         output.WriteInt32(MagicFramesToBeOnWall);
+      }
+      if (MagicFramesToBeOnWallAirJump != 0) {
+        output.WriteRawTag(176, 5);
+        output.WriteInt32(MagicFramesToBeOnWallAirJump);
       }
       if (DyingFramesToRecover != 0) {
         output.WriteRawTag(184, 5);
@@ -31671,6 +31690,9 @@ namespace jtshared {
       if (MagicFramesToBeOnWall != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(MagicFramesToBeOnWall);
       }
+      if (MagicFramesToBeOnWallAirJump != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(MagicFramesToBeOnWallAirJump);
+      }
       if (DyingFramesToRecover != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(DyingFramesToRecover);
       }
@@ -32146,6 +32168,9 @@ namespace jtshared {
       }
       if (other.MagicFramesToBeOnWall != 0) {
         MagicFramesToBeOnWall = other.MagicFramesToBeOnWall;
+      }
+      if (other.MagicFramesToBeOnWallAirJump != 0) {
+        MagicFramesToBeOnWallAirJump = other.MagicFramesToBeOnWallAirJump;
       }
       if (other.DyingFramesToRecover != 0) {
         DyingFramesToRecover = other.DyingFramesToRecover;
@@ -32704,8 +32729,12 @@ namespace jtshared {
             MaxChasingRenderFramesPerUpdate = input.ReadInt32();
             break;
           }
-          case 688: {
+          case 680: {
             MagicFramesToBeOnWall = input.ReadInt32();
+            break;
+          }
+          case 688: {
+            MagicFramesToBeOnWallAirJump = input.ReadInt32();
             break;
           }
           case 696: {

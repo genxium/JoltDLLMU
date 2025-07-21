@@ -215,10 +215,13 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
         case InAirIdle1ByWallJump:
             bool hasBeenOnWall = onWallSet.count(currChd.ch_state());
             // [WARNING] The "magic_frames_to_be_on_wall()" allows "InAirIdle1ByWallJump" to leave the current wall within a reasonable count of rdf count, instead of always forcing "InAirIdle1ByWallJump" to immediately stick back to the wall!
-            bool enoughFramesInChState = InAirIdle2ByJump == nextChd->ch_state() ? (globalPrimitiveConsts->magic_frames_to_be_on_wall() * 3) < currChd.frames_in_ch_state() : globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state();
+            bool enoughFramesInChState = InAirIdle2ByJump == nextChd->ch_state() ? globalPrimitiveConsts->magic_frames_to_be_on_wall_air_jump() < currChd.frames_in_ch_state() : globalPrimitiveConsts->magic_frames_to_be_on_wall() < currChd.frames_in_ch_state();
             if (!inJumpStartupOrJustEnded && enoughFramesInChState) {
                 nextChd->set_ch_state(OnWallIdle1);
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
+#ifndef NDEBUG
+                Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") becomes OnWallIdle1 from InAirIdle2ByJump", DColor::Orange);
+#endif
             } else if (!inJumpStartupOrJustEnded && hasBeenOnWall) {
                 nextChd->set_ch_state(currChd.ch_state());
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
