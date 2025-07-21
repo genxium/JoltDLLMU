@@ -177,7 +177,7 @@ namespace JoltCSharp {
             InputScaleFrames = INPUT_SCALE_FRAMES, // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
             MaxChasingRenderFramesPerUpdate = 8,
             MagicFramesToBeOnWall = (BATTLE_DYNAMICS_FPS >> 2),
-            MagicFramesToBeOnWallAirJump = BATTLE_DYNAMICS_FPS,
+            MagicFramesToBeOnWallAirJump = (BATTLE_DYNAMICS_FPS >> 1),
 
             DyingFramesToRecover = 100, // MUST BE SAME FOR EVERY CHARACTER FOR FAIRNESS!
 

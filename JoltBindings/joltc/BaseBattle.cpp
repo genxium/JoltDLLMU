@@ -220,7 +220,9 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
                 nextChd->set_ch_state(OnWallIdle1);
                 nextChd->set_vel_y(cc->wall_sliding_vel_y());
 #ifndef NDEBUG
-                Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") becomes OnWallIdle1 from InAirIdle2ByJump", DColor::Orange);
+                if (InAirIdle2ByJump == nextChd->ch_state()) {
+                    Debug::Log("Character at (" + std::to_string(currChd.x()) + ", " + std::to_string(currChd.y()) + ") w/ frames_in_ch_state=" + std::to_string(currChd.frames_in_ch_state()) + ", vel=(" + std::to_string(currChd.vel_x()) + "," + std::to_string(currChd.vel_y()) + ") becomes OnWallIdle1 from InAirIdle2ByJump", DColor::Orange);
+                }
 #endif
             } else if (!inJumpStartupOrJustEnded && hasBeenOnWall) {
                 nextChd->set_ch_state(currChd.ch_state());
@@ -323,7 +325,7 @@ void BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                     ?
                     (RVec3Arg(single->GetLinearVelocity().GetX(), isProactivelyJumping ? single->GetLinearVelocity().GetY() : 0, 0) + single->GetGroundVelocity())
                     :
-                    (nextChd->omit_gravity() || cc->omit_gravity() ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity() * dt);
+                    ((nextChd->omit_gravity() || cc->omit_gravity() || isProactivelyJumping) ? single->GetLinearVelocity() : single->GetLinearVelocity() + phySys->GetGravity() * dt);
 
                 nextChd->set_x(newPos.GetX());
                 nextChd->set_y(newPos.GetY());
