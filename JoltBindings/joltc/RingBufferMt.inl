@@ -104,8 +104,7 @@ inline T* RingBufferMt<T>::Pop() {
         success = St.compare_exchange_weak(expectedOldSt, proposedNewSt); 
         if (success) break;
 
-        // By now, "expectedOldSt" holds the updated value (from other threads) which is guaranteed to be less than N by [Cnt-protection]. However, this updated value may or may not have been subtracted by N after an extrusion occurred. 
-
+        // By now, "expectedOldSt" holds the updated value (from other threads) which may or may not have been subtracted by N after an extrusion occurred. 
         if (expectedOldSt < N) {
             // If the updated "expectedOldSt" (from other threads) is already in valid range, we deem the current thread result as success too.
             success = true;
@@ -116,7 +115,7 @@ inline T* RingBufferMt<T>::Pop() {
         }
 
         --retryCnt;
-    } while(0 < retryCnt && expectedOldSt >= N);
+    } while(0 < retryCnt);
 
     if (!success) {
         // Recovery
@@ -160,6 +159,7 @@ inline T* RingBufferMt<T>::PopTail() {
         success = Ed.compare_exchange_weak(expectedOldEd, proposedNewEd);
         if (success) break;
 
+        // By now, "expectedOldEd" holds the updated value (from other threads) which may or may not have been added by N after an extrusion occurred. 
         if (expectedOldEd >= 0) {
             // If the updated "expectedOldEd" (from other threads) is already in valid range, we deem the current thread result as success too.
             success = true;
@@ -170,7 +170,7 @@ inline T* RingBufferMt<T>::PopTail() {
         }
 
         --retryCnt;
-    } while (0 < retryCnt && expectedOldEd < 0);
+    } while (0 < retryCnt);
 
     if (!success) {
         // Recovery
@@ -230,6 +230,8 @@ inline T* RingBufferMt<T>::DryPut() {
     do {
         success = Ed.compare_exchange_weak(expectedOldEd, proposedNewEd);
         if (success) break;
+
+        // By now, "expectedOldEd" holds the updated value (from other threads) which may or may not have been subtracted by N after an extrusion occurred. 
         // [WARNING] The following boundary handling is asymmetric to "PopTail"!
         if (expectedOldEd > N) {
             // If the updated "expectedOldEd" (from other threads) is a result of thread-switch right after "Ed.fetch_add(1)", we can try to update the "proposedNewEd" accordingly -- only one success is needed regardless of which thread succeeds.
@@ -241,7 +243,7 @@ inline T* RingBufferMt<T>::DryPut() {
         }
 
         --retryCnt;
-    } while (0 < retryCnt && expectedOldEd < 0);
+    } while (0 < retryCnt);
 
     if (success) {
         T** pSlot = &Eles[holderIdx];
