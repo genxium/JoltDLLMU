@@ -178,13 +178,13 @@ namespace JoltCSharp {
             return ret;
         }
 
-        public static void preemptyInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd, PrimitiveConsts primitives) {
+        public static void preemptInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd, PrimitiveConsts primitives) {
             ifd.ConfirmedList = 0;
             ifd.UdpConfirmedList = 0;
             ifd.InputList.Clear();
         }
 
-        public static void preemptyRenderFrameBeforeMerge(RenderFrame rdf, PrimitiveConsts primitives) {
+        public static void preemptRenderFrameBeforeMerge(RenderFrame rdf, PrimitiveConsts primitives) {
             rdf.Id = primitives.TerminatingRenderFrameId;
             rdf.PlayersArr.Clear();
             rdf.NpcsArr.Clear();
@@ -198,6 +198,23 @@ namespace JoltCSharp {
             rdf.CountdownNanos = long.MaxValue;
         }
 
+        public static void preemptUpsyncSnapshotBeforeMerge(UpsyncSnapshot upsyncSnapshot, PrimitiveConsts primitives) {
+            upsyncSnapshot.JoinIndex = primitives.MagicJoinIndexInvalid; 
+            upsyncSnapshot.StIfdId = primitives.TerminatingInputFrameId;
+            upsyncSnapshot.CmdList.Clear();
+        }
+
+        public static void preemptDownsyncSnapshotBeforeMerge(DownsyncSnapshot downsyncSnapshot, PrimitiveConsts primitives) {
+            downsyncSnapshot.RefRdfId = primitives.TerminatingRenderFrameId;
+            downsyncSnapshot.UnconfirmedMask = 0u;
+            downsyncSnapshot.StIfdId = primitives.TerminatingInputFrameId;
+            if (null != downsyncSnapshot.RefRdf) {
+                preemptRenderFrameBeforeMerge(downsyncSnapshot.RefRdf, primitives);
+            }
+            if (null != downsyncSnapshot.IfdBatch) {
+                downsyncSnapshot.IfdBatch.Clear();
+            }
+        }
     }
 }
 

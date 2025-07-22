@@ -16,7 +16,7 @@ target_link_libraries(FrontendTest PUBLIC
 )
 
 if (MSVC)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT FrontendTest)
+    #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT FrontendTest)
     target_link_options(FrontendTest PUBLIC "/SUBSYSTEM:CONSOLE")
 endif()
 

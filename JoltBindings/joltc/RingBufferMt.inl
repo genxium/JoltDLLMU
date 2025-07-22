@@ -1,7 +1,6 @@
-#ifdef JPH_BUILD_SHARED_LIBRARY // [IMPORTANT] To avoid unexpected re-compiling of these function definitions with "define JOLTC_EXPORT __declspec(dllimport)" from user code.  
-
 template <typename T>
 inline RingBufferMt<T>::RingBufferMt(int n) {
+    dirtyPuttingCnt = 0;
     Cnt = St = Ed = 0;
     N = n;
     Eles.reserve(n);
@@ -75,15 +74,14 @@ inline T* RingBufferMt<T>::GetLast() {
 
 template <typename T>
 inline T* RingBufferMt<T>::Pop() {
-    // [Thread-safe proposal] 
-
     int oldCnt = Cnt.fetch_sub(1);
     if (0 >= oldCnt) {
         // [Cnt-protection]
         ++Cnt;
         return nullptr;
     }
-    
+
+    // [WARNING] It's OK that "Pop" passes the empty-check due to thread switch immediately after "Cnt.fetch_add" from other threads' calls of "DryPut" -- in that case we might be popping a pointer to the being-written-element, and synchronization of such element should be a caller's responsibility AS LONG AS we maintain correct relationships among [St, Ed, Cnt, dirtyPuttingCnt].  
 
     int holderIdx = St.fetch_add(1);
     int expectedOldSt = holderIdx + 1;
@@ -122,6 +120,11 @@ inline T* RingBufferMt<T>::Pop() {
         // Recovery
         --St;
         ++Cnt;
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "[FAILED TO UPDATE St/Pop] thId=" << std::this_thread::get_id() << ", expectedOldSt=" << expectedOldSt << ", proposedNewSt=" << proposedNewSt << ", holderIdx=" << holderIdx; 
+        Debug::Log(oss.str(), DColor::Red);
+#endif
         return nullptr;
     } 
     
@@ -130,14 +133,14 @@ inline T* RingBufferMt<T>::Pop() {
 
 template <typename T>
 inline T* RingBufferMt<T>::PopTail() {
-    // [Thread-safe proposal] 
-
     int oldCnt = Cnt.fetch_sub(1);
     if (0 >= oldCnt) {
         // [Cnt-protection]
         ++Cnt;
         return nullptr;
     }
+
+    // [WARNING] It's OK that "PopTail" passes the empty-check due to thread switch immediately after "Cnt.fetch_add" from other threads' calls of "DryPut" -- in that case we might be popping a pointer to the being-written-element, and synchronization of such element should be a caller's responsibility AS LONG AS we maintain correct relationships among [St, Ed, Cnt, dirtyPuttingCnt].  
 
     int holderIdx = Ed.fetch_sub(1) - 1;
     int expectedOldEd = holderIdx;
@@ -175,6 +178,11 @@ inline T* RingBufferMt<T>::PopTail() {
 
     if (!success) {
         // Recovery
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "[FAILED TO UPDATE Ed/PopTail] thId=" << std::this_thread::get_id() << ", expectedOldEd=" << expectedOldEd << ", proposedNewEd=" << proposedNewEd << ", holderIdx=" << holderIdx;
+        Debug::Log(oss.str(), DColor::Red);
+#endif
         ++Ed;
         ++Cnt;
         return nullptr;
@@ -185,13 +193,14 @@ inline T* RingBufferMt<T>::PopTail() {
 
 template <typename T>
 inline void RingBufferMt<T>::Clear() {
+    dirtyPuttingCnt = 0;
     Cnt = 0;
     St = Ed = 0;
     Eles.assign(N, nullptr);
 }
 
 template <typename T>
-inline T* RingBufferMt<T>::DryPut() { 
+inline T* RingBufferMt<T>::DryPut() {
     /**
     Different from "PopTail", the [DryPut implementation of DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/FrameRingBuffer.cs#L43) is incorrect, the edge case still works but by a coincidence of NOT checking index strictly.
     - Given N = 32, Cnt = 8, St = StFrameId = 23, Ed = EdFrameId = 31; nextToPutFrameId = 31
@@ -204,27 +213,31 @@ inline T* RingBufferMt<T>::DryPut() {
 
     Carrying a working bug is not too bad for DLLMU-v2.3.4, but it's to be fixed here.
     */
-    int oldCnt = Cnt.fetch_add(1);
-    bool isFull = (0 < oldCnt && oldCnt >= N);
-    T* candidateSlot = nullptr;
-    if (isFull) {
-        // [Cnt-protection]
-        Pop();
+    int oldDirtyPuttingCnt = dirtyPuttingCnt.fetch_add(1);
+    if (oldDirtyPuttingCnt >= N) {
+        // [Cnt-protection] The worst case is that N threads are concurrently calling "DryPut()", and all switched after calling the above "Cnt.fetch_add(1) & Ed.fetch_add(1)" statements, then "holderIdx" should be capped by "2*N" in "the last thread" to AVOID evicting a "to-be-filled holder of the first thread" during this concurrency sprint. 
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "[TOO MANY DIRTY] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " << oldDirtyPuttingCnt << ", N=" << this->N;
+        Debug::Log(oss.str(), DColor::Red);
+#endif
+        --oldDirtyPuttingCnt;
+        return nullptr;
     }
 
     int holderIdx = Ed.fetch_add(1);
     int expectedOldEd = holderIdx+1;
     if (holderIdx >= N) {
         // [Holder-protection]
-        holderIdx = 0;
+        holderIdx -= N; // Locates the "thread-specific holderIdx" during a concurrency sprint. 
     }
 
-    auto holder = Eles[holderIdx];
+    T* holder = Eles[holderIdx];
 
     int proposedNewEd = expectedOldEd;
     // [WARNING] The following boundary handling is asymmetric to "PopTail"!
     if (proposedNewEd > N) {
-        proposedNewEd = 1;
+        proposedNewEd -= N;
     }
     
     int retryCnt = 2;
@@ -249,20 +262,67 @@ inline T* RingBufferMt<T>::DryPut() {
     } while (0 < retryCnt);
 
     if (success) {
-        T** pSlot = &Eles[holderIdx];
-        if (nullptr == *pSlot) {
-            *pSlot = new T();
-        }
-        candidateSlot = *pSlot;
-    }
+        if (nullptr == holder) {
+            Eles[holderIdx] = new T();
+            holder = Eles[holderIdx];
+        } 
+        int oldCnt = Cnt.fetch_add(1); // [Cnt-protection] Decremented first when popping, incremented last when putting.
+        bool overflowed = (N <= oldCnt);
+        if (overflowed) {
+            /*
+             [EdgeCase setup#1] @Cnt=N=8, th#1, th#42, th#99 are calling "DryPut()" while th#2, th#41, th#88 are calling "PopTail()" altogether simultaneously.
+             1.1. If the call sequence starts with "th#1 {Cnt.fetch_add}" -> "th#42 {Cnt.fetch_add}" -> "th#2 {Cnt.fetch_sub}", then 
+                - both "th#1" and "th#42" will call "Pop" because they see "oldCnt = 8" and "oldCnt = 9" respectively, and 
+                - "th#2" will succeed in its own "PopTail" and returns the element inserted by "th#42 {DryPut}".
 
-    if (nullptr == candidateSlot) {
+             1.2. If the call sequence starts with "th#1 {Cnt.fetch_add, overflowed-Pop}" -> "th#42 {Cnt.fetch_add}" -> "th#2 {Cnt.fetch_sub}", then 
+                - "th#1" will decide to call "Pop" because it sees "oldCnt = 8" till success of its whole "DryPut", and 
+                - "th#42" will also decide to call "Pop" because it sees "oldCnt = 8" too, and 
+                - "th#2" will succeed in its own "PopTail" and returns the element inserted by "th#42 {DryPut}".
+
+             1.3. If the call sequence starts with "th#1 {Cnt.fetch_add, overflowed-Pop}" -> "th#2 {Cnt.fetch_sub}" -> "th#42 {Cnt.fetch_add}", then 
+                - "th#1" will decide to call "Pop" because it sees "oldCnt = 8" till the whole "DryPut" succeeds, and 
+                - "th#2" will succeed in its own "PopTail" BUT the returned element will depend on the order of ["th#2 {Ed.fetch_sub}", "th#42 {Ed.fetch_add}"], and 
+                - "th#42" would NOT call "Pop()" because it sees "oldCnt = 7". 
+
+             1.4. If the call sequence starts with "th#1 {Cnt.fetch_add}" -> "th#2 {Cnt.fetch_sub}" -> "th#1 {overflowed-Pop}" -> "th#42 {Cnt.fetch_add}", then 
+                - "th#1" will decide to call "Pop()" because it sees "oldCnt = 8", and 
+                - "th#2" will succeed in its own "PopTail" BUT the returned element will depend on the order of ["th#2 {Ed.fetch_sub}", "th#42 {Ed.fetch_add}"], and 
+                - "th#1" will succeed in its own "overflowed-Pop", and
+                - "th#42" would NOT call "Pop()" because it sees "oldCnt = 7". 
+
+             1.5. If the call sequence starts with "th#1 {Cnt.fetch_add}" -> "th#2 {Cnt.fetch_sub}" -> "th#42 {Cnt.fetch_add}" -> "th#1 {overflowed-Pop}", then 
+                - "th#1" will decide to call "Pop" because it sees "oldCnt = 8", and 
+                - "th#2" will succeed in its own "PopTail" BUT the returned element will depend on the order of ["th#2 {Ed.fetch_sub}", "th#42 {Ed.fetch_add}"], and 
+                - "th#42" will also decide to call "Pop" because it sees "oldCnt = 8" too, and 
+                - "th#1" will succeed in its own "overflowed-Pop".
+
+             1.6. If the call sequence starts with "th#2 {Cnt.fetch_sub}" -> "th#1 {Cnt.fetch_add}", then 
+                - "th#2" will succeed in its own "PopTail" BUT the returned element will depend on the order of ["th#1 {Ed.fetch_add}", "th#2 {Ed.fetch_sub}"], and 
+                - "th#1" would NOT call "Pop()" because it sees "oldCnt = 7".
+
+
+             [EdgeCase setup#2] @Cnt=0,N=8, th#1, th#42, th#99 are calling "DryPut()" while th#2, th#41, th#88 are calling "PopTail()" altogether simultaneously.
+             2.1. If the call sequence starts with "th#2 {Cnt.fetch_sub}" -> "th#1 {Cnt.fetch_add}", then 
+                - "th#2" would fail in its own "PopTail", and
+                - "th#1" will succeed in its whole "DryPut" (would NOT call "Pop" because "oldCnt == -1").
+
+             2.2. If the call sequence starts with "th#1 {Cnt.fetch_add}" -> "th#2 {Cnt.fetch_sub}", then 
+                - "th#1" will succeed in its whole "DryPut" (would NOT call "Pop" because "oldCnt == 0").
+                - "th#2" will succeed in its own "PopTail".
+            */
+            Pop();
+        }
+    } else {
         // Recovery, but the oldCnt-full-induced-popped element couldn't be recovered by the current implementation 
-        --Cnt;
         --Ed;
-        return nullptr;
-    }
-    
-    return candidateSlot;
-}
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "[FAILED TO UPDATE Ed/DryPut] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " + oldDirtyPuttingCnt << ", expectedOldEd=" << expectedOldEd << ", proposedNewEd=" << proposedNewEd << ", holderIdx=" << holderIdx;
+        Debug::Log(oss.str(), DColor::Red);
 #endif
+    }
+     
+    --dirtyPuttingCnt;
+    return holder;
+}

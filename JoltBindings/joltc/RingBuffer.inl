@@ -1,4 +1,3 @@
-#ifdef JPH_BUILD_SHARED_LIBRARY // [IMPORTANT] To avoid unexpected re-compiling of these function definitions with "define JOLTC_EXPORT __declspec(dllimport)" from user code.  
 template <typename T>
 inline RingBuffer<T>::RingBuffer(int n) {
     Cnt = St = Ed = 0;
@@ -128,4 +127,3 @@ inline T* RingBuffer<T>::DryPut() {
     }
     return candidateSlot;
 }
-#endif

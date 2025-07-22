@@ -62,6 +62,8 @@ else()
     add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
 endif()
 
+#target_compile_definitions(${TARGET_NAME} PUBLIC USE_RBMT)
+
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 target_sources(${TARGET_NAME} PRIVATE ${JOLT_PHYSICS_SRC_FILES})
 
@@ -156,4 +158,9 @@ endif()
 set(TARGET_FRONTEND_TEST ON)
 if (TARGET_FRONTEND_TEST) 
     include(${JOLT_BINDINGS_ROOT}/CppTests/Frontend/Frontend.cmake)
+endif()
+
+set(TARGET_RBMT_TEST ON)
+if (TARGET_RBMT_TEST) 
+    include(${JOLT_BINDINGS_ROOT}/CppTests/RingBufferMt/RingBufferMt.cmake)
 endif()
