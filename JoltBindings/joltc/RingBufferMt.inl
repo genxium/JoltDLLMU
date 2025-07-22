@@ -79,11 +79,11 @@ inline T* RingBufferMt<T>::Pop() {
 
     int oldCnt = Cnt.fetch_sub(1);
     if (0 >= oldCnt) {
+        // [Cnt-protection]
         ++Cnt;
         return nullptr;
     }
     
-    // [Cnt-protection] When popping, "Cnt" is decremented first; when putting, "Cnt" is incremented last.
 
     int holderIdx = St.fetch_add(1);
     int expectedOldSt = holderIdx + 1;
@@ -111,6 +111,7 @@ inline T* RingBufferMt<T>::Pop() {
             break;
         } else {
            // Otherwise, the updated "expectedOldSt" (from other threads) is a result of thread-switch right after "St.fetch_add(1)", we can try to update the "proposedNewSt" accordingly -- only one success is needed regardless of which thread succeeds.
+            // At most "- N" is needed due to [Cnt-protection].
            proposedNewSt = expectedOldSt - N;   
         }
 
@@ -133,11 +134,10 @@ inline T* RingBufferMt<T>::PopTail() {
 
     int oldCnt = Cnt.fetch_sub(1);
     if (0 >= oldCnt) {
+        // [Cnt-protection]
         ++Cnt;
         return nullptr;
     }
-
-    // [Cnt-protection] When popping, "Cnt" is decremented first; when putting, "Cnt" is incremented last.
 
     int holderIdx = Ed.fetch_sub(1) - 1;
     int expectedOldEd = holderIdx;
@@ -166,6 +166,7 @@ inline T* RingBufferMt<T>::PopTail() {
             break;
         } else {
             // Otherwise, the updated "expectedOldEd" (from other threads) is a result of thread-switch right after "Ed.fetch_sub(1)", we can try to update the "proposedNewEd" accordingly -- only one success is needed regardless of which thread succeeds.
+            // At most "+ N" is needed due to [Cnt-protection].
             proposedNewEd = expectedOldEd + N;
         }
 
@@ -207,13 +208,14 @@ inline T* RingBufferMt<T>::DryPut() {
     bool isFull = (0 < oldCnt && oldCnt >= N);
     T* candidateSlot = nullptr;
     if (isFull) {
+        // [Cnt-protection]
         Pop();
     }
 
     int holderIdx = Ed.fetch_add(1);
     int expectedOldEd = holderIdx+1;
-    // [Holder-protection]
     if (holderIdx >= N) {
+        // [Holder-protection]
         holderIdx = 0;
     }
 
@@ -235,6 +237,7 @@ inline T* RingBufferMt<T>::DryPut() {
         // [WARNING] The following boundary handling is asymmetric to "PopTail"!
         if (expectedOldEd > N) {
             // If the updated "expectedOldEd" (from other threads) is a result of thread-switch right after "Ed.fetch_add(1)", we can try to update the "proposedNewEd" accordingly -- only one success is needed regardless of which thread succeeds.
+            // At most "- N" is needed due to [Cnt-protection].
             proposedNewEd = expectedOldEd - N; // e.g. when expectedOldEd == N+2, proposedNewEd = 2
         } else {
             // If the updated "expectedOldEd" (from other threads) is already in valid range, we deem the current thread result as success too.
@@ -254,11 +257,11 @@ inline T* RingBufferMt<T>::DryPut() {
     }
 
     if (nullptr == candidateSlot) {
-        // Recovery
+        // Recovery, but the oldCnt-full-induced-popped element couldn't be recovered by the current implementation 
         --Cnt;
         --Ed;
         return nullptr;
-    } 
+    }
     
     return candidateSlot;
 }
