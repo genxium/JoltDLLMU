@@ -3,7 +3,14 @@
 
 #include <vector>
 #include <atomic>
-#include "joltc_export.h"
+#include <string>
+#include <ostream>
+
+#ifndef NDEBUG
+#include "DebugLog.h"
+#include <thread>
+#include <sstream>
+#endif
 
 /*
 [WARNING]
@@ -15,7 +22,7 @@ This class DOESN'T support resizing.
 This class implicitly deallocates pointer-type element memory in destructor.
 */
 template <class T>
-class JOLTC_EXPORT RingBufferMt {
+class RingBufferMt {
     public: 
         int CONSECUTIVE_SET = 0;
         int NON_CONSECUTIVE_SET = 1;
@@ -42,6 +49,15 @@ class JOLTC_EXPORT RingBufferMt {
 
         // [WARNING] Always returns a non-null pointer to the slot for assignment -- when the candidate slot is nullptr, heap memory allocation will occur.
         virtual T* DryPut();   
+    protected:
+        std::atomic<int> dirtyPuttingCnt;        // used for [Cnt-protection] in "DryPut()"
+
+    public:
+        std::string toSimpleStat() {
+            std::ostringstream oss;
+            oss << "St=" << St << ", Ed = " << Ed << ", Cnt / N = " << this->Cnt << "/" << this->N;
+            return oss.str();
+        }
 }; 
 
 #include "RingBufferMt.inl"

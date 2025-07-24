@@ -1,10 +1,17 @@
 #pragma once
 
+#ifndef USE_RBMT
 #include "RingBuffer.h"
+#define RB_T RingBuffer<T> 
+#else
+#include "RingBufferMt.h"
+#define RB_T RingBufferMt<T> 
+#endif
+
 #include <string>
 
 template <class T>
-class JOLTC_EXPORT FrameRingBuffer : public RingBuffer<T> {
+class FrameRingBuffer : public RB_T {
     public:
         int EdFrameId;
         int StFrameId;

@@ -158,7 +158,7 @@ public class FrontendTest {
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
-                    Bindings.preemptyRenderFrameBeforeMerge(rdfHolder, primitives);
+                    Bindings.preemptRenderFrameBeforeMerge(rdfHolder, primitives);
                     rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
                     _logger.WriteLine(rdfHolder.PlayersArr.ToString());
                 }

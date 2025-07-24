@@ -2,7 +2,6 @@
 #define RING_BUFFER_H_ 1
 
 #include <vector>
-#include "joltc_export.h"
 
 /*
 [WARNING]
@@ -14,7 +13,7 @@ This class DOESN'T support resizing.
 This class implicitly deallocates pointer-type element memory in destructor.
 */
 template <class T>
-class JOLTC_EXPORT RingBuffer {
+class RingBuffer {
     public: 
         int CONSECUTIVE_SET = 0;
         int NON_CONSECUTIVE_SET = 1;
