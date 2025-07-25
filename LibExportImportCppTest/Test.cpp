@@ -197,7 +197,7 @@ int main(int argc, char** argv)
             std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        bool stepped = FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
+        FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
         timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;
@@ -215,7 +215,7 @@ int main(int argc, char** argv)
                 std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
                 nowMillis = newNowMillis;
             } else {
-                std::cerr << "Step result = " << stepped << " at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
+                std::cerr << "Stepped at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
             }
         }
     }

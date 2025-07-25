@@ -24,15 +24,15 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput) {
     return true;
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
     if (nullptr == downsyncSnapshotHolder) {
         downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
     }
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt);
+    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId);
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
     /*
     Assuming that rdfBuffer & ifdBuffer are both sufficiently large (e.g. 5 seconds) such that when 
     - "timerRdfId" is to be evicted from "rdfBuffer.StFrameId", or
@@ -160,6 +160,8 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
         handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false);
     }
 
+    *outNewLcacIfdId = lcacIfdId;
+
     return true;
 }
 
@@ -217,6 +219,54 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsh
         handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, fromUdp);
     }
 
+    return true;
+}
+
+bool FrontendBattle::ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    int batchIfdIdSt = proposedBatchIfdIdSt;
+    if (batchIfdIdSt < ifdBuffer.StFrameId) {
+        batchIfdIdSt = ifdBuffer.StFrameId;
+    }
+    
+    int batchIfdIdEd = proposedBatchIfdIdEd;
+    if (batchIfdIdEd >= ifdBuffer.EdFrameId) {
+        batchIfdIdEd = ifdBuffer.EdFrameId - 1;
+    }
+
+    if (batchIfdIdEd < batchIfdIdSt) {
+        *outBytesCntLimit = 0;
+        return false;
+    }
+
+    std::vector<uint64> cmdList;
+    cmdList.reserve(batchIfdIdEd - batchIfdIdSt + 1);
+    for (int i = batchIfdIdSt; i <= batchIfdIdEd; i++) {
+        auto ifd = ifdBuffer.GetByFrameId(i);
+        if (nullptr == ifd) {
+            break;
+        }
+        bool selfConfirmed = (0 < (selfJoinIndexMask & (ifd->confirmed_list() | ifd->udp_confirmed_list())));
+        if (selfConfirmed) {
+            cmdList.emplace_back(ifd->input_list(selfJoinIndexArrIdx));
+        }
+    }
+    if (cmdList.empty()) {
+        return false;
+    }
+
+    auto result = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    result->set_join_index(selfJoinIndex);
+    result->set_st_ifd_id(batchIfdIdSt);
+    for (auto& cmd : cmdList) {
+        result->add_cmd_list(cmd);
+    }
+    long byteSize = result->ByteSizeLong();
+    if (byteSize > *outBytesCntLimit) {
+        *outBytesCntLimit = 0;
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+    result->SerializeToArray(outBytesPreallocatedStart, byteSize);
     return true;
 }
 
@@ -320,15 +370,18 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
     chaserRdfId = timerRdfId1;
 }
 
-bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, int inSelfJoinIndex) {
+bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex) {
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     initializerMapData->ParseFromArray(inBytes, inBytesCnt);
     return ResetStartRdf(initializerMapData, inSelfJoinIndex);
 }
 
-bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, int inSelfJoinIndex) {
-    lastSentIfdId = -1; 
+bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, uint32_t inSelfJoinIndex) {
+    if (0 >= inSelfJoinIndex) {
+        return false;
+    }
     selfJoinIndex = inSelfJoinIndex;
+    selfJoinIndexInt = inSelfJoinIndex-1;
     selfJoinIndexArrIdx = inSelfJoinIndex - 1;
     selfJoinIndexMask = (U64_1 << selfJoinIndexArrIdx);
     

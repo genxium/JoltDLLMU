@@ -504,12 +504,13 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    int newLcacIfdId = -1;
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots1.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots1[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -549,8 +550,8 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
-        bool stepped = FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
         outerTimerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;
@@ -577,13 +578,14 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1536;
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int newLcacIfdId = -1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots2.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots2[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -636,8 +638,8 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
-        bool stepped = FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
         outerTimerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;
@@ -664,13 +666,14 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int newLcacIfdId = -1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots3.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots3[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -715,8 +718,8 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
-        bool stepped = FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
         outerTimerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;
@@ -755,10 +758,10 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        bool chaserStepped = FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
+        FRONTEND_Step(reusedBattle, reusedBattle->chaserRdfId, chaserRdfIdEd, true);
         int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(outerTimerRdfId);
         InputFrameDownsync* delayedIfd = reusedBattle->ifdBuffer.GetByFrameId(delayedIfdId);
-        bool stepped = FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
         outerTimerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;

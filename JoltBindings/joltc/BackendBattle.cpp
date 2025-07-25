@@ -6,7 +6,7 @@ bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
 
 bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
-    currDynamicsRdfId = timerRdfId;
+    dynamicsRdfId = timerRdfId;
     return res;
 }
 
@@ -18,10 +18,11 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
         *pOutResult = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
         (*pOutResult)->set_unconfirmed_mask(unconfirmedMask);
         (*pOutResult)->set_st_ifd_id(stIfdId);
+        (*pOutResult)->set_act(DownsyncAct::DA_REGULAR);
         if (withRefRdf) {
-            RenderFrame* refRdf = rdfBuffer.GetByFrameId(currDynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
+            RenderFrame* refRdf = rdfBuffer.GetByFrameId(dynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
             JPH_ASSERT(nullptr != refRdf);
-            (*pOutResult)->set_ref_rdf_id(currDynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "currDynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
+            (*pOutResult)->set_ref_rdf_id(dynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "dynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
             (*pOutResult)->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
         }
     }
@@ -83,9 +84,9 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
             int postEvictionStFrameId = ifdBuffer.StFrameId + toEvictCnt;
             bool shouldDragLcacIfdIdForward = (lcacIfdId + 1 < postEvictionStFrameId);
             if (!shouldDragLcacIfdIdForward) {
-                // This case makes no contribution to "DownsyncSnapshot* result", because by far all "<= lcacIfdId" elements should've already been broadcasted and used by "currDynamicsRdfId".
+                // This case makes no contribution to "DownsyncSnapshot* result", because by far all "<= lcacIfdId" elements should've already been broadcasted and used by "dynamicsRdfId".
             } else {
-                // This is the worst possible case, we have to start evicting from "ifdBuffer.StFrameId" as well as forcing the advancement of "lcacIfdId & currDynamicsRdfId" to guarantee "perfect continuity of ifdId sequence in broadcasted `DownsyncSnapshot`s from backend".
+                // This is the worst possible case, we have to start evicting from "ifdBuffer.StFrameId" as well as forcing the advancement of "lcacIfdId & dynamicsRdfId" to guarantee "perfect continuity of ifdId sequence in broadcasted `DownsyncSnapshot`s from backend".
                 int oldLcacIfdId = lcacIfdId;
                 /*
                 [EXAMPLE] 
@@ -117,9 +118,9 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
                 }
             }
 
-            // [WARNING] As "!willUpdateExisting && ifdBufferFull", we should call "Step(...)" to advance "currDynamicsRdfId" such that all "<= lcacIfdId" are used by "currDynamicsRdfId" before being any "StFrameId eviction upon DryPut() of ifdBuffer".
+            // [WARNING] As "!willUpdateExisting && ifdBufferFull", we should call "Step(...)" to advance "dynamicsRdfId" such that all "<= lcacIfdId" are used by "dynamicsRdfId" before being any "StFrameId eviction upon DryPut() of ifdBuffer".
             int nextDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
-            Step(currDynamicsRdfId, nextDynamicsRdfId, result);
+            Step(dynamicsRdfId, nextDynamicsRdfId, result);
 
             // Now that we're all set for "StFrameId eviction upon DryPut() of ifdBuffer"
         }
@@ -133,7 +134,7 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
             if (oldLcacIfdId < lcacIfdId) {
                 uint64_t unconfirmedMask = inactiveJoinMaskVal; // No eviction occurred yet, thus "unconfirmedMask" is just the immediate "inactiveJoinMaskVal"
                 produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false, &result);
-                // As long as "currDynamicsRdfId" can still find its "delayedIfd" to use, i.e. no "StFrameId eviction upon DryPut() of ifdBuffer" occurs, we try to AVOID calling "Step(...)" as much as possible.
+                // As long as "dynamicsRdfId" can still find its "delayedIfd" to use, i.e. no "StFrameId eviction upon DryPut() of ifdBuffer" occurs, we try to AVOID calling "Step(...)" as much as possible.
             }
         }
 
@@ -182,5 +183,22 @@ bool BackendBattle::ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask
 
 void BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
     BaseBattle::Step(fromRdfId, toRdfId, virtualIfds);
-    currDynamicsRdfId = toRdfId;
+    dynamicsRdfId = toRdfId;
+}
+
+bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
+    *outOldDynamicsRdfId = dynamicsRdfId;
+    int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal); // If "ifdBuffer" is not full, then "lcacIfdId" might've never advanced during the current traversal
+    *outOldLcacIfdId = oldLcacIfdId;
+    *outNewLcacIfdId = lcacIfdId;
+    *outNewDynamicsRdfId = dynamicsRdfId;
+
+    if (oldLcacIfdId < lcacIfdId) {
+        uint64_t unconfirmedMask = inactiveJoinMaskVal;
+        return ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
+    } else {
+        *outBytesCntLimit = 0;
+        return true;
+    }
 }

@@ -79,6 +79,8 @@ namespace JoltCSharp {
         public const int JUMP_HOLDING_RDF_CNT_THRESHOLD_2 = (BATTLE_DYNAMICS_FPS >> 1) + (BATTLE_DYNAMICS_FPS >> 4);
         public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_2 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_2 + INPUT_SCALE - 1) / INPUT_SCALE;
 
+        public const int DEFAULT_BACKEND_INPUT_BUFFER_SIZE = ((30 * BATTLE_DYNAMICS_FPS) >> INPUT_SCALE_FRAMES) + 1;
+
         public static PrimitiveConsts underlying = new PrimitiveConsts {
             BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
             DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
@@ -255,7 +257,7 @@ namespace JoltCSharp {
 
             EstimatedSecondsPerRdf = (1.0f / BATTLE_DYNAMICS_FPS),
             InputScale = INPUT_SCALE,
-            DefaultBackendInputBufferSize = ((30 * BATTLE_DYNAMICS_FPS) >> INPUT_SCALE_FRAMES) + 1,
+            DefaultBackendInputBufferSize = DEFAULT_BACKEND_INPUT_BUFFER_SIZE,
 
             DefaultFramesToShowDamaged = (int)(1.2 * BATTLE_DYNAMICS_FPS),
             DefaultFramesToContinueCombo = (int)(0.8f * BATTLE_DYNAMICS_FPS),
