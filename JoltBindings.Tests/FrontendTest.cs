@@ -149,8 +149,7 @@ public class FrontendTest {
                     bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0);
                     Assert.True(cmdInjected);
 
-                    bool stepped = Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
-                    Assert.True(stepped);
+                    Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
                     
                     timerRdfId++;
 
@@ -158,7 +157,7 @@ public class FrontendTest {
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
-                    Bindings.preemptRenderFrameBeforeMerge(rdfHolder, primitives);
+                    Bindings.PreemptRenderFrameBeforeMerge(rdfHolder, primitives);
                     rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
                     _logger.WriteLine(rdfHolder.PlayersArr.ToString());
                 }

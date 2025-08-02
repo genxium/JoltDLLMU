@@ -90,13 +90,14 @@ void* FRONTEND_CreateBattle(bool isOnlineArenaMode) {
     return result;
 }
 
-bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, int inSelfJoinIndex) {
+bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     return frontendBattle->ResetStartRdf(inBytes, inBytesCnt, inSelfJoinIndex);
 }
 
 void* BACKEND_CreateBattle() {
-    BackendBattle* result = new BackendBattle(512, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
+    int rdfBufferSize = 2; // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
+    BackendBattle* result = new BackendBattle(rdfBufferSize, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
 #ifndef NDEBUG
     Debug::Log("BACKEND_CreateBattle/C++", DColor::Green);
 #endif
@@ -106,6 +107,16 @@ void* BACKEND_CreateBattle() {
 bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     return backendBattle->ResetStartRdf(inBytes, inBytesCnt);
+}
+
+int BACKEND_GetDynamicsRdfId(void* inBattle) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    return backendBattle->dynamicsRdfId;
+}
+
+bool BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    return backendBattle->MoveForwardLcacIfdIdAndStep(withRefRdf, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
 bool APP_DestroyBattle(void* inBattle) {
@@ -125,6 +136,26 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, lo
     return true;
 }
 
+uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex) {
+    auto battle = static_cast<BaseBattle*>(inBattle);
+    return battle->SetPlayerActive(joinIndex);
+}
+
+uint64_t APP_SetPlayerInactive(void* inBattle, uint32_t joinIndex) {
+    auto battle = static_cast<BaseBattle*>(inBattle);
+    return battle->SetPlayerInactive(joinIndex);
+}
+
+uint64_t APP_GetInactiveJoinMask(void* inBattle) {
+    BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
+    return battle->GetInactiveJoinMask();
+}
+
+uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t value) {
+    BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
+    return battle->SetInactiveJoinMask(value);
+}
+
 bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     return backendBattle->ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, stIfdId, edIfdId, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
@@ -135,10 +166,9 @@ bool BACKEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytes
     return backendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outStEvictedCnt);
 }
 
-bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
+void BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     backendBattle->Step(fromRdfId, toRdfId);
-    return true;
 }
 
 bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput) {
@@ -151,20 +181,24 @@ bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inByte
     return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt);
 }
 
-bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
-    // TODO
-    return false;
-}
-
-bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt) {
+bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt);
+    return frontendBattle->ProduceUpsyncSnapshot(proposedBatchIfdIdSt, proposedBatchIfdIdEd, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
-bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
+bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId);
+}
+
+void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     frontendBattle->Step(fromRdfId, toRdfId, isChasing);
-    return true;
+}
+
+void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outPlayerInputFrontIds, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outPlayerInputFrontIds, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
 }
 
 JPH_SUPPRESS_WARNING_POP

@@ -126,12 +126,23 @@ class JOLTC_EXPORT BaseBattle {
             return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_delay_frames() + (1 << globalPrimitiveConsts->input_scale_frames()) - 1);
         }
 
-        inline void SetPlayerActive(uint32_t joinIndex) {
-            inactiveJoinMask &= (allConfirmedMask ^ calcJoinIndexMask(joinIndex));
+        inline uint64_t SetPlayerActive(uint32_t joinIndex) {
+            auto oldVal = inactiveJoinMask.fetch_and(allConfirmedMask ^ calcJoinIndexMask(joinIndex));
+            return inactiveJoinMask;
         }
 
-        inline void SetPlayerInactive(uint32_t joinIndex) {
-            inactiveJoinMask |= calcJoinIndexMask(joinIndex);
+        inline uint64_t SetPlayerInactive(uint32_t joinIndex) {
+            auto oldVal = inactiveJoinMask.fetch_or(calcJoinIndexMask(joinIndex));
+            return inactiveJoinMask;
+        }
+
+        inline uint64_t GetInactiveJoinMask() {
+            return inactiveJoinMask;
+        }
+
+        inline uint64_t SetInactiveJoinMask(uint64_t value) {
+            auto oldVal = inactiveJoinMask.exchange(value);
+            return oldVal;
         }
 
         virtual void Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
@@ -314,7 +325,6 @@ protected:
         inline bool isLengthSquaredNearZero(float lengthSquared) {
             return 1e-6 > lengthSquared;
         }
-
 
         CharacterVirtual* createDefaultCharacterCollider(const CharacterConfig* cc);
 

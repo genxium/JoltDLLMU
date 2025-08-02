@@ -22,7 +22,7 @@ public:
 public:
     int elongatedBattleDurationFrames;
     bool elongatedBattleDurationFramesShortenedOnce;
-    int currDynamicsRdfId;
+    int dynamicsRdfId;
     int lastForceResyncedRdfId;
     int nstDelayFrames;
 
@@ -34,6 +34,8 @@ public:
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
     virtual bool ResetStartRdf(const WsReq* initializerMapData);
+
+    bool MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
 protected:
     void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);

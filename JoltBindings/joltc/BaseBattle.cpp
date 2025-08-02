@@ -1008,6 +1008,9 @@ void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* 
 }
 
 InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
+    if (0 >= inSingleJoinIndex) {
+        return nullptr;
+    }
     
     if (inIfdId < ifdBuffer.StFrameId) {
         // Obsolete #1
@@ -1015,7 +1018,7 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
     }
 
     int inSingleJoinIndexArrIdx = (inSingleJoinIndex - 1);
-    int inSingleJoinMask = calcJoinIndexMask(inSingleJoinIndex);
+    uint64_t inSingleJoinMask = calcJoinIndexMask(inSingleJoinIndex);
     auto existingInputFrame = ifdBuffer.GetByFrameId(inIfdId);
     auto previousInputFrameDownsync = ifdBuffer.GetByFrameId(inIfdId - 1);
 
@@ -1699,8 +1702,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const CharacterDownsync& currC
                 }
             }
         }
-
-        nextChd->set_prev_was_crouching(isCrouching(currChd.ch_state(), cc));
 
         // Remove any active skill if not attacking
         bool notDashing = isNotDashing(*nextChd);

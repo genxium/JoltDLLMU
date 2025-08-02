@@ -386,7 +386,6 @@ message CharacterDownsync {
 
     bool slip_jump_triggered = 24;
     bool primarily_on_slippable_hard_pushback = 25; // by design a standalone field only inferred by the calc result of "Battle.Step" instead of "character_state"
-    bool prev_was_crouching = 26;
     int32 new_birth_rdf_countdown = 27;
 
     int32 frames_invinsible = 28;
@@ -422,7 +421,7 @@ message CharacterDownsync {
 
     int32 flying_rdf_countdown = 50;
 
-    uint32 locking_on_ud = 51;
+    uint64 locking_on_ud = 51;
 
     repeated Buff buff_list = 52; 
     repeated Debuff debuff_list = 53; 
@@ -491,23 +490,18 @@ message UpsyncSnapshot {
 }
 
 message WsReq {
-    string player_id = 1;
-    int32 act = 2;
-    int32 acking_frame_id = 4;
-    int32 acking_input_frame_id = 5;
-    int32 auth_key = 6;
-    UpsyncSnapshot upsync_snapshot = 7;
-    RenderFrame self_parsed_rdf = 8;
-    int32 collision_space_half_width = 9; 
-    int32 collision_space_half_height = 10; 
-    int32 battle_duration_seconds = 11;
-    repeated SerializableConvexPolygon serialized_barrier_polygons = 12;
-    repeated SerializedCompletelyStaticPatrolCueCollider serialized_static_patrol_cues = 13;
-    repeated SerializedCompletelyStaticTrapCollider serialized_completely_static_traps = 14;
-    repeated SerializedCompletelyStaticTriggerCollider serialized_static_triggers = 15;
-    SerializedTrapLocalIdToColliderAttrs serialized_trap_id_to_collider_attrs = 16; 
-    SerializedTriggerEditorIdToLocalId serialized_trigger_editor_id_to_id = 18;
-    uint32 seq_no = 19;
+    uint32 seq_no = 1;
+    string player_id = 2;
+    int32 act = 3;
+    int32 auth_key = 4;
+    UpsyncSnapshot upsync_snapshot = 5;
+    RenderFrame self_parsed_rdf = 6;
+    int32 battle_duration_seconds = 7;
+    repeated SerializableConvexPolygon serialized_barrier_polygons = 8;
+    repeated SerializedStaticPatrolCueCollider serialized_static_patrol_cues = 9;
+    repeated SerializedStaticTrapCollider serialized_static_traps = 10;
+    SerializedTrapLocalIdToColliderAttrs serialized_trap_id_to_collider_attrs = 11; 
+    SerializedTriggerEditorIdToLocalId serialized_trigger_editor_id_to_id = 12;
 }
 
 message PatrolCue {
@@ -868,7 +862,7 @@ message Trap {
 
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
-    bool is_completely_static = 6;
+    bool is_static = 6;
     bool captured_by_patrol_cue = 7;
     int32 frames_in_patrol_cue = 8;
     int32 waiving_patrol_cue_id = 9;
@@ -939,20 +933,9 @@ message RenderFrame {
 
 message BattlePrepareInfo {
     string stage_name = 1;
-
     int32 bound_room_id = 2;
     int64 battle_duration_frames = 3;
-    int32 input_frame_upsync_delay_tolerance = 4;
-    double rollback_estimated_dt_millis = 6;
-    int64 rollback_estimated_dt_nanos = 7;
-
-    int32 render_buffer_size = 8;
-    int32 collision_min_step = 9;
-    int32 bound_room_capacity = 10;
-    int32 prealloc_npc_capacity = 11;
-    int32 prealloc_bullet_capacity = 12;
-
-    PeerUdpAddr battle_udp_tunnel = 1024;
+    int32 bound_room_capacity = 4;
     bool frame_log_enabled = 1025;
 }
 
@@ -962,27 +945,47 @@ message InputFrameDownsync {
     uint64 udp_confirmed_list = 3; // [WARNING] Only used by frontend, i.e. on backend this field can be always zero because backend sets "InputFrameDownsync.confirmed_list" by UDP packets too while frontend shouldn't. 
 }
 
+enum DownsyncAct {
+    DA_NONE = 0;
+    DA_REGULAR = 1;
+
+    DA_BATTLE_PREPARE = 2;
+    DA_BATTLE_READY_TO_START = 3;
+    DA_BATTLE_BATTLE_STARTED = 4;
+    DA_BATTLE_BATTLE_STOPPED = 5;
+
+    DA_BATTLE_PEER_UDP_ADDR = 6;
+    DA_BATTLE_PEER_DISCONNECTED = 7;
+    DA_BATTLE_PEER_JOINED = 8;
+    DA_BATTLE_PEER_REJOINED = 9;
+
+    DA_BATTLE_FAILED_TO_JOIN_BATTLE_NOT_JOINABLE = 10;
+    DA_BATTLE_FAILED_TO_JOIN_ALREADY_IN_ROOM = 11;
+    DA_BATTLE_FAILED_TO_REJOIN_BATTLE_NOT_REJOINABLE = 12;
+    DA_BATTLE_FAILED_TO_REJOIN_NOT_FOUND_IN_ROOM = 13;
+    DA_BATTLE_FAILED_TO_REJOIN_PLAYER_STATE_INVALID = 14;
+
+    DA_WS_OPEN = 64;
+    DA_WS_CLOSED = 65;
+}
+
 message DownsyncSnapshot {
     int32 ref_rdf_id = 1;
     RenderFrame ref_rdf = 2;
     uint64 unconfirmed_mask = 3;
     int32 st_ifd_id = 4;
     repeated InputFrameDownsync ifd_batch = 5;
-}
 
-message WsResp {
-    int32 ret = 1;
-    int32 act = 2;
-    BattlePrepareInfo battle_prepare_info = 3;
-    DownsyncSnapshot downsync_snapshot = 4;
+    DownsyncAct act = 7;
+    BattlePrepareInfo prepare_info = 8;
+    PeerUdpAddr assigned_udp_tunnel = 9;
+    repeated PeerUdpAddr peer_udp_addr_list = 10;
 
-    uint32 peer_join_index = 5;
-    repeated PeerUdpAddr peer_udp_addr_list = 6;
+    int32 participant_change_id = 11;
+    uint64 inactive_join_mask = 12;
+    uint32 peer_join_index = 13;
 
-    repeated uint32 species_id_list = 7;
-    int32 participant_change_id = 8;
-
-    string err_msg = 2048;
+    string err_msg = 512;
 }
 
 message Skill {
@@ -1248,17 +1251,17 @@ message SerializableConvexPolygon {
     repeated float points = 3;
 }
 
-message SerializedCompletelyStaticPatrolCueCollider {
+message SerializedStaticPatrolCueCollider {
     PatrolCue attr = 1; 
     SerializableConvexPolygon polygon = 2;
 }
 
-message SerializedCompletelyStaticTrapCollider {
+message SerializedStaticTrapCollider {
     TrapColliderAttr attr = 1; // "TrapColliderAttr.collision_type_mask" is a little peculiar, it can be a composite of different COLLISION_*_INDEX_PREFIX, thus often NOT taken care of by the COLLIDABLE_PAIRS set 
     SerializableConvexPolygon polygon = 2;
 }
 
-message SerializedCompletelyStaticTriggerCollider {
+message SerializedStaticTriggerCollider {
     TriggerColliderAttr attr = 1; // "collision_type_mask" can be derived from here
     SerializableConvexPolygon polygon = 2;
 }

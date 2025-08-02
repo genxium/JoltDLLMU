@@ -44,6 +44,10 @@ Kindly note that in Jolt, the default gravity direction is negative-y.
 */
 JPH_CAPI bool APP_DestroyBattle(void* inBattle);
 JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+JPH_CAPI uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex); // returns the new value
+JPH_CAPI uint64_t APP_SetPlayerInactive(void* inBattle, uint32_t joinIndex); // returns the new value
+JPH_CAPI uint64_t APP_GetInactiveJoinMask(void* inBattle);
+JPH_CAPI uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t newValue); // returns the old value
 
 /*
 [WARNING] 
@@ -58,14 +62,17 @@ JPH_CAPI void* BACKEND_CreateBattle();
 JPH_CAPI bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt);
 JPH_CAPI bool BACKEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit); // [WARNING] Possibly writes "DownsyncSnapshot" into "outBytesPreallocatedStart" 
 JPH_CAPI bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
-JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+JPH_CAPI void BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+JPH_CAPI int BACKEND_GetDynamicsRdfId(void* inBattle);
+JPH_CAPI bool BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
 JPH_CAPI void* FRONTEND_CreateBattle(bool isOnlineArenaMode);
-JPH_CAPI bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, int inSelfJoinIndex);
+JPH_CAPI bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex);
 JPH_CAPI bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput);
 JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt);
-JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, char* outBytesPreallocatedStart, long* outBytesCntLimit);
-JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt);
-JPH_CAPI bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
+JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outLcacIfdId);
+JPH_CAPI void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
+JPH_CAPI void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outPlayerInputFrontIds, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId);
 
 #endif /* JOLT_C_H_ */
