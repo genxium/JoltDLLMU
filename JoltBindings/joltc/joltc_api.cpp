@@ -176,19 +176,19 @@ bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput) {
     return frontendBattle->UpsertSelfCmd(inSingleInput);
 }
 
-bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt) {
-    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt);
-}
-
 bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     return frontendBattle->ProduceUpsyncSnapshot(proposedBatchIfdIdSt, proposedBatchIfdIdEd, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
-bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
+bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId);
+    return frontendBattle->OnUpsyncSnapshotReceived(inBytes, inBytesCnt, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+}
+
+bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
 void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
@@ -196,9 +196,9 @@ void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
     frontendBattle->Step(fromRdfId, toRdfId, isChasing);
 }
 
-void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outPlayerInputFrontIds, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outPlayerInputFrontIds, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
+    frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
 }
 
 JPH_SUPPRESS_WARNING_POP

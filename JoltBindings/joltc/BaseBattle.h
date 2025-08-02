@@ -20,6 +20,7 @@
 #include "CollisionCallbacks.h"
 #include <vector>
 #include <map>
+#include <set>
 #include <deque>
 #include <google/protobuf/arena.h>
 
@@ -63,6 +64,7 @@ class JOLTC_EXPORT BaseBattle {
 
         std::vector<uint64_t> prefabbedInputList;
         std::vector<int> playerInputFrontIds;
+        std::multiset<int> playerInputFrontIdsSorted; 
         std::vector<uint64_t> playerInputFronts;
 
         /*

@@ -444,6 +444,8 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
     prefabbedInputList.assign(playersCnt, 0);
     playerInputFrontIds.assign(playersCnt, 0);
+    playerInputFrontIdsSorted.clear();
+    playerInputFrontIdsSorted.insert(playerInputFrontIds.begin(), playerInputFrontIds.end());
     playerInputFronts.assign(playersCnt, 0);
 
     auto staticColliderShapesFromTiled = initializerMapData->serialized_barrier_polygons();
@@ -1102,8 +1104,10 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
     }
 
     if (inIfdId > playerInputFrontIds[inSingleJoinIndexArrIdx] && (fromTcp || fromUdp)) {
+        playerInputFrontIdsSorted.erase(playerInputFrontIds[inSingleJoinIndexArrIdx]);
         playerInputFrontIds[inSingleJoinIndexArrIdx] = inIfdId;
         playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
+        playerInputFrontIdsSorted.insert(inIfdId);
     }
     
     return ret;

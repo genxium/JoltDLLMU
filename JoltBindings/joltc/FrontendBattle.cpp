@@ -24,15 +24,15 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput) {
     return true;
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     if (nullptr == downsyncSnapshotHolder) {
         downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
     }
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId);
+    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     /*
     Assuming that rdfBuffer & ifdBuffer are both sufficiently large (e.g. 5 seconds) such that when 
     - "timerRdfId" is to be evicted from "rdfBuffer.StFrameId", or
@@ -139,8 +139,10 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             
             for (int k = 0; k < playersCnt; ++k) {
                 if (ifdId > playerInputFrontIds[k]) {
+                    playerInputFrontIdsSorted.erase(playerInputFrontIds[k]);
                     playerInputFrontIds[k] = ifdId;
                     playerInputFronts[k] = refIfd.input_list(k);
+                    playerInputFrontIdsSorted.insert(ifdId);
                 }
             }
 
@@ -161,19 +163,21 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     }
 
     *outNewLcacIfdId = lcacIfdId;
+    *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+    *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
 
     return true;
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt) {
+bool FrontendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     if (nullptr == upsyncSnapshotHolder) {
         upsyncSnapshotHolder = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
     }
     upsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnUpsyncSnapshotReceived(upsyncSnapshotHolder);
+    return OnUpsyncSnapshotReceived(upsyncSnapshotHolder, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot) {
+bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     // See "BackendBattle::OnUpsyncSnapshotReceived" for reference.
     bool fromUdp = true; // by design
     int peerJoinIndex = upsyncSnapshot->join_index();
@@ -218,6 +222,9 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsh
     if (-1 != firstIncorrectlyPredictedIfdId) {
         handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, fromUdp);
     }
+
+    *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+    *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
 
     return true;
 }

@@ -36,25 +36,22 @@ public:
 
     bool ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
-    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt);
-    bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot);
+    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
-    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId);
-    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId);
+    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
     void Step(int fromRdfId, int toRdfId, bool isChasing); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
-    inline void GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outPlayerInputFrontIds, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+    inline void GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
         *outTimerRdfId = timerRdfId;
         *outChaserRdfId = chaserRdfId;
         *outChaserRdfIdLowerBound = chaserRdfIdLowerBound;
-        for (int i = 0; i < playersCnt; i++) {
-            *(outPlayerInputFrontIds+i) = playerInputFrontIds[i];
-        } 
         *outLcacIfdId = lcacIfdId;
         *outTimerRdfIdGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
         *outTimerRdfIdToUseIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
-    } 
+    }
 
     bool ResetStartRdf(char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex);
     bool ResetStartRdf(const WsReq* initializerMapData, uint32_t inSelfJoinIndex);

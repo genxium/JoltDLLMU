@@ -504,13 +504,13 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
-    int newLcacIfdId = -1;
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots1.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots1[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -522,7 +522,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
         if (incomingUpsyncSnapshots1.count(outerTimerRdfId)) {
             UpsyncSnapshot* peerUpsyncSnapshot = incomingUpsyncSnapshots1[outerTimerRdfId]; 
-            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot);
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
@@ -578,14 +578,14 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1536;
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    int newLcacIfdId = -1;
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots2.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots2[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -603,7 +603,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
         if (incomingUpsyncSnapshots2.count(outerTimerRdfId)) {
             UpsyncSnapshot* peerUpsyncSnapshot = incomingUpsyncSnapshots2[outerTimerRdfId]; 
-            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot);
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
@@ -666,14 +666,14 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    int newLcacIfdId = -1;
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots3.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots3[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
-            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId);
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
@@ -689,7 +689,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
         if (incomingUpsyncSnapshots3.count(outerTimerRdfId)) {
             UpsyncSnapshot* peerUpsyncSnapshot = incomingUpsyncSnapshots3[outerTimerRdfId]; 
-            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot);
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerUpsyncSnapshot, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
             google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
