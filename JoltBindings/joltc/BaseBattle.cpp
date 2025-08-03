@@ -416,6 +416,15 @@ void BaseBattle::Clear() {
     // Cope with the static ones
     bi->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
     bi->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+    staticColliderBodyIDs.clear();
+
+    // Deallocate temp variables in Pb arena
+    pbTempAllocator.Reset();
+
+    // Clear book keeping member variables
+    lcacIfdId = -1;
+    rdfBuffer.Clear();
+    ifdBuffer.Clear();
 }
 
 bool BaseBattle::ResetStartRdf(char *inBytes, int inBytesCnt) {
@@ -426,10 +435,6 @@ bool BaseBattle::ResetStartRdf(char *inBytes, int inBytesCnt) {
 }
 
 bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
-    lcacIfdId = -1;
-    rdfBuffer.Clear();
-    ifdBuffer.Clear();
-
     auto startRdf = initializerMapData->self_parsed_rdf();
     playersCnt = startRdf.players_arr_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
@@ -449,8 +454,6 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     playerInputFronts.assign(playersCnt, 0);
 
     auto staticColliderShapesFromTiled = initializerMapData->serialized_barrier_polygons();
-
-    staticColliderBodyIDs.clear();
     for (const SerializableConvexPolygon& convexPolygon : staticColliderShapesFromTiled) {
         TriangleList triangles;
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {

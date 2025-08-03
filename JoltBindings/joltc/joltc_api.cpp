@@ -119,6 +119,11 @@ bool BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* o
     return backendBattle->MoveForwardLcacIfdIdAndStep(withRefRdf, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
+void APP_ClearBattle(void* inBattle) {
+    auto battle = static_cast<BaseBattle*>(inBattle);
+    battle->Clear();
+}
+
 bool APP_DestroyBattle(void* inBattle) {
     delete static_cast<BaseBattle*>(inBattle);
     return true;
@@ -196,9 +201,10 @@ void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
     frontendBattle->Step(fromRdfId, toRdfId, isChasing);
 }
 
-void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
-    frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
+    if (nullptr == frontendBattle) return false;
+    return frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
 }
 
 JPH_SUPPRESS_WARNING_POP

@@ -24,6 +24,9 @@ namespace JoltCSharp {
         public static extern bool JPH_Shutdown(); // Destroys default allocators
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void APP_ClearBattle(UIntPtr inBattle);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool APP_DestroyBattle(UIntPtr inBattle);
 
@@ -55,11 +58,11 @@ namespace JoltCSharp {
         public static extern bool FRONTEND_UpsertSelfCmd(UIntPtr inBattle, ulong inSingleInput);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
         public static extern void FRONTEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId, [MarshalAs(UnmanagedType.U1)] bool isChasing);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void FRONTEND_GetRdfAndIfdIds(UIntPtr inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId); 
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool FRONTEND_GetRdfAndIfdIds(UIntPtr inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId); 
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]

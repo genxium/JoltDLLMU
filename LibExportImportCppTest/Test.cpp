@@ -169,7 +169,7 @@ int main(int argc, char** argv)
     memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
     long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
-    int selfJoinIndex = 1;
+    uint32_t selfJoinIndex = 1;
     FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(false));
     std::cout << "Created battle = " << battle << std::endl;
 
@@ -221,6 +221,8 @@ int main(int argc, char** argv)
     }
     
     // clean up
+    APP_ClearBattle(battle);
+
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);
     std::cout << "APP_DestroyBattle result=" << destroyRes << std::endl;
