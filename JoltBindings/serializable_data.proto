@@ -984,6 +984,7 @@ message DownsyncSnapshot {
     int32 participant_change_id = 11;
     uint64 inactive_join_mask = 12;
     uint32 peer_join_index = 13;
+    int32 peer_bullet_team_id = 14;
 
     string err_msg = 512;
 }

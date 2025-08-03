@@ -151,7 +151,8 @@ public class FrontendTest {
 
                     Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
                     
-                    timerRdfId++;
+                    int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
+                    Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
 
                     long* outBytesCntPtr = &outBytesCnt;
                     *outBytesCntPtr = pbBufferSizeLimit;
@@ -164,6 +165,7 @@ public class FrontendTest {
             }
             
             // Clean up
+            Bindings.APP_ClearBattle(battle);
             bool destroyRes = Bindings.APP_DestroyBattle(battle);
             Assert.True(destroyRes);
             _logger.WriteLine($"Destroyed battle at pointer addr = 0x{battle:x} with result={destroyRes}");

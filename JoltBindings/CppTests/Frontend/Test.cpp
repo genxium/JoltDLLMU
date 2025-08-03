@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/repeated_field.h>
-google::protobuf::Arena pbTempAllocator;
+google::protobuf::Arena pbTestCaseDataAllocator;
 
 using namespace jtshared;
 using namespace std::filesystem;
@@ -200,7 +200,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -212,7 +212,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 6;
@@ -228,7 +228,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 44;
@@ -244,7 +244,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -257,7 +257,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -275,7 +275,7 @@ void initTest1Data() {
         int receivedTimerRdfId = 570;
         int receivedEdIfdId = 58;
         int receivedStIfdId = 26;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -297,7 +297,7 @@ void initTest2Data() {
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -309,7 +309,7 @@ void initTest2Data() {
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 6;
@@ -325,7 +325,7 @@ void initTest2Data() {
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 44;
@@ -341,7 +341,7 @@ void initTest2Data() {
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -354,7 +354,7 @@ void initTest2Data() {
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -374,7 +374,7 @@ void initTest2Data() {
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(refRdfId)  - 2; // a slightly smaller "receivedEdIfdId" than "ConvertToDelayedInputFrameId(refRdfId)" such that frontend would have to prefab self cmd after reception.
         int receivedStIfdId = receivedEdIfdId - 20;
         int mid = ((receivedStIfdId + receivedEdIfdId) >> 1);
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -399,7 +399,7 @@ void initTest3Data() {
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -411,7 +411,7 @@ void initTest3Data() {
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 6;
@@ -427,7 +427,7 @@ void initTest3Data() {
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         int mid = 44;
@@ -443,7 +443,7 @@ void initTest3Data() {
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+        UpsyncSnapshot* peerUpsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
         peerUpsyncSnapshot->set_join_index(2);
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
@@ -456,7 +456,7 @@ void initTest3Data() {
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -476,7 +476,7 @@ void initTest3Data() {
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(refRdfId) - 3;
         int receivedStIfdId = 30;
         int mid = ((receivedStIfdId + receivedEdIfdId) >> 1);
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -503,7 +503,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
@@ -569,6 +569,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     }
 
     std::cout << "Passed TestCase1" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -579,7 +580,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots2.count(outerTimerRdfId)) {
@@ -657,6 +658,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     }
 
     std::cout << "Passed TestCase2" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -667,7 +669,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int printIntervalRdfCnt = (1 << 30);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
         if (incomingDownsyncSnapshots3.count(outerTimerRdfId)) {
@@ -737,6 +739,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     }
 
     std::cout << "Passed TestCase3" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -746,7 +749,7 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 0);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTempAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput);
@@ -777,6 +780,7 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     }
 
     std::cout << "Passed TestCase4" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -840,8 +844,9 @@ int main(int argc, char** argv)
     FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(true));
     std::cout << "Created battle = " << battle << std::endl;
 
+    google::protobuf::Arena pbStarterWsReqAllocator;
     auto startRdf = mockStartRdf();
-    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : hulls) {
         SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
         for (auto xOrY : hull) {
@@ -853,12 +858,24 @@ int main(int argc, char** argv)
     int selfJoinIndex = 1;
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
+    APP_ClearBattle(battle);
+    pbTestCaseDataAllocator.Reset();
+
     initTest2Data();
     runTestCase2(battle, initializerMapData, selfJoinIndex);
+    APP_ClearBattle(battle);
+    pbTestCaseDataAllocator.Reset();
+
     initTest3Data();
     runTestCase3(battle, initializerMapData, selfJoinIndex);
-    runTestCase4(battle, initializerMapData, selfJoinIndex);
+    APP_ClearBattle(battle);
+    pbTestCaseDataAllocator.Reset();
 
+    runTestCase4(battle, initializerMapData, selfJoinIndex);
+    APP_ClearBattle(battle);
+    pbTestCaseDataAllocator.Reset();
+
+    pbStarterWsReqAllocator.Reset();
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);

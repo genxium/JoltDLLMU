@@ -42,6 +42,7 @@ JPH_CAPI bool JPH_Shutdown(void);
 /*
 Kindly note that in Jolt, the default gravity direction is negative-y.
 */
+JPH_CAPI void APP_ClearBattle(void* inBattle);
 JPH_CAPI bool APP_DestroyBattle(void* inBattle);
 JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex); // returns the new value
@@ -73,6 +74,6 @@ JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshot(void* inBattle, int proposedBatchIf
 JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 JPH_CAPI void FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing);
-JPH_CAPI void FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId);
+JPH_CAPI bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId);
 
 #endif /* JOLT_C_H_ */

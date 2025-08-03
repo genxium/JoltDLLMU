@@ -149,7 +149,7 @@ class JOLTC_EXPORT BaseBattle {
 
         virtual void Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
-        void Clear();
+        virtual void Clear();
 
         virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
         virtual bool ResetStartRdf(const WsReq* initializerMapData);

@@ -44,13 +44,14 @@ public:
 
     void Step(int fromRdfId, int toRdfId, bool isChasing); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
-    inline void GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+    inline bool GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
         *outTimerRdfId = timerRdfId;
         *outChaserRdfId = chaserRdfId;
         *outChaserRdfIdLowerBound = chaserRdfIdLowerBound;
         *outLcacIfdId = lcacIfdId;
         *outTimerRdfIdGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
         *outTimerRdfIdToUseIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
+        return true;
     }
 
     bool ResetStartRdf(char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex);

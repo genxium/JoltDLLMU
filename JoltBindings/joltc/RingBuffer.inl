@@ -102,7 +102,6 @@ template <typename T>
 inline void RingBuffer<T>::Clear() {
     Cnt = 0;
     St = Ed = 0;
-    Eles.assign(N, nullptr);
 }
 
 template <typename T>

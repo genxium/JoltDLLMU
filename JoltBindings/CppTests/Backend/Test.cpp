@@ -12,7 +12,7 @@
 #include <fstream>
 #include <filesystem>
 #include <google/protobuf/arena.h>
-google::protobuf::Arena pbTempAllocator;
+google::protobuf::Arena pbTestCaseDataAllocator;
 
 using namespace jtshared;
 using namespace std::filesystem;
@@ -80,9 +80,9 @@ void DebugLogCb(const char* message, int color, int size) {
 int forceConfirmedStEvictedCnt = 0;
 bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     
-    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a1->set_join_index(1);
     a1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 30; ifdId++) {
@@ -94,7 +94,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     reusedBattle->OnUpsyncSnapshotReceived(a1, false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 31 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     
-    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a2->set_join_index(1);
     a2->set_st_ifd_id(150);
     for (int ifdId = 150; ifdId <= 170; ifdId++) {
@@ -105,7 +105,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     reusedBattle->OnUpsyncSnapshotReceived(a2, true, false, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b1->set_join_index(2);
     b1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 100; ifdId++) {
@@ -118,7 +118,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 31 == downsyncSnapshotHolder->ifd_batch_size()); // [0, 30]
 
-    UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a3->set_join_index(1);
     a3->set_st_ifd_id(31);
     for (int ifdId = 31; ifdId <= 70; ifdId++) {
@@ -131,7 +131,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(31 == downsyncSnapshotHolder->st_ifd_id() && 40 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [31, 70]
 
-    UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b2->set_join_index(2);
     b2->set_st_ifd_id(101);
     for (int ifdId = 101; ifdId <= 200; ifdId++) {
@@ -143,14 +143,15 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(70 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 201 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
     std::cout << "Passed TestCase1" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
 bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     
-    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a1->set_join_index(1);
     a1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 300; ifdId++) {
@@ -163,7 +164,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 301 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a2->set_join_index(1);
     a2->set_st_ifd_id(400);
     for (int ifdId = 400; ifdId <= 400; ifdId++) {
@@ -175,7 +176,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 401 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     
-    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b1->set_join_index(2);
     b1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 512; ifdId++) {
@@ -190,7 +191,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 301 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [0, 300]
 
-    UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a3 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a3->set_join_index(1);
     a3->set_st_ifd_id(401);
     for (int ifdId = 401; ifdId <= 700; ifdId++) {
@@ -202,7 +203,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(upserted);
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 250 == reusedBattle->ifdBuffer.StFrameId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt); // i.e. as "ifdBuffer.StFrameId" hasn't reached "lcacIfdId" yet, there's no new downsync snapshot 
 
-    UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b2->set_join_index(2);
     b2->set_st_ifd_id(800);
     for (int ifdId = 800; ifdId <= 801; ifdId++) {
@@ -214,7 +215,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(!upserted);
     JPH_ASSERT(300 == reusedBattle->lcacIfdId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    UpsyncSnapshot* a4 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a4 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a4->set_join_index(1);
     a4->set_st_ifd_id(298);
     for (int ifdId = 298; ifdId <= 420; ifdId++) {
@@ -229,14 +230,15 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(301 == downsyncSnapshotHolder->st_ifd_id() && 212 == downsyncSnapshotHolder->ifd_batch_size()); // [301, 512]
 
     std::cout << "Passed TestCase2" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
 bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
 
-    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a1->set_join_index(1);
     a1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 120; ifdId++) {
@@ -249,7 +251,7 @@ bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 121 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
  
-    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b1->set_join_index(2);
     b1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 120; ifdId++) {
@@ -263,7 +265,7 @@ bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(121 == downsyncSnapshotHolder->ifd_batch_size());
 
-    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a2->set_join_index(1);
     a2->set_st_ifd_id(459);
     for (int ifdId = 459; ifdId <= 600; ifdId++) {
@@ -278,15 +280,16 @@ bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(29 == downsyncSnapshotHolder->ifd_batch_size()); // [WARNING] There're 29 ifds, i.e. from 121 to 149 forced out of "ifdBuffer.StFrameId"
 
     std::cout << "Passed TestCase3" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
 bool runTestCase4(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     long outBytesCnt = pbBufferSizeLimit;
 
-    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a1->set_join_index(1);
     a1->set_st_ifd_id(459);
     for (int ifdId = 459; ifdId <= 600; ifdId++) {
@@ -301,15 +304,16 @@ bool runTestCase4(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(forceConfirmedStEvictedCnt == downsyncSnapshotHolder->ifd_batch_size() && 0 == downsyncSnapshotHolder->st_ifd_id()); // [0, 149]
 
     std::cout << "Passed TestCase4" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
 bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     long outBytesCnt = pbBufferSizeLimit;
 
-    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a1->set_join_index(1);
     a1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 2; ifdId++) {
@@ -321,7 +325,7 @@ bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == reusedBattle->lcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 3 == reusedBattle->ifdBuffer.EdFrameId && 3 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
-    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* b1 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     b1->set_join_index(2);
     b1->set_st_ifd_id(0);
     for (int ifdId = 0; ifdId <= 2; ifdId++) {
@@ -335,7 +339,7 @@ bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(3 == downsyncSnapshotHolder->ifd_batch_size() && 0 == downsyncSnapshotHolder->st_ifd_id()); // [0, 2]
 
-    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    UpsyncSnapshot* a2 = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTestCaseDataAllocator);
     a2->set_join_index(1);
     a2->set_st_ifd_id(459);
     for (int ifdId = 459; ifdId <= 600; ifdId++) {
@@ -351,6 +355,7 @@ bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     JPH_ASSERT(forceConfirmedStEvictedCnt == downsyncSnapshotHolder->ifd_batch_size() && 3 == downsyncSnapshotHolder->st_ifd_id()); // [3, 149]
 
     std::cout << "Passed TestCase5" << std::endl;
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -415,7 +420,7 @@ int main(int argc, char** argv)
     std::cout << "Created battle = " << battle << std::endl;
 
     auto startRdf = mockStartRdf();
-    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     for (auto hull : hulls) {
         SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
         for (auto xOrY : hull) {
@@ -424,10 +429,16 @@ int main(int argc, char** argv)
     }
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
     runTestCase1(battle, initializerMapData);
+    APP_ClearBattle(battle);
     runTestCase2(battle, initializerMapData);
+    APP_ClearBattle(battle);
     runTestCase3(battle, initializerMapData);
+    APP_ClearBattle(battle);
     runTestCase4(battle, initializerMapData);
+    APP_ClearBattle(battle);
     runTestCase5(battle, initializerMapData);
+    APP_ClearBattle(battle);
+    pbTestCaseDataAllocator.Reset();
 
     // clean up
     // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"

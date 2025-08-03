@@ -196,7 +196,6 @@ inline void RingBufferMt<T>::Clear() {
     dirtyPuttingCnt = 0;
     Cnt = 0;
     St = Ed = 0;
-    Eles.assign(N, nullptr);
 }
 
 template <typename T>
