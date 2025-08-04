@@ -22,7 +22,11 @@ namespace JoltcPrebuilt
         private static IntPtr protobufLibptr;
         private static IntPtr libptr;
 
-        public static bool LoadLibrary()
+        public static bool LoadLibrary() {
+            return LoadLibrary("");
+        }
+
+        public static bool LoadLibrary(string cpuArchName)
         {
             if (libptr != IntPtr.Zero)
             {
@@ -51,6 +55,13 @@ namespace JoltcPrebuilt
 
             string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string assemblySubFolder = "Plugins";
+            if (assemblyFolder.EndsWith("Managed")) {
+                // Packaged Unity build
+                assemblyFolder = Directory.GetParent(assemblyFolder).ToString();
+                if (!String.IsNullOrEmpty(cpuArchName)) {
+                    assemblySubFolder = Path.Combine(assemblySubFolder, cpuArchName).ToString();
+                }
+            }
             bool pbres = TryLoadLibrary(Path.Combine(assemblyFolder, assemblySubFolder, protobufLibname), out protobufLibptr);
             if (protobufLibptr == IntPtr.Zero) {
                 throw new Exception($"Failed to load {protobufLibname} from assemblyFolder = {assemblyFolder}, assemblySubFolder = {assemblySubFolder}");
