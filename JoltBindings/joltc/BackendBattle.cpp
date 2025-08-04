@@ -6,7 +6,7 @@ bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
 
 bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
-    dynamicsRdfId = timerRdfId;
+    dynamicsRdfId = rdfBuffer.GetLast()->id();
     return res;
 }
 
@@ -46,29 +46,40 @@ void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* down
     }
 }
 
-bool BackendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt) {
-    UpsyncSnapshot* upsyncSnapshot = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
-    upsyncSnapshot->ParseFromArray(inBytes, inBytesCnt);
-    return OnUpsyncSnapshotReceived(upsyncSnapshot, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outForceConfirmedStEvictedCnt);
+bool BackendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    WsReq* upsyncSnapshotReq = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    upsyncSnapshotReq->ParseFromArray(inBytes, inBytesCnt);
+    uint32_t peerJoinIndex = upsyncSnapshotReq->join_index();
+    if (0 >= peerJoinIndex) return false;
+    if (!upsyncSnapshotReq->has_upsync_snapshot()) return false;
+    return OnUpsyncSnapshotReceived(peerJoinIndex, upsyncSnapshotReq->upsync_snapshot(), fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outForceConfirmedStEvictedCnt, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt) {
-    int peerJoinIndex = upsyncSnapshot->join_index();
+bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     (*outForceConfirmedStEvictedCnt) = 0;
     DownsyncSnapshot* result = nullptr;
-    int cmdListSize = upsyncSnapshot->cmd_list_size();
-    bool isTooAdvanced = (ifdBuffer.StFrameId + ifdBuffer.N + globalPrimitiveConsts->upsync_st_ifd_id_tolerance()) < (upsyncSnapshot->st_ifd_id()); // When "ifdBuffer" is not full, we have "ifdBuffer.StFrameId + ifdBuffer.N >= ifdBuffer.EdFrameId"  
+    int cmdListSize = upsyncSnapshot.cmd_list_size();
+    *outOldLcacIfdId = lcacIfdId;
+    *outOldDynamicsRdfId = dynamicsRdfId;
+    *outNewLcacIfdId = lcacIfdId;
+    *outNewDynamicsRdfId = dynamicsRdfId;
+    bool isTooAdvanced = (ifdBuffer.StFrameId + ifdBuffer.N + globalPrimitiveConsts->upsync_st_ifd_id_tolerance()) < (upsyncSnapshot.st_ifd_id()); // When "ifdBuffer" is not full, we have "ifdBuffer.StFrameId + ifdBuffer.N >= ifdBuffer.EdFrameId"  
     if (isTooAdvanced) {
         *outBytesCntLimit = 0;
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "dynamicsRdfId: " << dynamicsRdfId << ", @lcacIfdId=" << lcacIfdId << ", upsyncSnapshot from peerJoinIndex==" << peerJoinIndex << " is discarded due to being too advanced, ifdBuffer.StFrameId=" << ifdBuffer.StFrameId << ", upsyncSnapshot.StIfdId=" << upsyncSnapshot.st_ifd_id(); 
+        Debug::Log(oss.str());
+#endif
         return false;
     }
     uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
-    bool isConsecutiveAllConfirmingCandidate = (upsyncSnapshot->st_ifd_id() <= lcacIfdId + 1);
+    bool isConsecutiveAllConfirmingCandidate = (upsyncSnapshot.st_ifd_id() <= lcacIfdId + 1);
     bool inNewAllConfirmedTrend = isConsecutiveAllConfirmingCandidate;
 
     for (int i = 0; i < cmdListSize; ++i) {
-        const uint64_t cmd = upsyncSnapshot->cmd_list(i);
-        int ifdId = upsyncSnapshot->st_ifd_id() + i;
+        const uint64_t cmd = upsyncSnapshot.cmd_list(i);
+        int ifdId = upsyncSnapshot.st_ifd_id() + i;
         if (ifdId <= lcacIfdId) {
             // obsolete
             continue;
@@ -102,6 +113,11 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
                 int initDownsyncSnapshotEdThisRound = (targetDownsyncSnapshotEdThisRound < ifdBuffer.EdFrameId ? targetDownsyncSnapshotEdThisRound : ifdBuffer.EdFrameId);
                 produceDownsyncSnapshot(allConfirmedMask, downsyncSnapshotStThisRound, initDownsyncSnapshotEdThisRound, false, &result); // No need to specify an accurate "unconfirmedMask" in this worst case
                 int gapCntThisRound = (targetDownsyncSnapshotEdThisRound - initDownsyncSnapshotEdThisRound);
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@dynamicsRdfId=" << dynamicsRdfId << ", @oldLcacIfdId=" << oldLcacIfdId << ", @fromTcp=" << fromTcp << ", incomingIfdId=" << ifdId << " triggers insitu force confirmation, will evict " << toEvictCnt << " from StFrameId=" << ifdBuffer.StFrameId << " with initGapCntThisRound=" << gapCntThisRound; 
+                Debug::Log(oss.str());
+#endif
                 while (0 < gapCntThisRound) {
                     auto resultIfdBatchHolder = result->mutable_ifd_batch();
                     InputFrameDownsync* virtualIfd = resultIfdBatchHolder->Add(); // [REMINDER] Will allocate in the same arena
@@ -120,13 +136,27 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
 
             // [WARNING] As "!willUpdateExisting && ifdBufferFull", we should call "Step(...)" to advance "dynamicsRdfId" such that all "<= lcacIfdId" are used by "dynamicsRdfId" before being any "StFrameId eviction upon DryPut() of ifdBuffer".
             int nextDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
-            Step(dynamicsRdfId, nextDynamicsRdfId, result);
+            bool stepped = Step(dynamicsRdfId, nextDynamicsRdfId, result);
+            if (!stepped) {
+                return false;
+            }
 
             // Now that we're all set for "StFrameId eviction upon DryPut() of ifdBuffer"
         }
         bool outExistingInputMutated = false;
         bool canConfirmTcp = (fromUdp || fromTcp); // Backend doesn't care about whether it's from TCP or UDP, either can set "ifd.confirmed_list"
         InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, canConfirmTcp, canConfirmTcp, outExistingInputMutated);
+        int peerJoinIndexArrIdx = peerJoinIndex - 1;
+        bool frontsUpdated = updatePlayerInputFronts(ifdId, peerJoinIndexArrIdx, cmd);
+/*
+#ifndef NDEBUG
+        if (frontsUpdated) {
+            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] is updated to " + std::to_string(ifdId) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+        } else {
+            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] NOT updated for ifdId=" + std::to_string(ifdId) + ", origIfdId=" + std::to_string(playerInputFrontIds[peerJoinIndexArrIdx]) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+        }
+#endif
+*/
         if (inNewAllConfirmedTrend && ifd->confirmed_list() != allConfirmedMask) {
             // [WARNING] "StFrameId eviction upon DryPut() of ifdBuffer" might occur even during "inNewAllConfirmedTrend", but that'll be captured in the "if (!willUpdateExisting && ifdBufferFull)" block. 
             inNewAllConfirmedTrend = false;
@@ -141,6 +171,16 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
         JPH_ASSERT(lcacIfdId+1 >= ifdBuffer.StFrameId); // A backend-specific constraint.
     }
 
+    if (!playerInputFrontIdsSorted.empty()) {
+        *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+        *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+/*
+#ifndef NDEBUG
+        Debug::Log("OnUpsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+#endif
+*/
+    }
+
     if (inNewAllConfirmedTrend) {
         // Wrap up
         int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
@@ -149,6 +189,9 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsho
             produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, false, &result);
         }
     }
+
+    *outNewLcacIfdId = lcacIfdId;
+    *outNewDynamicsRdfId = dynamicsRdfId;
 
     if (nullptr != result) {
         long byteSize = result->ByteSizeLong();
@@ -181,9 +224,10 @@ bool BackendBattle::ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask
     return true;
 }
 
-void BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
-    BaseBattle::Step(fromRdfId, toRdfId, virtualIfds);
+bool BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
+    bool stepped = BaseBattle::Step(fromRdfId, toRdfId, virtualIfds);
     dynamicsRdfId = toRdfId;
+    return stepped;
 }
 
 bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
@@ -194,11 +238,28 @@ bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcac
     *outNewLcacIfdId = lcacIfdId;
     *outNewDynamicsRdfId = dynamicsRdfId;
 
-    if (oldLcacIfdId < lcacIfdId) {
+    *outNewDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
+    if (0 <= lcacIfdId && *outOldDynamicsRdfId < *outNewDynamicsRdfId) {
+        bool stepped = Step(*outOldDynamicsRdfId, *outNewDynamicsRdfId);
+        if (!stepped) {
+            *outBytesCntLimit = 0;
+            return false;
+        }
+/*
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "dynamicsRdfId: " << *outOldDynamicsRdfId << " -> " << *outNewDynamicsRdfId << ", @oldLcacIfdId=" << oldLcacIfdId << ", @newLcacIfdId=" << lcacIfdId << ", stepped."; 
+        Debug::Log(oss.str());
+#endif
+*/
         uint64_t unconfirmedMask = inactiveJoinMaskVal;
         return ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
     } else {
         *outBytesCntLimit = 0;
         return true;
     }
+}
+
+int BackendBattle::GetDynamicsRdfId() {
+    return dynamicsRdfId;
 }

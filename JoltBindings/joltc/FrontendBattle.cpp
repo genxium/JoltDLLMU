@@ -1,7 +1,7 @@
 #include "FrontendBattle.h"
 #include <string>
 
-bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput) {
+bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) {
     int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
     int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId+1);
     bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
@@ -14,25 +14,34 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput) {
     bool outExistingInputMutated = false;
     InputFrameDownsync* result = getOrPrefabInputFrameDownsync(toGenIfdId, selfJoinIndex, inSingleInput, canConfirmUDP, false, outExistingInputMutated);
     if (outExistingInputMutated) {
-        handleIncorrectlyRenderedPrediction(toGenIfdId, true);
+        handleIncorrectlyRenderedPrediction(toGenIfdId, true, false, false);
     }
 
+    *outChaserRdfId = chaserRdfId;
     if (!result) {
         return false;
     }
-
+/*
+#ifndef NDEBUG
+    if (0 < (selfJoinIndexMask & result->confirmed_list()) && inSingleInput != result->input_list(selfJoinIndexArrIdx)) {
+        std::ostringstream oss;
+        oss << "@timerRdfId=" << timerRdfId << ", @toGenIfdId=" << toGenIfdId << ", @lcacIfdId=" << lcacIfdId << ", @chaserRdfId=" << chaserRdfId << ", @chaserRdfIdLowerBound=" << chaserRdfIdLowerBound << ", rejected inSingleInput=" << inSingleInput << " due to alreadyTcpConfirmed selfInput=" << result->input_list(selfJoinIndexArrIdx);
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
     return true;
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     if (nullptr == downsyncSnapshotHolder) {
         downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
     }
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outNewLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     /*
     Assuming that rdfBuffer & ifdBuffer are both sufficiently large (e.g. 5 seconds) such that when 
     - "timerRdfId" is to be evicted from "rdfBuffer.StFrameId", or
@@ -44,13 +53,14 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     Edge cases
     - If there's no "refRdf" BUT "0 < postTimerRdfDelayedIfdToEvictCnt", drop the exceeding "ifd_batch".
     */
-
+    *outChaserRdfId = chaserRdfId;
+    *outLcacIfdId = lcacIfdId;
     bool shouldDragTimerRdfIdForward = false;
     *outPostTimerRdfEvictedCnt = 0;
     *outPostTimerRdfDelayedIfdEvictedCnt = 0;
     int refRdfId = downsyncSnapshot->ref_rdf_id();
     int oldChaserRdfIdLowerBound = chaserRdfIdLowerBound;
-    if (downsyncSnapshot->has_ref_rdf()) {
+    if (downsyncSnapshot->has_ref_rdf() && refRdfId != globalPrimitiveConsts->terminating_render_frame_id()) {
         const RenderFrame& refRdf = downsyncSnapshot->ref_rdf();
         if (refRdfId >= oldChaserRdfIdLowerBound) {
             bool willEvictRdfSt = (refRdfId >= rdfBuffer.StFrameId + rdfBuffer.N);
@@ -75,6 +85,13 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
             chaserRdfId = refRdfId;
             chaserRdfIdLowerBound = refRdfId;
+/*
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@timerRdfId=" << timerRdfId << ", @oldLcacIfdId=" << lcacIfdId << ", updated chaserRdfIdLowerBound=chaserRdfId=" << refRdfId << " from refRdf, willEvictRdfSt=" << willEvictRdfSt << ", shouldDragTimerRdfIdForward=" << shouldDragTimerRdfIdForward << ", postTimerRdfEvictedCnt=" << *outPostTimerRdfEvictedCnt;
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
         }
     }
 
@@ -134,16 +151,40 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
                 targetHolder = ifdBuffer.GetByFrameId(ifdId); 
             }
+/*
+#ifndef NDEBUG
+            if ((0 < (targetHolder->udp_confirmed_list() & selfJoinIndexMask) || 0 != targetHolder->input_list(selfJoinIndexArrIdx)) && targetHolder->input_list(selfJoinIndexArrIdx) != refIfd.input_list(selfJoinIndexArrIdx)) {
+                std::ostringstream oss;
+                oss << "@timerRdfId=" << timerRdfId << ", @refRdfId=" << refRdfId << ", @lcacIfdId=" << lcacIfdId << ", @chaserRdfId=" << chaserRdfId << ", @chaserRdfIdLowerBound=" << chaserRdfIdLowerBound << " overriding localSelfInput=" <<  targetHolder->input_list(selfJoinIndexArrIdx) << " by backend generated " << refIfd.input_list(selfJoinIndexArrIdx) << " of refIfdId=" << ifdId;
+                Debug::Log(oss.str(), DColor::Orange);
+            }
+#endif
+*/
             targetHolder->CopyFrom(refIfd);
             targetHolder->set_confirmed_list(allConfirmedMask);
             
             for (int k = 0; k < playersCnt; ++k) {
-                if (ifdId > playerInputFrontIds[k]) {
-                    playerInputFrontIdsSorted.erase(playerInputFrontIds[k]);
-                    playerInputFrontIds[k] = ifdId;
-                    playerInputFronts[k] = refIfd.input_list(k);
-                    playerInputFrontIdsSorted.insert(ifdId);
+                if (k == selfJoinIndexArrIdx) continue;
+                if (ifdId <= playerInputFrontIds[k]) { 
+/*
+#ifndef NDEBUG
+                    Debug::Log("OnDownsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(k) + "] NOT updated for ifdId=" + std::to_string(ifdId) + ", origIfdId=" + std::to_string(playerInputFrontIds[k]), DColor::Orange);
+#endif
+*/
+                    continue; 
                 }
+                auto it = playerInputFrontIdsSorted.find(playerInputFrontIds[k]);
+                if (it != playerInputFrontIdsSorted.end()) {
+                    playerInputFrontIdsSorted.erase(it);
+                }
+                playerInputFrontIds[k] = ifdId;
+                playerInputFronts[k] = refIfd.input_list(k);
+                playerInputFrontIdsSorted.insert(ifdId);
+/*
+#ifndef NDEBUG
+                Debug::Log("OnDownsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(k) + "] is updated to " + std::to_string(ifdId) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+#endif
+*/
             }
 
             if (-1 == firstIncorrectlyPredictedIfdId && existingInputMutated) {
@@ -159,33 +200,54 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     }
 
     if (-1 != firstIncorrectlyPredictedIfdId) {
-        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false);
+        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, false, false);
     }
 
-    *outNewLcacIfdId = lcacIfdId;
-    *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
-    *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+    if (!playerInputFrontIdsSorted.empty()) {
+        *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+        *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+/*
+#ifndef NDEBUG
+        Debug::Log("OnDownsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+#endif
+*/
+    }
+/*
+#ifndef NDEBUG
+    else {
+        Debug::Log("OnDownsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
+     }
+#endif
+*/
+
+    *outChaserRdfId = chaserRdfId;
+    *outLcacIfdId = lcacIfdId;
 
     return true;
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
-    if (nullptr == upsyncSnapshotHolder) {
-        upsyncSnapshotHolder = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    if (nullptr == upsyncSnapshotReqHolder) {
+        upsyncSnapshotReqHolder = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     }
-    upsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnUpsyncSnapshotReceived(upsyncSnapshotHolder, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    upsyncSnapshotReqHolder->ParseFromArray(inBytes, inBytesCnt);
+
+    uint32_t peerJoinIndex = upsyncSnapshotReqHolder->join_index();
+    if (0 >= peerJoinIndex) return false;
+    if (selfJoinIndex == peerJoinIndex) return false;
+    if (!upsyncSnapshotReqHolder->has_upsync_snapshot()) return false;
+    return OnUpsyncSnapshotReceived(peerJoinIndex, upsyncSnapshotReqHolder->upsync_snapshot(), outChaserRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     // See "BackendBattle::OnUpsyncSnapshotReceived" for reference.
     bool fromUdp = true; // by design
-    int peerJoinIndex = upsyncSnapshot->join_index();
     int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
     int firstIncorrectlyPredictedIfdId = -1;
-    int cmdListSize = upsyncSnapshot->cmd_list_size();
+    int cmdListSize = upsyncSnapshot.cmd_list_size();
+    *outChaserRdfId = chaserRdfId;
     for (int i = 0; i < cmdListSize; ++i) {
-        int ifdId = upsyncSnapshot->st_ifd_id() + i;
+        int ifdId = upsyncSnapshot.st_ifd_id() + i;
         if (ifdId <= lcacIfdId) {
             // obsolete
             continue;
@@ -211,33 +273,59 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapsh
             // Now that we're all set for "StFrameId eviction upon DryPut() of ifdBuffer"
         }
 
-        const uint64_t cmd = upsyncSnapshot->cmd_list(i);
+        const uint64_t cmd = upsyncSnapshot.cmd_list(i);
         bool outExistingInputMutated = false;
         InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, fromUdp, false, outExistingInputMutated);
+        int peerJoinIndexArrIdx = peerJoinIndex - 1;
+        bool frontsUpdated = updatePlayerInputFronts(ifdId, peerJoinIndexArrIdx, cmd);
+/*
+#ifndef NDEBUG
+        if (frontsUpdated) {
+            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] is updated to " + std::to_string(ifdId) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+        } else {
+            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] NOT updated for ifdId=" + std::to_string(ifdId) + ", origIfdId=" + std::to_string(playerInputFrontIds[peerJoinIndexArrIdx]) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+        }
+#endif
+*/
         if (-1 == firstIncorrectlyPredictedIfdId && outExistingInputMutated) {
             firstIncorrectlyPredictedIfdId = ifdId;
         }
     }
 
     if (-1 != firstIncorrectlyPredictedIfdId) {
-        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, fromUdp);
+        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, fromUdp, false);
     }
 
-    *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
-    *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+    if (!playerInputFrontIdsSorted.empty()) {
+        *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+        *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+/*
+#ifndef NDEBUG
+        Debug::Log("OnUpsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+#endif
+*/
+    }
+/*
+#ifndef NDEBUG
+    else {
+        Debug::Log("OnUpsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
+     }
+#endif
+*/
+    *outChaserRdfId = chaserRdfId;
 
     return true;
 }
 
-bool FrontendBattle::ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     int batchIfdIdSt = proposedBatchIfdIdSt;
     if (batchIfdIdSt < ifdBuffer.StFrameId) {
         batchIfdIdSt = ifdBuffer.StFrameId;
     }
     
     int batchIfdIdEd = proposedBatchIfdIdEd;
-    if (batchIfdIdEd >= ifdBuffer.EdFrameId) {
-        batchIfdIdEd = ifdBuffer.EdFrameId - 1;
+    if (batchIfdIdEd > ifdBuffer.EdFrameId) {
+        batchIfdIdEd = ifdBuffer.EdFrameId;
     }
 
     if (batchIfdIdEd < batchIfdIdSt) {
@@ -247,25 +335,33 @@ bool FrontendBattle::ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int propose
 
     std::vector<uint64> cmdList;
     cmdList.reserve(batchIfdIdEd - batchIfdIdSt + 1);
-    for (int i = batchIfdIdSt; i <= batchIfdIdEd; i++) {
+    for (int i = batchIfdIdSt; i < batchIfdIdEd; i++) {
         auto ifd = ifdBuffer.GetByFrameId(i);
         if (nullptr == ifd) {
             break;
         }
         bool selfConfirmed = (0 < (selfJoinIndexMask & (ifd->confirmed_list() | ifd->udp_confirmed_list())));
-        if (selfConfirmed) {
-            cmdList.emplace_back(ifd->input_list(selfJoinIndexArrIdx));
+        if (!selfConfirmed) {
+            break;
         }
+        cmdList.emplace_back(ifd->input_list(selfJoinIndexArrIdx));
+        *outLastIfdId = i;
     }
+
     if (cmdList.empty()) {
+        *outBytesCntLimit = 0;
         return false;
     }
 
-    auto result = google::protobuf::Arena::Create<UpsyncSnapshot>(&pbTempAllocator);
+    auto result = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     result->set_join_index(selfJoinIndex);
-    result->set_st_ifd_id(batchIfdIdSt);
+    result->set_auth_key(selfCmdAuthKey);
+    result->set_seq_no(seqNo);
+    result->set_act(UpsyncAct::UA_CMD);
+    auto upsyncSnapshot = result->mutable_upsync_snapshot();
+    upsyncSnapshot->set_st_ifd_id(batchIfdIdSt);
     for (auto& cmd : cmdList) {
-        result->add_cmd_list(cmd);
+        upsyncSnapshot->add_cmd_list(cmd);
     }
     long byteSize = result->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
@@ -273,21 +369,24 @@ bool FrontendBattle::ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int propose
         return false;
     }
     *outBytesCntLimit = byteSize;
+
     result->SerializeToArray(outBytesPreallocatedStart, byteSize);
     return true;
 }
 
-void FrontendBattle::Step(int fromRdfId, int toRdfId, bool isChasing) {
+bool FrontendBattle::Step(int fromRdfId, int toRdfId, bool isChasing) {
     if (!isChasing) {
         JPH_ASSERT(fromRdfId == timerRdfId && toRdfId == timerRdfId+1); // NOT supporting multi-step in this case.
         regulateCmdBeforeRender();
     }
-    BaseBattle::Step(fromRdfId, toRdfId);
+    bool stepped = BaseBattle::Step(fromRdfId, toRdfId);
+    if (!stepped) return false;
     if (isChasing) {
        chaserRdfId = toRdfId;
     } else {
        timerRdfId = toRdfId;
     }
+    return true;
 }
 
 void FrontendBattle::regulateCmdBeforeRender() {
@@ -298,6 +397,7 @@ void FrontendBattle::regulateCmdBeforeRender() {
 
     RenderFrame* currRdf = rdfBuffer.GetByFrameId(timerRdfId); 
     InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId); // No need to prefab, it must exist
+    bool existingInputMutated = false;
     for (int i = 0; i < playersCnt; i++) {
         int joinIndex = (i + 1); 
         if (joinIndex == selfJoinIndex) {
@@ -316,34 +416,42 @@ void FrontendBattle::regulateCmdBeforeRender() {
       
         if (0 < (delayedIfd->confirmed_list() & joinMask)) {
             // This regulation is only valid when "delayed input for this player is not yet confirmed"
-        } else if (0 < (delayedIfd->udp_confirmed_list() & joinMask)) {
-            // Received from UDP, better than local prediction though "InputFrameDownsync.confirmed_list()" is not set until confirmed by TCP path
-        } else {
-            // Local prediction
-            uint64_t refCmd = 0;
-            InputFrameDownsync* previousDelayedIfd = ifdBuffer.GetByFrameId(delayedIfdId - 1);
-            if (playerInputFrontIds[i] < delayedIfdId) {
-                refCmd = playerInputFronts[i];
-            } else if (nullptr != previousDelayedIfd) {
-                refCmd = previousDelayedIfd->input_list(i);
-            }
+            continue;
+        } 
 
-            newVal = (refCmd & U64_15);
-            if (shouldPredictBtnAHold) newVal |= (refCmd & U64_16);
-            if (shouldPredictBtnBHold) newVal |= (refCmd & U64_32);
-            if (shouldPredictBtnCHold) newVal |= (refCmd & U64_64);
-            if (shouldPredictBtnDHold) newVal |= (refCmd & U64_128);
-            if (shouldPredictBtnEHold) newVal |= (refCmd & U64_256);
+        if (0 < (delayedIfd->udp_confirmed_list() & joinMask)) {
+            // Received from UDP, better than local prediction though "InputFrameDownsync.confirmed_list()" is not set until confirmed by TCP path
+            continue;
         }
+
+        // Local prediction
+        uint64_t refCmd = 0;
+        InputFrameDownsync* previousDelayedIfd = ifdBuffer.GetByFrameId(delayedIfdId - 1);
+        if (playerInputFrontIds[i] < delayedIfdId) {
+            refCmd = playerInputFronts[i];
+        } else if (nullptr != previousDelayedIfd) {
+            refCmd = previousDelayedIfd->input_list(i);
+        }
+
+        newVal = (refCmd & U64_15);
+        if (shouldPredictBtnAHold) newVal |= (refCmd & U64_16);
+        if (shouldPredictBtnBHold) newVal |= (refCmd & U64_32);
+        if (shouldPredictBtnCHold) newVal |= (refCmd & U64_64);
+        if (shouldPredictBtnDHold) newVal |= (refCmd & U64_128);
+        if (shouldPredictBtnEHold) newVal |= (refCmd & U64_256);
 
         if (newVal != delayedIfd->input_list(i)) {
+            existingInputMutated = true;
             delayedIfd->set_input_list(i, newVal);
-            handleIncorrectlyRenderedPrediction(delayedIfdId, true);
         }
+    }
+
+    if (existingInputMutated) {
+        handleIncorrectlyRenderedPrediction(delayedIfdId, false, false, true);
     }
 }
 
-void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFrameId, bool fromUdp) {
+void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender) {
     if (0 > mismatchedInputFrameId) return;
     int timerRdfId1 = ConvertToFirstUsedRenderFrameId(mismatchedInputFrameId);
     if (timerRdfId1 >= chaserRdfId) return;
@@ -374,26 +482,67 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
     if (timerRdfId1 < rdfBuffer.StFrameId) {
         timerRdfId1 = rdfBuffer.StFrameId; // [WARNING] One of the edge cases here, just wait for the next "refRdf".
     }
+/*
+#ifndef NDEBUG
+    std::ostringstream oss;
+    int localToGenIfdId = ConvertToGeneratingIfdId(timerRdfId);
+    int localRequiredIfdId = ConvertToDelayedInputFrameId(timerRdfId);
+    oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", @lcacIfdId=" << lcacIfdId << ", rewinding chaserRdfId from " << chaserRdfId << " to " << timerRdfId1 << " due to mismatchedInputFrameId=" << mismatchedInputFrameId << ", fromSelf=" << fromSelf << ", peerInputSource=" << (fromUdp ? "UDP" : "TCP") << ", fromRegulateBeforeRender=" << fromRegulateBeforeRender;
+
+    Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
     chaserRdfId = timerRdfId1;
 }
 
-bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex) {
+bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     initializerMapData->ParseFromArray(inBytes, inBytesCnt);
-    return ResetStartRdf(initializerMapData, inSelfJoinIndex);
+    return ResetStartRdf(initializerMapData, inSelfJoinIndex, inSelfPlayerId, inSelfCmdAuthKey);
 }
 
-bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, uint32_t inSelfJoinIndex) {
+bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
     if (0 >= inSelfJoinIndex) {
         return false;
     }
     selfJoinIndex = inSelfJoinIndex;
-    selfJoinIndexInt = inSelfJoinIndex-1;
-    selfJoinIndexArrIdx = inSelfJoinIndex - 1;
+    selfJoinIndexInt = (int)inSelfJoinIndex;
+    selfJoinIndexArrIdx = selfJoinIndexInt-1;
     selfJoinIndexMask = (U64_1 << selfJoinIndexArrIdx);
+    selfPlayerId = inSelfPlayerId;
+    selfCmdAuthKey = inSelfCmdAuthKey;
     
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
-
+    timerRdfId = rdfBuffer.GetLast()->id();
     chaserRdfId = chaserRdfIdLowerBound = timerRdfId;
     return res;
 }
+
+void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint32_t udPayload, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState, uint64_t delayedInput) {
+    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, udPayload, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, delayedInput);
+/*
+#ifndef NDEBUG
+    if (udt == UDT_PLAYER && udPayload == selfJoinIndex && CrouchIdle1 == currChd.ch_state() && CrouchIdle1 != nextChd->ch_state()) {
+        std::ostringstream oss;
+        int localToGenIfdId = ConvertToGeneratingIfdId(timerRdfId);
+        int localRequiredIfdId = ConvertToDelayedInputFrameId(steppingRdfId);
+        oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @steppingRdfId=" << steppingRdfId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", self character at(" << currChd.x() << ", " << currChd.y() << ") w / frames_in_ch_state = " << currChd.frames_in_ch_state() << ", vel = (" << currChd.vel_x() << ", " << currChd.vel_y() << ") revoked from " << currChd.ch_state() << " to " << nextChd->ch_state() << ", @delayedInput = " << delayedInput << ", nextVel = (" << nextChd->vel_x() << ", " << nextChd->vel_y() << ")" << ", cvSupported = " << cvSupported << ", cvOnWall = " << cvOnWall << ", cvInAir = " << cvInAir << ", cvGroundState = " << (int)cvGroundState << " | self ifdBuffer = \n";
+
+        stringifyPlayerInputsInIfdBuffer(oss, selfJoinIndexArrIdx);
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
+}
+
+/*
+#ifndef NDEBUG
+        if (InAirIdle2ByJump == oldNextChState && InAirIdle2ByJump != nextChd->ch_state()) {
+            ////////////////////////////
+        }
+
+        if (InAirIdle1NoJump == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
+            ////////////////////////////
+        }
+#endif
+*/

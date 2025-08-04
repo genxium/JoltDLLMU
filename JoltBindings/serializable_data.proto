@@ -484,15 +484,14 @@ message InputFrameDecoded {
 }
 
 message UpsyncSnapshot {
-    uint32 join_index = 1;
-    int32 st_ifd_id = 2; // By NOT allowing individual "ifdId" to be attached to an individual "cmd", it's easier to defend against malicious inputs.
-    repeated uint64 cmd_list = 3;
+    int32 st_ifd_id = 1; // By NOT allowing individual "ifdId" to be attached to an individual "cmd", it's easier to defend against malicious inputs.
+    repeated uint64 cmd_list = 2;
 }
 
 message WsReq {
     uint32 seq_no = 1;
-    string player_id = 2;
-    int32 act = 3;
+    uint32 join_index = 2;
+    UpsyncAct act = 3;
     int32 auth_key = 4;
     UpsyncSnapshot upsync_snapshot = 5;
     RenderFrame self_parsed_rdf = 6;
@@ -945,6 +944,14 @@ message InputFrameDownsync {
     uint64 udp_confirmed_list = 3; // [WARNING] Only used by frontend, i.e. on backend this field can be always zero because backend sets "InputFrameDownsync.confirmed_list" by UDP packets too while frontend shouldn't. 
 }
 
+enum UpsyncAct {
+    UA_NONE = 0;
+    UA_CMD = 1;
+    UA_SELF_PARSED_RDF = 2;
+    UA_HOLEPUNCH_BACKEND_UDP_TUNNEL = 3;
+    UA_HOLEPUNCH_PEER_UDP_ADDR = 4;
+}
+
 enum DownsyncAct {
     DA_NONE = 0;
     DA_REGULAR = 1;
@@ -1006,7 +1013,9 @@ message Skill {
 message FrameLog {
     RenderFrame rdf = 1;
     int32 actually_used_ifd_id = 2;
-    InputFrameDownsync actually_used_ifd = 3;
+    repeated uint64 used_ifd_input_list = 3; 
+    uint64 used_ifd_confirmed_list = 4;
+    uint64 used_ifd_udp_confirmed_list = 5; 
 }
 
 message BattleResult {

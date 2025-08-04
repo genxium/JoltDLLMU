@@ -5,6 +5,7 @@
 #include <random>
 #include <iostream>
 #include <cassert>
+#include <sstream>
 
 #define RB_T RingBufferMt<int>
 
