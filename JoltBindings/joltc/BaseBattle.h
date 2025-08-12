@@ -54,17 +54,14 @@ class JOLTC_EXPORT BaseBattle {
         int playersCnt;
         uint64_t allConfirmedMask;
         atomic<uint64_t> inactiveJoinMask; // realtime information
-        /*
-        [WARNING/FRONTEND] At any point of time it's maintained that "timerRdfId >= rdfBuffer.StFrameId", for obvious reason. 
-        */
-        int timerRdfId;
         int battleDurationFrames;
         FrameRingBuffer<RenderFrame> rdfBuffer;
         FrameRingBuffer<InputFrameDownsync> ifdBuffer;
+        FrameRingBuffer<FrameLog> frameLogBuffer;
 
         std::vector<uint64_t> prefabbedInputList;
         std::vector<int> playerInputFrontIds;
-        std::multiset<int> playerInputFrontIdsSorted; 
+        std::multiset<int> playerInputFrontIdsSorted;
         std::vector<uint64_t> playerInputFronts;
 
         /*
@@ -121,7 +118,7 @@ class JOLTC_EXPORT BaseBattle {
         }
 
         inline static int ConvertToFirstUsedRenderFrameId(int inputFrameId) {
-            return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_scale_frames());
+            return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_delay_frames());
         }
 
         inline static int ConvertToLastUsedRenderFrameId(int inputFrameId) {
@@ -147,7 +144,13 @@ class JOLTC_EXPORT BaseBattle {
             return oldVal;
         }
 
-        virtual void Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
+        inline bool SetFrameLogEnabled(bool val) {
+            bool oldVal = frameLogEnabled;
+            frameLogEnabled = val;
+            return oldVal;
+        }
+
+        virtual bool Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
         virtual void Clear();
 
@@ -279,7 +282,7 @@ protected:
         void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
 
-        void processPlayerInputs(const RenderFrame* currRdf, RenderFrame* nextRdf, const InputFrameDownsync* delayedInputFrameDownsync);
+        void processPlayerInputs(const RenderFrame* currRdf, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
         void processNpcInputs(const RenderFrame* currRdf, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
         
         void processSingleCharacterInput(int rdfId, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
@@ -305,7 +308,7 @@ protected:
 
         void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool isParalyzed, bool nextEffInAir);
 
-        void postStepSingleChdStateCorrection(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState);
+        virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint32_t udPayload, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState, uint64_t delayedInput);
         void leftShiftDeadNpcs(bool isChasing);
         void leftShiftDeadBullets(bool isChasing);
 
@@ -334,6 +337,39 @@ protected:
 
         inline void calcChdShape(const CharacterDownsync& currChd, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
 
+        inline bool updatePlayerInputFronts(int inIfdId, int inSingleJoinIndexArrIdx, int inSingleInput) {
+            if (inIfdId <= playerInputFrontIds[inSingleJoinIndexArrIdx]) {
+                return false;
+            }
+            auto it = playerInputFrontIdsSorted.find(playerInputFrontIds[inSingleJoinIndexArrIdx]);
+            if (it != playerInputFrontIdsSorted.end()) {
+                playerInputFrontIdsSorted.erase(it);
+            }
+            playerInputFrontIds[inSingleJoinIndexArrIdx] = inIfdId;
+            playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
+            playerInputFrontIdsSorted.insert(inIfdId);
+            return true;
+        }
+
+         void stringifyPlayerInputsInIfdBuffer(std::ostringstream &oss, int joinIndexArrIdx) {
+             if (0 >= ifdBuffer.Cnt) return;
+             bool nonEmpty = false;
+             for (int ifdId = ifdBuffer.StFrameId; ifdId < ifdBuffer.EdFrameId; ifdId++) {
+                 auto ifd = ifdBuffer.GetByFrameId(ifdId);
+                 if (nullptr == ifd) break;
+                 uint64_t cmd = ifd->input_list(joinIndexArrIdx);
+                 if (nonEmpty) {
+                     oss << "; ";
+                 } else {
+                     oss << "[";
+                     nonEmpty = true;
+                 }
+                 oss << "{j:" << ifdId << ", si:" << cmd << ", c:" << ifd->confirmed_list() << ", uc:" << ifd->udp_confirmed_list() << "}"; // "si" == "self input"
+             }
+             if (nonEmpty) {
+                 oss << "]";
+             }
+        }
 private:
         Vec3 safeDeactiviatedPosition;
         InputFrameDecoded ifDecodedHolder;

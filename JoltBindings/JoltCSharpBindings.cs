@@ -35,6 +35,18 @@ namespace JoltCSharp {
         public static extern bool APP_GetRdf(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_GetRdfBufferBounds(UIntPtr inBattle, int* outStRdfId, int* outEdRdfId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_GetFrameLog(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_SetFrameLogEnabled(UIntPtr inBattle, [MarshalAs(UnmanagedType.U1)] bool val);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ulong APP_SetPlayerActive(UIntPtr inBattle, uint joinIndex);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -47,18 +59,19 @@ namespace JoltCSharp {
         public static extern ulong APP_SetInactiveJoinMask(UIntPtr inBattle, ulong newValue);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern UIntPtr FRONTEND_CreateBattle([MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
+        public static extern UIntPtr FRONTEND_CreateBattle(int rdfBufferSize, [MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_ResetStartRdf(UIntPtr inBattle, char* inBytes, int inBytesCnt, uint inSelfJoinIndex);
+        public static extern bool FRONTEND_ResetStartRdf(UIntPtr inBattle, char* inBytes, int inBytesCnt, uint inSelfJoinIndex, [MarshalAs(UnmanagedType.LPStr)] string inSelfPlayerId, int inSelfCmdAuthKey);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_UpsertSelfCmd(UIntPtr inBattle, ulong inSingleInput);
+        public static extern bool FRONTEND_UpsertSelfCmd(UIntPtr inBattle, ulong inSingleInput, int* outChaserRdfId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void FRONTEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId, [MarshalAs(UnmanagedType.U1)] bool isChasing);
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool FRONTEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId, [MarshalAs(UnmanagedType.U1)] bool isChasing);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -66,15 +79,15 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_ProduceUpsyncSnapshot(UIntPtr inBattle, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+        public static extern bool FRONTEND_ProduceUpsyncSnapshotRequest(UIntPtr inBattle, int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLcacIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_OnUpsyncSnapshotReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+        public static extern bool FRONTEND_OnUpsyncSnapshotReqReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_OnDownsyncSnapshotReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+        public static extern bool FRONTEND_OnDownsyncSnapshotReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern UIntPtr BACKEND_CreateBattle();
@@ -85,7 +98,7 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool BACKEND_OnUpsyncSnapshotReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+        public static extern bool BACKEND_OnUpsyncSnapshotReqReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, [MarshalAs(UnmanagedType.U1)] bool fromUdp, [MarshalAs(UnmanagedType.U1)] bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -93,7 +106,7 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern void BACKEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId);
+        public static extern bool BACKEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int BACKEND_GetDynamicsRdfId(UIntPtr inBattle);
@@ -109,7 +122,7 @@ namespace JoltCSharp {
 
         /*
         // To be put on Unity side
-        enum DColor { red, green, blue, black, white, yellow, orange };
+        enum DColor { red, yellow, orange, green, blue, black, white };
 
         [MonoPInvokeCallback(typeof(debugCallback))]
         static void OnDebugCallback(IntPtr request, int color, int size) {
@@ -257,7 +270,6 @@ namespace JoltCSharp {
         }
 
         public static void PreemptUpsyncSnapshotBeforeMerge(UpsyncSnapshot upsyncSnapshot, PrimitiveConsts primitives) {
-            upsyncSnapshot.JoinIndex = primitives.MagicJoinIndexInvalid; 
             upsyncSnapshot.StIfdId = primitives.TerminatingInputFrameId;
             upsyncSnapshot.CmdList.Clear();
         }

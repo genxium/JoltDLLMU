@@ -133,20 +133,23 @@ public class FrontendTest {
 
             UIntPtr battle = UIntPtr.Zero;
             fixed (byte* bufferPtr = buffer) {
-                 battle = Bindings.FRONTEND_CreateBattle(false);
+                 battle = Bindings.FRONTEND_CreateBattle(512, false);
                  _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
-                 bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, 1);
+                 uint selfJoinIndex = 1;
+                 string selfPlayerId = "foobar";
+                 int selfCmdAuthKey = 123456;
+                 bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
                  _logger.WriteLine($"ResetStartRdf finished for battle at pointer addr = 0x{battle:x}, res={res}");
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
             
-            int timerRdfId = primitives.StartingRenderFrameId;
+            int timerRdfId = primitives.StartingRenderFrameId, newChaserRdfId = 0;
             long outBytesCnt = 0;
             RenderFrame rdfHolder = new RenderFrame();
-
+            int* newChaserRdfIdPtr = &newChaserRdfId;
             fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer) {
                 while (4096 > timerRdfId) {
-                    bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0);
+                    bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0, newChaserRdfIdPtr);
                     Assert.True(cmdInjected);
 
                     Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);

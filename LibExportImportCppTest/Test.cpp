@@ -170,10 +170,12 @@ int main(int argc, char** argv)
     long byteSize = wsReq.ByteSizeLong();
     wsReq.SerializeToArray(pbByteBuffer, byteSize);
     uint32_t selfJoinIndex = 1;
-    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(false));
+    const char * const selfPlayerId = "foobar";
+    const int selfCmdAuthKey = 123456;
+    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, false));
     std::cout << "Created battle = " << battle << std::endl;
 
-    bool resetStartRdfRes = FRONTEND_ResetStartRdf(battle, pbByteBuffer, (int)byteSize, selfJoinIndex);
+    bool resetStartRdfRes = FRONTEND_ResetStartRdf(battle, pbByteBuffer, (int)byteSize, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
     std::cout << "resetStartRdfRes = " << resetStartRdfRes << std::endl;
     
     jtshared::RenderFrame outRdf;
@@ -186,13 +188,14 @@ int main(int argc, char** argv)
         system_clock::now().time_since_epoch()
     );
     uint32_t inSingleJoinIndex = 1;
+    int chaserRdfId = 0;
     while (loopRdfCnt > timerRdfId) {
         auto it = testCmds1.lower_bound(timerRdfId);
         if (it == testCmds1.end()) {
             --it;
         }
         uint64_t inSingleInput = it->second;
-        bool cmdInjected = FRONTEND_UpsertSelfCmd(battle, inSingleInput);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(battle, inSingleInput, &chaserRdfId);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);

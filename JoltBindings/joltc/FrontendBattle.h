@@ -13,6 +13,7 @@ using namespace jtshared;
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
     FrontendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
+        timerRdfId = globalPrimitiveConsts->starting_input_frame_id();
         onlineArenaMode = isOnlineArenaMode;
     }
 
@@ -24,6 +25,12 @@ public:
     }
 
 public:
+    /*
+    At any point of time it's maintained that "timerRdfId >= rdfBuffer.StFrameId", for obvious reason. 
+
+    Backend also has a "backendTimerRdfId" maintained on C# side, which is NOT coupled with "Step(...)" or "UpsertSelfCmd(...)".
+    */
+    int timerRdfId;
     int localExtraInputDelayFrames = 0;
     int chaserRdfId = globalPrimitiveConsts->terminating_render_frame_id();
     int chaserRdfIdLowerBound = globalPrimitiveConsts->terminating_render_frame_id();
@@ -31,18 +38,20 @@ public:
     int selfJoinIndexInt = (int)selfJoinIndex;
     int selfJoinIndexArrIdx = selfJoinIndexInt-1;
     uint64_t selfJoinIndexMask = 0u;
+    const char* selfPlayerId = nullptr;
+    int selfCmdAuthKey = 0;
 
-    bool UpsertSelfCmd(uint64_t inSingleInput);
+    bool UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId);
 
-    bool ProduceUpsyncSnapshot(int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+    bool ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
-    bool OnUpsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
-    bool OnUpsyncSnapshotReceived(const UpsyncSnapshot* upsyncSnapshot, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
-    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
-    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outNewLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
-    void Step(int fromRdfId, int toRdfId, bool isChasing); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
+    bool Step(int fromRdfId, int toRdfId, bool isChasing); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
     inline bool GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
         *outTimerRdfId = timerRdfId;
@@ -54,18 +63,20 @@ public:
         return true;
     }
 
-    bool ResetStartRdf(char* inBytes, int inBytesCnt, uint32_t inSelfJoinIndex);
-    bool ResetStartRdf(const WsReq* initializerMapData, uint32_t inSelfJoinIndex);
+    bool ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
+    bool ResetStartRdf(const WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
 
 protected:
     bool onlineArenaMode = false;
 
     void regulateCmdBeforeRender(); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
-    void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromUdp);
+    void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender);
+
+    virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint32_t udPayload, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState, uint64_t delayedInput);
 
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
-    UpsyncSnapshot* upsyncSnapshotHolder = nullptr;
+    WsReq* upsyncSnapshotReqHolder = nullptr;
 };
 
 #endif

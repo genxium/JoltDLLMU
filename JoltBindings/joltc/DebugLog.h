@@ -13,13 +13,13 @@ extern "C"
 }
 
 //Color Enum
-enum class DColor { Red, Green, Blue, Black, White, Yellow, Orange };
+enum class DColor { Red, Yellow, Orange, Green, Blue, Black, White };
 
 class Debug
 {
 public:
-    static void Log(const char* message, DColor color = DColor::Black);
-    static void Log(const std::string message, DColor color = DColor::Black);
+    static void Log(const char* message, DColor color = DColor::White);
+    static void Log(const std::string message, DColor color = DColor::White);
 };
 
 #endif /* DEBUG_LOG_H_ */
