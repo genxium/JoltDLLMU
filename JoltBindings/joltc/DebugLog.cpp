@@ -1,4 +1,5 @@
 #include "DebugLog.h"
+#include <cstring>
 
 //-------------------------------------------------------------------
 void Debug::Log(const char* message, DColor color) {
