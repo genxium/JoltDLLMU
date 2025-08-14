@@ -17,9 +17,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(UnityPackageOutputPath)\Runtime\Plugins\**\*.*" CopyToOutputDirectory="PreserveNewest" LinkBase="Plugins\" />
-    <None Remove="C:\Users\yflu\JoltDLLMU\JoltBindings.CSharp.Tests\..\UnityPackageOutput\Runtime\Plugins\.keep" />
-    <None Remove="C:\Users\yflu\JoltDLLMU\JoltBindings.CSharp.Tests\..\UnityPackageOutput\Runtime\Plugins\include\.keep" />
+    <None Remove="$(UnityPackageOutputPath)\Runtime\Plugins\.keep" />
+    <None Remove="$(UnityPackageOutputPath)\Runtime\Plugins\include\.keep" />
+
+    <Content Include="$(UnityPackageOutputPath)\Runtime\Plugins\**\*.*" Exclude="$(UnityPackageOutputPath)\**\*.meta" CopyToOutputDirectory="PreserveNewest" LinkBase="\">
+    </Content>
 
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="xunit" Version="2.4.2" />

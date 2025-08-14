@@ -826,7 +826,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
             bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
             if (0 == srvDownsyncSnapshot->st_ifd_id()) {
                 JPH_ASSERT(25 == newLcacIfdId);
@@ -841,7 +841,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             auto peerJoinIndex = req->join_index();
             bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
             if (13 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(BaseBattle::ConvertToFirstUsedRenderFrameId(13) == newChaserRdfId);
@@ -878,10 +878,10 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
 
             player2OutStr.clear();
-            google::protobuf::util::Status status2 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
 
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\nplayer2 = \n" << player2OutStr << std::endl;
         }
@@ -908,7 +908,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
             bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
             if (0 == srvDownsyncSnapshot->st_ifd_id()) {
                 JPH_ASSERT(25 == newLcacIfdId);
@@ -927,7 +927,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             auto peerUpsyncSnapshot = req->upsync_snapshot();
             bool applied = reusedBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
             if (13 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(BaseBattle::ConvertToFirstUsedRenderFrameId(13) == newChaserRdfId);
@@ -972,10 +972,10 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
 
             player2OutStr.clear();
-            google::protobuf::util::Status status2 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
 
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\nplayer2 = \n" << player2OutStr << std::endl;
         }
@@ -1005,7 +1005,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
             bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
             if (0 == srvDownsyncSnapshot->st_ifd_id()) {
                 JPH_ASSERT(25 == newLcacIfdId);
@@ -1022,7 +1022,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             auto peerUpsyncSnapshot = req->upsync_snapshot();
             bool applied = reusedBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(peerUpsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied peerUpsyncSnapshot = " << outStr << std::endl;
             if (13 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(54 == newChaserRdfId);
@@ -1073,10 +1073,10 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
 
             player2OutStr.clear();
-            google::protobuf::util::Status status2 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
 
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\nplayer2 = \n" << player2OutStr << std::endl;
         }
@@ -1120,9 +1120,9 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
             outStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
+            google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\ndelayedIfd=" << outStr << std::endl;
         }
     }
@@ -1149,7 +1149,7 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
             bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
+            google::protobuf::util::MessageToJsonString(*srvDownsyncSnapshot, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << ", applied srvDownsyncSnapshot = " << outStr << std::endl;
             if (0 == srvDownsyncSnapshot->st_ifd_id()) {
                 JPH_ASSERT(25 == newLcacIfdId);
@@ -1182,9 +1182,9 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
             outStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
+            google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\ndelayedIfd=" << outStr << std::endl;
         }
     }
@@ -1304,9 +1304,9 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             APP_GetRdf(referenceBattle, outerTimerRdfId, rdfFetchBuffer, &outBytesCnt);
             referenceBattleOutRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
             referencePlayer1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(0), &referencePlayer1OutStr);
+            google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(0), &referencePlayer1OutStr);
             referencePlayer2OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(1), &referencePlayer2OutStr);
+            google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(1), &referencePlayer2OutStr);
 
           
             // Fetch rollback battle rdf
@@ -1317,9 +1317,9 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
             player2OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
             /*
             oss << "\n\trefPly1 =\t" << referencePlayer1OutStr;
             oss << "\n\tplayer1 =\t" << player1OutStr;
@@ -1425,9 +1425,9 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             APP_GetRdf(referenceBattle, outerTimerRdfId, rdfFetchBuffer, &outBytesCnt);
             referenceBattleOutRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
             referencePlayer1OutStr.clear();
-            google::protobuf::util::Status status1 = google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(0), &referencePlayer1OutStr);
+            google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(0), &referencePlayer1OutStr);
             referencePlayer2OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(1), &referencePlayer2OutStr);
+            google::protobuf::util::MessageToJsonString(referenceBattleOutRdf->players_arr(1), &referencePlayer2OutStr);
             
             // Fetch rollback battle rdf
             InputFrameDownsync* delayedIfd = reusedBattle->ifdBuffer.GetByFrameId(delayedIfdId);
@@ -1437,9 +1437,9 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
 
             player1OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
             player2OutStr.clear();
-            status1 = google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
+            google::protobuf::util::MessageToJsonString(outRdf->players_arr(1), &player2OutStr);
             /*
             oss << "\n\trefPly1 =\t" << referencePlayer1OutStr;
             oss << "\n\tplayer1 =\t" << player1OutStr;

@@ -1,14 +1,22 @@
-FROM ubuntu:22.04 
+FROM ubuntu:18.04 
 
 # Set environment variables to avoid interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update 
+RUN apt-get update  
+RUN apt-get install -y --no-install-recommends software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update  
 
 RUN apt-get install -y --no-install-recommends \
     build-essential \
-    protobuf-compiler \
-    libprotobuf-dev
+    git \
+    ca-certificates \
+    gcc-10 \
+    g++-10
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
 
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -18,5 +26,22 @@ WORKDIR /usr/local
 RUN tar -xzvf cmake-4.0.3-linux-x86_64.tar.gz && \
     rm -rf cmake-4.0.3-linux-x86_64.tar.gz 
 ENV PATH="$PATH:/usr/local/cmake-4.0.3-linux-x86_64/bin"
+
+ADD https://github.com/protocolbuffers/protobuf/archive/refs/tags/v31.1.tar.gz /tmp/protobuf-31.1.tar.gz
+WORKDIR /tmp
+RUN tar -xzvf protobuf-31.1.tar.gz
+WORKDIR /tmp/protobuf-31.1
+# The default search path of "FindProtobuf(...)" is "/usr" 
+RUN mkdir build && cd build && \
+        cmake -DCMAKE_CXX_STANDARD=17 .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -Dprotobuf_BUILD_TESTS=OFF \
+        -Dprotobuf_BUILD_SHARED_LIBS=ON \
+        -DCMAKE_INSTALL_PREFIX=/usr && \
+        cmake --build . -j 8 && \
+        cmake --install . -j 8 
+
+RUN rm -rf /tmp/protobuf-31.1 
+RUN rm -rf /tmp/protobuf-31.1.tar.gz 
 
 WORKDIR /app

@@ -4,7 +4,7 @@ using jtshared;
 
 namespace JoltCSharp {
     public unsafe class Bindings {
-        private const string JOLT_LIB = JoltcPrebuilt.Loader.JOLT_LIB;
+        private const string JOLT_LIB = "joltc";
         /* All defined in 'joltc.h'*/
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

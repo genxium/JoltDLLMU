@@ -86,10 +86,7 @@ public class FrontendTest {
     }
 
     [Fact]
-    public unsafe void TestSimpleAllocDealloc() {
-        bool dllLoaded = JoltcPrebuilt.Loader.LoadLibrary();
-        if (dllLoaded) {
-            _logger.WriteLine($"Loaded joltc.dll");
+        public unsafe void TestSimpleAllocDealloc() {
             JoltCSharp.Bindings.JPH_Init(10*1024*1024);
             _logger.WriteLine($"Initialized Jolt resource allocators");
 
@@ -123,7 +120,7 @@ public class FrontendTest {
                 }
                 var srcPolygon = new SerializableConvexPolygon {
                     AnchorX = 0f,
-                    AnchorY = 0f,
+                            AnchorY = 0f,
                 };
                 srcPolygon.Points.AddRange(points2);
                 serializedBarriers.Add(srcPolygon);
@@ -133,16 +130,16 @@ public class FrontendTest {
 
             UIntPtr battle = UIntPtr.Zero;
             fixed (byte* bufferPtr = buffer) {
-                 battle = Bindings.FRONTEND_CreateBattle(512, false);
-                 _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
-                 uint selfJoinIndex = 1;
-                 string selfPlayerId = "foobar";
-                 int selfCmdAuthKey = 123456;
-                 bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
-                 _logger.WriteLine($"ResetStartRdf finished for battle at pointer addr = 0x{battle:x}, res={res}");
+                battle = Bindings.FRONTEND_CreateBattle(512, false);
+                _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
+                uint selfJoinIndex = 1;
+                string selfPlayerId = "foobar";
+                int selfCmdAuthKey = 123456;
+                bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
+                _logger.WriteLine($"ResetStartRdf finished for battle at pointer addr = 0x{battle:x}, res={res}");
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
-            
+
             int timerRdfId = primitives.StartingRenderFrameId, newChaserRdfId = 0;
             long outBytesCnt = 0;
             RenderFrame rdfHolder = new RenderFrame();
@@ -153,7 +150,7 @@ public class FrontendTest {
                     Assert.True(cmdInjected);
 
                     Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
-                    
+
                     int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
                     Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
 
@@ -166,7 +163,7 @@ public class FrontendTest {
                     _logger.WriteLine(rdfHolder.PlayersArr.ToString());
                 }
             }
-            
+
             // Clean up
             Bindings.APP_ClearBattle(battle);
             bool destroyRes = Bindings.APP_DestroyBattle(battle);
@@ -174,7 +171,5 @@ public class FrontendTest {
             _logger.WriteLine($"Destroyed battle at pointer addr = 0x{battle:x} with result={destroyRes}");
             bool shutdownRes = Bindings.JPH_Shutdown();
             _logger.WriteLine($"Jolt infra shutdown result = {shutdownRes}");
-        } else {
         }
-    }
 }

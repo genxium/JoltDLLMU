@@ -26,6 +26,7 @@ set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
 set(PB_GEN_ROOT $ENV{PB_GEN_ROOT})
 
 set(TARGET_NAME joltc)
+SET(CMAKE_INSTALL_RPATH "$ORIGIN") # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify 
 
 include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 
@@ -119,20 +120,14 @@ install(FILES
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
 )
 
+install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
+    #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
+    DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
+)
 if (MSVC)
-    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
-        #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
-        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
-    )
     install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
 else()    
-    foreach (_file ${Protobuf_LIBRARIES}) # Magic variable set by "FindProtobuf -- find_package(Protobuf REQUIRED)". See https://cmake.org/cmake/help/latest/module/FindProtobuf.html#result-variables.
-        get_filename_component(_resolvedFile "${_file}" REALPATH)
-        get_filename_component(_destinationFilename "${_file}" NAME)
-        install(FILES ${_resolvedFile}
-            DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies RENAME ${_destinationFilename}
-        )
-    endforeach()
+
 endif()
 
 if (BUILD_SHARED_LIBS)
