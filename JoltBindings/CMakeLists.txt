@@ -33,13 +33,6 @@ include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 if (BUILD_SHARED_LIBS)
     add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
 
-    #Define macro named "JOLTC_EXPORT" for "PbClasses.cmake".
-    include(GenerateExportHeader)
-    generate_export_header(${TARGET_NAME}
-        EXPORT_MACRO_NAME JOLTC_EXPORT
-        EXPORT_FILE_NAME joltc_export.h
-    ) # The file is supposed to be in "${CMAKE_CURRNET_BINARY_DIR}"
-    
     target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
     target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
     if (WIN32)
@@ -47,22 +40,30 @@ if (BUILD_SHARED_LIBS)
     endif()
 
     # [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
-    if (MSVC)
-        target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
-        # Expand inline functions for easier debugging.
-        target_compile_options(${TARGET_NAME} PUBLIC
-            $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
-        )
-    else()
-        target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
-        target_compile_options(${TARGET_NAME} PUBLIC
-            $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
-        )
-    endif()
 else()
     add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
 endif()
 
+#Define macro named "JOLTC_EXPORT" for "PbClasses.cmake".
+include(GenerateExportHeader)
+generate_export_header(${TARGET_NAME}
+    EXPORT_MACRO_NAME JOLTC_EXPORT
+    EXPORT_FILE_NAME joltc_export.h
+) # The file is supposed to be in "${CMAKE_CURRNET_BINARY_DIR}"
+
+if (MSVC)
+    target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+    # Expand inline functions for easier debugging.
+    target_compile_options(${TARGET_NAME} PUBLIC
+        $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
+    )
+else()
+    target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+    target_compile_options(${TARGET_NAME} PUBLIC
+        $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
+    )
+endif()
+    
 #target_compile_definitions(${TARGET_NAME} PUBLIC USE_RBMT)
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
@@ -124,13 +125,11 @@ install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf
     #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
 )
-if (MSVC)
-    install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
-else()    
-
-endif()
 
 if (BUILD_SHARED_LIBS)
+    if (MSVC)
+        install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
+    endif()
     message(STATUS "  Library         SHARED")
 else ()
     message(STATUS "  Library         STATIC")

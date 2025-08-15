@@ -5,8 +5,8 @@ Assuming that "protoc" is installed by either
 - cmake build from source.
 
 ]]
+
 if (WIN32)
-    include(FindProtobuf)
     if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
         message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
     endif()
