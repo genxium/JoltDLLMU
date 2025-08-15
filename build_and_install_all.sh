@@ -24,9 +24,9 @@ protoc -I=$JoltBindings_basedir --csharp_out=$JoltBindings_basedir serializable_
 cd $basedir/PbConstsWriter && dotnet build -c $1 && dotnet run --environment UNITY_RT_PLUGINS_OUTPATH=$unity_package_output_basedir/Runtime/Plugins -c $1
 echo "Written PbConsts for generic import"
 
-clibname="joltc.dll"
+clibname="joltc"
 if [[ "Linux" == $2 ]]; then 
-  clibname="libjoltc.so"
+  clibname="libjoltc"
   echo "clibname changed to : $clibname"
 fi
 

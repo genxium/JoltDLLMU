@@ -36,13 +36,9 @@ target_include_directories(${TARGET_NAME} PUBLIC
 	$<BUILD_INTERFACE:${PREBUILT_HEADER_PATH}>
 	$<INSTALL_INTERFACE:/include>)
 
-find_library(JOLTC_SHARED_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
-add_library(JOLTC_SHARED_LIB SHARED IMPORTED)
-
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake"
 
 if (MSVC)
-    include(FindProtobuf)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
     if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
         message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
@@ -53,8 +49,11 @@ else()
     find_package(Protobuf CONFIG REQUIRED)
 endif()
 
+find_library(JOLTC_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
+add_library(JOLTC_LIB SHARED IMPORTED)
+
 target_link_libraries(${TARGET_NAME} PUBLIC 
-        ${JOLTC_SHARED_LIB}
+        ${JOLTC_LIB}
         protobuf::libprotobuf
 )
 
@@ -85,18 +84,10 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
     install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
         DESTINATION ${_rt_deps_destination} COMPONENT Dependencies # For convenience
     )
-    if (MSVC)
-        install(FILES 
-                ${PREBUILT_LIB_PATH}/joltc.dll
-                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-                )
 
-        install(FILES ${PREBUILT_LIB_PATH}/joltc.pdb DESTINATION ${_rt_deps_destination} OPTIONAL)
-    else()
-        install(FILES ${PREBUILT_LIB_PATH}/libjoltc.so
-          DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-      )
-    endif()
+    install (FILES ${JOLTC_LIB}
+        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies # For convenience
+    )
 
     install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
     install(FILES ${PREBUILT_LIB_PATH}/ConfigConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)

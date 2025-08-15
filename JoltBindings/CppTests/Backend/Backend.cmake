@@ -30,19 +30,11 @@ target_include_directories(BackendTest PUBLIC
 set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
+    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
+        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+    )
     if (MSVC)
-        install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
-            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-        )
         install(FILES $<TARGET_PDB_FILE:BackendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
-    else()    
-        foreach (_file ${Protobuf_LIBRARIES}) # Magic variable set by "FindProtobuf -- find_package(Protobuf REQUIRED)". See https://cmake.org/cmake/help/latest/module/FindProtobuf.html#result-variables.
-            get_filename_component(_resolvedFile "${_file}" REALPATH)
-            get_filename_component(_destinationFilename "${_file}" NAME)
-            install(FILES ${_resolvedFile}
-                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies RENAME ${_destinationFilename}
-            )
-        endforeach()
     endif()
 
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)

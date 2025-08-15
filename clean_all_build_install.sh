@@ -17,6 +17,7 @@ rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.meta
 
 # Dotnet/CShapr part
 rm -rf $UnityPackageOutputPath/Runtime/*.dll
+rm -rf $UnityPackageOutputPath/Runtime/*.lib
 rm -rf $UnityPackageOutputPath/Runtime/*.pdb
 
 # Native part
@@ -27,6 +28,8 @@ rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.inl
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.dll 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.so 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.so.* 
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.a 
+rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.a.* 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.dylib 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.pdb 
 rm -rf $UnityPackageOutputPath/Runtime/Plugins/*.lib 
