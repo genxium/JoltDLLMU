@@ -209,17 +209,13 @@ int main(int argc, char** argv)
         if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
             auto firstPlayerChd = outRdf.players_arr(0);
             outStr.clear();
-            google::protobuf::util::Status status = google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
-            if (status.ok()) {
-                auto newNowMillis = duration_cast<milliseconds>(
-                    system_clock::now().time_since_epoch()
-                );
-                auto elapsed = newNowMillis - nowMillis;
-                std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
-                nowMillis = newNowMillis;
-            } else {
-                std::cerr << "Stepped at timerRdfId = " << timerRdfId << ", error converting firstPlayerChd to JSON:" << status.ToString() << std::endl;
-            }
+            google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
+            auto newNowMillis = duration_cast<milliseconds>(
+                system_clock::now().time_since_epoch()
+            );
+            auto elapsed = newNowMillis - nowMillis;
+            std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
+            nowMillis = newNowMillis;
         }
     }
     
