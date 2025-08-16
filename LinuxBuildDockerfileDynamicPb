@@ -35,9 +35,8 @@ WORKDIR /tmp/protobuf-31.1
 RUN mkdir build && cd build && \
         cmake -DCMAKE_CXX_STANDARD=17 .. \
         -DCMAKE_BUILD_TYPE=Release \
+        -Dprotobuf_BUILD_SHARED_LIBS=ON \
         -Dprotobuf_BUILD_TESTS=OFF \
-        -Dprotobuf_BUILD_SHARED_LIBS=OFF \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_INSTALL_PREFIX=/usr && \
         cmake --build . -j 8 && \
         cmake --install . -j 8 

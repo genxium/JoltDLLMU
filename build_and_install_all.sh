@@ -1,17 +1,17 @@
 #!/bin/bash
 
 if [ $# -le 0 ]; then 
-  echo "Usage/1: $0 <Debug|Release> [Linux]"
+  echo "Usage/1: $0 <Debug|Release> [Linux|LinuxDynamicPb]"
   exit 1
 fi
 
 if [ "Debug" != $1 ] && [ "Release" != $1 ]; then 
-  echo "Usage/2: $0 <Debug|Release> [Linux]"
+  echo "Usage/2: $0 <Debug|Release> [Linux|LinuxDynamicPb]"
   exit 1
 fi
 
-if [ ! -z $2 ] && [ "Linux" != $2 ]; then 
-  echo "Usage/3: $0 <Debug|Release> [Linux]"
+if [ ! -z $2 ] && [ "Linux" != $2 ] && [ "LinuxDynamicPb" != $2 ]; then 
+  echo "Usage/3: $0 <Debug|Release> [Linux|LinuxDynamicPb]"
   exit 1
 fi
 
@@ -25,21 +25,24 @@ cd $basedir/PbConstsWriter && dotnet build -c $1 && dotnet run --environment UNI
 echo "Written PbConsts for generic import"
 
 clibname="joltc"
-if [[ "Linux" == $2 ]]; then 
-  clibname="libjoltc"
-  echo "clibname changed to : $clibname"
-fi
-
 echo "Building $clibname with JoltPhysics engine..."
+
 if [[ "Linux" == $2 ]]; then
     reusing_id=joltc-linux-builder
     if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
         docker build -f $basedir/LinuxBuildDockerfile -t $reusing_id .
     fi
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && USE_STATIC_PB=true ./build_and_install_joltc.sh $1"
+elif [[ "LinuxDynamicPb" == $2 ]]; then
+    reusing_id=joltc-linux-builder-dynamic-pb
+    if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
+        docker build -f $basedir/LinuxBuildDockerfileDynamicPb -t $reusing_id .
+    fi
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && ./build_and_install_joltc.sh $1"
 else
     $JoltBindings_basedir/build_and_install_joltc.sh $1
 fi
+
 echo "Built $clibname with JoltPhysics engine"
 
 echo "Building joltphysics.dll for CSharp bindings..."
@@ -48,6 +51,8 @@ echo "Built joltphysics.dll for CSharp bindings"
 
 LibExportImportCppTestName=LibExportImportCppTest
 if [[ "Linux" == $2 ]]; then
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && USE_STATIC_PB=true ./build_and_install.sh $1"
+elif [[ "LinuxDynamicPb" == $2 ]]; then
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1"
 else
     $basedir/$LibExportImportCppTestName/build_and_install.sh $1

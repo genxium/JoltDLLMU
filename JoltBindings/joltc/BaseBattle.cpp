@@ -386,7 +386,7 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 nextFrameLog = frameLogBuffer.DryPut();
             }
             if (nextFrameLog->has_rdf()) {
-                nextFrameLog->release_rdf();
+                auto res = nextFrameLog->release_rdf();
             }
             nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
             nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
