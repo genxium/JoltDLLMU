@@ -1,3 +1,2 @@
-text=auto
-core.autocrlf=true
+core.autocrlf=false
 core.ignorecase=false
