@@ -38,7 +38,7 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
 
 void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot) {
     if (downsyncSnapshot->has_ref_rdf()) {
-        downsyncSnapshot->release_ref_rdf(); // To avoid auto deallocation of the rdf which I still need
+        auto res = downsyncSnapshot->release_ref_rdf(); // To avoid auto deallocation of the rdf which I still need
     }
     auto resultIfdBatchHolder = downsyncSnapshot->mutable_ifd_batch();
     while (!resultIfdBatchHolder->empty()) {

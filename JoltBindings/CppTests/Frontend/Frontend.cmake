@@ -30,9 +30,11 @@ target_include_directories(FrontendTest PUBLIC
 set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
+    #[===[
     install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
         DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
     )
+    ]===]
     if (MSVC)
         install(FILES $<TARGET_PDB_FILE:FrontendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
     endif()

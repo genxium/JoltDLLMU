@@ -18,31 +18,28 @@ else()
     set(CMAKE_CXX_COMPILER "/usr/bin/c++")
 endif()
 
-set(BUILD_SHARED_LIBS ON)
-
 set(JOLT_BINDINGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(PHYSICS_REPO_ROOT ${JOLT_BINDINGS_ROOT}/../joltphysics_v5.3.0)
 set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
 set(PB_GEN_ROOT $ENV{PB_GEN_ROOT})
+if ($ENV{USE_STATIC_PB} MATCHES "true") 
+    set(USE_STATIC_PB ON)
+endif()
 
 set(TARGET_NAME joltc)
 SET(CMAKE_INSTALL_RPATH "$ORIGIN") # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify 
 
 include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 
-if (BUILD_SHARED_LIBS)
-    add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
+add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
 
-    target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
-    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
-    if (WIN32)
-        target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
-    endif()
-
-    # [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
-else()
-    add_library(${TARGET_NAME} ${JOLTC_SRC_FILES})
+target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
+target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
+if (WIN32)
+    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
 endif()
+
+# [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
 
 #Define macro named "JOLTC_EXPORT" for "PbClasses.cmake".
 include(GenerateExportHeader)
@@ -84,12 +81,43 @@ include(${JOLT_BINDINGS_ROOT}/JoltBindingsAfterTarget.cmake)
 ]]
 set(OVERRIDE_INSTALL_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins) 
 
-install(TARGETS ${TARGET_NAME}
-    EXPORT ${TARGET_NAME}
-    ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION} # Not needed  
-    LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
-    RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION}
-)
+if (USE_STATIC_PB) 
+    install(TARGETS ${TARGET_NAME} 
+        EXPORT ${TARGET_NAME}
+        ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}   
+        LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+        RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+    )
+else()
+    if (MSVC)
+        install(TARGETS ${TARGET_NAME} 
+            EXPORT ${TARGET_NAME}
+            ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}   
+            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+        )
+    else ()
+        install(TARGETS ${TARGET_NAME} 
+            EXPORT ${TARGET_NAME}
+            RUNTIME_DEPENDENCY_SET joltc_rt_deps 
+            ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}  
+            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+        ) 
+
+        # [REMINDER] Don't forget to verify that ALL required "Google Abseil dynamic libraries" are copied by "ldd ${OVERRIDE_INSTALL_DESTINATION}/libjoltc.so | grep libabsl --color".
+        install(RUNTIME_DEPENDENCY_SET joltc_rt_deps 
+            POST_INCLUDE_REGEXES "(.*)libabsl(.*)"
+            POST_EXCLUDE_REGEXES "(.*)ld-(.*)" "(.*)libc(.*)" "(.*)libgcc(.*)" "(.*)libm(.*)" "(.*)librt(.*)" "(.*)libstdc(.*)" "(.*)libpthread(.*)" "(.*)linux-vdso(.*)"  
+            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies 
+            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+        ) 
+    endif()
+
+    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
+        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+    )
+endif()
 
 # Regular headers below
 install(DIRECTORY 
@@ -107,7 +135,7 @@ install(DIRECTORY
     ${PHYSICS_REPO_ROOT}/ 
     
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include 
-
+    
     FILES_MATCHING 
     PATTERN "*.h"
     PATTERN "*.inl"
@@ -121,19 +149,9 @@ install(FILES
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
 )
 
-install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
-    #DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dependencies
-    DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies # For convenience
-)
-
-if (BUILD_SHARED_LIBS)
-    if (MSVC)
-        install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
-    endif()
-    message(STATUS "  Library         SHARED")
-else ()
-    message(STATUS "  Library         STATIC")
-endif ()
+if (MSVC)
+    install(FILES $<TARGET_PDB_FILE:${TARGET_NAME}> DESTINATION ${OVERRIDE_INSTALL_DESTINATION} OPTIONAL)
+endif()
 
 if (CMAKE_GENERATOR_PLATFORM)
     message(STATUS "CMAKE_GENERATOR_PLATFORM: ${CMAKE_GENERATOR_PLATFORM}")

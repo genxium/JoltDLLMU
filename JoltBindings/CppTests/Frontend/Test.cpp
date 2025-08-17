@@ -1184,7 +1184,7 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             player1OutStr.clear();
             google::protobuf::util::MessageToJsonString(outRdf->players_arr(0), &player1OutStr);
             outStr.clear();
-            google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
+            auto res = google::protobuf::util::MessageToJsonString(*delayedIfd, &outStr);
             std::cout << "@outerTimerRdfId = " << outerTimerRdfId << "\nplayer1 = \n" << player1OutStr << "\ndelayedIfd=" << outStr << std::endl;
         }
     }

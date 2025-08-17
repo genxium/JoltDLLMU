@@ -6,7 +6,7 @@ Assuming that "protoc" is installed by either
 
 ]]
 
-if (WIN32)
+if (MSVC)
     if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
         message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
     endif()
@@ -16,7 +16,7 @@ else()
     find_package(Protobuf CONFIG REQUIRED)
 endif()
 
-target_link_libraries(${TARGET_NAME} PUBLIC 
+target_link_libraries(${TARGET_NAME} PRIVATE 
     protobuf::libprotobuf 
 )
 
