@@ -28,9 +28,16 @@ clibname="joltc"
 echo "Building $clibname with JoltPhysics engine..."
 
 if [[ "Linux" == $2 ]]; then
-    reusing_id=joltc-linux-builder
-    if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
-        docker build -f $basedir/LinuxBuildDockerfile -t $reusing_id .
+    if [[ "Debug" == $1 ]]; then
+        reusing_id=joltc-linux-builder-debug
+        if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
+            docker build -f $basedir/LinuxBuildDockerfileDebug -t $reusing_id .
+        fi
+    else
+        reusing_id=joltc-linux-builder
+        if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
+            docker build -f $basedir/LinuxBuildDockerfile -t $reusing_id .
+        fi
     fi
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && USE_STATIC_PB=true ./build_and_install_joltc.sh $1"
 elif [[ "LinuxDynamicPb" == $2 ]]; then
