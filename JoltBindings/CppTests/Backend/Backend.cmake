@@ -10,8 +10,7 @@ source_group(TREE ${BACKEND_TEST_ROOT} FILES ${BACKEND_TEST_SRC_FILES})
 
 add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
 target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
-
-target_link_libraries(BackendTest PUBLIC 
+target_link_libraries(BackendTest PRIVATE 
     protobuf::libprotobuf
 )
 
@@ -30,11 +29,6 @@ target_include_directories(BackendTest PUBLIC
 set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
-    #[===[
-    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf 
-        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-    )
-    ]===]
     if (MSVC)
         install(FILES $<TARGET_PDB_FILE:BackendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
     endif()
