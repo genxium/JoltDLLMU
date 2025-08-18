@@ -10,9 +10,15 @@ source_group(TREE ${BACKEND_TEST_ROOT} FILES ${BACKEND_TEST_SRC_FILES})
 
 add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
 target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
-target_link_libraries(BackendTest PRIVATE 
-    protobuf::libprotobuf
-)
+if(USE_STATIC_PB) 
+    target_link_libraries(BackendTest PRIVATE 
+        protobuf::libprotobuf
+    )
+else()
+    target_link_libraries(BackendTest PUBLIC 
+        protobuf::libprotobuf
+    )
+endif()
 
 if (MSVC)
     #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BackendTest)
@@ -31,6 +37,13 @@ set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WAR
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
     if (MSVC)
         install(FILES $<TARGET_PDB_FILE:BackendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
+    endif()
+
+    if (USE_STATIC_PB) 
+    else()
+        install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
     endif()
 
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)

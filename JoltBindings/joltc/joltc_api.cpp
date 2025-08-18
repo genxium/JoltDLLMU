@@ -169,12 +169,6 @@ void* BACKEND_CreateBattle() {
     return result;
 }
 
-bool BACKEND_ProduceDownsyncSnapshot(void* inBattle, uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
-    auto backendBattle = static_cast<BackendBattle*>(inBattle);
-    if (nullptr == backendBattle) return false;
-    return backendBattle->ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, stIfdId, edIfdId, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
-}
-
 bool BACKEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     if (nullptr == backendBattle) return false;

@@ -15,23 +15,23 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
     JPH_ASSERT(edIfdId <= ifdBuffer.EdFrameId);
     JPH_ASSERT(stIfdId <= edIfdId);
     if (nullptr == *pOutResult) {
-        *pOutResult = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
-        (*pOutResult)->set_unconfirmed_mask(unconfirmedMask);
-        (*pOutResult)->set_st_ifd_id(stIfdId);
-        (*pOutResult)->set_act(DownsyncAct::DA_REGULAR);
+        downsyncSnapshotHolder->set_unconfirmed_mask(unconfirmedMask);
+        downsyncSnapshotHolder->set_st_ifd_id(stIfdId);
+        downsyncSnapshotHolder->set_act(DownsyncAct::DA_REGULAR);
         if (withRefRdf) {
             RenderFrame* refRdf = rdfBuffer.GetByFrameId(dynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
             JPH_ASSERT(nullptr != refRdf);
-            (*pOutResult)->set_ref_rdf_id(dynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "dynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
-            (*pOutResult)->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
+            JPH_ASSERT(!downsyncSnapshotHolder->has_ref_rdf());
+            downsyncSnapshotHolder->set_ref_rdf_id(dynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "dynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
+            downsyncSnapshotHolder->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
         }
+        *pOutResult = downsyncSnapshotHolder; 
     }
-    DownsyncSnapshot* result = *pOutResult;
     if (stIfdId < edIfdId) {
-        auto resultIfdBatchHolder = result->mutable_ifd_batch();
+        auto resultIfdBatchHolder = (*pOutResult)->mutable_ifd_batch();
         for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
             InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId); 
-            resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); // Intentionally NOT using "RepeatedField<>::AddAllocated" because the "resultIfdBatchHolder" is arena-allocated but "ifd" is not
+            resultIfdBatchHolder->AddAllocated(ifd); // No copy because "ifd" is NOT arena-allocated
         }
     }
 }
@@ -42,8 +42,9 @@ void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* down
     }
     auto resultIfdBatchHolder = downsyncSnapshot->mutable_ifd_batch();
     while (!resultIfdBatchHolder->empty()) {
-        resultIfdBatchHolder->UnsafeArenaReleaseLast(); // To avoid auto deallocation of the ifd which I still need
+        resultIfdBatchHolder->ReleaseLast(); // To avoid auto deallocation of the ifd which I still need
     }
+    downsyncSnapshot->Clear();
 }
 
 bool BackendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
@@ -138,6 +139,10 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
             int nextDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
             bool stepped = Step(dynamicsRdfId, nextDynamicsRdfId, result);
             if (!stepped) {
+                if (nullptr != result) {
+                    *outBytesCntLimit = 0;
+                    releaseDownsyncSnapshotArenaOwnership(result);
+                }
                 return false;
             }
 
@@ -209,21 +214,6 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
     return true;
 }
 
-bool BackendBattle::ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
-    DownsyncSnapshot* result = nullptr;
-    produceDownsyncSnapshot(unconfirmedMask, stIfdId, edIfdId, withRefRdf, &result);
-
-    long byteSize = result->ByteSizeLong();
-    if (byteSize > *outBytesCntLimit) {
-        releaseDownsyncSnapshotArenaOwnership(result);
-        return false;
-    }
-    *outBytesCntLimit = byteSize;
-    result->SerializeToArray(outBytesPreallocatedStart, byteSize);
-    releaseDownsyncSnapshotArenaOwnership(result);
-    return true;
-}
-
 bool BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
     bool stepped = BaseBattle::Step(fromRdfId, toRdfId, virtualIfds);
     dynamicsRdfId = toRdfId;
@@ -253,7 +243,19 @@ bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcac
 #endif
 */
         uint64_t unconfirmedMask = inactiveJoinMaskVal;
-        return ProduceDownsyncSnapshotAndSerialize(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, withRefRdf, outBytesPreallocatedStart, outBytesCntLimit);
+        DownsyncSnapshot* result = nullptr;
+        produceDownsyncSnapshot(unconfirmedMask, oldLcacIfdId + 1, lcacIfdId + 1, withRefRdf, &result);
+
+        long byteSize = result->ByteSizeLong();
+        if (byteSize > *outBytesCntLimit) {
+            releaseDownsyncSnapshotArenaOwnership(result);
+            return false;
+        }
+        *outBytesCntLimit = byteSize;
+        result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+        releaseDownsyncSnapshotArenaOwnership(result);
+
+        return true;
     } else {
         *outBytesCntLimit = 0;
         return true;

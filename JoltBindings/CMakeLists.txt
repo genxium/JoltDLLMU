@@ -114,6 +114,7 @@ else()
         ) 
     endif()
 
+    message(STATUS "Copying protobuf runtime deps")
     install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
         DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
     )

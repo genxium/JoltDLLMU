@@ -16,9 +16,15 @@ else()
     find_package(Protobuf CONFIG REQUIRED)
 endif()
 
-target_link_libraries(${TARGET_NAME} PRIVATE 
-    protobuf::libprotobuf 
-)
+if (USE_STATIC_PB)
+    target_link_libraries(${TARGET_NAME} PRIVATE 
+        protobuf::libprotobuf 
+    )
+else ()
+    target_link_libraries(${TARGET_NAME} PUBLIC 
+        protobuf::libprotobuf 
+    )
+endif ()
 
 protobuf_generate(
     TARGET ${TARGET_NAME}
