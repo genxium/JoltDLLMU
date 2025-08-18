@@ -7,7 +7,6 @@
 
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "BackendBattle.h"
-#include <google/protobuf/util/json_util.h>
 #include <chrono>
 #include <fstream>
 #include <filesystem>

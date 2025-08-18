@@ -7,7 +7,6 @@
 
 #include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "FrontendBattle.h"
-#include <google/protobuf/util/json_util.h>
 #include <chrono>
 #include <fstream>
 #include <filesystem>
@@ -179,7 +178,6 @@ int main(int argc, char** argv)
     std::cout << "resetStartRdfRes = " << resetStartRdfRes << std::endl;
     
     jtshared::RenderFrame outRdf;
-    std::string outStr;
     int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
@@ -207,14 +205,11 @@ int main(int argc, char** argv)
         APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
         outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
         if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
-            auto firstPlayerChd = outRdf.players_arr(0);
-            outStr.clear();
-            google::protobuf::util::MessageToJsonString(firstPlayerChd, &outStr);
             auto newNowMillis = duration_cast<milliseconds>(
                 system_clock::now().time_since_epoch()
             );
             auto elapsed = newNowMillis - nowMillis;
-            std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << ", now firstPlayerChd = \n" << outStr << std::endl;
+            std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << std::endl;
             nowMillis = newNowMillis;
         }
     }
