@@ -423,8 +423,8 @@ void BaseBattle::Clear() {
     // In case there's any active left.
     bodyIDsToClear.clear();
     while (!activeBlColliders.empty()) {
-        auto single = activeBlColliders.back();
-        activeChColliders.pop_back();
+        auto single = activeBlColliders.back(); // For instance typed "JPH::Body", "delete" will be carried by "bi->DestroyBodies(...)"
+        activeBlColliders.pop_back();
         bodyIDsToClear.push_back(single->GetID());
     }
     bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
