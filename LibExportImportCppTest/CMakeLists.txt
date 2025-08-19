@@ -42,6 +42,9 @@ target_include_directories(${TARGET_NAME} PUBLIC
 
 find_library(JOLTC_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
 add_library(JOLTC_LIB SHARED IMPORTED)
+target_link_libraries(${TARGET_NAME} PUBLIC 
+    ${JOLTC_LIB}
+)
 
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake", kindly note that this test project is NOT shipped, so there's no need to copy any Google Abseil dynamic libraries even if (!USE_STATIC_PB).
 if (MSVC)
@@ -55,10 +58,15 @@ else()
     find_package(Protobuf CONFIG REQUIRED)
 endif()
 
-target_link_libraries(${TARGET_NAME} PRIVATE 
-        ${JOLTC_LIB}
-        protobuf::libprotobuf
-)
+if(USE_STATIC_PB)
+    target_link_libraries(${TARGET_NAME} PRIVATE 
+            protobuf::libprotobuf
+    )
+else()
+    target_link_libraries(${TARGET_NAME} PUBLIC 
+            protobuf::libprotobuf
+    )
+endif()
 
 if (MSVC)
 else()
@@ -85,13 +93,18 @@ endif()
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
     install (FILES ${JOLTC_LIB}
-        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies # For convenience
+        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
     )
     
     if (USE_STATIC_PB) 
     else()
+        if (MSVC)
+            install(FILES ${PREBUILT_LIB_PATH}/joltc.dll  
+                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+            )
+        endif()
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
-            DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
     endif()
 

@@ -11,10 +11,15 @@ using namespace JPH;
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
+        downsyncSnapshotHolder = new DownsyncSnapshot();
     }
 
     virtual ~BackendBattle() {
         // Calls base destructor (implicitly)
+        if (nullptr != downsyncSnapshotHolder) {
+            delete downsyncSnapshotHolder;
+            downsyncSnapshotHolder = nullptr;
+        }
 #ifndef NDEBUG
         Debug::Log("~BackendBattle/C++", DColor::Green);
 #endif
@@ -31,7 +36,6 @@ public:
 
     bool OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
-    bool ProduceDownsyncSnapshotAndSerialize(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
     virtual bool Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
@@ -44,6 +48,7 @@ public:
 protected:
     void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);
     void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
+    DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
 };
 
 /*
