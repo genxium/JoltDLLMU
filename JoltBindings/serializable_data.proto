@@ -350,12 +350,14 @@ message CharacterConfig {
 
     bool no_flee = 100;
 
-    InventorySlotConfig atk1_magazine = 101; 
-    InventorySlotConfig super_atk_guage = 102; 
+    float acc_mag = 101; // acceleration magnitude per second
 
-    repeated InventorySlotConfig init_inventory_slots = 103;
-    map<int32, int32> btn_b_auto_unhold_ch_states = 104; 
-    map<int32, int32> looping_ch_states = 105; 
+    InventorySlotConfig atk1_magazine = 102; 
+    InventorySlotConfig super_atk_guage = 103; 
+
+    repeated InventorySlotConfig init_inventory_slots = 104;
+    map<int32, int32> btn_b_auto_unhold_ch_states = 105; 
+    map<int32, int32> looping_ch_states = 106; 
 }
 
 message CharacterDownsync {
@@ -622,7 +624,7 @@ message BulletConfig {
     int32 hit_invinsible_frames = 33;
     int32 explosion_species_id = 34;
 
-    int32 perp_acc_mag = 35; // acceleration perpendicular to instantaneous velocity per frame
+    int32 perp_acc_mag = 35; // acceleration magnitude perpendicular to instantaneous velocity per second
 
     bool delay_self_vel_to_active = 36; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
 

@@ -220,7 +220,7 @@ inline T* RingBufferMt<T>::DryPut() {
         oss << "[TOO MANY DIRTY] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " << oldDirtyPuttingCnt << ", N=" << this->N;
         Debug::Log(oss.str(), DColor::Red);
 #endif
-        --oldDirtyPuttingCnt;
+        --dirtyPuttingCnt;
         return nullptr;
     }
 
@@ -313,7 +313,7 @@ inline T* RingBufferMt<T>::DryPut() {
             Pop();
         }
     } else {
-        // Recovery, but the oldCnt-full-induced-popped element couldn't be recovered by the current implementation 
+        // Recovery 
         --Ed;
 #ifndef NDEBUG
         std::ostringstream oss;

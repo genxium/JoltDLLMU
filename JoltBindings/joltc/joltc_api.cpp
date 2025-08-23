@@ -56,28 +56,36 @@ bool JPH_Init(int nBytesForTempAllocator)
     JPH::RegisterDefaultAllocator();
 
     // Create a factory
-    JPH::Factory::sInstance = new JPH::Factory();
+    if (nullptr == JPH::Factory::sInstance) {
+        JPH::Factory::sInstance = new JPH::Factory();
+    }
 
     // Register all Jolt physics types
     JPH::RegisterTypes();
 
     // Init temp allocator
-    globalTempAllocator = new TempAllocatorImplWithMallocFallback(nBytesForTempAllocator);
+    if (nullptr == globalTempAllocator) {
+        globalTempAllocator = new TempAllocatorImplWithMallocFallback(nBytesForTempAllocator);
+    } 
 
     return true;
 }
 
 bool JPH_Shutdown(void)
 {
-    delete globalTempAllocator;
-    globalTempAllocator = nullptr;
+    if (nullptr != globalTempAllocator) {
+        delete globalTempAllocator;
+        globalTempAllocator = nullptr;
+    } 
 
     // Unregisters all types with the factory and cleans up the default material
     JPH::UnregisterTypes();
 
     // Destroy the factory
-    delete JPH::Factory::sInstance;
-    JPH::Factory::sInstance = nullptr;
+    if (nullptr != JPH::Factory::sInstance) {
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
+    }
 
     return true;
 }
