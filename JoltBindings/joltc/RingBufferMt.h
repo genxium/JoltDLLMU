@@ -58,6 +58,10 @@ class RingBufferMt {
             oss << "St=" << St << ", Ed = " << Ed << ", Cnt / N = " << this->Cnt << "/" << this->N;
             return oss.str();
         }
+        
+        int GetDirtyPuttingCnt() {
+            return dirtyPuttingCnt;
+        }
 }; 
 
 #include "RingBufferMt.inl"
