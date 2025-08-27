@@ -12,6 +12,7 @@ class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
         downsyncSnapshotHolder = new DownsyncSnapshot();
+        wsReqHolder = new WsReq();
     }
 
     virtual ~BackendBattle() {
@@ -19,6 +20,10 @@ public:
         if (nullptr != downsyncSnapshotHolder) {
             delete downsyncSnapshotHolder;
             downsyncSnapshotHolder = nullptr;
+        }
+        if (nullptr != wsReqHolder) {
+            delete wsReqHolder;
+            wsReqHolder = nullptr;
         }
 #ifndef NDEBUG
         Debug::Log("~BackendBattle/C++", DColor::Green);
@@ -49,6 +54,7 @@ protected:
     void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);
     void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
+    WsReq* wsReqHolder = nullptr;
 };
 
 /*

@@ -21,7 +21,6 @@ endif()
 set(JOLT_BINDINGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(PHYSICS_REPO_ROOT ${JOLT_BINDINGS_ROOT}/../joltphysics_v5.3.0)
 set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
-set(PB_GEN_ROOT $ENV{PB_GEN_ROOT})
 if ($ENV{USE_STATIC_PB} MATCHES "true") 
     set(USE_STATIC_PB ON)
 endif()
@@ -29,9 +28,22 @@ endif()
 set(TARGET_NAME joltc)
 SET(CMAKE_INSTALL_RPATH "$ORIGIN") # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify 
 
+SET(BUILD_TYPE $ENV{BUILD_TYPE})
+message(STATUS "JoltBindings/CMakeLists.txt, build type=${BUILD_TYPE}")
+
+set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
+set(PB_GEN_ROOT ${OVERRIDE_BINARY_DESTINATION}/pb_gen)
+
 include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 
 add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
+set_target_properties(
+    ${TARGET_NAME}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    LIBRARY_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    ARCHIVE_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+)
 
 target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
 target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
@@ -41,27 +53,31 @@ endif()
 
 # [IMPORTANT] Force "joltc_export.h" to be included at the beginning of every source file compiled, even if it's not explicitly included in the source code -- mainly serves "serializable_data.pb.h to recognize JOLTC_EXPORT" which needs this injection due to being automatically generated.
 
-#Define macro named "JOLTC_EXPORT" for "PbClasses.cmake".
+# Define macro named "JOLTC_EXPORT" for "PbClasses.cmake". 
 include(GenerateExportHeader)
 generate_export_header(${TARGET_NAME}
     EXPORT_MACRO_NAME JOLTC_EXPORT
-    EXPORT_FILE_NAME joltc_export.h
-) # The file is supposed to be in "${CMAKE_CURRNET_BINARY_DIR}"
+    EXPORT_FILE_NAME "${PB_GEN_ROOT}/joltc_export.h" # By default, this command generates a header file named <target-name-lowercase>_export.h in the current binary directory (CMAKE_CURRENT_BINARY_DIR), see https://cmake.org/cmake/help/latest/module/GenerateExportHeader.html.
+)
 
 if (MSVC)
-    target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+    target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     # Expand inline functions for easier debugging.
     target_compile_options(${TARGET_NAME} PUBLIC
         $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
     )
 else()
-    target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h)
+    target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     target_compile_options(${TARGET_NAME} PUBLIC
         $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
     )
 endif()
     
 #target_compile_definitions(${TARGET_NAME} PUBLIC USE_RBMT)
+
+# Set the debug/non-debug build flags
+target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
+target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 target_sources(${TARGET_NAME} PRIVATE ${JOLT_PHYSICS_SRC_FILES})
@@ -82,6 +98,7 @@ include(${JOLT_BINDINGS_ROOT}/JoltBindingsAfterTarget.cmake)
 set(OVERRIDE_INSTALL_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins) 
 
 if (USE_STATIC_PB) 
+    message(STATUS "Static protobuf libs are embedded")
     install(TARGETS ${TARGET_NAME} 
         EXPORT ${TARGET_NAME}
         ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}   
@@ -144,8 +161,8 @@ install(DIRECTORY
 
 # Special headers below
 install(FILES 
-    ${PB_GEN_ROOT}/serializable_data.pb.h 
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>/joltc_export.h # generated header
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}>/serializable_data.pb.h 
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h
     
     DESTINATION ${OVERRIDE_INSTALL_DESTINATION}/include # For convenience
 )

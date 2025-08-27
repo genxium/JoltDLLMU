@@ -39,15 +39,15 @@ if [[ "Linux" == $2 ]]; then
             docker build -f $basedir/LinuxBuildDockerfile -t $reusing_id .
         fi
     fi
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && USE_STATIC_PB=true ./build_and_install_joltc.sh $1"
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && USE_STATIC_PB=true ./build_and_install_joltc.sh $1 linux64"
 elif [[ "LinuxDynamicPb" == $2 ]]; then
     reusing_id=joltc-linux-builder-dynamic-pb
     if [ -z "$(docker images -q $reusing_id 2> /dev/null)" ]; then
         docker build -f $basedir/LinuxBuildDockerfileDynamicPb -t $reusing_id .
     fi
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && ./build_and_install_joltc.sh $1"
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && ./build_and_install_joltc.sh $1 linux64"
 else
-    $JoltBindings_basedir/build_and_install_joltc.sh $1
+    $JoltBindings_basedir/build_and_install_joltc.sh $1 win64 # My vcpkg installation of protobuf doesn't support static pb yet
 fi
 
 echo "Built $clibname with JoltPhysics engine"
@@ -58,9 +58,9 @@ echo "Built joltphysics.dll for CSharp bindings"
 
 LibExportImportCppTestName=LibExportImportCppTest
 if [[ "Linux" == $2 ]]; then
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && USE_STATIC_PB=true ./build_and_install.sh $1"
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && USE_STATIC_PB=true ./build_and_install.sh $1 linux64"
 elif [[ "LinuxDynamicPb" == $2 ]]; then
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1"
+    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1 linux64"
 else
-    $basedir/$LibExportImportCppTestName/build_and_install.sh $1
+    $basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 # My vcpkg installation of protobuf doesn't support static pb yet
 fi

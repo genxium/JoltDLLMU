@@ -34,6 +34,5 @@ endif ()
 # [REMINDER] The inclusion of "${PHYSICS_REPO_ROOT}" for "${TARGET_NAME}" is already handled by "${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake".
 target_include_directories(${TARGET_NAME} PUBLIC
     $<BUILD_INTERFACE:${JOLT_BINDINGS_ROOT}/joltc>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> # for generated header
-    $<BUILD_INTERFACE:${PB_GEN_ROOT}> # For pb class headers
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}> # for generated headers (including both "serializable_data.pb.h" and "joltc_export.h")
     $<INSTALL_INTERFACE:/include>)

@@ -831,11 +831,13 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
             nextChd->set_vel_x(newVelX);
 
             if (InAirIdle1ByWallJump == currChd.ch_state()) {
+/*
 #ifndef NDEBUG
                 std::ostringstream oss;
                 oss << "@rdfId=" << rdfId << "currVelX=" << currChd.vel_x() << ", velXStep=" << velXStep << ", newVelX=" << newVelX << ", targetNewVelX=" << targetNewVelX;
                 Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                 if (0 < newVelX) {
                     nextChd->set_dir_x(+2); 
                 } else if (0 > newVelX) {
@@ -1853,11 +1855,13 @@ void BaseBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const
 
         if (cvSupported && currEffInAir && !inJumpStartupOrJustEnded) {
             // fall stopping
+/*
 #ifndef NDEBUG
             std::ostringstream oss;
             oss << "Character at (" << currChd.x() <<  ", " << currChd.y() << "), ch_state=" << (int)currChd.ch_state() << ", vel=(" << currChd.vel_x() << ", " << currChd.vel_y() << ")" << " just landed; about to set nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << ")";
             Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
             nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
             nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
             resetJumpStartup(nextChd);

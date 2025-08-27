@@ -8,6 +8,14 @@ set(RING_BUFFER_MT_TEST_SRC_FILES
 
 add_executable(RingBufferMtTest ${RING_BUFFER_MT_TEST_SRC_FILES})
 
+set_target_properties(
+    RingBufferMtTest
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    LIBRARY_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    ARCHIVE_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+)
+
 if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT RingBufferMtTest)
     target_link_options(RingBufferMtTest PUBLIC "/SUBSYSTEM:CONSOLE")
@@ -19,5 +27,5 @@ endif()
 
 target_include_directories(RingBufferMtTest PUBLIC
     $<BUILD_INTERFACE:${JOLT_BINDINGS_ROOT}/joltc>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> # for generated header
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}>
     $<INSTALL_INTERFACE:/include>)

@@ -29,11 +29,18 @@ endif()
 target_include_directories(FrontendTest PUBLIC
 	$<BUILD_INTERFACE:${PHYSICS_REPO_ROOT}>
     $<BUILD_INTERFACE:${JOLT_BINDINGS_ROOT}/joltc>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> # for generated header
-    $<BUILD_INTERFACE:${PB_GEN_ROOT}> # For pb class headers
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}>
     $<INSTALL_INTERFACE:/include>)
 
-set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
+set_target_properties(
+    FrontendTest
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    LIBRARY_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    ARCHIVE_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+)
+
+set(MY_RUNTIME_DEPS_DESTINATIONS "${OVERRIDE_BINARY_DESTINATION}") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
     if (MSVC)

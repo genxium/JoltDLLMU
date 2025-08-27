@@ -468,7 +468,11 @@ bool runTestCase6(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
 // Program entry point
 int main(int argc, char** argv)
 {
-    std::cout << "Starting" << std::endl;
+#ifndef NDEBUG
+    std::cout << "Starting in debug mode" << std::endl;
+#else
+    std::cout << "Starting in release" << std::endl;
+#endif
     path exePath(argv[0]);
 
     // Get the parent path (the directory containing the executable)
