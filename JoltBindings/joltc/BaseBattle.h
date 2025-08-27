@@ -282,10 +282,10 @@ protected:
         void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
 
-        void processPlayerInputs(const RenderFrame* currRdf, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
-        void processNpcInputs(const RenderFrame* currRdf, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
+        void processPlayerInputs(const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
+        void processNpcInputs(const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
         
-        void processSingleCharacterInput(int rdfId, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
+        void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
 
         bool useSkill(int rdfId, int effDx, int effDy, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool slotUsed, uint32_t slotLockedSkillId, bool isParalyzed);
 
@@ -296,10 +296,10 @@ protected:
         bool isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
         bool isJumpStartupJustEnded(const CharacterDownsync& currCd, CharacterDownsync* nextCd, const CharacterConfig* cc);
         void jamBtnHolding(CharacterDownsync* nextChd);
-        void processInertiaWalkingHandleZeroEffDx(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool recoveredFromAirAtk, bool isParalyzed);
-        void processInertiaWalking(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool isParalyzed);
-        void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool isParalyzed);
-        void processInertiaFlying(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool isParalyzed);
+        void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool recoveredFromAirAtk, bool isParalyzed);
+        void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool isParalyzed);
+        void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool isParalyzed);
+        void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool isParalyzed);
 
         void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool isParalyzed);
         void processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc);
@@ -336,6 +336,23 @@ protected:
         void preallocateBodies(const RenderFrame* startRdf);
 
         inline void calcChdShape(const CharacterDownsync& currChd, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
+
+        inline float lerp(float from, float to, float step) {
+            float diff = (to - from);
+            if (isLengthSquaredNearZero(diff*diff)) {
+                return to;
+            }
+            float proposed = from + step;
+            if (0 < step && proposed > to) {
+                return to;
+            }
+
+            if (0 > step && proposed < to) {
+                return to;
+            }
+
+            return proposed;
+        }
 
         inline bool updatePlayerInputFronts(int inIfdId, int inSingleJoinIndexArrIdx, int inSingleInput) {
             if (inIfdId <= playerInputFrontIds[inSingleJoinIndexArrIdx]) {
