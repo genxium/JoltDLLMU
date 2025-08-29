@@ -9,6 +9,7 @@ set(BACKEND_TEST_SRC_FILES
 source_group(TREE ${BACKEND_TEST_ROOT} FILES ${BACKEND_TEST_SRC_FILES})
 
 add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
+
 target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
 if(USE_STATIC_PB) 
     target_link_libraries(BackendTest PRIVATE 
@@ -28,11 +29,18 @@ endif()
 target_include_directories(BackendTest PUBLIC
 	$<BUILD_INTERFACE:${PHYSICS_REPO_ROOT}>
     $<BUILD_INTERFACE:${JOLT_BINDINGS_ROOT}/joltc>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> # for generated header
-    $<BUILD_INTERFACE:${PB_GEN_ROOT}> # For pb class headers
+    $<BUILD_INTERFACE:${PB_GEN_ROOT}>
     $<INSTALL_INTERFACE:/include>)
 
-set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
+set_target_properties(
+    BackendTest
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    LIBRARY_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    ARCHIVE_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+)
+
+set(MY_RUNTIME_DEPS_DESTINATIONS "${OVERRIDE_BINARY_DESTINATION}") # [WARNING] Intentionally NOT installing to "UnityPackageOutput" folder.
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
     if (MSVC)

@@ -79,30 +79,31 @@ target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 
 # ---------------------------- Installation ----------------------------
-install(TARGETS ${TARGET_NAME}
-    EXPORT ${TARGET_NAME}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+set(BUILD_TYPE $ENV{BUILD_TYPE})
+set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
+set_target_properties(
+    ${TARGET_NAME}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    LIBRARY_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
+    ARCHIVE_OUTPUT_DIRECTORY "${OVERRIDE_BINARY_DESTINATION}"
 )
 
-set(MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_INSTALL_BINDIR}")
-if (MSVC) 
-    list(APPEND MY_RUNTIME_DEPS_DESTINATIONS "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>") # This one is for Visual Studio to pick up runtime dependent DLLs
-endif()
+set(MY_RUNTIME_DEPS_DESTINATIONS "${OVERRIDE_BINARY_DESTINATION}")
 
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
-    install (FILES ${JOLTC_LIB}
-        DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-    )
+    if(MSVC)
+        install (FILES ${PREBUILT_LIB_PATH}/joltc.dll
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
+    else()
+        install (FILES ${PREBUILT_LIB_PATH}/libjoltc.so
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
+    endif()
     
     if (USE_STATIC_PB) 
     else()
-        if (MSVC)
-            install(FILES ${PREBUILT_LIB_PATH}/joltc.dll  
-                DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-            )
-        endif()
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )

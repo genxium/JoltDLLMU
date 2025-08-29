@@ -42,18 +42,18 @@ void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* down
     }
     auto resultIfdBatchHolder = downsyncSnapshot->mutable_ifd_batch();
     while (!resultIfdBatchHolder->empty()) {
-        resultIfdBatchHolder->ReleaseLast(); // To avoid auto deallocation of the ifd which I still need
+        auto res = resultIfdBatchHolder->ReleaseLast(); // To avoid auto deallocation of the ifd which I still need
     }
     downsyncSnapshot->Clear();
 }
 
 bool BackendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
-    WsReq* upsyncSnapshotReq = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
-    upsyncSnapshotReq->ParseFromArray(inBytes, inBytesCnt);
-    uint32_t peerJoinIndex = upsyncSnapshotReq->join_index();
+    wsReqHolder->Clear();
+    wsReqHolder->ParseFromArray(inBytes, inBytesCnt);
+    uint32_t peerJoinIndex = wsReqHolder->join_index();
     if (0 >= peerJoinIndex) return false;
-    if (!upsyncSnapshotReq->has_upsync_snapshot()) return false;
-    return OnUpsyncSnapshotReceived(peerJoinIndex, upsyncSnapshotReq->upsync_snapshot(), fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outForceConfirmedStEvictedCnt, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    if (!wsReqHolder->has_upsync_snapshot()) return false;
+    return OnUpsyncSnapshotReceived(peerJoinIndex, wsReqHolder->upsync_snapshot(), fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outForceConfirmedStEvictedCnt, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
 bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
