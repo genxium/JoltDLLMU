@@ -992,6 +992,125 @@ void BaseBattle::processInertiaFlying(int rdfId, float dt, const CharacterDownsy
     }
 }
 
+
+bool BaseBattle::addNewBulletToNextFrame(int rdfId, CharacterDownsync& currChd, CharacterDownsync* nextChd, CharacterConfig* cc, bool isParalyzed, int xfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, bool& hasLockVel, Bullet* referenceBullet, BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
+        if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
+        if (nextRdf->bullet_id_counter() >= nextRdf->bullets_size()) {
+#ifndef  NDEBUG
+            std::ostringstream oss;
+            oss << "@rdfId=" << rdfId << ", bullet overwhelming#1";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+            return false;
+        }
+        const BulletConfig& bulletConfig = skillConfig->hits(activeSkillHit-1);
+        const BulletConfig* prevBulletConfig = referenceBulletConfig;
+        if (nullptr == prevBulletConfig) {
+            if (2 <= activeSkillHit) {
+                const BulletConfig& defaultBulletConfig = skillConfig->hits(activeSkillHit - 2);
+                prevBulletConfig = &defaultBulletConfig;
+            }
+        }
+
+        if (OnWallAtk1 == skillConfig->bound_ch_state() && (BulletType::Melee != bulletConfig.b_type())) {
+            xfac *= -1;
+        }
+
+        float newOriginatedX = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd.x()  + xfac * bulletConfig.hitbox_offset_x()) : referenceBullet->originated_x();
+        float newOriginatedY = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd.y() + bulletConfig.hitbox_offset_y()) : referenceBullet->originated_y();
+        float newX = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd.x() + xfac * bulletConfig.hitbox_offset_x() : referenceBullet->x() + xfac * bulletConfig.hitbox_offset_x();
+        float newY = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd.y() + bulletConfig.hitbox_offset_y() : referenceBullet->y() + bulletConfig.hitbox_offset_y();
+
+        if (nullptr != prevBulletConfig && prevBulletConfig->ground_impact_melee_collision()) {
+            newY = currChd.y() + bulletConfig.hitbox_offset_y();
+        } else if (BulletType.GroundWave == bulletConfig.BType) {
+            // TODO: Lower "newY" if on slope and facing down?
+        }
+
+        // To favor startup vfx display which is based on bullet originatedVx&originatedVy.
+        if (nullptr != referenceBulletConfig && MultiHitType::FromVisionSeekOrDefault == referenceBulletConfig->mh_type()) {
+            newX = currChd.x() + bulletConfig.hitbox_offset_x();
+            newY = currChd.y() + bulletConfig.hitbox_offset_y();
+            newOriginatedX = newX;
+            newOriginatedY = newY;
+        }
+
+        float dstSpinCos = 1.f, dstSpinSin = 0.f;
+        if (bulletConfig.mh_inherits_spin()) {
+            if (nullptr != referenceBullet) {
+                dstSpinCos = referenceBullet->spin_cos();
+                dstSpinSin = referenceBullet->spin_sin();
+            }
+        } else if (0 != bulletConfig.init_spin_cos() || 0 != bulletConfig.init_spin_sin()) {
+            dstSpinCos = bulletConfig.init_spin_cos();
+            dstSpinSin = 0 < xfac ? bulletConfig.init_spin_sin() : -bulletConfig.init_spin_sin();
+        }
+
+        auto initBlState = BulletState::StartUp;
+        int initFramesInBlState = 0;
+        if (bulletConfig.mh_inherits_frames_in_bl_state() && nullptr != referenceBullet) {
+            initBlState = referenceBullet->bl_state();
+            initFramesInBlState = referenceBullet->frames_in_bl_state() + 1;
+            // In this case, we ignore "hitbox offsets"
+            newX = referenceBullet->x();
+            newY = referenceBullet->y();
+            newOriginatedX = newX;
+            newOriginatedY = newY;
+        }
+
+        AssignToBullet(
+                bulletLocalIdCounter,
+                originatedRdfId,
+                offenderJoinIndex,
+                TERMINATING_TRAP_ID,
+                bulletTeamId,
+                initBlState, initFramesInBlState,
+                newOriginatedVirtualX,
+                newOriginatedVirtualY,
+                newVirtualX,
+                newVirtualY,
+                xfac * bulletConfig.DirX, bulletConfig.DirY, // dir
+                (int)(bulletSpeedXfac * bulletConfig.Speed), (int)(bulletSpeedYfac * bulletConfig.Speed) + groundWaveVelY, // velocity
+                activeSkillHit, activeSkillId, TERMINATING_TRAP_ID, bulletConfig.RepeatQuota, bulletConfig.DefaultHardPushbackBounceQuota, MAGIC_JOIN_INDEX_INVALID,
+                dstSpinCos, dstSpinSin, // spin
+                0, // damage dealed
+                bulletConfig.Ifc, 
+                nextRenderFrameBullets[bulletCnt]);
+
+        nextRdf->set_bullet_id_counter(nextRdf->bullet_id_counter());
+
+        // [WARNING] This part locks velocity by the last bullet in the simultaneous array
+        if (!bulletConfig.DelaySelfVelToActive && !isParalyzed) {
+            if (NO_LOCK_VEL != bulletConfig.SelfLockVelX) {
+                hasLockVel = true;
+                thatCharacterInNextFrame.VelX = xfac * bulletConfig.SelfLockVelX;
+            }
+            if (!currCharacterDownsync.OmitGravity) {
+                if (NO_LOCK_VEL != bulletConfig.SelfLockVelY) {
+                    if (0 <= bulletConfig.SelfLockVelY || thatCharacterInNextFrame.InAir) {
+                        hasLockVel = true;
+                        // [WARNING] DON'T assign negative velY to a character not in air!
+                        thatCharacterInNextFrame.VelY = bulletConfig.SelfLockVelY;
+                    }
+                }
+            } else {
+                if (NO_LOCK_VEL != bulletConfig.SelfLockVelYWhenFlying) {
+                    hasLockVel = true;
+                    thatCharacterInNextFrame.VelY = bulletConfig.SelfLockVelYWhenFlying;
+                }
+            }
+        }
+
+        // Explicitly specify termination of nextRenderFrameBullets
+        if (bulletCnt < nextRenderFrameBullets.Count) nextRenderFrameBullets[bulletCnt].BulletLocalId = TERMINATING_BULLET_LOCAL_ID;
+
+        if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
+            return addNewBulletToNextFrame(rdfId, currCharacterDownsync, thatCharacterInNextFrame, chConfig, isParalyzed, xfac, skillConfig, nextRenderFrameBullets, activeSkillHit+1, activeSkillId, ref bulletLocalIdCounter, ref bulletCnt, ref hasLockVel, referencePrevHitBullet, referencePrevHitBulletConfig, referencePrevEmissionBullet, targetChNextFrame, offenderJoinIndex, bulletTeamId, logger);
+        } else {
+            return true;
+        }
+}
+
 void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
     for (int i = 0; i < playersCnt; i++) {
         auto player = rdf->mutable_players_arr(i);
@@ -1459,7 +1578,7 @@ void BaseBattle::processNpcInputs(const RenderFrame* currRdf, float dt, RenderFr
     }
 }
 
-void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf) {
+void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& notEnoughMp) {
     bool slotUsed = false;
     uint32_t slotLockedSkillId = globalPrimitiveConsts->no_skill();
     bool dodgedInBlockStun = false;
@@ -1881,13 +2000,11 @@ void BaseBattle::leftShiftDeadBullets(bool isChasing) {
 }
 
 bool BaseBattle::useSkill(int rdfId, int effDx, int effDy, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool slotUsed, uint32_t slotLockedSkillId, bool isParalyzed) {
-    return false;
-    /*
     if (globalPrimitiveConsts->pattern_id_no_op() == patternId || globalPrimitiveConsts->pattern_id_unable_to_op() == patternId) {
         return false;
     }
     if (globalPrimitiveConsts->pattern_hold_b() == patternId) {
-        if (globalPrimitiveConsts->no_skill() != currChd.active_skill_id() && cc->HasBtnBCharging && IsChargingAtkChState(currChd.ch_state())) {
+        if (globalPrimitiveConsts->no_skill() != currChd.active_skill_id() && cc->has_btn_b_charging() && IsChargingAtkChState(currChd.ch_state())) {
             if (0 >= nextChd->frames_to_recover()) {
                 auto activeSkillConfig = skills[currChd.active_skill_id()];
                 nextChd->frames_to_recover() = activeSkillConfig.RecoveryFrames;
@@ -1899,14 +2016,14 @@ bool BaseBattle::useSkill(int rdfId, int effDx, int effDy, int patternId, const 
     if (globalPrimitiveConsts->no_skill() == skillId) return false;
 
     auto skillConfig = skills[skillId];
-    if (skillConfig.MpDelta > currChd.Mp) {
-        notEnoughMp = true;
+    if (skillConfig.mp_delta() > currChd.mp()) {
+        // notEnoughMp = true; // TODO
         return false;
     }
 
-    nextChd->Mp -= skillConfig.MpDelta;
-    if (0 >= nextChd->Mp) {
-        nextChd->Mp = 0;
+    nextChd->set_mp(currChd.mp() - skillConfig.mp_delta());
+    if (0 >= nextChd->mp()) {
+        nextChd->set_mp(0);
     }
 
     nextChd->set_dir_x(0 == effDx ? nextChd->dir_x() : effDx); // Upon successful skill use, allow abrupt turn-around regardless of inertia!
@@ -1934,11 +2051,10 @@ bool BaseBattle::useSkill(int rdfId, int effDx, int effDy, int patternId, const 
 
     nextChd->set_ch_state(skillConfig.bound_ch_state()) ;
     nextChd->set_frames_in_ch_state(0); // Must reset "frames_in_ch_state()" here to handle the extreme case where a same skill, e.g. "Atk1", is used right after the previous one ended
-    if (nextChd->frames_invinsible() < pivotBulletConfig.StartupInvinsibleFrames) {
-        nextChd->set_frames_invinsible(pivotBulletConfig.StartupInvinsibleFrames);
+    if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
+        nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
     return true;
-    */
 }
 
 void BaseBattle::useInventorySlot(int rdfId, int patternId, const CharacterDownsync& currChd, bool currEffInAir, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, uint32_t& outSlotLockedSKillId, bool& outDodgedInBlockStun) {

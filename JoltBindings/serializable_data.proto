@@ -645,7 +645,6 @@ message BulletConfig {
     bool is_pixelated_explostion_vfx = 47;
 
     bool mh_vanish_on_melee_hit = 48;
-    float down_slope_primer_vel_y = 49;
 
     bool mh_updates_origin_pos = 50; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
     bool beam_collision = 51; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
