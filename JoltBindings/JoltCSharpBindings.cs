@@ -59,6 +59,12 @@ namespace JoltCSharp {
         public static extern ulong APP_SetInactiveJoinMask(UIntPtr inBattle, ulong newValue);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int APP_EncodePatternForCancelTransit(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int APP_EncodePatternForInitSkill(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing, [MarshalAs(UnmanagedType.U1)] bool currInBlockStun, [MarshalAs(UnmanagedType.U1)] bool currAtked, [MarshalAs(UnmanagedType.U1)] bool currParalyzed);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern UIntPtr FRONTEND_CreateBattle(int rdfBufferSize, [MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -260,12 +266,17 @@ namespace JoltCSharp {
             rdf.PlayersArr.Clear();
             rdf.NpcsArr.Clear();
             rdf.Bullets.Clear();
-            rdf.TrapsArr.Clear();
+            rdf.DynamicTrapsArr.Clear();
             rdf.TriggersArr.Clear();
             rdf.Pickables.Clear();
             rdf.BulletIdCounter = primitives.TerminatingBulletId;
             rdf.NpcIdCounter = primitives.TerminatingCharacterId;
             rdf.PickableIdCounter = primitives.TerminatingPickableId;
+
+            rdf.BulletCount = 0;
+            rdf.NpcCount = 0;
+            rdf.PickableCount = 0;
+
             rdf.CountdownNanos = long.MaxValue;
         }
 

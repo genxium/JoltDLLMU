@@ -52,6 +52,8 @@ JPH_CAPI uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex); // re
 JPH_CAPI uint64_t APP_SetPlayerInactive(void* inBattle, uint32_t joinIndex); // returns the new value
 JPH_CAPI uint64_t APP_GetInactiveJoinMask(void* inBattle);
 JPH_CAPI uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t newValue); // returns the old value
+JPH_CAPI int      APP_EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing);
+JPH_CAPI int      APP_EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currInBlockStun, bool currAtked, bool currParalyzed);
 
 /*
 [WARNING] 

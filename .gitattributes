@@ -1,2 +1,26 @@
 core.autocrlf=false
 core.ignorecase=false
+
+*.sh eol=lf
+*.bash eol=lf
+*.py eol=lf
+*.h eol=lf
+*.c eol=lf
+*.cc eol=lf
+*.cpp eol=lf
+*.cs eol=lf
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary

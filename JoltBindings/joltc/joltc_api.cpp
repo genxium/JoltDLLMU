@@ -168,6 +168,14 @@ uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t value) {
     return battle->SetInactiveJoinMask(value);
 }
 
+int APP_EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing) {
+    return BaseBattle::EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing);
+}
+
+int APP_EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currInBlockStun, bool currAtked, bool currParalyzed) {
+    return BaseBattle::EncodePatternForInitSkill(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed);
+}
+
 void* BACKEND_CreateBattle() {
     int rdfBufferSize = 2; // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
     BackendBattle* result = new BackendBattle(rdfBufferSize, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
@@ -175,7 +183,7 @@ void* BACKEND_CreateBattle() {
     Debug::Log("BACKEND_CreateBattle/C++", DColor::Green);
 #endif
     return result;
-}
+} 
 
 bool BACKEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
