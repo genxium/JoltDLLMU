@@ -518,15 +518,16 @@ bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, const uint32
     return res;
 }
 
-void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint32_t udPayload, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState, uint64_t delayedInput) {
-    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, udPayload, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, delayedInput);
+void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState) {
+    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
 /*
 #ifndef NDEBUG
+    auto udPayload = getUDPayload(ud);
     if (udt == UDT_PLAYER && udPayload == selfJoinIndex && CrouchIdle1 == currChd.ch_state() && CrouchIdle1 != nextChd->ch_state()) {
         std::ostringstream oss;
         int localToGenIfdId = ConvertToGeneratingIfdId(timerRdfId);
         int localRequiredIfdId = ConvertToDelayedInputFrameId(steppingRdfId);
-        oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @steppingRdfId=" << steppingRdfId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", self character at(" << currChd.x() << ", " << currChd.y() << ") w / frames_in_ch_state = " << currChd.frames_in_ch_state() << ", vel = (" << currChd.vel_x() << ", " << currChd.vel_y() << ") revoked from " << currChd.ch_state() << " to " << nextChd->ch_state() << ", @delayedInput = " << delayedInput << ", nextVel = (" << nextChd->vel_x() << ", " << nextChd->vel_y() << ")" << ", cvSupported = " << cvSupported << ", cvOnWall = " << cvOnWall << ", cvInAir = " << cvInAir << ", cvGroundState = " << (int)cvGroundState << " | self ifdBuffer = \n";
+        oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @steppingRdfId=" << steppingRdfId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", self character at(" << currChd.x() << ", " << currChd.y() << ") w / frames_in_ch_state = " << currChd.frames_in_ch_state() << ", vel = (" << currChd.vel_x() << ", " << currChd.vel_y() << ") revoked from " << currChd.ch_state() << " to " << nextChd->ch_state() << ", nextVel = (" << nextChd->vel_x() << ", " << nextChd->vel_y() << ")" << ", cvSupported = " << cvSupported << ", cvOnWall = " << cvOnWall << ", cvInAir = " << cvInAir << ", cvGroundState = " << (int)cvGroundState << " | self ifdBuffer = \n";
 
         stringifyPlayerInputsInIfdBuffer(oss, selfJoinIndexArrIdx);
         Debug::Log(oss.str(), DColor::Orange);

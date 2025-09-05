@@ -133,10 +133,6 @@ namespace JoltCSharp {
 
         static PbCharacters() {
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
-
-            BOUNTY_HUNTER.LoopingChStates.Add(((int)CharacterState.InAirIdle1ByJump), 23);
-            BOUNTY_HUNTER.LoopingChStates.Add(((int)CharacterState.InAirIdle1ByWallJump), 25);
-            BOUNTY_HUNTER.LoopingChStates.Add(((int)CharacterState.InAirIdle2ByJump), 31);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
         }
     }
