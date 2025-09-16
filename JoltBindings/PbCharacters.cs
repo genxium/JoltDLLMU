@@ -126,13 +126,23 @@ namespace JoltCSharp {
             GaugeIncWhenKilled = 80,
             HasBtnBCharging = true,
             Ifc = IfaceCat.Flesh,
-            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH        
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
 
         public static MapField<uint, CharacterConfig> underlying = new MapField<uint, CharacterConfig>() { };
 
         static PbCharacters() {
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), HunterPistolId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), HunterPistolWalkingId);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), HunterPistolAirId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, true, false, false, false, false, false), HunterPistolWallId);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
         }
     }

@@ -11,6 +11,7 @@ using (var output = File.Create(Path.Combine(outputDir, "PrimitiveConsts.pb"))) 
 }
 var configConsts = new ConfigConsts {};
 configConsts.CharacterConfigs.Add(PbCharacters.underlying);
+configConsts.SkillConfigs.Add(PbSkills.underlying);
 CharacterConfig bladeGirl;
 configConsts.CharacterConfigs.TryGetValue(PbPrimitives.SPECIES_BLADEGIRL, out bladeGirl);
 Console.WriteLine($"BladeGirl CapsuleRadius={bladeGirl.CapsuleRadius}");

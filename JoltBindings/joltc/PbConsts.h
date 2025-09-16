@@ -50,6 +50,16 @@ const std::unordered_set<CharacterState> noOpSet = {
     Awaking,
 };
 
+const std::unordered_set<CharacterState> walkingSet = {
+    Walking,
+    WalkingAtk1,
+    WalkingAtk1_Charging,
+    BackWalking,
+    CrouchWalking,
+    InAirWalking,
+    // [WARNING] "WalkStopping" doesn't count.
+};
+
 const std::unordered_set<CharacterState> invinsibleSet = {
     BlownUp1,
     LayDown1,

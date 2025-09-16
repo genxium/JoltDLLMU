@@ -2,7 +2,7 @@ using jtshared;
 
 namespace JoltCSharp {
     public class PbPrimitives {
-        public const uint HunterPistolWallId = 68, HunterPistolId = 71, HunterPistolAirId = 72, HunterDashingId = 78, HunterSlidingId = 132, HunterPistolCrouchId = 133, HunterDragonPunchId = 73, HunterAirSlashId = 74, MobileThunderCannonPrimerId = 143, MobileThunderCannonPrimerAirId = 144, MobileThunderCannonPrimerCrouchId = 145, MobileThunderCannonPrimerWallId = 146;
+        public static uint HunterPistolWallId = 68, HunterPistolId = 71, HunterPistolAirId = 72, HunterPistolWalkingId = 73, HunterDragonPunchId = 74, HunterAirSlashId = 75, HunterDashingId = 78, HunterSlidingId = 132, HunterPistolCrouchId = 133, MobileThunderCannonPrimerId = 143, MobileThunderCannonPrimerAirId = 144, MobileThunderCannonPrimerCrouchId = 145, MobileThunderCannonPrimerWallId = 146;
 
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
@@ -163,8 +163,8 @@ namespace JoltCSharp {
             NoPatrolCueId = 0,
             NoVfxId = 0,
 
-            DefaultPickableHitboxSizeX = 10f,
-            DefaultPickableHitboxSizeY = 12f,
+            DefaultPickableHitboxHalfSizeX = 10f,
+            DefaultPickableHitboxHalfSizeY = 12f,
             DefaultPickableDisappearingAnimFrames = 10,
             DefaultPickableConsumedAnimFrames = 30,
             DefaultPickableRisingVelY = 8f,

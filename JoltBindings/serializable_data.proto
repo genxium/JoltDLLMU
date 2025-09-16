@@ -358,6 +358,8 @@ message CharacterConfig {
     repeated InventorySlotConfig init_inventory_slots = 104;
     map<int32, int32> btn_b_auto_unhold_ch_states = 105; 
     map<int32, int32> looping_ch_states = 106; 
+
+    map<int32, uint32> init_skill_transit = 107; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
 }
 
 message CharacterDownsync {
@@ -599,8 +601,8 @@ message BulletConfig {
 
     float hitbox_offset_x = 12;
     float hitbox_offset_y = 13;
-    float hitbox_size_x = 14;
-    float hitbox_size_y = 15;
+    float hitbox_half_size_x = 14;
+    float hitbox_half_size_y = 15;
 
     bool blow_up = 16;
 
@@ -635,8 +637,8 @@ message BulletConfig {
     float speed_if_not_hit = 37;
     bool omit_soft_pushback = 38; // Only used for melee bullets
 
-    float hitbox_size_inc_x = 39; // Change of hitbox_size_x per frame
-    float hitbox_size_inc_y = 40; // Change of hitbox_size_y per frame
+    float hitbox_size_inc_x = 39; // Change of hitbox_size_x per second
+    float hitbox_size_inc_y = 40; // Change of hitbox_size_y per second
 
     bool remains_upon_hit = 41; 
     bool rotates_along_velocity = 42;
@@ -661,7 +663,7 @@ message BulletConfig {
     float vision_size_x = 56;
     float vision_size_y = 57;
 
-    int32 self_lock_vel_y_when_flying = 58;
+    float self_lock_vel_y_when_flying = 58;
 
     uint32 elemental_attrs = 59;
 
@@ -844,8 +846,8 @@ message TrapColliderAttr {
     // In the case of a trap, it might own multiple hitboxes and each hitbox is drawn in Tiled and assigned after parsing the tmx file, thus not put in static config.
     int32 hitbox_offset_x = 1;
     int32 hitbox_offset_y = 2;
-    int32 hitbox_size_x = 3;
-    int32 hitbox_size_y = 4;
+    int32 hitbox_half_size_x = 3;
+    int32 hitbox_half_size_y = 4;
     bool provides_hard_pushback = 5;
     bool provides_damage = 6;
     bool provides_escape = 7;
@@ -1075,8 +1077,8 @@ message BuffConfig {
     BuffStockType stock_type = 2;
     int32 stock = 3;
     float speed_delta = 4;
-    float hitbox_size_x_delta = 5;
-    float hitbox_size_y_delta = 6;
+    float hitbox_half_size_x_delta = 5;
+    float hitbox_half_size_y_delta = 6;
     /* 
        It's not trivial to handle damage after the following sequence
        1. Pick up damage_delta=+10 for 600 frames
@@ -1529,8 +1531,8 @@ message PrimitiveConsts {
     int32 no_patrol_cue_id = 66;
     int32 no_vfx_id = 67;
 
-    float default_pickable_hitbox_size_x = 68;
-    float default_pickable_hitbox_size_y = 69;
+    float default_pickable_hitbox_half_size_x = 68;
+    float default_pickable_hitbox_half_size_y = 69;
     int32 default_pickable_disappearing_anim_frames = 70;
     int32 default_pickable_consumed_anim_frames = 71;
     float default_pickable_rising_vel_y = 72;
@@ -1650,5 +1652,4 @@ message ConfigConsts {
     map<uint32, CharacterConfig> character_configs = 1;
     map<uint32, Skill> skill_configs = 2;
     map<uint32, DebuffConfig> debuff_configs = 3;
-    map<int32, uint32> init_skill_transit = 4; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
 }
