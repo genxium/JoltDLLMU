@@ -8,11 +8,12 @@
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
-#include <Jolt/Physics/Character/CharacterVirtual.h>
+#include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
 #include "FrameRingBuffer.h"
 #include "CppOnlyConsts.h"
 #include "PbConsts.h"
+#include <Jolt/Physics/StateRecorderImpl.h>
 
 #include "serializable_data.pb.h"
 
@@ -27,7 +28,16 @@
 #define BL_CACHE_KEY_T std::vector<float>
 #define BL_COLLIDER_Q std::vector<JPH::Body*>
 #define CH_CACHE_KEY_T std::vector<float>
-#define CH_COLLIDER_Q std::vector<JPH::CharacterVirtual*>
+
+/*
+[REMINDER] 
+
+It's by design that "JPH::Character" instead of "JPH::CharacterVirtual" is used here while [their differences]("https://jrouwe.github.io/JoltPhysics/index.html#character-controllers) are understood.
+
+The lack of use of broadphase makes "JPH::CharacterVirtual" very inefficient in "Character v.s. Character" collision handling. See [CharacterVsCharacterCollisionSimple](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L34) for its official default implementation.
+*/
+#define CH_COLLIDER_T JPH::Character
+#define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
 typedef struct VectorFloatHasher {
     std::size_t operator()(const std::vector<float>& v) const {
         std::size_t seed = v.size(); // Start with the size of the vector
@@ -42,7 +52,7 @@ typedef struct VectorFloatHasher {
 using namespace JPH;
 using namespace jtshared;
 
-class JOLTC_EXPORT BaseBattle : public JPH::ContactListener, JPH::CharacterContactListener {
+class JOLTC_EXPORT BaseBattle : public JPH::ContactListener {
 public:
     BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator);
     virtual ~BaseBattle();
@@ -86,10 +96,11 @@ public:
     JobSystemThreadPool* jobSys;
 
     BL_COLLIDER_Q activeBlColliders;
+    BL_COLLIDER_Q* blStockCache;
     std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
-    // It's by design that "JPH::CharacterVirtual" instead of "JPH::Character" or even "JPH::Body" is used here, see "https://jrouwe.github.io/JoltPhysics/index.html#character-controllers" for their differences.
     CH_COLLIDER_Q activeChColliders;
+
     /*
      [TODO]
 
@@ -99,9 +110,11 @@ public:
 
     Moreover, by using this approach to manage multi-shape character I dropped the "shared shapes across bodies" feature of Jolt.
     */
-    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "CharacterVirtual" are mutable during reuse, thus not using "RefConst<>".
+    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
 
 public:
+    static void FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
+
     inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
         if (rdfId < delayRdfCnt) {
             return 0;
@@ -166,6 +179,7 @@ public:
         return oldVal;
     }
 
+    void updateChColliderBeforePhysicsUpdate(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd);
     virtual bool Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
     virtual void Clear();
@@ -179,45 +193,111 @@ public:
     static void NewPreallocatedNpcCharacterDownsync(NpcCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity);
     static RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount);
 
-    inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing) {
+    inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
         /*
         For simplicity,
         - "currSliding" = "currCrouching" + "currDashing"
         */
         int encodedPatternId = patternId;
         if (currEffInAir) {
-            encodedPatternId += (1L << 16);
+            encodedPatternId += (1 << 16);
         }
         if (currCrouching) {
-            encodedPatternId += (1L << 17);
+            encodedPatternId += (1 << 17);
         }
         if (currOnWall) {
-            encodedPatternId += (1L << 18);
+            encodedPatternId += (1 << 18);
         }
         if (currDashing) {
-            encodedPatternId += (1L << 19);
+            encodedPatternId += (1 << 19);
+        }
+        if (currWalking) {
+            encodedPatternId += (1 << 20);
         }
         return encodedPatternId;
     }
 
-    inline static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currInBlockStun, bool currAtked, bool currParalyzed) {
-        int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing);
+    inline static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
+        int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
         if (currInBlockStun) {
-            encodedPatternId += (1L << 20);
+            encodedPatternId += (1 << 21);
         }
         if (currAtked) {
-            encodedPatternId += (1L << 21);
+            encodedPatternId += (1 << 22);
         }
         if (currParalyzed) {
-            encodedPatternId += (1L << 22);
+            encodedPatternId += (1 << 23);
         }
         return encodedPatternId;
+    }
+
+
+    inline static bool IsLengthNearZero(float length) {
+        return -cLengthEps < length && length < cLengthEps;
+    }
+
+    inline static bool IsLengthSquaredNearZero(float lengthSquared) {
+        return cLengthEpsSquared > lengthSquared;
+    }
+    
+    inline static bool IsLengthDiffNearlySame(float lengthDiff) {
+        return -cLengthNearlySameEps < lengthDiff && lengthDiff < cLengthNearlySameEps;
+    }
+
+    inline static bool IsLengthDiffSquaredNearlySame(float lengthDiffSquared) {
+        return cLengthNearlySameEpsSquared > lengthDiffSquared;
+    }
+
+    inline static bool isNearlySame(float lhs, float rhs) {
+        return IsLengthDiffNearlySame(rhs - lhs);
+    }
+
+    inline static void AssertNearlySame(const PlayerCharacterDownsync& lhs, const PlayerCharacterDownsync& rhs) {
+        auto lhsChd = lhs.chd();
+        auto rhsChd = rhs.chd();
+        AssertNearlySame(lhsChd, rhsChd);
+    }
+
+    inline static void AssertNearlySame(const CharacterDownsync& lhs, const CharacterDownsync& rhs) {
+        JPH_ASSERT(lhs.ch_state() == rhs.ch_state());
+        JPH_ASSERT(lhs.frames_in_ch_state() == rhs.frames_in_ch_state());
+        JPH_ASSERT(lhs.btn_a_holding_rdf_cnt() == rhs.btn_a_holding_rdf_cnt());
+        JPH_ASSERT(lhs.btn_b_holding_rdf_cnt() == rhs.btn_b_holding_rdf_cnt());
+        JPH_ASSERT(lhs.btn_c_holding_rdf_cnt() == rhs.btn_c_holding_rdf_cnt());
+        JPH_ASSERT(lhs.btn_d_holding_rdf_cnt() == rhs.btn_d_holding_rdf_cnt());
+        JPH_ASSERT(lhs.btn_e_holding_rdf_cnt() == rhs.btn_e_holding_rdf_cnt());
+        JPH_ASSERT(lhs.frames_captured_by_inertia() == rhs.frames_captured_by_inertia());
+        JPH_ASSERT(lhs.frames_invinsible() == rhs.frames_invinsible());
+        JPH_ASSERT(lhs.frames_to_recover() == rhs.frames_to_recover());
+        JPH_ASSERT(lhs.frames_to_start_jump() == rhs.frames_to_start_jump());
+        JPH_ASSERT(lhs.remaining_air_dash_quota() == rhs.remaining_air_dash_quota());
+        JPH_ASSERT(lhs.remaining_air_jump_quota() == rhs.remaining_air_jump_quota());
+        JPH_ASSERT(lhs.remaining_def1_quota() == rhs.remaining_def1_quota());
+        JPH_ASSERT(lhs.slip_jump_triggered() == rhs.slip_jump_triggered());
+        JPH_ASSERT(lhs.jump_triggered() == rhs.jump_triggered());
+        JPH_ASSERT(lhs.jump_started() == rhs.jump_started());
+        JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
+        JPH_ASSERT(lhs.dir_x() == rhs.dir_x());
+        JPH_ASSERT(lhs.dir_y() == rhs.dir_y());
+        JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
+    }
+
+    inline static bool isNearlySame(Vec3& lhs, Vec3& rhs) {
+        return isNearlySame(lhs.GetX(), lhs.GetY(), lhs.GetZ(), rhs.GetX(), rhs.GetY(), rhs.GetZ());
+    }
+
+    inline static bool isNearlySame(const float lhsX, const float lhsY, const float lhsZ, const float rhsX, const float rhsY, const float rhsZ) {
+        float dx = rhsX - lhsX;
+        float dy = rhsY - lhsY;
+        float dz = rhsZ - lhsZ;
+        return IsLengthDiffSquaredNearlySame(dx*dx + dy*dy + dz*dz);
     }
 
 protected:
     BodyIDVector staticColliderBodyIDs;
     BodyIDVector bodyIDsToClear;
     BodyIDVector bodyIDsToAdd;
+    BodyIDVector bodyIDsToActivate;
 
     // Backend & Frontend shared functions
     inline void elapse1RdfForRdf(RenderFrame* rdf);
@@ -241,6 +321,10 @@ protected:
         return UDT_BL + bl.id();
     }
 
+    inline uint64_t calcStaticColliderUserData(const int staticColliderId) {
+        return UDT_OBSTACLE + staticColliderId;
+    }
+
     inline uint64_t getUDT(const uint64_t& ud) {
         return (ud & UDT_STRIPPER);
     }
@@ -249,15 +333,15 @@ protected:
         return (ud & UD_PAYLOAD_STRIPPER);
     }
 
-    CharacterVirtual* getOrCreateCachedPlayerCollider(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedPlayerCollider(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
     // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider" still works
-    CharacterVirtual* getOrCreateCachedNpcCollider(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
-    CharacterVirtual* getOrCreateCachedCharacterCollider(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
+    CH_COLLIDER_T* getOrCreateCachedNpcCollider(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedCharacterCollider(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
-    Body*             getOrCreateCachedBulletCollider(const uint64_t ud, const BulletConfig* bc, float immediateHalfBoxSizeX, float immediateHalfBoxSizeY);
+    Body*             getOrCreateCachedBulletCollider(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
 
-    std::unordered_map<uint64_t, CharacterVirtual*> transientUdToCv;
-    std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID; // other than "CharacterVirtual.mInnerBodyID" 
+    std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
+    std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
     std::unordered_map<uint64_t, PlayerCharacterDownsync*> transientUdToNextPlayer;
@@ -265,8 +349,8 @@ protected:
     std::unordered_map<uint64_t, const NpcCharacterDownsync*> transientUdToCurrNpc; // Mainly for "Bullet.offender_ud" referencing characters, and avoiding the unnecessary [joinIndex change in `leftShiftDeadNpcs` of DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/shared/Battle_builders.cs#L580)
     std::unordered_map<uint64_t, NpcCharacterDownsync*> transientUdToNextNpc;
 
-    std::unordered_map<uint64_t, const Bullet*> transientIdToCurrBl;
-    std::unordered_map<uint64_t, Bullet*> transientIdToNextBl;
+    std::unordered_map<uint64_t, const Bullet*> transientUdToCurrBl;
+    std::unordered_map<uint64_t, Bullet*> transientUdToNextBl;
 
     std::unordered_map<uint64_t, const Trap*> transientUdToCurrTrap;
     std::unordered_map<uint64_t, Trap*> transientUdToNextTrap;
@@ -294,15 +378,15 @@ protected:
         ioCacheKey[1] = cc->capsule_half_height();
     }
 
-    inline void calcBlCacheKey(const BulletConfig* bc, BL_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey[0] = bc->hitbox_size_x();
-        ioCacheKey[1] = bc->hitbox_size_y();
+    inline void calcBlCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, BL_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey[0] = immediateBoxHalfSizeX;
+        ioCacheKey[1] = immediateBoxHalfSizeY;
     }
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
 
-    void batchPutIntoPhySysFromCache(const RenderFrame* currRdf, RenderFrame* nextRdf);
-    void batchRemoveFromPhySysAndCache(const RenderFrame* currRdf);
+    void batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
+    void batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf);
 
     inline uint64_t calcJoinIndexMask(uint32_t joinIndex) {
         if (0 == joinIndex) return 0;
@@ -333,40 +417,38 @@ protected:
 
     void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
+    void processPlayerInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
+    void processNpcInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
 
-    void processPlayerInputs(const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
-    void processNpcInputs(const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
-
-    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
+    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
 
     void transitToGroundDodgedChState(CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
     void calcFallenDeath(RenderFrame* nextRdf);
     void resetJumpStartup(CharacterDownsync* nextChd, bool putBtnHoldingJammed = false);
     bool isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
-    bool isJumpStartupJustEnded(const CharacterDownsync& currCd, CharacterDownsync* nextCd, const CharacterConfig* cc);
+    bool isJumpStartupJustEnded(const CharacterDownsync& currCd, const CharacterDownsync* nextCd, const CharacterConfig* cc);
     void jamBtnHolding(CharacterDownsync* nextChd);
-    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool recoveredFromAirAtk, bool currParalyzed);
-    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool currParalyzed, bool currInBlockStun);
+    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed);
+    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
     void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
-    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool usedSkill, const Skill* skillConfig, bool currParalyzed, bool currInBlockStun);
-    bool addNewBulletToNextFrame(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, bool& hasLockVel, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
+    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
+    bool addNewBulletToNextFrame(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
     void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool currParalyzed);
     void processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc);
 
-    void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterVirtual* cv, bool inJumpStartupOrJustEnded);
+    void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
-    virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterVirtual::EGroundState cvGroundState);
+    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
     void leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf);
 
-    bool useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill);
+    bool useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
 
     void useInventorySlot(int rdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
-    void FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
     static bool IsChargingAtkChState(CharacterState chState) {
         return (CharacterState::Atk7_Charging == chState);
     }
@@ -382,25 +464,36 @@ protected:
 
     inline bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder);
 
-    inline bool isLengthNearZero(float length) {
-        return 1e-3 > length;
+    CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc);
+    inline EMotionType       calcBlMotionType(const BulletType blType) {
+        /*
+         Kindly note that in Jolt, "NonDynamics v.s. NonDynamics" (e.g. "Kinematic v.s. Static" or even "Kinematic v.s. Kinematic") WOULDN'T be automatically handled by "ContactConstraintManager" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1108). 
+         
+         It's very deep in the collision handling callstack (https://github.com/genxium/JoltDLLMU/blob/main/JoltBindings/RuleOfThumb.md) and there's no simple hook to override this behavior while integrating well with the existing solver.
+         
+         By the time of writing, I think it's both difficult and unnecessary to find a way of adding "Kinematic-Static ContactConstraint" or "Kinematic-Kinematic ContactConstraint" into "ContactConstraintManager".
+        */
+        switch (blType) {
+            case BulletType::MagicalFireball:
+            case BulletType::Melee:
+                return EMotionType::Kinematic;
+            case BulletType::MechanicalCartridge:
+            case BulletType::GroundWave:
+                return EMotionType::Dynamic;
+            default:
+                return EMotionType::Static;
+        }
     }
 
-    inline bool isLengthSquaredNearZero(float lengthSquared) {
-        return 1e-6 > lengthSquared;
-    }
-
-    CharacterVirtual* createDefaultCharacterCollider(const CharacterConfig* cc);
-    Body*             createDefaultBulletCollider(const BulletConfig* bc);
+    Body*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static);
 
     void preallocateBodies(const RenderFrame* startRdf, const ::google::protobuf::Map<::google::protobuf::int32, ::google::protobuf::int32 >& preallocateNpcSpeciesDict);
 
     inline void calcChdShape(const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
-    inline void calcBlShape(const Bullet& currBl, const BulletConfig* bc, float& outBoxOffsetX, float& outBoxOffsetY, float& outBoxSizeX, float& outBoxSizeY);
 
     inline float lerp(float from, float to, float step) {
         float diff = (to - from);
-        if (isLengthSquaredNearZero(diff * diff)) {
+        if (IsLengthSquaredNearZero(diff * diff)) {
             return to;
         }
         float proposed = from + step;
@@ -501,6 +594,9 @@ protected:
 #endif // !NDEBUG
         return true;
     }
+    
+    virtual bool allocPhySys();
+    virtual bool deallocPhySys();
 
     void stringifyPlayerInputsInIfdBuffer(std::ostringstream& oss, int joinIndexArrIdx) {
         if (0 >= ifdBuffer.Cnt) return;
@@ -525,9 +621,6 @@ protected:
 private:
     Vec3 safeDeactiviatedPosition;
     InputFrameDecoded ifDecodedHolder;
-
-    ////////////////////////////////////////////// (to deprecate!)
-    BulletConfig dummyBc;
 
 public:
     // #JPH::ContactListener
@@ -565,40 +658,59 @@ public:
         JPH::RVec3Arg inBaseOffset,
         const JPH::CollideShapeResult& inCollisionResult) override {
         // Just for simplicity, we'll handle validation elsewhere by following DLLMU-v2.3.4.
-        return JPH::ValidateResult::AcceptContact;
-    }
-public:
-    // #JPH::CharacterContactListener
-    /* 
-    [WARNING] "CharacterVirtual" instances DON'T participate in collision handling in a Jolt PhysicsSystem (unless #useCustomizedInnerBodyHandling, which is not my default), hence a "CharacterVirtual" instance DOESN'T make use of the "BroadPhase/BroadPhaseQuadTree" tools.
+        
+        /*
+        [TODO]
 
-    A "CharacterVirtual" instance uses its own "NarrowPhase" collision handling, and seems to create "ContactConstraint" against all EMotionTypes (Static, Kinematic, Dynamic) by default -- hence the challenge is to properly avoid creating unexpected "ContactConstraint"s.  
-    */
-    virtual void OnContactCommon(const CharacterVirtual* inCharacter, const BodyID& inBodyID2, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings);
+        Better override "JPH::PhysicsSystem" to take "BaseBattle" instance as a member for earlier access to "transientUdToXxx" in "JPH::PhysicsSystem.mSimCollideBodyVsBody" (i.e. before any ShapeVsShape calculation).
+        */
+        uint64_t ud1 = inBody1.GetUserData();
+        uint64_t ud2 = inBody2.GetUserData();
 
-    virtual void OnCharacterContactCommon(const CharacterVirtual* inCharacter, const CharacterVirtual* inOtherCharacter, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings);
+        uint64_t udt1 = getUDT(ud1);
+        uint64_t udt2 = getUDT(ud2);
 
-    virtual void						OnContactAdded(const CharacterVirtual* inCharacter, const BodyID& inBodyID2, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings) override {
-        OnContactCommon(inCharacter, inBodyID2, inSubShapeID2, inContactPosition, inContactNormal, ioSettings);
-    }
+        switch (udt1)
+        {
+        case UDT_PLAYER:
+        case UDT_NPC:
+            return validateLhsCharacterContact(ud1, udt1, inBody1, ud2, udt2, inBody2);
+        case UDT_BL:
+            return validateLhsBulletContact(ud1, inBody1, ud2, udt2, inBody2);
+        default:
+            switch (udt2) {
+            case UDT_PLAYER:
+            case UDT_NPC:
+                return validateLhsCharacterContact(ud2, udt2, inBody2, ud1, udt1, inBody1);
+            case UDT_BL:
+                return validateLhsBulletContact(ud2, inBody2, ud1, udt1, inBody1);
+            default:
+                return JPH::ValidateResult::AcceptContact;
+            }
+        }
 
-    virtual void						OnContactPersisted(const CharacterVirtual* inCharacter, const BodyID& inBodyID2, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings) override {
-        OnContactCommon(inCharacter, inBodyID2, inSubShapeID2, inContactPosition, inContactNormal, ioSettings);
-    }
-
-    virtual void						OnCharacterContactAdded(const CharacterVirtual* inCharacter, const CharacterVirtual* inOtherCharacter, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings) override {
-        OnCharacterContactCommon(inCharacter, inOtherCharacter, inSubShapeID2, inContactPosition, inContactNormal, ioSettings);
-    }
-
-    virtual void						OnCharacterContactPersisted(const CharacterVirtual* inCharacter, const CharacterVirtual* inOtherCharacter, const SubShapeID& inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings& ioSettings) override {
-        OnCharacterContactCommon(inCharacter, inOtherCharacter, inSubShapeID2, inContactPosition, inContactNormal, ioSettings);
     }
 
 protected:
+    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
+        const JPH::Body& lhs, // the "Character"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs);
+
+    virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
+        const JPH::Body& lhs, // the "Bullet"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs);
+
+    virtual void handleLhsCharacterCollision(
+        const uint64_t udLhs, const uint64_t udtLhs,
+        const JPH::Body& lhs, // the "Character"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
+        const JPH::ContactManifold& inManifold,
+        JPH::ContactSettings& ioSettings);
+
     virtual void handleLhsBulletCollision(
         const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
-        uint64_t udtRhs, const JPH::Body& rhs,
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
         const JPH::ContactManifold& inManifold,
         JPH::ContactSettings& ioSettings);
 };

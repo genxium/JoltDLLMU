@@ -29,7 +29,7 @@ RenderFrame* mockStartRdf() {
     auto playerCh1 = startRdf->mutable_players_arr(0);
     auto ch1 = playerCh1->mutable_chd();
     ch1->set_x(-85);
-    ch1->set_y(200);
+    ch1->set_y(300);
     ch1->set_speed(10);
     ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
     ch1->set_frames_to_recover(0);
@@ -38,7 +38,7 @@ RenderFrame* mockStartRdf() {
     ch1->set_vel_x(0);
     ch1->set_vel_y(0);
     ch1->set_hp(100);
-    ch1->set_species_id(SPECIES_BLADEGIRL);
+    ch1->set_species_id(SPECIES_BOUNTYHUNTER);
     playerCh1->set_join_index(1);
     playerCh1->set_revival_x(ch1->x());
     playerCh1->set_revival_y(ch1->y());
@@ -55,7 +55,7 @@ RenderFrame* mockStartRdf() {
     ch2->set_vel_x(0);
     ch2->set_vel_y(0);
     ch2->set_hp(100);
-    ch2->set_species_id(SPECIES_BOUNTYHUNTER);
+    ch2->set_species_id(SPECIES_BLADEGIRL);
     playerCh2->set_join_index(2);
     playerCh2->set_revival_x(ch2->x());
     playerCh2->set_revival_y(ch2->y());
@@ -73,6 +73,7 @@ char rdfFetchBuffer[pbBufferSizeLimit];
 
 std::map<int, uint64_t> testCmds1 = {
     {0, 3},
+    {120, 3},
     {227, 0},
     {228, 16},
     {231, 16},
@@ -84,9 +85,9 @@ std::map<int, uint64_t> testCmds1 = {
     {739, 4},
     {740, 20},
     {760, 4},
-    {780, 20},
+    {780, 4},
     {781, 4},
-    {820, 20},
+    {820, 32},
     {821, 4},
     {910, 4},
     {1100, 4},
@@ -213,9 +214,16 @@ int main(int argc, char** argv)
                 system_clock::now().time_since_epoch()
             );
             auto elapsed = newNowMillis - nowMillis;
-            std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << std::endl;
+            // std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << std::endl;
             nowMillis = newNowMillis;
         }
+        /*
+        if (300 >= timerRdfId) {
+            auto& p1 = outRdf.players_arr(0);
+            auto& p1Chd = p1.chd();
+            std::cout << "@timerRdfId=" << timerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
+        }
+        */
     }
     
     // clean up

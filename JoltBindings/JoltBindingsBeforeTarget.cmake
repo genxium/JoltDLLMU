@@ -207,9 +207,14 @@ set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
 set(JOLTC_SRC_FILES
+    ${JOLTC_ROOT}/BackendBattle.h
     ${JOLTC_ROOT}/BackendBattle.cpp
-    ${JOLTC_ROOT}/BaseBattle.cpp
+    ${JOLTC_ROOT}/FrontendBattle.h
     ${JOLTC_ROOT}/FrontendBattle.cpp
+    ${JOLTC_ROOT}/BaseBattle.h
+    ${JOLTC_ROOT}/BaseBattle.cpp
+    ${JOLTC_ROOT}/joltc_api.h
     ${JOLTC_ROOT}/joltc_api.cpp
+    ${JOLTC_ROOT}/DebugLog.h
     ${JOLTC_ROOT}/DebugLog.cpp
 )
