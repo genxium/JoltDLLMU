@@ -903,6 +903,20 @@ void BodyManager::RestoreBodyState(Body &ioBody, StateRecorder &inStream)
 	}
 }
 
+void BodyManager::ClearFreeList() {
+	JPH_ASSERT(0 == mNumBodies);
+	JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::SoftBody]);
+	JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::RigidBody]);
+	JPH_ASSERT(0 == mNumActiveCCDBodies);
+	mBodyIDFreeListStart = cBodyIDFreeListEnd;
+	int origSize = mBodySequenceNumbers.size();
+	for (int i = 0; i < origSize; i++) {
+		mBodySequenceNumbers[i] = 0;
+	}
+	mBodies.clear();
+	ValidateFreeList();
+}
+
 #ifdef JPH_DEBUG_RENDERER
 void BodyManager::Draw(const DrawSettings &inDrawSettings, const PhysicsSettings &inPhysicsSettings, DebugRenderer *inRenderer, const BodyDrawFilter *inBodyFilter)
 {

@@ -2766,4 +2766,8 @@ void PhysicsSystem::RestoreBodyState(Body &ioBody, StateRecorder &inStream)
 	mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
 }
 
+void PhysicsSystem::ClearBodyManagerFreeList() {
+	mBodyManager.ClearFreeList();
+}
+
 JPH_NAMESPACE_END
