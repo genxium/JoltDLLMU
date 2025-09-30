@@ -173,6 +173,8 @@ public:
 	/// Restoring state of a single body.
 	void						RestoreBodyState(Body &ioBody, StateRecorder &inStream);
 
+	void                        ClearBodyManagerFreeList();                                 
+
 #ifdef JPH_DEBUG_RENDERER
 	// Drawing properties
 	static bool					sDrawMotionQualityLinearCast;								///< Draw debug info for objects that perform continuous collision detection through the linear cast motion quality

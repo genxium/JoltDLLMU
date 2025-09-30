@@ -1219,9 +1219,11 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
 }
 
 bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     FrontendBattle* referenceBattle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, true));
+    
     referenceBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();

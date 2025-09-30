@@ -215,6 +215,8 @@ public:
 	/// Save the state of a single body for replay
 	void							RestoreBodyState(Body &inBody, StateRecorder &inStream);
 
+	void                            ClearFreeList();
+
 #ifdef JPH_DEBUG_RENDERER
 	enum class EShapeColor
 	{

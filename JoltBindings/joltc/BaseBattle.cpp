@@ -57,6 +57,7 @@ BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator*
     jobSys = nullptr;
     blStockCache = nullptr;
 
+    allocPhySys();  
     jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
 }
 
@@ -64,6 +65,7 @@ BaseBattle::~BaseBattle() {
     Clear();
     delete jobSys;
     jobSys = nullptr;
+    deallocPhySys();
 }
 
 // Backend & Frontend shared functions
@@ -174,9 +176,9 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider(const uint64_t ud,
 
     // must be active when called by "getOrCreateCachedCharacterCollider"
     activeChColliders.push_back(chCollider);
-    auto bodyId = chCollider->GetBodyID();
+    auto bodyID = chCollider->GetBodyID();
     transientUdToChCollider[ud] = chCollider;
-    bi->SetUserData(bodyId, ud);
+    bi->SetUserData(bodyID, ud);
 
     return chCollider;
 }
@@ -188,7 +190,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
     float newConvexRadius = 0;
     Body* blCollider = nullptr;
     auto it = cachedBlColliders.find(blCacheKeyHolder);
-    if (it == cachedBlColliders.end()) {
+    if (it == cachedBlColliders.end() || it->second.empty()) {
         if (blStockCache->empty()) {
             blCollider = createDefaultBulletCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType);
             JPH_ASSERT(nullptr != blCollider);
@@ -199,17 +201,13 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
         }
     } else {
         auto& q = it->second;
-        if (q.empty()) {
-            blCollider = createDefaultBulletCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType);
-            JPH_ASSERT(nullptr != blCollider);
-        } else {
-            blCollider = q.back();
-            q.pop_back();
-            JPH_ASSERT(nullptr != blCollider);
-        }
+        JPH_ASSERT(!q.empty());
+        blCollider = q.back();
+        q.pop_back();
+        JPH_ASSERT(nullptr != blCollider);
     }
 
-    const BodyID& bodyId = blCollider->GetID();
+    const BodyID& bodyID = blCollider->GetID();
     auto existingMotionType = blCollider->GetMotionType();
     const BoxShape* shape = static_cast<const BoxShape*>(blCollider->GetShape());
     auto existingHalfExtent = shape->GetHalfExtent();
@@ -225,7 +223,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
 
         blCollider->SetShapeInternal(newShape, true);
         blCollider->SetMotionType(immediateMotionType);
-        bi->NotifyShapeChanged(bodyId, previousShapeCom, true, EActivation::DontActivate);
+        bi->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
 
         while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
@@ -233,7 +231,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
         JPH_ASSERT(oldShapeRefCnt == newShapeRefCnt);
     }
 
-    transientUdToBodyID[ud] = &bodyId;
+    transientUdToBodyID[ud] = &bodyID;
     blCollider->SetUserData(ud);
 
     // must be active when called by "getOrCreateCachedBulletCollider"
@@ -289,17 +287,17 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const Characte
         /*
         From the source codes of [JPH::Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) and [MotionPropertis](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/MotionProperties.h#L148) it seems like "accelerations" are only calculated during stepping, not cached.
         */
-        auto bodyId = chCollider->GetBodyID();
+        auto bodyID = chCollider->GetBodyID();
         const CharacterConfig* cc = getCc(currChd.species_id());
         bool currNotDashing = isNotDashing(currChd);
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
         bool inJumpStartupOrJustEnded = (isInJumpStartup(nextChd, cc) || isJumpStartupJustEnded(currChd, &nextChd, cc));
         if (currChd.omit_gravity() || nextChd.omit_gravity() || cc->omit_gravity() || inJumpStartupOrJustEnded) {
-            bi->SetGravityFactor(bodyId, 0);
+            bi->SetGravityFactor(bodyID, 0);
         } else {
-            bi->SetGravityFactor(bodyId, 1);
+            bi->SetGravityFactor(bodyID, 1);
         }
-        bi->SetMotionQuality(bodyId, EMotionQuality::LinearCast);
+        bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
         chCollider->SetPositionAndRotation(Vec3(currChd.x(), currChd.y(), currChd.z()), Quat::sIdentity(), EActivation::Activate);
         chCollider->SetLinearAndAngularVelocity(Vec3(nextChd.vel_x(), nextChd.vel_y(), nextChd.vel_z()), Vec3::sZero());
 
@@ -373,10 +371,10 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
             Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
             auto ud = calcUserData(currBl);
             if (transientUdToBodyID.count(ud)) {
-                auto bodyId = *(transientUdToBodyID[ud]);
+                auto bodyID = *(transientUdToBodyID[ud]);
                 
-                bi->SetPosition(bodyId, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
-                bi->SetLinearVelocity(bodyId, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
+                bi->SetPosition(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
+                bi->SetLinearVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
             }
         }
 
@@ -386,8 +384,8 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
             CH_COLLIDER_T* single = *it;
             // Settings for our update function
 
-            auto bodyId = single->GetBodyID(); 
-            uint64_t ud = bi->GetUserData(bodyId);
+            auto bodyID = single->GetBodyID(); 
+            uint64_t ud = bi->GetUserData(bodyID);
             uint64_t udt = getUDT(ud);
 
             switch (udt) {
@@ -476,6 +474,13 @@ void BaseBattle::Clear() {
     if (nullptr == phySys || nullptr == bi) {
         return;
     }
+
+    if (!staticColliderBodyIDs.empty()) {
+        bi->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+        bi->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+        staticColliderBodyIDs.clear();
+    }
+    
     /*
     [WARNING] 
     
@@ -484,7 +489,7 @@ void BaseBattle::Clear() {
     - No need to explicitly remove "Character.mBodyID"s, the destructor "~Character" will take care of it.
     */ 
     while (!activeChColliders.empty()) {
-        auto single = activeChColliders.back();
+        auto& single = activeChColliders.back();
         activeChColliders.pop_back();
         single->RemoveFromPhysicsSystem();
         delete single;
@@ -494,7 +499,7 @@ void BaseBattle::Clear() {
         for (auto it = cachedChColliders.begin(); it != cachedChColliders.end(); ) {
             auto& q = it->second;
             while (!q.empty()) {
-                auto single = q.back();
+                auto& single = q.back();
                 q.pop_back();
                 single->RemoveFromPhysicsSystem();
                 delete single;
@@ -503,15 +508,32 @@ void BaseBattle::Clear() {
         }
     }
 
-    activeBlColliders.clear();
+    bodyIDsToClear.clear();
+    while (!activeBlColliders.empty()) {
+        auto& single = activeBlColliders.back();
+        activeBlColliders.pop_back();
+        auto bodyID = single->GetID();
+        bodyIDsToClear.push_back(bodyID);
+    }
+
     while (!cachedBlColliders.empty()) {
         for (auto it = cachedBlColliders.begin(); it != cachedBlColliders.end(); ) {
             auto& q = it->second;
-            q.clear();
+            while (!q.empty()) {
+                auto& single = q.back();
+                q.pop_back();
+                auto bodyID = single->GetID();
+                bodyIDsToClear.push_back(bodyID);
+            }
             it = cachedBlColliders.erase(it);
         }
     }
-    
+    if (!bodyIDsToClear.empty()) {
+        bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        bodyIDsToClear.clear();
+    }
+
     blStockCache = nullptr;
 
     // Deallocate temp variables in Pb arena
@@ -524,7 +546,8 @@ void BaseBattle::Clear() {
     frameLogBuffer.Clear();
 
     playersCnt = 0;
-    deallocPhySys();
+
+    phySys->ClearBodyManagerFreeList();
 }
 
 bool BaseBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
@@ -536,12 +559,34 @@ bool BaseBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
 bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     /* [WARNING] 
 
-    By the time of writing, I haven't found a way to properly reuse "phySys" without breaking determinism of "rollback-chasing" -- hence each "BaseBattle" instance deallocates "phySys" in "BaseBattle::Clear()" and re-allocates in "BaseBattle::ResetStartRdf(...)". 
+    When running unit tests to compare a "reference battle" with a "reused battle" for "rollback-chasing determinism", any mismatch of "BodyID" (i.e. managed by "BodyManager.mBodyIDFreeListStart" in "BodyManager::AddBody" and "BodyManager::RemoveBodyInternal" if the "PhysicsSystem" instance is not re-allocated) impacts the comparison by 
+    - [ContactConstraintManager::TemplatedAddContactConstraint](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1044)
+    - [PhysicsSystem::JobSolveVelocityConstraints -> ContactConstraintManager::SortContacts](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1421)
 
-    Though root cause not found yet, it's highly suspected that some data (e.g. "Body", "Manifold", "Constraint", "ContactConstraint") from previous battles is left in unused cache section and picked up by a new battle when being reused without thorough re-initialization -- thus contaminating the constraint solvers across battles. 
+    , therefore the reference battle must be created with the same "BodyManager.mBodyIDFreeListStart" for fair comparison.
 
+    Per experimental results, executing the following code snippet at the end of "BaseBattle::Clear()" fixes "FrontendTest/runTestCase6" and "FrontendTest/runTestCase7", which are dedicated to testing "rollback-chasing determinism".
+    
+    ```
+    class JPH::BodyManager {
+        void BodyManager::ClearFreeList() {
+	        JPH_ASSERT(0 == mNumBodies);
+	        JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::SoftBody]);
+	        JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::RigidBody]);
+	        JPH_ASSERT(0 == mNumActiveCCDBodies);
+	        mBodyIDFreeListStart = cBodyIDFreeListEnd;
+	        int origSize = mBodySequenceNumbers.size();
+	        for (int i = 0; i < origSize; i++) {
+		        mBodySequenceNumbers[i] = 0;
+	        }
+	        mBodies.clear();
+	        ValidateFreeList();
+        }
+    }
+    ```
+
+    Also per experimental results, "PhysicsSystem::SaveState" and "PhysicsSystem::RestoreState" would NOT help reset or align "PhysicsSystem.mBodyInterfaceLocking.mBodyManager.mBodyIDFreeListStart".
     */
-    allocPhySys();  
     auto startRdf = initializerMapData->self_parsed_rdf();
     playersCnt = startRdf.players_arr_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
@@ -601,11 +646,11 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
            - by "RefConst<Shape> Body::mShape" (note that "Body" does NOT hold a member variable "BodyCreationSettings") or
            - by "RefConst<ShapeSettings> BodyCreationSettings::mShape".
 
-           See "MonsterInsight/joltphysics/RefConst_destructor_trick.md" for details.
+           See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
          */
         Shape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
         BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-        bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As "BodyManager::" maintains "BodyID" counting by "", in rollback netcode with a reused "battle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
+        bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
         Body* body = bi->CreateBody(bodyCreationSettings);
         staticColliderBodyIDs.push_back(body->GetID());
         staticColliderId++;
@@ -1409,8 +1454,8 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         // [WARNING] Reset the possibly reused "CH_COLLIDER_T*/Body*" before physics update.
         chCollider->SetPosition(RVec3Arg(currChd.x(), currChd.y(), currChd.z()));
 
-        auto bodyId = chCollider->GetBodyID();
-        bodyIDsToActivate.push_back(bodyId);
+        auto bodyID = chCollider->GetBodyID();
+        bodyIDsToActivate.push_back(bodyID);
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
     }
 
@@ -1426,8 +1471,8 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
         chCollider->SetPosition(RVec3Arg(currChd.x(), currChd.y(), currChd.z()));
 
-        auto bodyId = chCollider->GetBodyID();
-        bodyIDsToActivate.push_back(bodyId);
+        auto bodyID = chCollider->GetBodyID();
+        bodyIDsToActivate.push_back(bodyID);
     }
 
     bodyIDsToAdd.clear();
@@ -1441,13 +1486,13 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
         if (isBulletActive(&currBl, bulletConfig, currRdf->id())) {
             auto blCollider = getOrCreateCachedBulletCollider(ud, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), bulletConfig->b_type());
-            auto bodyId = blCollider->GetID();
+            auto bodyID = blCollider->GetID();
             transientUdToCurrBl[ud] = &currBl;
             transientUdToNextBl[ud] = nextBl;
             if (!blCollider->IsInBroadPhase()) {
-                bodyIDsToAdd.push_back(bodyId);
+                bodyIDsToAdd.push_back(bodyID);
             }
-            bodyIDsToActivate.push_back(bodyId);
+            bodyIDsToActivate.push_back(bodyID);
         }
     }
 
@@ -1470,8 +1515,8 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     while (!activeChColliders.empty()) {
         CH_COLLIDER_T* single = activeChColliders.back();
         activeChColliders.pop_back();
-        auto bodyId = single->GetBodyID();
-        uint64_t ud = bi->GetUserData(bodyId);
+        auto bodyID = single->GetBodyID();
+        uint64_t ud = bi->GetUserData(bodyID);
         uint64_t udt = getUDT(ud);
         const CharacterDownsync& currChd = immutableCurrChdFromUd(udt, ud);
         const CharacterConfig* cc = getCc(currChd.species_id());
@@ -1489,7 +1534,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         
         single->SetPositionAndRotation(safeDeactiviatedPosition, Quat::sIdentity(), EActivation::DontActivate, true); // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
         single->SetLinearAndAngularVelocity(Vec3::sZero(), Vec3::sZero(), true);
-        bodyIDsToClear.push_back(bodyId);
+        bodyIDsToClear.push_back(bodyID);
     }
 
     while (!activeBlColliders.empty()) {
