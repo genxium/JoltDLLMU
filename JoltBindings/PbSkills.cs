@@ -44,7 +44,7 @@ namespace JoltCSharp {
 
         private static BulletConfig BasicPistolBulletAir = new BulletConfig {
             StartupFrames = 7,
-            ActiveFrames = 180,
+            ActiveFrames = 360,
             HitStunFrames = 7,
             BlockStunFrames = 7,
             Damage = 10,
@@ -58,7 +58,7 @@ namespace JoltCSharp {
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
-            Speed = 7.0f,
+            Speed = 7.0f * BATTLE_DYNAMICS_FPS,
             DirX = 2,
             DirY = 0,
             Hardness = 4,

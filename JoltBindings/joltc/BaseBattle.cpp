@@ -328,7 +328,7 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
 
         nextRdf->CopyFrom(*currRdf);
         nextRdf->set_id(currRdfId + 1);
-        elapse1RdfForRdf(nextRdf);
+        elapse1RdfForRdf(currRdfId, nextRdf);
 
         int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
         auto delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
@@ -375,6 +375,17 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 
                 bi->SetPosition(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
                 bi->SetLinearVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
+                const Skill* skill = nullptr;
+                const BulletConfig* blConfig = nullptr;
+                FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
+                switch (blConfig->b_type()) {
+                case BulletType::Melee:
+                    bi->SetMotionQuality(bodyID, EMotionQuality::Discrete);
+                    break;
+                default:
+                    bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
+                    break;
+                }
             }
         }
 
@@ -382,7 +393,6 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
         phySys->Update(dt, 1, globalTempAllocator, jobSys);  
         for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
             CH_COLLIDER_T* single = *it;
-            // Settings for our update function
 
             auto bodyID = single->GetBodyID(); 
             uint64_t ud = bi->GetUserData(bodyID);
@@ -401,14 +411,14 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
 
                 single->PostSimulation(cCollisionTolerance);
 
-                Vec3 newPos = single->GetPosition();
+                auto& newPos = single->GetPosition();
                 bool oldNextNotDashing = isNotDashing(*nextChd);
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
                 bool cvOnWall = (!single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
                 bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
                 auto cvGroundState = single->GetGroundState();
-                auto newVel = cvSupported
+                auto& newVel = cvSupported
                     ?
                     (RVec3Arg(single->GetLinearVelocity().GetX(), isProactivelyJumping ? single->GetLinearVelocity().GetY() : 0, 0) + single->GetGroundVelocity())
                     :
@@ -443,6 +453,25 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 postStepSingleChdStateCorrection(currRdfId, udt, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
                 break;
             }
+        }
+
+        for (auto it = activeBlColliders.begin(); it != activeBlColliders.end(); it++) {
+            BL_COLLIDER_T* single = *it;
+
+            auto bodyID = single->GetID(); 
+            uint64_t ud = bi->GetUserData(bodyID);
+            JPH_ASSERT(transientUdToNextBl.count(ud));
+            auto& nextBl = transientUdToNextBl[ud];
+
+            auto& newPos = single->GetPosition();
+            auto& newVel = single->GetLinearVelocity();
+
+            nextBl->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
+            nextBl->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
+            nextBl->set_z(0);
+            nextBl->set_vel_x(IsLengthNearZero(newVel.GetX()) ? 0 : newVel.GetX());
+            nextBl->set_vel_y(IsLengthNearZero(newVel.GetY()) ? 0 : newVel.GetY());
+            nextBl->set_vel_z(0);
         }
 
         leftShiftDeadNpcs(currRdfId, nextRdf);
@@ -1222,7 +1251,13 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
         auto terminationBl = nextRdf->mutable_bullets(newBulletCount);
         terminationBl->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
-
+/*
+#ifndef  NDEBUG
+    std::ostringstream oss;
+    oss << "@rdfId=" << rdfId << ", added new bullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << ")";
+    Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+*/
     if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
         return addNewBulletToNextFrame(rdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
     } else {
@@ -1230,22 +1265,22 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
     }
 }
 
-void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
+void BaseBattle::elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf) {
     for (int i = 0; i < playersCnt; i++) {
-        auto player = rdf->mutable_players_arr(i);
+        auto player = nextRdf->mutable_players_arr(i);
         const CharacterConfig* cc = getCc(player->chd().species_id());
         elapse1RdfForPlayerChd(player, cc);
     }
 
-    for (int i = 0; i < rdf->npcs_arr_size(); i++) {
-        auto npc = rdf->mutable_npcs_arr(i);
+    for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
+        auto npc = nextRdf->mutable_npcs_arr(i);
         if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
         const CharacterConfig* cc = getCc(npc->chd().species_id()); // TODO
         elapse1RdfForNpcChd(npc, cc);
     }
 
-    for (int i = 0; i < rdf->bullets_size(); i++) {
-        auto bl = rdf->mutable_bullets(i);
+    for (int i = 0; i < nextRdf->bullets_size(); i++) {
+        auto bl = nextRdf->mutable_bullets(i);
         if (globalPrimitiveConsts->terminating_bullet_id() == bl->id()) break;
         const Skill* skill = nullptr;
         const BulletConfig* bulletConfig = nullptr;
@@ -1253,11 +1288,11 @@ void BaseBattle::elapse1RdfForRdf(RenderFrame* rdf) {
         if (nullptr == skill || nullptr == bulletConfig) {
             continue;
         }
-        elapse1RdfForBl(bl, skill, bulletConfig);
+        elapse1RdfForBl(currRdfId, bl, skill, bulletConfig);
     }
 
-    for (int i = 0; i < rdf->pickables_size(); i++) {
-        auto pk = rdf->mutable_pickables(i);
+    for (int i = 0; i < nextRdf->pickables_size(); i++) {
+        auto pk = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == pk->id()) break;
         elapse1RdfForPickable(pk);
     }
@@ -1276,7 +1311,7 @@ void BaseBattle::elapse1RdfForPickable(Pickable* pk) {
     pk->set_remaining_lifetime_rdf_count(newLifetimeRdfCount);
 }
 
-void BaseBattle::elapse1RdfForBl(Bullet* bl, const Skill* skill, const BulletConfig* bulletConfig) {
+void BaseBattle::elapse1RdfForBl(int currRdfId, Bullet* bl, const Skill* skill, const BulletConfig* bulletConfig) {
     int newFramesInBlState = bl->frames_in_bl_state() + 1;
     switch (bl->bl_state())
     {
@@ -1284,6 +1319,13 @@ void BaseBattle::elapse1RdfForBl(Bullet* bl, const Skill* skill, const BulletCon
         if (newFramesInBlState > bulletConfig->startup_frames()) {
             bl->set_bl_state(BulletState::Active);
             newFramesInBlState = 0;
+/*
+#ifndef  NDEBUG
+            std::ostringstream oss;
+            oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became active at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+*/
         }
         break;
     case BulletState::Active:
@@ -1292,6 +1334,13 @@ void BaseBattle::elapse1RdfForBl(Bullet* bl, const Skill* skill, const BulletCon
                 bl->set_bl_state(BulletState::Exploding);
             } else {
                 bl->set_bl_state(BulletState::Vanishing);
+/*
+#ifndef  NDEBUG
+                std::ostringstream oss;
+                oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became vanishing at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+*/
             }
             newFramesInBlState = 0;
             bl->set_vel_x(0);
@@ -1494,6 +1543,17 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             }
             bodyIDsToActivate.push_back(bodyID);
         }
+/*
+#ifndef  NDEBUG
+        else if (!isBulletStartingUp(&currBl, bulletConfig, currRdf->id()) && !isBulletExploding(&currBl, bulletConfig)) {
+
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", bulletId=" << currBl.id() << " is no longer active or in startup, originated_render_frame_id=" << currBl.originated_render_frame_id() << " is at bl_state = " << currBl.bl_state() << ", frames_in_bl_state=" << currBl.frames_in_bl_state() << ", pos=(" << currBl.x() << ", " << currBl.y() << ", " << currBl.z() << "), vel = (" << currBl.vel_x() << ", " << currBl.vel_y() << ", " << currBl.vel_z() << ")";
+            Debug::Log(oss.str(), DColor::Orange);
+
+        }
+#endif // ! NDEBUG
+*/
     }
 
     if (!bodyIDsToAdd.empty()) {
@@ -2367,18 +2427,25 @@ void BaseBattle::calcFallenDeath(RenderFrame* nextRdf) {
 void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf) {
     int aliveSlotI = 0, candidateI = 0;
     while (candidateI < nextRdf->bullets_size()) {
-        auto candidate = nextRdf->bullets(candidateI);
-        if (globalPrimitiveConsts->terminating_bullet_id() == candidate.id()) {
+        const Bullet* candidate = &(nextRdf->bullets(candidateI));
+        if (globalPrimitiveConsts->terminating_bullet_id() == candidate->id()) {
             break;
         }
-        uint32_t skillId = candidate.skill_id();
-        int skillHit = candidate.active_skill_hit();
+        uint32_t skillId = candidate->skill_id();
+        int skillHit = candidate->active_skill_hit();
         const Skill* skillConfig = nullptr;
         const BulletConfig* bulletConfig = nullptr;
         FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
 
-        while (candidateI < nextRdf->bullets_size() && globalPrimitiveConsts->terminating_bullet_id() != candidate.id() && !isBulletAlive(&candidate, bulletConfig, currRdfId)) {
+        while (candidateI < nextRdf->bullets_size() && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
+#ifndef NDEBUG
+            auto bulletId = candidate->id();
+            std::ostringstream oss1;
+            oss1 << "@currRdfId=" << currRdfId << ", bulletId=" << bulletId << " is dead and left shifted, bl_state=" << candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
+            Debug::Log(oss1.str(), DColor::Orange);
+#endif // !NDEBUG
             candidateI++;
+            candidate = &(nextRdf->bullets(candidateI));
         }
 
         if (candidateI >= nextRdf->bullets_size() || globalPrimitiveConsts->terminating_bullet_id() == nextRdf->bullets(candidateI).id()) {
@@ -3120,7 +3187,6 @@ void BaseBattle::handleLhsCharacterCollision(
             break;
         }
         break;
-    */
     case UDT_BL:
         switch (udtLhs) {
         case UDT_PLAYER:
@@ -3135,6 +3201,7 @@ void BaseBattle::handleLhsCharacterCollision(
             break;
         }
         break;
+    */
     }
 #endif // !NDEBUG
 
@@ -3169,16 +3236,30 @@ void BaseBattle::handleLhsBulletCollision(
     const Skill* lhsSkill = nullptr;
     const BulletConfig* lhsBlConfig = nullptr;
     FindBulletConfig(lhsCurrBl->skill_id(), lhsCurrBl->active_skill_hit(), lhsSkill, lhsBlConfig);
-
+/*
+#ifndef NDEBUG
+    std::ostringstream oss;
+    auto bulletId = getUDPayload(udLhs);
+    oss << "handleLhsBulletCollision/colliding udLhs=" << udLhs << " with udRhs=" << udRhs;
+    Debug::Log(oss.str(), DColor::Orange);
+#endif // !NDEBUG
+*/
     switch (udtRhs) {
     case UDT_OBSTACLE:
         switch (lhsBlConfig->b_type()) {
-        case BulletType::MechanicalCartridge:
+        case BulletType::MechanicalCartridge: {
             lhsNextBl->set_bl_state(BulletState::Exploding);
             lhsNextBl->set_frames_in_bl_state(0);
             lhsNextBl->set_vel_x(0);
             lhsNextBl->set_vel_y(0);
+#ifndef NDEBUG
+            std::ostringstream oss;
+            auto bulletId = getUDPayload(udLhs);
+            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << " explodes on obstacle";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif // !NDEBUG
         break;
+        }
         case BulletType::MagicalFireball:
         case BulletType::Melee:
         break;
