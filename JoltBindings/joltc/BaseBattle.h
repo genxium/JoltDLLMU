@@ -25,8 +25,9 @@
 #include <deque>
 #include <google/protobuf/arena.h>
 
+#define BL_COLLIDER_T JPH::Body
 #define BL_CACHE_KEY_T std::vector<float>
-#define BL_COLLIDER_Q std::vector<JPH::Body*>
+#define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
 #define CH_CACHE_KEY_T std::vector<float>
 
 /*
@@ -300,8 +301,8 @@ protected:
     BodyIDVector bodyIDsToActivate;
 
     // Backend & Frontend shared functions
-    inline void elapse1RdfForRdf(RenderFrame* rdf);
-    inline void elapse1RdfForBl(Bullet* bl, const Skill* skill, const BulletConfig* bc);
+    inline void elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf);
+    inline void elapse1RdfForBl(int currRdfId, Bullet* bl, const Skill* skill, const BulletConfig* bc);
     inline void elapse1RdfForPlayerChd(PlayerCharacterDownsync* playerChd, const CharacterConfig* cc);
     inline void elapse1RdfForNpcChd(NpcCharacterDownsync* npcChd, const CharacterConfig* cc);
     inline void elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* cc);

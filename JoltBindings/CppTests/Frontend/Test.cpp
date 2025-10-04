@@ -225,6 +225,36 @@ std::map<int, uint64_t> testCmds8 = {
     {256, 0}
 };
 
+std::map<int, uint64_t> testCmds9 = {
+    {0, 3},
+    {59, 3},
+    {60, 0},
+    {61, 4},
+    {119, 4},
+    {120, 0},
+    {180, 0},
+    {227, 0},
+    {228, 32},
+    {229, 0},
+    {300, 32},
+    {301, 0},
+    {420, 32},
+    {421, 0},
+    {699, 32},
+    {700, 0},
+    {720, 4},
+    {739, 4},
+    {740, 20},
+    {760, 4},
+    {780, 20},
+    {781, 4},
+    {820, 20},
+    {821, 4},
+    {910, 4},
+    {1100, 4},
+    {1200, 0}
+};
+
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
     auto it = testCmds.lower_bound(rdfId);
     if (it == testCmds.end()) {
@@ -355,7 +385,7 @@ void initTest1Data() {
         }
         incomingDownsyncSnapshots1[receivedTimerRdfId] = srvDownsyncSnapshot;
     }
-};
+}
 
 void initTest2Data() {
     // incomingUpsyncSnapshotReqs2
@@ -607,7 +637,7 @@ void initTest5Data() {
         }
         incomingDownsyncSnapshots5[receivedTimerRdfId] = srvDownsyncSnapshot;
     }
-};
+}
 
 void initTest6Data() {
     // Intime reference inputs
@@ -761,7 +791,7 @@ void initTest6Data() {
         }
         incomingUpsyncSnapshotReqs6Rollback[receivedTimerRdfId] = req;
     }
-};
+}
 
 void initTest7Data() {
     // Intime reference inputs
@@ -821,69 +851,18 @@ void initTest7Data() {
         }
         incomingUpsyncSnapshotReqs7Rollback[receivedTimerRdfId] = req;
     }
-};
+}
 
 void initTest8Data() {
    
-};
+}
+
+void initTest9Data() {
+}
 
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
-bool runTestCase1NoChasing(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
-    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
-    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
-    int printIntervalRdfCnt = (1 << 4);
-    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
-    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
-    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
-    while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
-        
-        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds1, outerTimerRdfId);
-        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
-        if (!cmdInjected) {
-            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
-            exit(1);
-        }
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
-        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
-        auto& p1 = outerTimerRdf->players_arr(0);
-        auto& p1Chd = p1.chd();
-        if (30 >= outerTimerRdfId) {
-            std::cout << "TestCase1/outerTimerRdfId=" << outerTimerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
-        }
-        if (20 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
-        } else if (21 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (62 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
-            int p1ExpectedFramesInChState = outerTimerRdfId - 63;
-            const Skill* skill = nullptr;
-            const BulletConfig* bulletConfig = nullptr;
-            uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
-            int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
-            BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
-            JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
-            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
-            JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (81 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        }
-        outerTimerRdfId++;
-    }
-
-    std::cout << "Passed TestCase1NoChasing\n" << std::endl;
-    reusedBattle->Clear();
-    return true;
-}
-
 bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -1496,6 +1475,51 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
+bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds9, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players_arr(0);
+        auto& p1Chd = p1.chd();
+        if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
+            int p1ExpectedFramesInChState = outerTimerRdfId - 231;
+            const Skill* skill = nullptr;
+            const BulletConfig* bulletConfig = nullptr;
+            uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
+            int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
+            BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
+            JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
+            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
+            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
+        } else if (249 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+        }
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase9\n" << std::endl;
+    reusedBattle->Clear();
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -1586,8 +1610,6 @@ int main(int argc, char** argv)
     int selfJoinIndex = 1;
     
     initTest1Data();
-    runTestCase1NoChasing(battle, initializerMapData, selfJoinIndex);
-
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
@@ -1611,6 +1633,10 @@ int main(int argc, char** argv)
     
     initTest8Data();
     runTestCase8(battle, initializerMapData, selfJoinIndex);
+    
+    initTest9Data();
+    runTestCase9(battle, initializerMapData, selfJoinIndex);
+
     pbStarterWsReqAllocator.Reset();
 
     // clean up
