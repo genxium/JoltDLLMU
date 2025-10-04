@@ -63,6 +63,8 @@ public:
 	/// Wake up the character
 	void								Activate(bool inLockBodies = true);
 
+	void								PostSimulationNoLockWithValidation(float inMaxSeparationDistance, ContactListener* contactListener);
+
 	/// Needs to be called after every PhysicsSystem::Update
 	/// @param inMaxSeparationDistance Max distance between the floor and the character to still consider the character standing on the floor
 	/// @param inLockBodies If the collision query should use the locking body interface (true) or the non locking body interface (false)
