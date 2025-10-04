@@ -2313,12 +2313,19 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     }
 
 #ifndef NDEBUG
+    /*
     if (Atk1 == oldNextChState || WalkingAtk1 == oldNextChState || InAirAtk1 == oldNextChState) {
         if (oldNextChState != nextChd->ch_state()) {
             std::ostringstream oss1;
             oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while oldNextChState=" << oldNextChState;
             Debug::Log(oss1.str(), DColor::Orange);
         }
+    }
+    */
+    if (OnWallAtk1 == nextChd->ch_state()) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while oldNextChState=" << oldNextChState;
+        Debug::Log(oss1.str(), DColor::Orange);
     }
 #endif // !NDEBUG
 }

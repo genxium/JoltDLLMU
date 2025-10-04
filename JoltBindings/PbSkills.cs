@@ -87,8 +87,7 @@ namespace JoltCSharp {
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetHitboxOffsets(14f, 10f)
                                                                 .SetAllowsWalking(true)
-                                                                .SetAllowsCrouching(true)
-                                                                .SetSelfLockVel(2.3f * BATTLE_DYNAMICS_FPS, PbPrimitives.underlying.NoLockVel, 0);
+                                                                .SetAllowsCrouching(true);
 
         public static Skill HunterPistolWall = new Skill {
             Id = HunterPistolWallId,
