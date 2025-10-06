@@ -633,7 +633,7 @@ public:
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold,
-        JPH::ContactSettings& ioSettings);
+        const JPH::ContactSettings& ioSettings);
 
     virtual void OnContactAdded(
         const JPH::Body& inBody1,
@@ -706,14 +706,14 @@ protected:
         const JPH::Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
         const JPH::ContactManifold& inManifold,
-        JPH::ContactSettings& ioSettings);
+        const JPH::ContactSettings& ioSettings);
 
     virtual void handleLhsBulletCollision(
         const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
         const JPH::ContactManifold& inManifold,
-        JPH::ContactSettings& ioSettings);
+        const JPH::ContactSettings& ioSettings);
 };
 
 #endif

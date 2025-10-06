@@ -7,9 +7,15 @@
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Core/NonCopyable.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Collision/Shape/SubShapeID.h>
 #include <Jolt/Physics/Collision/PhysicsMaterial.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
 
 JPH_NAMESPACE_BEGIN
 

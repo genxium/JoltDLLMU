@@ -255,6 +255,15 @@ std::map<int, uint64_t> testCmds9 = {
     {1200, 0}
 };
 
+std::map<int, uint64_t> testCmds10 = {
+    {59, 0},
+    {60, 4},
+    {179, 4},
+    {180, 20},
+    {181, 0},
+    {9999, 0}
+};
+
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
     auto it = testCmds.lower_bound(rdfId);
     if (it == testCmds.end()) {
@@ -858,6 +867,9 @@ void initTest8Data() {
 }
 
 void initTest9Data() {
+}
+
+void initTest10Data() {
 }
 
 std::string outStr;
@@ -1520,6 +1532,57 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
+bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds10, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players_arr(0);
+        auto& p1Chd = p1.chd();
+        
+        if (360 >= outerTimerRdfId) {
+            std::cout << "TestCase10/outerTimerRdfId=" << outerTimerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << "," << p1Chd.y() << "," << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << "," << p1Chd.vel_y() << "," << p1Chd.vel_z() << ")" << std::endl;
+        }
+        /*
+        if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
+            int p1ExpectedFramesInChState = outerTimerRdfId - 231;
+            const Skill* skill = nullptr;
+            const BulletConfig* bulletConfig = nullptr;
+            uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
+            int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
+            BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
+            JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
+            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
+            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
+        } else if (249 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+        }
+        */
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase9\n" << std::endl;
+    reusedBattle->Clear();
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -1608,7 +1671,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+    /*
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -1636,6 +1699,9 @@ int main(int argc, char** argv)
     
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
+    */
+    initTest10Data();
+    runTestCase10(battle, initializerMapData, selfJoinIndex);
 
     pbStarterWsReqAllocator.Reset();
 

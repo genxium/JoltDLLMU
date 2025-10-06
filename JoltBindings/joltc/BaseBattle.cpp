@@ -300,7 +300,6 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const Characte
         bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
         chCollider->SetPositionAndRotation(Vec3(currChd.x(), currChd.y(), currChd.z()), Quat::sIdentity(), EActivation::Activate);
         chCollider->SetLinearAndAngularVelocity(Vec3(nextChd.vel_x(), nextChd.vel_y(), nextChd.vel_z()), Vec3::sZero());
-
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
     }
 }
@@ -405,24 +404,30 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 CharacterDownsync* nextChd = mutableNextChdFromUd(udt, ud);
                 const CharacterConfig* cc = getCc(currChd.species_id());
 
+                single->PostSimulationNoLockWithValidation(cCollisionTolerance, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+
                 bool currNotDashing = isNotDashing(currChd);
                 bool currEffInAir = isEffInAir(currChd, currNotDashing);
                 bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
+                auto cvGroundState = single->GetGroundState();
 
-                single->PostSimulation(cCollisionTolerance);
-
+#ifndef NDEBUG
+                if (Walking == currChd.ch_state() && !inJumpStartupOrJustEnded && cvGroundState == CharacterBase::EGroundState::NotSupported) {
+                    std::ostringstream oss;
+                    Debug::Log(oss.str(), DColor::Orange);
+                }
+#endif
                 auto& newPos = single->GetPosition();
                 bool oldNextNotDashing = isNotDashing(*nextChd);
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
                 bool cvOnWall = (!single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
                 bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
-                auto cvGroundState = single->GetGroundState();
                 auto& newVel = cvSupported
                     ?
-                    (RVec3Arg(single->GetLinearVelocity().GetX(), isProactivelyJumping ? single->GetLinearVelocity().GetY() : 0, 0) + single->GetGroundVelocity())
+                    (RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()) + single->GetGroundVelocity())
                     :
-                    single->GetLinearVelocity();
+                    (RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()) + phySys->GetGravity()*dt);
                 /* [WARNING]
                 When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0. 
                 
@@ -439,6 +444,13 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                 nextChd->set_vel_z(0);
 
                 if (cvOnWall) {
+#ifndef NDEBUG
+                    if (CharacterState::InAirAtk1 == currChd.ch_state()) {
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << ", currChdChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << "; cvSupported=" << cvSupported << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState = " << CharacterBase::sToString(cvGroundState) << ", groundUd=" << single->GetGroundUserData() << ", groundBodyId=" << single->GetGroundBodyID().GetIndexAndSequenceNumber() << ", groundNormal=(" << single->GetGroundNormal().GetX() << ", " << single->GetGroundNormal().GetY() << ", " << single->GetGroundNormal().GetZ() << ")";
+                        Debug::Log(oss.str(), DColor::Orange);
+                    } 
+#endif
                     if (cc->on_wall_enabled()) {
                         // [WARNING] Will update "nextChd->vel_x() & nextChd->vel_y()".
                         processWallGrabbingPostPhysicsUpdate(currRdfId, currChd, nextChd, cc, single, inJumpStartupOrJustEnded);
@@ -639,16 +651,6 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     for (int i = 0; i < initializerMapData->serialized_barrier_polygons_size(); i++) {
         auto& convexPolygon = initializerMapData->serialized_barrier_polygons(i);
         TriangleList triangles;
-#ifndef NDEBUG
-        std::ostringstream oss;
-        oss << "The " << i << "-th static collider:\n\t";
-        for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
-            auto x = convexPolygon.points(pi);
-            auto y = convexPolygon.points(pi + 1);
-            oss << "(" << x << "," << y << ") ";
-        }
-        Debug::Log(oss.str(), DColor::Orange);
-#endif
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
             auto fromI = pi;
             auto toI = fromI + 2;
@@ -682,6 +684,16 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
         Body* body = bi->CreateBody(bodyCreationSettings);
         staticColliderBodyIDs.push_back(body->GetID());
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "The " << i+1 << "-th static collider with bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
+        for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
+            auto x = convexPolygon.points(pi);
+            auto y = convexPolygon.points(pi + 1);
+            oss << "(" << x << "," << y << ") ";
+        }
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
         staticColliderId++;
     }
     auto layerState = bi->AddBodiesPrepare(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
@@ -936,8 +948,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
 }
 
 void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun) {
-    if (1 < currChd.frames_to_recover()) {
-        // [WARNING] For smooth "CrouchAtk1 -> CrouchIdle1" and "WalkingAtk1 -> Walking" transition, we should allow "1 == currChd.frames_to_recover()" to be handled below.
+    if (0 < currChd.frames_to_recover()) {
         return;
     }
 
@@ -1861,7 +1872,6 @@ void BaseBattle::processNpcInputs(const int currRdfId, const RenderFrame* currRd
             nextNpc->set_cached_cue_cmd(0);
         }
         */
-        cv->SetLinearVelocity(Vec3(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()));
     }
 }
 
@@ -2303,6 +2313,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
 #endif
 */
+        nextChd->set_vel_y(0);
         nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
         nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
         resetJumpStartup(nextChd);
@@ -2313,6 +2324,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     }
 
 #ifndef NDEBUG
+    /*
     if (Atk1 == oldNextChState || WalkingAtk1 == oldNextChState || InAirAtk1 == oldNextChState) {
         if (oldNextChState != nextChd->ch_state()) {
             std::ostringstream oss1;
@@ -2320,6 +2332,13 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             Debug::Log(oss1.str(), DColor::Orange);
         }
     }
+
+    if (OnWallAtk1 == nextChd->ch_state() || OnWallIdle1 == nextChd->ch_state()) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", oldNextChState=" << oldNextChState << "; cvSupported=" << cvSupported << ", cvInAir=" << cvInAir << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", oldNextNotDashing=" << oldNextNotDashing << ", oldNextEffInAir=" << oldNextEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState=" << CharacterBase::sToString(cvGroundState);
+        Debug::Log(oss1.str(), DColor::Orange);
+    }
+    */
 #endif // !NDEBUG
 }
 
@@ -2973,7 +2992,7 @@ void BaseBattle::OnContactCommon(
     const JPH::Body& inBody1,
     const JPH::Body& inBody2,
     const JPH::ContactManifold& inManifold,
-    JPH::ContactSettings& ioSettings) {
+    const JPH::ContactSettings& ioSettings) {
 
     uint64_t ud1 = inBody1.GetUserData();
     uint64_t ud2 = inBody2.GetUserData();
@@ -2985,20 +3004,22 @@ void BaseBattle::OnContactCommon(
     {
     case UDT_PLAYER:
     case UDT_NPC:
-        handleLhsCharacterCollision(ud1, udt1, inBody1, ud2, udt2, inBody2, inManifold, ioSettings);
+        handleLhsCharacterCollision(ud1, udt1, inBody1, ud2, udt2, inBody2, inManifold.SwapShapes(), ioSettings);
         break;
     case UDT_BL:
-        handleLhsBulletCollision(ud1, inBody1, ud2, udt2, inBody2, inManifold, ioSettings);
+        handleLhsBulletCollision(ud1, inBody1, ud2, udt2, inBody2, inManifold.SwapShapes(), ioSettings);
         break;
     default:
         switch (udt2) {
         case UDT_PLAYER:
-        case UDT_NPC:
+        case UDT_NPC: {
             handleLhsCharacterCollision(ud2, udt2, inBody2, ud1, udt1, inBody1, inManifold, ioSettings);
             break;
-        case UDT_BL:
+        }
+        case UDT_BL: {
             handleLhsBulletCollision(ud2, inBody2, ud1, udt1, inBody1, inManifold, ioSettings);
             break;
+        }
         default:
             break;
         }
@@ -3016,13 +3037,11 @@ JPH::ValidateResult BaseBattle::validateLhsCharacterContact(const uint64_t udLhs
         auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
         auto& rhsCurrChd = rhsCurrPlayer->chd();
         if (lhsCurrChd.bullet_team_id() != rhsCurrChd.bullet_team_id()) {
-/*
 #ifndef NDEBUG
             std::ostringstream oss;
             oss << "validateLhsCharacterContact/accepting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs << ", lhsTeamId=" << lhsCurrChd.bullet_team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
-*/
             return JPH::ValidateResult::AcceptContact;
         } else {
 /*
@@ -3061,13 +3080,11 @@ JPH::ValidateResult BaseBattle::validateLhsCharacterContact(const uint64_t udLhs
     case UDT_BL: {
         auto& rhsCurrBl = transientUdToCurrBl[udRhs];
         if (lhsCurrChd.bullet_team_id() != rhsCurrBl->team_id()) {
-/*
 #ifndef NDEBUG
             std::ostringstream oss;
             oss << "validateLhsCharacterContact/accepting contact ud1=" << udLhs << ", rhs bl ud2=" << udRhs << ", lhsTeamId=" << lhsCurrChd.bullet_team_id() << ", rhsTeamId=" << rhsCurrBl->team_id();
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
-*/
             return JPH::ValidateResult::AcceptContact;
         } else {
 /*
@@ -3094,13 +3111,11 @@ JPH::ValidateResult BaseBattle::validateLhsBulletContact(const uint64_t udLhs,
         auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
         auto& rhsCurrChd = rhsCurrPlayer->chd();
         if (lhsCurrBl->team_id() != rhsCurrChd.bullet_team_id()) {
-/*
 #ifndef NDEBUG
             std::ostringstream oss;
             oss << "validateLhsBulletContact/accepting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs << ", lhsTeamId=" << lhsCurrBl->team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
-*/
             return JPH::ValidateResult::AcceptContact;
         } else {
 /*
@@ -3168,7 +3183,7 @@ void BaseBattle::handleLhsCharacterCollision(
     const JPH::Body& lhs, // the "Character"
     const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
     const JPH::ContactManifold& inManifold,
-    JPH::ContactSettings& ioSettings) {
+    const JPH::ContactSettings& ioSettings) {
 
 #ifndef NDEBUG
     switch (udtRhs) {
@@ -3205,6 +3220,9 @@ void BaseBattle::handleLhsCharacterCollision(
     }
 #endif // !NDEBUG
 
+    /*
+    [WARNING] DON'T aggregate "CharacterBase.mGroundXxx" properties here, because "handleLhsCharacterCollision" will be called by different "KernelThread"s!
+    */
 }
 
 void BaseBattle::handleLhsBulletCollision(
@@ -3212,7 +3230,7 @@ void BaseBattle::handleLhsBulletCollision(
     const JPH::Body& lhs, // the "Bullet"
     const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
     const JPH::ContactManifold& inManifold,
-    JPH::ContactSettings& ioSettings) {
+    const JPH::ContactSettings& ioSettings) {
     if (!transientUdToCurrBl.count(udLhs)) {
 #ifndef NDEBUG
         std::ostringstream oss;
@@ -3255,7 +3273,7 @@ void BaseBattle::handleLhsBulletCollision(
 #ifndef NDEBUG
             std::ostringstream oss;
             auto bulletId = getUDPayload(udLhs);
-            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << " explodes on obstacle";
+            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << ", ud=" << udLhs << ", bodyID=" << lhs.GetID().GetIndexAndSequenceNumber() << " explodes on obstacle";
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
         break;
