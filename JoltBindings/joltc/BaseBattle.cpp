@@ -417,13 +417,13 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
                     Debug::Log(oss.str(), DColor::Orange);
                 }
 #endif
-                auto& newPos = single->GetPosition();
+                auto newPos = single->GetPosition();
                 bool oldNextNotDashing = isNotDashing(*nextChd);
                 bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
                 bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
                 bool cvOnWall = (!single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
                 bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
-                auto& newVel = cvSupported
+                auto newVel = cvSupported
                     ?
                     (RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()) + single->GetGroundVelocity())
                     :
@@ -475,8 +475,8 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
             JPH_ASSERT(transientUdToNextBl.count(ud));
             auto& nextBl = transientUdToNextBl[ud];
 
-            auto& newPos = single->GetPosition();
-            auto& newVel = single->GetLinearVelocity();
+            auto newPos = single->GetPosition();
+            auto newVel = single->GetLinearVelocity();
 
             nextBl->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
             nextBl->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
@@ -621,7 +621,6 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 		        mBodySequenceNumbers[i] = 0;
 	        }
 	        mBodies.clear();
-	        ValidateFreeList();
         }
     }
     ```

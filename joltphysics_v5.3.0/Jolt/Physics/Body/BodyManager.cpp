@@ -914,7 +914,9 @@ void BodyManager::ClearFreeList() {
 		mBodySequenceNumbers[i] = 0;
 	}
 	mBodies.clear();
+#if defined(JPH_DEBUG) && defined(JPH_ENABLE_ASSERTS)
 	ValidateFreeList();
+#endif // defined(JPH_DEBUG) && _defined(JPH_ENABLE_ASSERTS)
 }
 
 #ifdef JPH_DEBUG_RENDERER
