@@ -63,8 +63,6 @@ public:
 	/// Wake up the character
 	void								Activate(bool inLockBodies = true);
 
-	void								PostSimulationNoLockWithValidation(float inMaxSeparationDistance, ContactListener* contactListener);
-
 	/// Needs to be called after every PhysicsSystem::Update
 	/// @param inMaxSeparationDistance Max distance between the floor and the character to still consider the character standing on the floor
 	/// @param inLockBodies If the collision query should use the locking body interface (true) or the non locking body interface (false)
@@ -135,6 +133,26 @@ public:
 	/// @param ioCollector Collision collector that receives the collision results.
 	/// @param inLockBodies If the collision query should use the locking body interface (true) or the non locking body interface (false)
 	void								CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies = true) const;
+
+	// Ground properties setters
+	inline const Plane* GetSupportingVolume() const { return &mSupportingVolume; }
+
+	inline void								SetGroundState(const EGroundState val) {
+		mGroundState = val;
+	}
+	inline void								SetGroundBodyID(const BodyID val1, const SubShapeID val2) {
+		mGroundBodyID = val1;
+		mGroundBodySubShapeID = val2;
+	}
+	inline void								SetGroundBodyPosition(const RVec3 val1, const Vec3 val2) {
+		mGroundPosition = val1;
+		mGroundNormal = val2;
+	}
+	inline void								SetGroundBodyUd(RefConst<PhysicsMaterial> val1, const RVec3 val2, const uint64 val3) {
+		mGroundMaterial = val1;
+		mGroundVelocity = val2;
+		mGroundUserData = val3;
+	}
 
 private:
 	/// Check collisions between inShape and the world using the center of mass transform

@@ -213,6 +213,8 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/FrontendBattle.cpp
     ${JOLTC_ROOT}/BaseBattle.h
     ${JOLTC_ROOT}/BaseBattle.cpp
+    ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
+    ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
     ${JOLTC_ROOT}/joltc_api.h
     ${JOLTC_ROOT}/joltc_api.cpp
     ${JOLTC_ROOT}/DebugLog.h

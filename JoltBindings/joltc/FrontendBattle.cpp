@@ -374,13 +374,50 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
     return true;
 }
 
+bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing) {
+    FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
+    if (!nextFrameLog) {
+        nextFrameLog = frameLogBuffer.DryPut();
+    }
+    if (nextFrameLog->has_rdf()) {
+        auto res = nextFrameLog->release_rdf();
+    }
+    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
+    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
+    nextFrameLog->set_used_ifd_confirmed_list(delayedIfd->confirmed_list());
+    nextFrameLog->set_used_ifd_udp_confirmed_list(delayedIfd->udp_confirmed_list());
+    nextFrameLog->set_timer_rdf_id(timerRdfId);
+    if (isChasing) {
+        nextFrameLog->set_chaser_rdf_id(chaserRdfId);
+        nextFrameLog->set_chaser_st_rdf_id(fromRdfId);
+        nextFrameLog->set_chaser_ed_rdf_id(toRdfId);
+    } else {
+        nextFrameLog->set_chaser_rdf_id(0);
+        nextFrameLog->set_chaser_st_rdf_id(0);
+        nextFrameLog->set_chaser_ed_rdf_id(0);
+    }
+    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
+    inputListHolder->Clear();
+    inputListHolder->CopyFrom(delayedIfd->input_list());
+    return true;
+}
+
 bool FrontendBattle::Step(int fromRdfId, int toRdfId, bool isChasing) {
     if (!isChasing) {
         JPH_ASSERT(fromRdfId == timerRdfId && toRdfId == timerRdfId+1); // NOT supporting multi-step in this case.
         regulateCmdBeforeRender();
     }
-    bool stepped = BaseBattle::Step(fromRdfId, toRdfId);
-    if (!stepped) return false;
+
+    for (int currRdfId = fromRdfId; currRdfId < toRdfId; currRdfId++) {
+        int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
+        InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+        auto nextRdf = BaseBattle::SingleStep(currRdfId, delayedIfdId, delayedIfd);
+        if (frameLogEnabled) {
+            WriteSingleStepFrameLog(currRdfId, nextRdf, fromRdfId, toRdfId, delayedIfdId, delayedIfd, isChasing);
+        }
+    }
+
     if (isChasing) {
        chaserRdfId = toRdfId;
     } else {
