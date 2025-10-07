@@ -422,7 +422,7 @@ message CharacterDownsync {
     int32 btn_a_holding_rdf_cnt = 43;
     int32 btn_b_holding_rdf_cnt = 44;
     int32 btn_c_holding_rdf_cnt = 45;
-    int32 btn_d_Holding_rdf_cnt = 46;
+    int32 btn_d_holding_rdf_cnt = 46;
     int32 btn_e_holding_rdf_cnt = 47;
     int32 parry_prep_rdf_cnt_down = 48;
     int32 mp_regen_rdf_countdown = 49;
@@ -1035,6 +1035,11 @@ message FrameLog {
     repeated uint64 used_ifd_input_list = 3; 
     uint64 used_ifd_confirmed_list = 4;
     uint64 used_ifd_udp_confirmed_list = 5; 
+    int32 timer_rdf_id = 6;
+    int32 lcac_ifd_id = 7;
+    int32 chaser_st_rdf_id = 8;
+    int32 chaser_ed_rdf_id = 9;
+    int32 chaser_rdf_id_lower_bound = 10;
 }
 
 message BattleResult {

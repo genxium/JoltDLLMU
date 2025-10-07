@@ -2,20 +2,8 @@
 #define BASE_BATTLE_H_ 1
 
 #include "joltc_export.h"
-#include <Jolt/Jolt.h>
-#include <Jolt/Core/Reference.h>
-#include <Jolt/Math/Float2.h>
-
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
-#include <Jolt/Physics/Character/Character.h>
-#include <Jolt/Physics/Body/Body.h>
+#include "CharacterCollideShapeCollector.h"
 #include "FrameRingBuffer.h"
-#include "CppOnlyConsts.h"
-#include "PbConsts.h"
-#include <Jolt/Physics/StateRecorderImpl.h>
-
-#include "serializable_data.pb.h"
 
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
@@ -25,11 +13,6 @@
 #include <deque>
 #include <google/protobuf/arena.h>
 
-#define BL_COLLIDER_T JPH::Body
-#define BL_CACHE_KEY_T std::vector<float>
-#define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
-#define CH_CACHE_KEY_T std::vector<float>
-
 /*
 [REMINDER] 
 
@@ -37,8 +20,7 @@ It's by design that "JPH::Character" instead of "JPH::CharacterVirtual" is used 
 
 The lack of use of broadphase makes "JPH::CharacterVirtual" very inefficient in "Character v.s. Character" collision handling. See [CharacterVsCharacterCollisionSimple](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L34) for its official default implementation.
 */
-#define CH_COLLIDER_T JPH::Character
-#define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
+
 typedef struct VectorFloatHasher {
     std::size_t operator()(const std::vector<float>& v) const {
         std::size_t seed = v.size(); // Start with the size of the vector
@@ -53,7 +35,7 @@ typedef struct VectorFloatHasher {
 using namespace JPH;
 using namespace jtshared;
 
-class JOLTC_EXPORT BaseBattle : public JPH::ContactListener {
+class JOLTC_EXPORT BaseBattle : public JPH::ContactListener, public BaseBattleCollisionFilter {
 public:
     BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator);
     virtual ~BaseBattle();
@@ -156,12 +138,12 @@ public:
     }
 
     inline uint64_t SetPlayerActive(uint32_t joinIndex) {
-        auto oldVal = inactiveJoinMask.fetch_and(allConfirmedMask ^ calcJoinIndexMask(joinIndex));
+        auto oldVal = inactiveJoinMask.fetch_and(allConfirmedMask ^ CalcJoinIndexMask(joinIndex));
         return inactiveJoinMask;
     }
 
     inline uint64_t SetPlayerInactive(uint32_t joinIndex) {
-        auto oldVal = inactiveJoinMask.fetch_or(calcJoinIndexMask(joinIndex));
+        auto oldVal = inactiveJoinMask.fetch_or(CalcJoinIndexMask(joinIndex));
         return inactiveJoinMask;
     }
 
@@ -181,8 +163,9 @@ public:
     }
 
     void updateChColliderBeforePhysicsUpdate(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd);
-    virtual bool Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
 
+    virtual RenderFrame* CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
+    
     virtual void Clear();
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
@@ -250,6 +233,9 @@ public:
     }
 
     inline static bool isNearlySame(float lhs, float rhs) {
+        /*
+        Floating point calculations are NOT associative, and Jolt uses "warm-start solvers" as well as "multi-threading" extensively, it's reasonable to set some tolerance for "nearly the same".
+        */
         return IsLengthDiffNearlySame(rhs - lhs);
     }
 
@@ -277,10 +263,10 @@ public:
         JPH_ASSERT(lhs.slip_jump_triggered() == rhs.slip_jump_triggered());
         JPH_ASSERT(lhs.jump_triggered() == rhs.jump_triggered());
         JPH_ASSERT(lhs.jump_started() == rhs.jump_started());
+        JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
         JPH_ASSERT(lhs.dir_x() == rhs.dir_x());
         JPH_ASSERT(lhs.dir_y() == rhs.dir_y());
-        JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
     }
 
     inline static bool isNearlySame(Vec3& lhs, Vec3& rhs) {
@@ -294,6 +280,11 @@ public:
         return IsLengthDiffSquaredNearlySame(dx*dx + dy*dy + dz*dz);
     }
 
+    inline static uint64_t CalcJoinIndexMask(uint32_t joinIndex) {
+        if (0 == joinIndex) return 0;
+        return (U64_1 << (joinIndex - 1));
+    }
+    
 protected:
     BodyIDVector staticColliderBodyIDs;
     BodyIDVector bodyIDsToClear;
@@ -309,30 +300,6 @@ protected:
     inline void elapse1RdfForPickable(Pickable* pk);
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
-
-    inline uint64_t calcUserData(const PlayerCharacterDownsync& playerChd) {
-        return UDT_PLAYER + playerChd.join_index();
-    }
-
-    inline uint64_t calcUserData(const NpcCharacterDownsync& npcChd) {
-        return UDT_NPC + npcChd.id();
-    }
-
-    inline uint64_t calcUserData(const Bullet& bl) {
-        return UDT_BL + bl.id();
-    }
-
-    inline uint64_t calcStaticColliderUserData(const int staticColliderId) {
-        return UDT_OBSTACLE + staticColliderId;
-    }
-
-    inline uint64_t getUDT(const uint64_t& ud) {
-        return (ud & UDT_STRIPPER);
-    }
-
-    inline uint32_t getUDPayload(const uint64_t& ud) {
-        return (ud & UD_PAYLOAD_STRIPPER);
-    }
 
     CH_COLLIDER_T* getOrCreateCachedPlayerCollider(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
     // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider" still works
@@ -388,11 +355,6 @@ protected:
 
     void batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
     void batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf);
-
-    inline uint64_t calcJoinIndexMask(uint32_t joinIndex) {
-        if (0 == joinIndex) return 0;
-        return (U64_1 << (joinIndex - 1));
-    }
 
     inline bool isInBlockStun(const CharacterDownsync& currChd) {
         return (Def1 == currChd.ch_state() && 0 < currChd.frames_to_recover());
@@ -544,6 +506,10 @@ protected:
         return BulletState::StartUp == bullet->bl_state();
     }
 
+    inline bool isBulletActive(const Bullet* bullet) {
+        return (BulletState::Active == bullet->bl_state());
+    }
+
     inline bool isBulletActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
         if (BulletState::Exploding == bullet->bl_state() || BulletState::Vanishing == bullet->bl_state()) {
             return false;
@@ -619,9 +585,104 @@ protected:
         }
     }
 
+    void PostSimulationWithCollector(CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector);
+
 private:
     Vec3 safeDeactiviatedPosition;
     InputFrameDecoded ifDecodedHolder;
+
+public:
+    // BaseBattleCollisionFilter
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) {
+        if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
+            return JPH::ValidateResult::RejectContact;
+        }
+        return JPH::ValidateResult::AcceptContact;
+    }
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) {
+        if (lhsCurrChd->bullet_team_id() == rhsCurrBl->team_id()) {
+            return JPH::ValidateResult::RejectContact;
+        }
+
+        if (!isBulletActive(rhsCurrBl)) {
+            return JPH::ValidateResult::RejectContact;
+        }
+        return JPH::ValidateResult::AcceptContact;
+    }
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) {
+        switch (udtRhs) {
+        case UDT_PLAYER: {
+            auto rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
+            auto& rhsCurrChd = rhsCurrPlayer->chd();
+            return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
+        }
+        case UDT_NPC: {
+            auto rhsCurrNpc = transientUdToCurrNpc[udRhs];
+            auto& rhsCurrChd = rhsCurrNpc->chd();
+            return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
+        }
+        case UDT_BL: {
+            auto& rhsCurrBl = transientUdToCurrBl[udRhs];
+            return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
+        }
+        default:
+            return JPH::ValidateResult::AcceptContact;
+        }
+    }
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
+        const JPH::Body& lhs, // the "Character"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
+        auto& lhsCurrPlayer = transientUdToCurrPlayer[udLhs];
+        auto& lhsCurrChd = lhsCurrPlayer->chd();
+        return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
+    }
+
+    virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
+        const JPH::Body& lhs, // the "Bullet"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
+        auto& lhsCurrBl = transientUdToCurrBl[udLhs];
+        switch (udtRhs) {
+        case UDT_PLAYER: {
+            auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
+            auto& rhsCurrChd = rhsCurrPlayer->chd();
+            if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
+                return JPH::ValidateResult::RejectContact;
+            }                
+            return JPH::ValidateResult::AcceptContact;
+        }
+        case UDT_NPC: {
+            auto& rhsCurrNpc = transientUdToCurrNpc[udRhs];
+            auto& rhsCurrChd = rhsCurrNpc->chd();
+            if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            return JPH::ValidateResult::AcceptContact;
+
+        }
+        case UDT_BL: {
+            auto& rhsCurrBl = transientUdToCurrBl[udRhs];
+            if (lhsCurrBl->team_id() == rhsCurrBl->team_id()) {
+                return JPH::ValidateResult::RejectContact;
+            } 
+            if (!isBulletActive(lhsCurrBl)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            if (!isBulletActive(rhsCurrBl)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            return JPH::ValidateResult::AcceptContact;
+        }
+        default:
+            return JPH::ValidateResult::AcceptContact;
+        }
+    }
+
+    virtual void handleLhsCharacterCollision(
+        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
+        const uint64_t udRhs, const uint64_t udtRhs);
 
 public:
     // #JPH::ContactListener
@@ -629,6 +690,12 @@ public:
     [WARNING] For rollback-netcode implementation, only "OnContactAdded" and "OnContactPersisted" are to be concerned with, MOREOVER there's NO NEED to clear "contact cache" upon each "Step".
 
     In a Jolt PhysicsSystem, all EMotionType pairs will trigger "OnContactAdded" or "OnContactPersisted" when they come into contact geometrically (e.g. Kinematic v.s. Kinematic, Kinematic v.s. Static), but NOT ALL EMotionType pairs will create "ContactConstraint" instances (e.g. Kinematic v.s. Kinematic, Kinematic v.s. Static, see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1108).
+
+    Moreover, Jolt calls "OnContactAdded" and "OnContactPersisted" in a multi-threaded manner, so the codes of "OnContactCommon" MUST BE thread-safe. How does Jolt keep itself thread-safe for the complicated collision detection and constraint solver? Take "ContactConstraintManager" as an example,
+    
+    - by calling "PhysicsSystem::JobFindCollisions", it only appends newly discovered constraints, making use of counter "ContactConstraintManager.mNumConstraints"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.h#L515) to guarantee thread-safety of the constraint collection "ContactConstraintManager.mConstraints"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1126) -- a similar technique like that of "<proj-root>/JoltBindings/joltc/RingBufferMt";
+    
+    - by calling of "PhysicsSystem::JobSolvePositionConstraints" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L503, kindly note that "inCollisionSteps" of each "PhysicsSystem::Update" is always 1 in my current implementation of rollback-chasing), it only fetches "next island", making use of counter "PhysicsUpdateContext.mSolvePositionConstraintsNextIsland"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsUpdateContext.h#L93) to guarantee thread-safety of the island collection "IslandBuilder::mIslandsSorted"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/IslandBuilder.cpp#L408).
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
@@ -693,22 +760,7 @@ public:
     }
 
 protected:
-    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
-        const JPH::Body& lhs, // the "Character"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs);
-
-    virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
-        const JPH::Body& lhs, // the "Bullet"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs);
-
-    virtual void handleLhsCharacterCollision(
-        const uint64_t udLhs, const uint64_t udtLhs,
-        const JPH::Body& lhs, // the "Character"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
-        const JPH::ContactManifold& inManifold,
-        const JPH::ContactSettings& ioSettings);
-
-    virtual void handleLhsBulletCollision(
+    virtual void handleLhsBulletCollisionMT(
         const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,

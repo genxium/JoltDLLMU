@@ -304,179 +304,176 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const Characte
     }
 }
 
-bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
-    for (int currRdfId = fromRdfId; currRdfId < toRdfId; currRdfId++) {
-        transientUdToCurrPlayer.clear();
-        transientUdToNextPlayer.clear();
+RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd) {
+    const RenderFrame* currRdf = rdfBuffer.GetByFrameId(currRdfId);
+    if (nullptr == currRdf) return nullptr;
+    RenderFrame* nextRdf = rdfBuffer.GetByFrameId(currRdfId + 1);
+    if (!nextRdf) {
+        nextRdf = rdfBuffer.DryPut();
+    }
 
-        transientUdToCurrNpc.clear();
-        transientUdToNextNpc.clear();
+    nextRdf->CopyFrom(*currRdf);
+    nextRdf->set_id(currRdfId + 1);
+    elapse1RdfForRdf(currRdfId, nextRdf);
 
-        transientUdToCurrBl.clear();
-        transientUdToNextBl.clear();
+    float dt = globalPrimitiveConsts->estimated_seconds_per_rdf();
 
-        transientUdToCurrTrap.clear();
-        transientUdToNextTrap.clear();
+    processPlayerInputs(currRdfId, currRdf, dt, nextRdf, delayedIfdId, delayedIfd);
 
-        const RenderFrame* currRdf = rdfBuffer.GetByFrameId(currRdfId);
-        if (nullptr == currRdf) return false;
-        RenderFrame* nextRdf = rdfBuffer.GetByFrameId(currRdfId + 1);
-        if (!nextRdf) {
-            nextRdf = rdfBuffer.DryPut();
-        }
+    batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf); // [WARNING] After "processPlayerInputs" setting proper positions & velocities of "nextChd"s.
 
-        nextRdf->CopyFrom(*currRdf);
-        nextRdf->set_id(currRdfId + 1);
-        elapse1RdfForRdf(currRdfId, nextRdf);
+    for (int i = 0; i < playersCnt; i++) {
+        auto currPlayer = currRdf->players_arr(i);
+        auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
+        auto currChd = currPlayer.chd();
+        auto nextChd = nextPlayer->chd();
+        auto ud = calcUserData(currPlayer);
+        updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
+    }
 
-        int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
-        auto delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
-        if (nullptr == delayedIfd && nullptr != virtualIfds) {
-            auto ifdBatchPayload = virtualIfds->mutable_ifd_batch();
-            delayedIfd = ifdBatchPayload->Mutable(delayedIfdId - virtualIfds->st_ifd_id());
-        }
-        if (nullptr == delayedIfd) return false;
-        float dt = globalPrimitiveConsts->estimated_seconds_per_rdf();
+    for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
+        auto currNpc = currRdf->npcs_arr(i);
+        auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+        
+        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
 
-        processPlayerInputs(currRdfId, currRdf, dt, nextRdf, delayedIfdId, delayedIfd);
+        auto currChd = currNpc.chd();
+        auto nextChd = nextNpc->chd();
+        auto ud = calcUserData(currNpc);
+        updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
+    }
 
-        batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf); // [WARNING] After "processPlayerInputs" setting proper positions & velocities of "nextChd"s.
-
-        for (int i = 0; i < playersCnt; i++) {
-            auto currPlayer = currRdf->players_arr(i);
-            auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
-            auto currChd = currPlayer.chd();
-            auto nextChd = nextPlayer->chd();
-            auto ud = calcUserData(currPlayer);
-            updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
-        }
-
-        for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-            auto currNpc = currRdf->npcs_arr(i);
-            auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+    // Update positions and velocities of active bullets
+    for (int i = 0; i < currRdf->bullets_size(); i++) {
+        const Bullet& currBl = currRdf->bullets(i);
+        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
+        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+        auto ud = calcUserData(currBl);
+        if (transientUdToBodyID.count(ud)) {
+            auto bodyID = *(transientUdToBodyID[ud]);
             
-            if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-
-            auto currChd = currNpc.chd();
-            auto nextChd = nextNpc->chd();
-            auto ud = calcUserData(currNpc);
-            updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
-        }
-
-        // Update positions and velocities of active bullets
-        for (int i = 0; i < currRdf->bullets_size(); i++) {
-            const Bullet& currBl = currRdf->bullets(i);
-            if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
-            Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
-            auto ud = calcUserData(currBl);
-            if (transientUdToBodyID.count(ud)) {
-                auto bodyID = *(transientUdToBodyID[ud]);
-                
-                bi->SetPosition(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
-                bi->SetLinearVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
-                const Skill* skill = nullptr;
-                const BulletConfig* blConfig = nullptr;
-                FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
-                switch (blConfig->b_type()) {
-                case BulletType::Melee:
-                    bi->SetMotionQuality(bodyID, EMotionQuality::Discrete);
-                    break;
-                default:
-                    bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
-                    break;
-                }
-            }
-        }
-
-        // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details.
-        phySys->Update(dt, 1, globalTempAllocator, jobSys);  
-        for (auto it = activeChColliders.begin(); it != activeChColliders.end(); it++) {
-            CH_COLLIDER_T* single = *it;
-
-            auto bodyID = single->GetBodyID(); 
-            uint64_t ud = bi->GetUserData(bodyID);
-            uint64_t udt = getUDT(ud);
-
-            switch (udt) {
-            case UDT_PLAYER:
-            case UDT_NPC:
-                const CharacterDownsync& currChd = immutableCurrChdFromUd(udt, ud);
-                CharacterDownsync* nextChd = mutableNextChdFromUd(udt, ud);
-                const CharacterConfig* cc = getCc(currChd.species_id());
-
-                single->PostSimulationNoLockWithValidation(cCollisionTolerance, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
-
-                bool currNotDashing = isNotDashing(currChd);
-                bool currEffInAir = isEffInAir(currChd, currNotDashing);
-                bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
-                auto cvGroundState = single->GetGroundState();
-
-#ifndef NDEBUG
-                if (Walking == currChd.ch_state() && !inJumpStartupOrJustEnded && cvGroundState == CharacterBase::EGroundState::NotSupported) {
-                    std::ostringstream oss;
-                    Debug::Log(oss.str(), DColor::Orange);
-                }
-#endif
-                auto newPos = single->GetPosition();
-                bool oldNextNotDashing = isNotDashing(*nextChd);
-                bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
-                bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
-                bool cvOnWall = (!single->GetGroundBodyID().IsInvalid() && single->IsSlopeTooSteep(single->GetGroundNormal()));
-                bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
-                auto newVel = cvSupported
-                    ?
-                    (RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()) + single->GetGroundVelocity())
-                    :
-                    (RVec3Arg(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z()) + phySys->GetGravity()*dt);
-                /* [WARNING]
-                When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0. 
-                
-                The process of unexpected z-offsets being introduced can be tracked in
-                - [CollideConvexVsTriangles::Collide](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/CollideConvexVsTriangles.cpp#L137)
-                - [PhysicsSystem::ProcessBodyPair::ReductionCollideShapeCollector::AddHit](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1105)
-                - [PhysicsSystem::ProcessBodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1165)
-                */
-                nextChd->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
-                nextChd->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
-                nextChd->set_z(0);
-                nextChd->set_vel_x(IsLengthNearZero(newVel.GetX()) ? 0 : newVel.GetX());
-                nextChd->set_vel_y(IsLengthNearZero(newVel.GetY()) ? 0 : newVel.GetY());
-                nextChd->set_vel_z(0);
-
-                if (cvOnWall) {
-#ifndef NDEBUG
-                    if (CharacterState::InAirAtk1 == currChd.ch_state()) {
-                        std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << ", currChdChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << "; cvSupported=" << cvSupported << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState = " << CharacterBase::sToString(cvGroundState) << ", groundUd=" << single->GetGroundUserData() << ", groundBodyId=" << single->GetGroundBodyID().GetIndexAndSequenceNumber() << ", groundNormal=(" << single->GetGroundNormal().GetX() << ", " << single->GetGroundNormal().GetY() << ", " << single->GetGroundNormal().GetZ() << ")";
-                        Debug::Log(oss.str(), DColor::Orange);
-                    } 
-#endif
-                    if (cc->on_wall_enabled()) {
-                        // [WARNING] Will update "nextChd->vel_x() & nextChd->vel_y()".
-                        processWallGrabbingPostPhysicsUpdate(currRdfId, currChd, nextChd, cc, single, inJumpStartupOrJustEnded);
-                    }
-                }
-
-                bool cvInAir = (CharacterBase::EGroundState::InAir == cvGroundState || CharacterBase::EGroundState::NotSupported == cvGroundState || cvOnWall);
-                if (OnWallIdle1 == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state() && nextChd->x() != currChd.x()) {
-                    nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
-                }
-
-                postStepSingleChdStateCorrection(currRdfId, udt, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+            bi->SetPosition(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
+            bi->SetLinearVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
+            const Skill* skill = nullptr;
+            const BulletConfig* blConfig = nullptr;
+            FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
+            switch (blConfig->b_type()) {
+            case BulletType::Melee:
+                bi->SetMotionQuality(bodyID, EMotionQuality::Discrete);
+                break;
+            default:
+                bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
                 break;
             }
         }
+    }
 
-        for (auto it = activeBlColliders.begin(); it != activeBlColliders.end(); it++) {
-            BL_COLLIDER_T* single = *it;
+    // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details.
+    phySys->Update(dt, 1, globalTempAllocator, jobSys); 
 
-            auto bodyID = single->GetID(); 
-            uint64_t ud = bi->GetUserData(bodyID);
+    for (int i = 0; i < playersCnt; i++) {
+        auto currPlayer = currRdf->players_arr(i);
+        auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
+        const CharacterDownsync& currChd = currPlayer.chd();
+        auto nextChd = nextPlayer->mutable_chd();
+        auto ud = calcUserData(currPlayer);
+        JPH_ASSERT(transientUdToChCollider.count(ud));
+        CH_COLLIDER_T* single = transientUdToChCollider[ud];
+
+        auto bodyID = single->GetBodyID(); 
+
+        const CharacterConfig* cc = getCc(currChd.species_id());
+
+        auto newPos = single->GetPosition();
+
+        CharacterCollideShapeCollector collector(bi, ud, UDT_PLAYER, &currChd, nextChd, single->GetUp(), newPos, this);
+
+        PostSimulationWithCollector(single, cCollisionTolerance, &collector); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+
+        bool currNotDashing = isNotDashing(currChd);
+        bool currEffInAir = isEffInAir(currChd, currNotDashing);
+        bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
+        auto cvGroundState = single->GetGroundState();
+
+/*
+#ifndef NDEBUG
+        if (Walking == currChd.ch_state() && !inJumpStartupOrJustEnded && cvGroundState == CharacterBase::EGroundState::NotSupported) {
+            std::ostringstream oss;
+            Debug::Log(oss.str(), DColor::Orange);
+        }
+#endif
+*/
+        bool oldNextNotDashing = isNotDashing(*nextChd);
+        bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
+        bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
+        auto groundBodyID = single->GetGroundBodyID();
+        auto groundBodyUd = single->GetGroundUserData();
+        bool groundBodyIsChCollider = transientUdToChCollider.count(groundBodyUd);
+        bool cvOnWall = (0 > nextChd->dir_x()*single->GetGroundNormal().GetX() && !groundBodyID.IsInvalid() && !groundBodyIsChCollider && single->IsSlopeTooSteep(single->GetGroundNormal()));
+        bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
+        auto newVel = single->GetLinearVelocity();
+        /* [WARNING]
+        When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0. 
+            
+        The process of unexpected z-offsets being introduced can be tracked in
+        - [CollideConvexVsTriangles::Collide](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/CollideConvexVsTriangles.cpp#L137)
+        - [PhysicsSystem::ProcessBodyPair::ReductionCollideShapeCollector::AddHit](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1105)
+        - [PhysicsSystem::ProcessBodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1165)
+        */
+        nextChd->set_x(newPos.GetX());
+        nextChd->set_y(newPos.GetY());
+        nextChd->set_z(0);
+        nextChd->set_vel_x(newVel.GetX());
+        nextChd->set_vel_y(newVel.GetY());
+        nextChd->set_vel_z(0);
+
+        if (cvOnWall) {
+/*
+#ifndef NDEBUG
+            if (CharacterState::InAirAtk1 == currChd.ch_state()) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << ", currChdChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << "; cvSupported=" << cvSupported << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState=" << CharacterBase::sToString(cvGroundState) << ", groundUd=" << single->GetGroundUserData() << ", groundBodyId=" << single->GetGroundBodyID().GetIndexAndSequenceNumber() << ", groundNormal=(" << single->GetGroundNormal().GetX() << ", " << single->GetGroundNormal().GetY() << ", " << single->GetGroundNormal().GetZ() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+            } 
+#endif
+*/
+            if (cc->on_wall_enabled()) {
+                // [WARNING] Will update "nextChd->vel_x() & nextChd->vel_y()".
+                processWallGrabbingPostPhysicsUpdate(currRdfId, currChd, nextChd, cc, single, inJumpStartupOrJustEnded);
+            }
+        }
+
+        bool cvInAir = (CharacterBase::EGroundState::InAir == cvGroundState || CharacterBase::EGroundState::NotSupported == cvGroundState || cvOnWall);
+        bool hasBeenOnWallIdle1 = (OnWallIdle1 == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state());
+        bool hasBeenOnWallAtk1 = (OnWallAtk1 == nextChd->ch_state() && OnWallAtk1 == currChd.ch_state());
+        if ((hasBeenOnWallIdle1 || hasBeenOnWallAtk1) && nextChd->x() != currChd.x()) {
+            nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
+        }
+/*
+#ifndef NDEBUG
+        if (groundBodyIsChCollider) {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << (i+1) << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << ", currChdChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << "; cvSupported=" << cvSupported << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState=" << CharacterBase::sToString(cvGroundState) << ", groundUd(a character)=" << single->GetGroundUserData() << ", groundBodyId=" << single->GetGroundBodyID().GetIndexAndSequenceNumber() << ", groundNormal=(" << single->GetGroundNormal().GetX() << ", " << single->GetGroundNormal().GetY() << ", " << single->GetGroundNormal().GetZ() << ")";
+            Debug::Log(oss.str(), DColor::Orange);
+        }
+#endif
+*/
+        postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+    }
+
+    for (int i = 0; i < currRdf->bullets_size(); i++) {
+        const Bullet& currBl = currRdf->bullets(i);
+        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
+        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+        auto ud = calcUserData(currBl);
+        if (transientUdToBodyID.count(ud)) {
+            auto bodyID = *(transientUdToBodyID[ud]);
+
             JPH_ASSERT(transientUdToNextBl.count(ud));
             auto& nextBl = transientUdToNextBl[ud];
 
-            auto newPos = single->GetPosition();
-            auto newVel = single->GetLinearVelocity();
+            auto newPos = bi->GetPosition(bodyID);
+            auto newVel = bi->GetLinearVelocity(bodyID);
 
             nextBl->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
             nextBl->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
@@ -485,30 +482,14 @@ bool BaseBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds)
             nextBl->set_vel_y(IsLengthNearZero(newVel.GetY()) ? 0 : newVel.GetY());
             nextBl->set_vel_z(0);
         }
-
-        leftShiftDeadNpcs(currRdfId, nextRdf);
-        leftShiftDeadBullets(currRdfId, nextRdf);
-        leftShiftDeadPickables(currRdfId, nextRdf);
-        batchRemoveFromPhySysAndCache(currRdfId, currRdf);
-
-        if (frameLogEnabled) {
-            FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
-            if (!nextFrameLog) {
-                nextFrameLog = frameLogBuffer.DryPut();
-            }
-            if (nextFrameLog->has_rdf()) {
-                auto res = nextFrameLog->release_rdf();
-            }
-            nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
-            nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
-            nextFrameLog->set_used_ifd_confirmed_list(delayedIfd->confirmed_list());
-            nextFrameLog->set_used_ifd_udp_confirmed_list(delayedIfd->udp_confirmed_list());
-            auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
-            inputListHolder->Clear();
-            inputListHolder->CopyFrom(delayedIfd->input_list());
-        }
     }
-    return true;
+
+    leftShiftDeadNpcs(currRdfId, nextRdf);
+    leftShiftDeadBullets(currRdfId, nextRdf);
+    leftShiftDeadPickables(currRdfId, nextRdf);
+    batchRemoveFromPhySysAndCache(currRdfId, currRdf);
+
+    return nextRdf;
 }
 
 void BaseBattle::Clear() {
@@ -589,6 +570,8 @@ void BaseBattle::Clear() {
     playersCnt = 0;
 
     phySys->ClearBodyManagerFreeList();
+
+    frameLogEnabled = false;
 }
 
 bool BaseBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
@@ -606,7 +589,7 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
     , therefore the reference battle must be created with the same "BodyManager.mBodyIDFreeListStart" for fair comparison.
 
-    Per experimental results, executing the following code snippet at the end of "BaseBattle::Clear()" fixes "FrontendTest/runTestCase6" and "FrontendTest/runTestCase7", which are dedicated to testing "rollback-chasing determinism".
+    Per experimental results, executing the following code snippet at the end of "BaseBattle::Clear()" fixes "FrontendTest/runTestCase6", "FrontendTest/runTestCase7" and "FrontendTest/runTestCase11", which are dedicated to testing "rollback-chasing determinism".
     
     ```
     class JPH::BodyManager {
@@ -932,8 +915,14 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
     if (onWallSet.count(currChd.ch_state()) || !inAirSet.count(currChd.ch_state())) {
         float newVelX = 0;
         int xfac = (0 == currChd.vel_x() ? 0 : (0 < currChd.vel_x() ? -1 : +1));
-        if (!currParalyzed) newVelX = lerp(currChd.vel_x(), 0, xfac * cc->acc_mag() * dt);
+        if (!currParalyzed) {
+            newVelX = lerp(currChd.vel_x(), 0, xfac * cc->acc_mag() * dt);
+        }
         nextChd->set_vel_x(newVelX);
+        if ((Walking == currChd.ch_state() || WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) && 0 != newVelX && !currParalyzed) {
+            // [WARNING] Only keep walking @"0 == effDx" when the character has been proactively walking 
+            nextChd->set_ch_state(Walking);
+        }
     }
 
     if (0 < currChd.frames_to_recover() || effInAir || !cc->has_def1() || 0 >= effDy) {
@@ -999,23 +988,28 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
         newVelX = lerp(currChd.vel_x(), targetNewVelX, velXStep);
         nextChd->set_vel_x(newVelX);
 
-        if (InAirIdle1ByWallJump == currChd.ch_state()) {
-            /*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "@rdfId=" << rdfId << "currVelX=" << currChd.vel_x() << ", velXStep=" << velXStep << ", newVelX=" << newVelX << ", targetNewVelX=" << targetNewVelX;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif
-            */
-            if (0 < newVelX) {
-                nextChd->set_dir_x(+2);
-            } else if (0 > newVelX) {
-                nextChd->set_dir_x(-2);
-            } // Otherwise change is NOT needed
-        } else {
-            if (0 >= currChd.vel_x() * newVelX) {
+        if (0 < effDx * newVelX) {
+            // Only correct flipping under proactive input.
+            if (InAirIdle1ByWallJump == currChd.ch_state()) {
+                /*
+    #ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@rdfId=" << rdfId << "currVelX=" << currChd.vel_x() << ", velXStep=" << velXStep << ", newVelX=" << newVelX << ", targetNewVelX=" << targetNewVelX;
+                Debug::Log(oss.str(), DColor::Orange);
+    #endif
+                */
+                if (0 < newVelX) {
+                    nextChd->set_dir_x(+2);
+                } else if (0 > newVelX) {
+                    nextChd->set_dir_x(-2);
+                } // Otherwise change is NOT needed
+            } else {
                 nextChd->set_dir_x(effDx);
-            } // Otherwise change is NOT needed
+                if (OnWallIdle1 == currChd.ch_state()) {
+                    nextChd->set_ch_state(InAirIdle1NoJump);
+                    nextChd->set_frames_in_ch_state(0);
+                }
+            }
         }
 
         if (!currParalyzed) {
@@ -1415,7 +1409,7 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
     }
 
     int inSingleJoinIndexArrIdx = (inSingleJoinIndex - 1);
-    uint64_t inSingleJoinMask = calcJoinIndexMask(inSingleJoinIndex);
+    uint64_t inSingleJoinMask = CalcJoinIndexMask(inSingleJoinIndex);
     auto existingInputFrame = ifdBuffer.GetByFrameId(inIfdId);
     auto previousInputFrameDownsync = ifdBuffer.GetByFrameId(inIfdId - 1);
 
@@ -1454,7 +1448,7 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
 
     memset(prefabbedInputList.data(), 0, playersCnt * sizeof(uint64_t));
     for (int k = 0; k < playersCnt; ++k) {
-        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
+        if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
             prefabbedInputList[k] = 0;
         } else {
             prefabbedInputList[k] = playerInputFronts[k];
@@ -1579,8 +1573,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
     // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
-    transientUdToChCollider.clear();
-    transientUdToBodyID.clear();
     bodyIDsToClear.clear();
     while (!activeChColliders.empty()) {
         CH_COLLIDER_T* single = activeChColliders.back();
@@ -1650,6 +1642,21 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     - [BodyInterface::RemoveBodies](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyInterface.cpp#L202) contains "BodyInterface::DeactivateBodies".
     */
     bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+
+    transientUdToChCollider.clear();
+    transientUdToBodyID.clear();
+
+    transientUdToCurrPlayer.clear();
+    transientUdToNextPlayer.clear();
+
+    transientUdToCurrNpc.clear();
+    transientUdToNextNpc.clear();
+
+    transientUdToCurrBl.clear();
+    transientUdToNextBl.clear();
+
+    transientUdToCurrTrap.clear();
+    transientUdToNextTrap.clear();
 }
 
 void BaseBattle::derivePlayerOpPattern(const int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ioIfDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
@@ -2036,14 +2043,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     }
 
-    if ((CharacterState::Walking == nextChd->ch_state() ||  CharacterState::InAirWalking == nextChd->ch_state()) && 0 > nextChd->dir_x()*nextChd->vel_x()) {
-        int effDirX = +2;
-        if (0 > nextChd->vel_x()) {
-            effDirX = -2;
-        }
-        nextChd->set_dir_x(effDirX);
-    }
-
     if (cvInAir) {
         if (!oldNextEffInAir) {
             switch (oldNextChState) {
@@ -2242,14 +2241,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     }
 
-    if (!nextChd->omit_gravity() && !cc->omit_gravity()) {
-        if (Idle1 == nextChd->ch_state() && 0 != nextChd->vel_x() && 0 >= nextChd->frames_captured_by_inertia()) {
-            nextChd->set_ch_state(Walking);
-        } else if (Walking == nextChd->ch_state() && 0 == nextChd->vel_x() && 0 >= nextChd->frames_captured_by_inertia()) {
-            nextChd->set_ch_state(Idle1);
-        }
-    }
-
     if (!cvInAir && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
         // [WARNING] The "bulletCollider" for "activeBulletConfig" in this case might've been annihilated, we should end this bullet regardless of landing on character or hardPushback.
         int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames()); // correct even for "DemonDiverImpactPreJumpBullet -> DemonDiverImpactStarterBullet" sequence
@@ -2312,7 +2303,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
 #endif
 */
-        nextChd->set_vel_y(0);
         nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
         nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
         resetJumpStartup(nextChd);
@@ -3001,22 +2991,13 @@ void BaseBattle::OnContactCommon(
 
     switch (udt1)
     {
-    case UDT_PLAYER:
-    case UDT_NPC:
-        handleLhsCharacterCollision(ud1, udt1, inBody1, ud2, udt2, inBody2, inManifold.SwapShapes(), ioSettings);
-        break;
     case UDT_BL:
-        handleLhsBulletCollision(ud1, inBody1, ud2, udt2, inBody2, inManifold.SwapShapes(), ioSettings);
+        handleLhsBulletCollisionMT(ud1, inBody1, ud2, udt2, inBody2, inManifold.SwapShapes(), ioSettings);
         break;
     default:
         switch (udt2) {
-        case UDT_PLAYER:
-        case UDT_NPC: {
-            handleLhsCharacterCollision(ud2, udt2, inBody2, ud1, udt1, inBody1, inManifold, ioSettings);
-            break;
-        }
         case UDT_BL: {
-            handleLhsBulletCollision(ud2, inBody2, ud1, udt1, inBody1, inManifold, ioSettings);
+            handleLhsBulletCollisionMT(ud2, inBody2, ud1, udt1, inBody1, inManifold, ioSettings);
             break;
         }
         default:
@@ -3026,210 +3007,86 @@ void BaseBattle::OnContactCommon(
     }
 }
 
-JPH::ValidateResult BaseBattle::validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
-    const JPH::Body& lhs, // the "Character"
-    const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
-    auto& lhsCurrPlayer = transientUdToCurrPlayer[udLhs];
-    auto& lhsCurrChd = lhsCurrPlayer->chd();
-    switch (udtRhs) {
-    case UDT_PLAYER: {
-        auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
-        auto& rhsCurrChd = rhsCurrPlayer->chd();
-        if (lhsCurrChd.bullet_team_id() != rhsCurrChd.bullet_team_id()) {
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/accepting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs << ", lhsTeamId=" << lhsCurrChd.bullet_team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/rejecting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    case UDT_NPC: {
-        auto& rhsCurrNpc = transientUdToCurrNpc[udRhs];
-        auto& rhsCurrChd = rhsCurrNpc->chd();
-        if (lhsCurrChd.bullet_team_id() != rhsCurrChd.bullet_team_id()) {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/accepting contact ud1=" << udLhs << ", rhs npc ud2=" << udRhs << ", lhsTeamId=" << lhsCurrChd.bullet_team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/rejecting contact ud1=" << udLhs << ", rhs npc ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    case UDT_BL: {
-        auto& rhsCurrBl = transientUdToCurrBl[udRhs];
-        if (lhsCurrChd.bullet_team_id() != rhsCurrBl->team_id()) {
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/accepting contact ud1=" << udLhs << ", rhs bl ud2=" << udRhs << ", lhsTeamId=" << lhsCurrChd.bullet_team_id() << ", rhsTeamId=" << rhsCurrBl->team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsCharacterContact/rejecting contact ud1=" << udLhs << ", rhs bl ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    default:
-        return JPH::ValidateResult::AcceptContact;
-    }
-}
+void BaseBattle::PostSimulationWithCollector(CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector) {
+    // Get character position, rotation and velocity
+    RVec3 char_pos = chCollider->GetPosition();
+    Quat char_rot = chCollider->GetRotation();
+    Vec3 char_vel = chCollider->GetLinearVelocity();
+    
+    // Collide shape
+    chCollider->CheckCollision(char_pos, char_rot, char_vel, inMaxSeparationDistance, chCollider->GetShape(), char_pos, *collector, false);
 
-JPH::ValidateResult BaseBattle::validateLhsBulletContact(const uint64_t udLhs,
-    const JPH::Body& lhs, // the "Bullet"
-    const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
-    auto& lhsCurrBl = transientUdToCurrBl[udLhs];
-    switch (udtRhs) {
-    case UDT_PLAYER: {
-        auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
-        auto& rhsCurrChd = rhsCurrPlayer->chd();
-        if (lhsCurrBl->team_id() != rhsCurrChd.bullet_team_id()) {
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/accepting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs << ", lhsTeamId=" << lhsCurrBl->team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/rejecting contact ud1=" << udLhs << ", rhs player ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    case UDT_NPC: {
-        auto& rhsCurrNpc = transientUdToCurrNpc[udRhs];
-        auto& rhsCurrChd = rhsCurrNpc->chd();
-        if (lhsCurrBl->team_id() != rhsCurrChd.bullet_team_id()) {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/accepting contact ud1=" << udLhs << ", rhs npc ud2=" << udRhs << ", lhsTeamId=" << lhsCurrBl->team_id() << ", rhsTeamId=" << rhsCurrChd.bullet_team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/rejecting contact ud1=" << udLhs << ", rhs npc ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    case UDT_BL: {
-        auto& rhsCurrBl = transientUdToCurrBl[udRhs];
-        if (lhsCurrBl->team_id() != rhsCurrBl->team_id()) {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/accepting contact ud1=" << udLhs << ", rhs bl ud2=" << udRhs << ", lhsTeamId=" << lhsCurrBl->team_id() << ", rhsTeamId=" << rhsCurrBl->team_id();
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::AcceptContact;
-        } else {
-/*
-#ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "validateLhsBulletContact/rejecting contact ud1=" << udLhs << ", rhs bl ud2=" << udRhs;
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            return JPH::ValidateResult::RejectContact;
-        }
-    }
-    default:
-        return JPH::ValidateResult::AcceptContact;
+    // Copy results
+    chCollider->SetGroundBodyID(collector->mGroundBodyID, collector->mGroundBodySubShapeID);
+    chCollider->SetGroundBodyPosition(collector->mGroundPosition, collector->mGroundNormal);
+
+    if (!collector->mGroundBodyID.IsInvalid()) {
+        // Update ground state
+        RMat44 inv_transform = RMat44::sInverseRotationTranslation(char_rot, char_pos);
+        if (chCollider->GetSupportingVolume()->SignedDistance(Vec3(inv_transform * collector->mGroundPosition)) > 0.0f)
+            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::NotSupported);
+        else if (chCollider->IsSlopeTooSteep(collector->mGroundNormal))
+            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::OnSteepGround);
+        else
+            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
+
+        // Copy other body properties
+        chCollider->SetGroundBodyUd(bi->GetMaterial(collector->mGroundBodyID, collector->mGroundBodySubShapeID), bi->GetPointVelocity(collector->mGroundBodyID, collector->mGroundPosition), bi->GetUserData(collector->mGroundBodyID));
+    } else {
+        chCollider->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
+        chCollider->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, Vec3::sZero(), 0);
     }
 }
 
 void BaseBattle::handleLhsCharacterCollision(
-    const uint64_t udLhs, const uint64_t udtLhs,
-    const JPH::Body& lhs, // the "Character"
-    const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
-    const JPH::ContactManifold& inManifold,
-    const JPH::ContactSettings& ioSettings) {
+    const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
+    const uint64_t udRhs, const uint64_t udtRhs) {
 
-#ifndef NDEBUG
     switch (udtRhs) {
-    /*
-    case UDT_OBSTACLE:
-        switch (udtLhs) {
-        case UDT_PLAYER:            
-            auto joinIndex = getUDPayload(udLhs);
-            if (1 == joinIndex) {
-                auto playerPosition = lhs.GetPosition();
-                auto barrierPosition = rhs.GetPosition();
-                std::ostringstream oss;
-                oss << "handleLhsCharacterCollision/currPlayer with joinIndex=" << joinIndex << ", position=(" << playerPosition.GetX() << ", " << playerPosition.GetY() << ", " << playerPosition.GetZ() << "), contacts barrier body ud=" << udRhs << ", position= (" << barrierPosition.GetX() << ", " << barrierPosition.GetY() << ", " << barrierPosition.GetZ() << "), worldSpaceNormal=(" << inManifold.mWorldSpaceNormal.GetX() << ", " << inManifold.mWorldSpaceNormal.GetY() << ", " << inManifold.mWorldSpaceNormal.GetZ() << "), penetrationDepth=" << inManifold.mPenetrationDepth;
-                Debug::Log(oss.str(), DColor::Orange);
-            }
-            break;
-        }
-        break;
     case UDT_BL:
-        switch (udtLhs) {
-        case UDT_PLAYER:
-            auto joinIndex = getUDPayload(udLhs);
-            if (1 == joinIndex) {
-                auto playerPosition = lhs.GetPosition();
-                auto blPosition = rhs.GetPosition();
-                std::ostringstream oss;
-                oss << "handleLhsCharacterCollision/currPlayer with joinIndex=" << joinIndex << ", position=(" << playerPosition.GetX() << ", " << playerPosition.GetY() << ", " << playerPosition.GetZ() << "), contacts bullet body ud=" << udRhs << ", position= (" << blPosition.GetX() << ", " << blPosition.GetY() << ", " << blPosition.GetZ() << "), worldSpaceNormal=(" << inManifold.mWorldSpaceNormal.GetX() << ", " << inManifold.mWorldSpaceNormal.GetY() << ", " << inManifold.mWorldSpaceNormal.GetZ() << "), penetrationDepth=" << inManifold.mPenetrationDepth;
-                Debug::Log(oss.str(), DColor::Orange);
-            }
+        if (!transientUdToNextBl.count(udRhs)) {
+#ifndef NDEBUG
+            std::ostringstream oss;
+            auto bulletId = getUDPayload(udRhs);
+            oss << "handleLhsCharacterCollision/nextBl with id=" << bulletId << " is NOT FOUND";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+            return;
+        }
+        auto rhsNextBl = transientUdToNextBl[udRhs];
+        const Skill* rhsSkill = nullptr;
+        const BulletConfig* rhsBlConfig = nullptr;
+        FindBulletConfig(rhsNextBl->skill_id(), rhsNextBl->active_skill_hit(), rhsSkill, rhsBlConfig);
+
+        rhsNextBl->set_bl_state(BulletState::Exploding);
+        rhsNextBl->set_frames_in_bl_state(0);
+        rhsNextBl->set_vel_x(0);
+        rhsNextBl->set_vel_y(0);
+
+        if (0 < currChd->frames_invinsible()) {
             break;
         }
-        break;
-    */
-    }
-#endif // !NDEBUG
+        // [TODO] Check currChd.bullet_immune_records
 
-    /*
-    [WARNING] DON'T aggregate "CharacterBase.mGroundXxx" properties here, because "handleLhsCharacterCollision" will be called by different "KernelThread"s!
-    */
+        nextChd->set_hp(nextChd->hp() - rhsBlConfig->damage());
+
+        // [TODO] Add to nextChd.bullet_immune_records
+
+        break;
+    }
 }
 
-void BaseBattle::handleLhsBulletCollision(
+void BaseBattle::handleLhsBulletCollisionMT(
     const uint64_t udLhs,
     const JPH::Body& lhs, // the "Bullet"
     const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
     const JPH::ContactManifold& inManifold,
     const JPH::ContactSettings& ioSettings) {
+    /*
+    [WARNING] This function MUST BE implemented in a thread-safe manner, otherwise please move out unsafe codes to elsewhere like "BaseBattle::PostSimulationWithCollector". Be very careful about thread-safety if you want to call "BaseBattle::addNewBulletToNextFrame(...)" here.
+   
+    See comments for "OnContactAdded" and "OnContactPersisted" above.
+    */
     if (!transientUdToCurrBl.count(udLhs)) {
 #ifndef NDEBUG
         std::ostringstream oss;
@@ -3314,8 +3171,9 @@ bool BaseBattle::allocPhySys() {
    */
     PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
     clonedPhySettings.mUseBodyPairContactCache = true;
-    clonedPhySettings.mConstraintWarmStart = true;
-    clonedPhySettings.mUseManifoldReduction = true;
+    clonedPhySettings.mUseManifoldReduction = false;
+    clonedPhySettings.mConstraintWarmStart = false; // [WARNING] A practical test case to verify that this setting matters is "FrontendTest/runTestCase11".
+
     phySys->SetPhysicsSettings(clonedPhySettings);
     
     bi = &(phySys->GetBodyInterface());

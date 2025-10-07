@@ -149,7 +149,7 @@ public class FrontendTest {
                     bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0, newChaserRdfIdPtr);
                     Assert.True(cmdInjected);
 
-                    Bindings.FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
+                    Bindings.FRONTEND_Step(battle);
 
                     int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
                     Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
