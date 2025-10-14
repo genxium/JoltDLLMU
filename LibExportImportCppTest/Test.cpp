@@ -203,7 +203,7 @@ int main(int argc, char** argv)
             std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_Step(battle, timerRdfId, timerRdfId + 1, false);
+        FRONTEND_Step(battle);
         timerRdfId++;
         memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
         long outBytesCnt = pbBufferSizeLimit;

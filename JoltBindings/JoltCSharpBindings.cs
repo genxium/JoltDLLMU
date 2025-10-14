@@ -77,7 +77,11 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool FRONTEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId, [MarshalAs(UnmanagedType.U1)] bool isChasing);
+        public static extern bool FRONTEND_Step(UIntPtr inBattle);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool FRONTEND_ChaseRolledBackRdfs(UIntPtr inBattle, int* outChaserRdfId, [MarshalAs(UnmanagedType.U1)] bool toTimerRdfId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -233,6 +237,13 @@ namespace JoltCSharp {
             return ret;
         }
 
+        public static void PreemptInventorySlotBeforeMerge(InventorySlot slot) {
+            slot.StockType = InventorySlotStockType.NoneIv;
+            slot.Quota = 2; 
+            slot.FramesToRecover = 0; 
+            slot.GaugeCharged = 0;
+        } 
+
         public static void PreemptCharacterDownsyncBeforeMerge(CharacterDownsync chd, PrimitiveConsts primitives) {
             if (null != chd.BuffList) {
                 chd.BuffList.Clear();
@@ -249,6 +260,78 @@ namespace JoltCSharp {
             if (null != chd.KinematicKnobs) {
                 chd.KinematicKnobs.Clear();
             }
+            if (null != chd.Atk1Magazine) {
+                PreemptInventorySlotBeforeMerge(chd.Atk1Magazine);
+            } 
+            if (null != chd.SuperAtkGauge) {
+                PreemptInventorySlotBeforeMerge(chd.SuperAtkGauge);
+            } 
+
+            // [WARNING] For numeric fields, the default value is 0 (or 0F), and if we don't manually reset the numeric fields to their default values here, the C# "MergeFrom" method would NOT copy default values from the assigner.
+            chd.X = 0; 
+            chd.Y = 0; 
+            chd.Z = 0; 
+            
+            chd.DirX = 0; 
+            chd.DirY = 0; 
+            chd.DirZ = 0; 
+
+            chd.VelX = 0; 
+            chd.VelY = 0; 
+            chd.VelZ = 0; 
+    
+            chd.Speed = 0;
+            chd.SpeciesId = PbPrimitives.SPECIES_NONE_CH;
+
+            chd.FramesToRecover = 0;
+            chd.FramesCapturedByInertia = 0; 
+
+            chd.Hp = 0;
+            chd.Mp = 0;
+
+            chd.ChCollisionTeamId = 0;
+
+            chd.ChState = CharacterState.InvalidChState;
+            chd.FramesInChState = 0;   
+            chd.JumpTriggered = false;
+            chd.OmitGravity = false;
+
+            chd.ForcedCrouching = false;     
+            chd.SlipJumpTriggered = false;
+            chd.PrimarilyOnSlippableHardPushback = false;
+            chd.NewBirthRdfCountdown = 0;
+
+            chd.FramesInvinsible = 0;
+            chd.JumpStarted = false;
+            chd.FramesToStartJump = 0;
+
+            chd.BulletTeamId = 0;
+            chd.RemainingAirJumpQuota = 0;
+            chd.RemainingAirDashQuota = 0;
+
+            chd.DamagedHintRdfCountdown = 0;
+            chd.DamagedElementalAttrs = 0;
+
+            chd.RemainingDef1Quota = 0;
+
+            chd.ComboHitCnt = 0;
+            chd.ComboFramesRemained = 0;
+
+            chd.LastDamagedByUd = 0;
+            chd.LastDamagedByBulletTeamId = 0;
+    
+            chd.ActiveSkillId = 0;
+            chd.ActiveSkillHit = 0;
+
+            chd.BtnAHoldingRdfCnt = 0;
+            chd.BtnBHoldingRdfCnt = 0;
+            chd.BtnCHoldingRdfCnt = 0;
+            chd.BtnDHoldingRdfCnt = 0;
+            chd.BtnEHoldingRdfCnt = 0;
+            chd.ParryPrepRdfCntDown = 0;
+            chd.MpRegenRdfCountdown = 0;
+            chd.FlyingRdfCountdown = 0;
+            chd.LockingOnUd = 0;
         }
 
         public static void PreemptPlayerCharacterDownsyncBeforeMerge(PlayerCharacterDownsync playerCharacterDownsync, PrimitiveConsts primitives) {
@@ -269,15 +352,18 @@ namespace JoltCSharp {
             rdf.DynamicTrapsArr.Clear();
             rdf.TriggersArr.Clear();
             rdf.Pickables.Clear();
+
             rdf.BulletIdCounter = primitives.TerminatingBulletId;
             rdf.NpcIdCounter = primitives.TerminatingCharacterId;
+            rdf.DynamicTrapIdCounter = primitives.TerminatingTrapId;
             rdf.PickableIdCounter = primitives.TerminatingPickableId;
 
             rdf.BulletCount = 0;
             rdf.NpcCount = 0;
+            rdf.DynamicTrapCount = 0;
             rdf.PickableCount = 0;
 
-            rdf.CountdownNanos = long.MaxValue;
+            rdf.CountdownNanos = 0;
         }
 
         public static void PreemptUpsyncSnapshotBeforeMerge(UpsyncSnapshot upsyncSnapshot, PrimitiveConsts primitives) {
@@ -329,6 +415,23 @@ namespace JoltCSharp {
                 req.SerializedTriggerEditorIdToId.Dict.Clear();
                 req.SerializedTriggerEditorIdToId.Dict2.Clear();
             }
+        }
+
+        public static void PreemptFrameLog(FrameLog log, PrimitiveConsts primitives) {
+            if (null != log.Rdf) {
+                PreemptRenderFrameBeforeMerge(log.Rdf, primitives);
+            }
+            if (null != log.UsedIfdInputList) {
+                log.UsedIfdInputList.Clear();
+            }
+
+            log.UsedIfdConfirmedList = 0;
+            log.UsedIfdUdpConfirmedList = 0; 
+            log.TimerRdfId = 0;
+            log.LcacIfdId = 0;
+            log.ChaserStRdfId = 0;
+            log.ChaserEdRdfId = 0;
+            log.ChaserRdfIdLowerBound = 0;
         }
     }
 }

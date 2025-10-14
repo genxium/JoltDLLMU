@@ -139,7 +139,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                     auto inputList = holder->mutable_input_list();
                     inputList->Clear();
                     for (int k = 0; k < playersCnt; ++k) {
-                        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
+                        if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
                             inputList->Add(0);
                         } else {
                             inputList->Add(playerInputFronts[k]);
@@ -195,12 +195,12 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
         }
     }
 
-    if (shouldDragTimerRdfIdForward || shouldDragTimerRdfUsingDelayedIfdIdForward) {
-        timerRdfId = refRdfId;
-    }
-
     if (-1 != firstIncorrectlyPredictedIfdId) {
         handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, false, false);
+    }
+
+    if (shouldDragTimerRdfIdForward || shouldDragTimerRdfUsingDelayedIfdIdForward) {
+        timerRdfId = refRdfId;
     }
 
     if (!playerInputFrontIdsSorted.empty()) {
@@ -374,18 +374,91 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
     return true;
 }
 
-bool FrontendBattle::Step(int fromRdfId, int toRdfId, bool isChasing) {
-    if (!isChasing) {
-        JPH_ASSERT(fromRdfId == timerRdfId && toRdfId == timerRdfId+1); // NOT supporting multi-step in this case.
-        regulateCmdBeforeRender();
+bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing) {
+    FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
+    if (!nextFrameLog) {
+        nextFrameLog = frameLogBuffer.DryPut();
     }
-    bool stepped = BaseBattle::Step(fromRdfId, toRdfId);
-    if (!stepped) return false;
+    if (nextFrameLog->has_rdf()) {
+        auto res = nextFrameLog->release_rdf();
+    }
+    uint64_t tcpConfirmedList = delayedIfd->confirmed_list();
+    uint64_t udpConfirmedList = delayedIfd->udp_confirmed_list();
+    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
+    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
+    nextFrameLog->set_used_ifd_confirmed_list(tcpConfirmedList);
+    nextFrameLog->set_used_ifd_udp_confirmed_list(udpConfirmedList);
+    nextFrameLog->set_timer_rdf_id(timerRdfId);
+    nextFrameLog->set_lcac_ifd_id(lcacIfdId);
     if (isChasing) {
-       chaserRdfId = toRdfId;
+        nextFrameLog->set_chaser_st_rdf_id(fromRdfId);
+        nextFrameLog->set_chaser_ed_rdf_id(toRdfId);
+        nextFrameLog->set_chaser_rdf_id_lower_bound(chaserRdfIdLowerBound);
     } else {
-       timerRdfId = toRdfId;
+        nextFrameLog->set_chaser_st_rdf_id(0);
+        nextFrameLog->set_chaser_ed_rdf_id(0);
+        nextFrameLog->set_chaser_rdf_id_lower_bound(0);
     }
+    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
+    inputListHolder->Clear();
+    inputListHolder->CopyFrom(delayedIfd->input_list());
+
+/*
+#ifndef NDEBUG
+    if (delayedIfdId > lcacIfdId && allConfirmedMask == tcpConfirmedList) {
+        std::ostringstream oss;
+        oss << "Why @timerRdfId=" << timerRdfId << ", @currRdfId=" << currRdfId << ", (delayedIfdId:" << delayedIfdId << ") > (lcacIfdId:" << lcacIfdId << ") but delayedIfd is all confirmed? @chaserRdfId=" << chaserRdfId << ", chaserRdfIdLowerBound=" << chaserRdfIdLowerBound;
+        Debug::Log(oss.str(), DColor::Orange);
+    } else {
+        std::ostringstream oss;
+        oss << "Written @timerRdfId=" << timerRdfId << ", @currRdfId=" << currRdfId << ", (delayedIfdId:" << delayedIfdId << ", lcacIfdId:" << lcacIfdId << ", tcpConfirmedList=" << tcpConfirmedList << ", udpConfirmedList=" << udpConfirmedList << ") @chaserRdfId=" << chaserRdfId << ", chaserRdfIdLowerBound=" << chaserRdfIdLowerBound;
+        Debug::Log(oss.str(), DColor::White);
+    }
+#endif
+*/
+    
+    return true;
+}
+
+bool FrontendBattle::Step() {
+    regulateCmdBeforeRender();
+    
+    int delayedIfdId = ConvertToDelayedInputFrameId(timerRdfId);
+    InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+    JPH_ASSERT(nullptr != delayedIfd);
+    auto nextRdf = BaseBattle::CalcSingleStep(timerRdfId, delayedIfdId, delayedIfd);
+    if (frameLogEnabled) {
+        WriteSingleStepFrameLog(timerRdfId, nextRdf, timerRdfId, timerRdfId+1, delayedIfdId, delayedIfd, false);
+    }
+    if (chaserRdfId == timerRdfId) {
+        timerRdfId++;
+        chaserRdfId++;
+    } else {
+        timerRdfId++;
+    }
+
+    return true;
+}
+
+bool FrontendBattle::ChaseRolledBackRdfs(int* outChaserRdfId, bool toTimerRdfId) {
+    *outChaserRdfId = chaserRdfId;
+    int fromRdfId = chaserRdfId, toRdfId = chaserRdfId + globalPrimitiveConsts->max_chasing_render_frames_per_update();
+    if (toTimerRdfId) {
+        toRdfId = timerRdfId;
+    } else if (toRdfId > timerRdfId) {
+        toRdfId = timerRdfId;
+    }
+    for (int currRdfId = fromRdfId; currRdfId < toRdfId; ++currRdfId) {
+        int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
+        InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+        auto nextRdf = BaseBattle::CalcSingleStep(currRdfId, delayedIfdId, delayedIfd);
+        if (frameLogEnabled) {
+            WriteSingleStepFrameLog(currRdfId, nextRdf, fromRdfId, toRdfId, delayedIfdId, delayedIfd, true);
+        }
+        chaserRdfId++;
+    }
+    *outChaserRdfId = chaserRdfId;
     return true;
 }
 

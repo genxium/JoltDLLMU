@@ -245,10 +245,16 @@ bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBy
     return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FRONTEND_Step(void* inBattle, int fromRdfId, int toRdfId, bool isChasing) {
+bool FRONTEND_Step(void* inBattle) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;
-    return frontendBattle->Step(fromRdfId, toRdfId, isChasing);
+    return frontendBattle->Step();
+}
+
+bool FRONTEND_ChaseRolledBackRdfs(void* inBattle, int* outChaserRdfId, bool toTimerRdfId) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    if (nullptr == frontendBattle) return false;
+    return frontendBattle->ChaseRolledBackRdfs(outChaserRdfId, toTimerRdfId);
 }
 
 bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {

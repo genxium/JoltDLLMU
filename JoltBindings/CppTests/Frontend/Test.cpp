@@ -54,6 +54,7 @@ RenderFrame* mockStartRdf() {
     ch1->set_vel_y(0);
     ch1->set_hp(cc1.hp());
     ch1->set_species_id(ch1Species);
+    ch1->set_bullet_team_id(1);
     playerCh1->set_join_index(1);
     playerCh1->set_revival_x(ch1->x());
     playerCh1->set_revival_y(ch1->y());
@@ -73,6 +74,7 @@ RenderFrame* mockStartRdf() {
     ch2->set_vel_y(0);
     ch2->set_hp(cc2.hp());
     ch2->set_species_id(ch2Species);
+    ch1->set_bullet_team_id(2);
     playerCh2->set_join_index(2);
     playerCh2->set_revival_x(ch2->x());
     playerCh2->set_revival_y(ch2->y());
@@ -167,9 +169,7 @@ std::map<int, uint64_t> testCmds1 = {
 std::map<int, uint64_t> testCmds2 = {
     {0, 3},
     {50, 3},
-    {51, 0},
-    {62, 0},
-    {63, 32},
+    {60, 0},
     {64, 32},
     {65, 3},
     {227, 0},
@@ -260,8 +260,29 @@ std::map<int, uint64_t> testCmds10 = {
     {60, 4},
     {179, 4},
     {180, 20},
-    {181, 0},
+    {181, 4},
+    {220, 4},
+    {221, 20},
+    {222, 4},
+    {249, 4},
+    {250, 3},
+    {480, 3},
+    {2048, 0},
     {9999, 0}
+};
+
+std::map<int, uint64_t> testCmds11 = {
+    {0, 3},
+    {32, 3},
+    {36, 19},
+    {40, 3},
+    {44, 0},
+    {191, 0},
+    {192, 3},
+    {200, 3},
+    {220, 4},
+    {240, 0},
+    {360, 0}
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -293,6 +314,12 @@ std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs6Rollback;
 
 std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs7Intime;
 std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs7Rollback;
+
+std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs10;  
+std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots10; 
+
+std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs11Intime;
+std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs11Rollback;
 
 void initTest1Data() {
     // incomingUpsyncSnapshotReqs1
@@ -870,6 +897,347 @@ void initTest9Data() {
 }
 
 void initTest10Data() {
+    // incomingUpsyncSnapshotReqs10
+    {
+        int receivedEdIfdId = 3;
+        int receivedStIfdId = 0;
+        int receivedTimerRdfId = 8;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+
+        incomingUpsyncSnapshotReqs10[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 3;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; //19
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        
+        incomingUpsyncSnapshotReqs10[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 67;
+        int receivedStIfdId = 60;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+2; // 244, such that we're half-way in using an obsolete and incorrectly predicted input of peerJoinIndex==2
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(2);
+        }
+        
+        incomingUpsyncSnapshotReqs10[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 76;
+        int receivedStIfdId = 67;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1; // 269
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        
+        incomingUpsyncSnapshotReqs10[receivedTimerRdfId] = req;
+        // Kindly note that ifdId=75 will be first used by rdfId=302, last used by rdfId=305
+    }
+    {
+        int receivedEdIfdId = 77;
+        int receivedStIfdId = 76; // first used by rdfId=306, last used by rdfId=309
+        int receivedTimerRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(receivedStIfdId)+6; // 315
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(3); // [WARNING] Intentionally contradicting the earlier arrived "20" in "incomingDownsyncSnapshots10"
+        }
+        
+        incomingUpsyncSnapshotReqs10[receivedTimerRdfId] = req;
+    }
+
+    // incomingDownsyncSnapshots10
+    {
+        int receivedEdIfdId = 3;
+        int receivedStIfdId = 0;
+        int receivedTimerRdfId = 10;
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds10, ifdId));
+            ifdBatch->add_input_list(0);
+        }
+        incomingDownsyncSnapshots10[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+    {
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 3;
+        int receivedTimerRdfId = 18;
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds10, ifdId));
+            ifdBatch->add_input_list(0);
+        }
+        incomingDownsyncSnapshots10[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+    {
+        int receivedEdIfdId = 67;
+        int receivedStIfdId = 60;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; // 247
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
+            ifdBatch->add_input_list(2);
+        }
+        incomingDownsyncSnapshots10[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+    {
+        int receivedEdIfdId = 76; 
+        int receivedStIfdId = 67;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; // 275
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
+            ifdBatch->add_input_list(4);
+        }
+        incomingDownsyncSnapshots10[receivedTimerRdfId] = srvDownsyncSnapshot;
+        // Kindly note that ifdId=75 will be first used by rdfId=302, last used by rdfId=305
+    }
+    {
+        int receivedEdIfdId = 77;
+        int receivedStIfdId = 76; // first used by rdfId=306, last used by rdfId=309
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+2; // 308, such that we're half-way in using an obsolete and incorrectly predicted input of peerJoinIndex==2
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
+            ifdBatch->add_input_list(20);
+        }
+        incomingDownsyncSnapshots10[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+}
+
+void initTest11Data() {
+    // Intime reference inputs
+    {
+        int receivedEdIfdId = 2;
+        int receivedStIfdId = 0;
+        int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 6;
+        int receivedStIfdId = 2;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 17;
+        int receivedStIfdId = 6;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 33;
+        int receivedStIfdId = 17;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(19);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 48;
+        int receivedStIfdId = 33;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 48;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(20);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 128;
+        int receivedStIfdId = 60;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
+    }
+
+    // Rollback triggering inputs
+    {
+        int receivedTimerRdfId = 240;
+        int receivedEdIfdId = 6;
+        int receivedStIfdId = 2;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 280;
+        int receivedEdIfdId = 2;
+        int receivedStIfdId = 0;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 320;
+        int receivedEdIfdId = 17;
+        int receivedStIfdId = 6;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 360;
+        int receivedEdIfdId = 128;
+        int receivedStIfdId = 60;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 400;
+        int receivedEdIfdId = 33;
+        int receivedStIfdId = 17;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(19);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 420;
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 48;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(20);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 480;
+        int receivedEdIfdId = 48;
+        int receivedStIfdId = 33;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 640;
+        int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(1024-1)+1;
+        int receivedStIfdId = 128;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs11Rollback[receivedTimerRdfId] = req;
+    }
 }
 
 std::string outStr;
@@ -926,8 +1294,8 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
@@ -937,7 +1305,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -949,7 +1317,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (81 == outerTimerRdfId) {
+        } else if (82 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -1022,8 +1390,8 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
@@ -1038,7 +1406,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
@@ -1047,7 +1415,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
             BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-        } else if (81 == outerTimerRdfId) {
+        } else if (82 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -1115,8 +1483,8 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
 
         if (lastSentIfdId < toGenIfdId) {
             long bytesCnts = pbBufferSizeLimit;
@@ -1156,8 +1524,8 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         outerTimerRdfId++;
     }
 
@@ -1199,8 +1567,8 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         if (chaserRdfIdEd > outerTimerRdfId) {
             chaserRdfIdEd = outerTimerRdfId;
         }
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         outerTimerRdfId++;
     }
 
@@ -1254,24 +1622,22 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
 
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
-        bool referenceBattleCmdInjected = FRONTEND_UpsertSelfCmd(referenceBattle, inSingleInput, &newChaserRdfId);
+        bool referenceBattleCmdInjected = FRONTEND_UpsertSelfCmd(referenceBattle, inSingleInput, &newReferenceBattleChaserRdfId);
         if (!referenceBattleCmdInjected) {
             std::cerr << "Failed to inject cmd to referenceBattle for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        //int referenceBattleChaserRdfIdEd = outerTimerRdfId;
-        //FRONTEND_Step(referenceBattle, referenceBattle->chaserRdfId, referenceBattleChaserRdfIdEd, true);
-        FRONTEND_Step(referenceBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(referenceBattle, &newReferenceBattleChaserRdfId, true);
+        FRONTEND_Step(referenceBattle);
 
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        int chaserRdfIdEd = outerTimerRdfId;
        
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         if (155 == outerTimerRdfId) {
             int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(25) + 1;
             for (int recRdfId = 1; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
@@ -1372,14 +1738,14 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
 
         uint64_t inSingleInput = 0;
-        bool referenceBattleCmdInjected = FRONTEND_UpsertSelfCmd(referenceBattle, inSingleInput, &newChaserRdfId);
+        bool referenceBattleCmdInjected = FRONTEND_UpsertSelfCmd(referenceBattle, inSingleInput, &newReferenceBattleChaserRdfId);
         if (!referenceBattleCmdInjected) {
             std::cerr << "Failed to inject cmd to referenceBattle for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        //int referenceBattleChaserRdfIdEd = outerTimerRdfId;
-        //FRONTEND_Step(referenceBattle, referenceBattle->chaserRdfId, referenceBattleChaserRdfIdEd, true);
-        FRONTEND_Step(referenceBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        int referenceBattleChaserRdfIdEd = outerTimerRdfId;
+        FRONTEND_ChaseRolledBackRdfs(referenceBattle, &newReferenceBattleChaserRdfId, true);
+        FRONTEND_Step(referenceBattle);
 
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
         if (!cmdInjected) {
@@ -1388,8 +1754,8 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
         int chaserRdfIdEd = outerTimerRdfId;
        
-        FRONTEND_Step(reusedBattle, newChaserRdfId, chaserRdfIdEd, true);
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         if (68 == outerTimerRdfId) {
             int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(17) + 1;
             if (lastToBeConsistentRdfId > loopRdfCnt) {
@@ -1453,7 +1819,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle);
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
@@ -1464,7 +1830,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -1476,8 +1842,8 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (81 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+        } else if (82 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
         outerTimerRdfId++;
     }
@@ -1505,11 +1871,11 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_Step(reusedBattle);
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
-        if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
+        if (231 <= outerTimerRdfId && outerTimerRdfId <= 249) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 231;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -1521,7 +1887,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (249 == outerTimerRdfId) {
+        } else if (250 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -1534,6 +1900,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
 
 bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    reusedBattle->SetFrameLogEnabled(true);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
@@ -1543,43 +1910,185 @@ bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
         // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
-
+        if (incomingDownsyncSnapshots10.count(outerTimerRdfId)) {
+            DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots10[outerTimerRdfId];
+            int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+            if (308 == outerTimerRdfId) {
+                JPH_ASSERT(306 == reusedBattle->chaserRdfId);
+                int toTestIfdId = BaseBattle::ConvertToDelayedInputFrameId(outerTimerRdfId);
+                JPH_ASSERT(76 == toTestIfdId);
+                InputFrameDownsync* toTestIfd = reusedBattle->ifdBuffer.GetByFrameId(toTestIfdId);
+                JPH_ASSERT(nullptr != toTestIfd);
+                JPH_ASSERT(3 == toTestIfd->confirmed_list());
+            }
+        }
+        if (incomingUpsyncSnapshotReqs10.count(outerTimerRdfId)) {
+            auto req = incomingUpsyncSnapshotReqs10[outerTimerRdfId]; 
+            auto peerUpsyncSnapshot = req->upsync_snapshot();
+            auto peerJoinIndex = req->join_index();
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+            if (269 == outerTimerRdfId) {
+                JPH_ASSERT(269 == reusedBattle->chaserRdfId);
+                int toTestIfdId = 75;
+                InputFrameDownsync* toTestIfd = reusedBattle->ifdBuffer.GetByFrameId(toTestIfdId);
+                JPH_ASSERT(nullptr != toTestIfd);
+                uint32_t peerJoinIndex = 2;
+                uint64_t peerJoinIndexMask = BaseBattle::CalcJoinIndexMask(peerJoinIndex);
+                JPH_ASSERT(0 == toTestIfd->confirmed_list());
+                JPH_ASSERT(0 < (toTestIfd->udp_confirmed_list() & peerJoinIndexMask));
+            }
+        }
+        
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds10, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
         if (!cmdInjected) {
             std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_Step(reusedBattle, outerTimerRdfId, outerTimerRdfId + 1, false);
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
-        
-        if (360 >= outerTimerRdfId) {
-            std::cout << "TestCase10/outerTimerRdfId=" << outerTimerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << "," << p1Chd.y() << "," << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << "," << p1Chd.vel_y() << "," << p1Chd.vel_z() << ")" << std::endl;
-        }
-        /*
-        if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
-            int p1ExpectedFramesInChState = outerTimerRdfId - 231;
-            const Skill* skill = nullptr;
-            const BulletConfig* bulletConfig = nullptr;
-            uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
-            int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
-            BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
-            JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
-            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
-            JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (249 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        }
-        */
+
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase9\n" << std::endl;
-    reusedBattle->Clear();
+    FrameRingBuffer<FrameLog>& frameLogBuffer = reusedBattle->frameLogBuffer;
+    FrameLog* frameLogToTest1 = frameLogBuffer.GetByFrameId(11);
+    JPH_ASSERT(3 == frameLogToTest1->used_ifd_confirmed_list());
+    FrameLog* frameLogToTest2 = frameLogBuffer.GetByFrameId(15);
+    JPH_ASSERT(0 == frameLogToTest2->used_ifd_confirmed_list());
+
+    std::cout << "Passed TestCase10\n" << std::endl;
+    reusedBattle->Clear();   
+    return true;
+}
+
+bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    bool doCompareWithRollback = true; 
+
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    FrontendBattle* referenceBattle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, true));
+    referenceBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        if (incomingUpsyncSnapshotReqs11Intime.count(outerTimerRdfId)) {
+            auto req = incomingUpsyncSnapshotReqs11Intime[outerTimerRdfId];
+            auto peerUpsyncSnapshot = req->upsync_snapshot();
+            referenceBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newReferenceBattleChaserRdfId, &referenceBattleMaxPlayerInputFrontId, &referenceBattleMinPlayerInputFrontId);
+            shouldPrint = true;
+        }
+
+        if (doCompareWithRollback) {
+            if (incomingUpsyncSnapshotReqs11Rollback.count(outerTimerRdfId)) {
+                auto req = incomingUpsyncSnapshotReqs11Rollback[outerTimerRdfId];
+                auto peerUpsyncSnapshot = req->upsync_snapshot();
+                reusedBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+                shouldPrint = true;
+            }
+        }
+
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds11, outerTimerRdfId);
+        bool referenceBattleCmdInjected = FRONTEND_UpsertSelfCmd(referenceBattle, inSingleInput, &newReferenceBattleChaserRdfId);
+        if (!referenceBattleCmdInjected) {
+            std::cerr << "Failed to inject cmd to referenceBattle for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        int referenceBattleChaserRdfIdEd = outerTimerRdfId;
+        FRONTEND_ChaseRolledBackRdfs(referenceBattle, &newReferenceBattleChaserRdfId, true);
+        FRONTEND_Step(referenceBattle);
+
+        if (130 <= outerTimerRdfId && outerTimerRdfId <= 133) {
+            auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+            auto referencedP1 = referencedRdf->players_arr(0);
+            auto p1Chd = referencedP1.chd();
+            auto referencedP2 = referencedRdf->players_arr(1);
+            auto p2Chd = referencedP2.chd();
+
+            //std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
+
+            std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+        }
+
+        if (doCompareWithRollback) {
+            bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+            if (!cmdInjected) {
+                std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+                exit(1);
+            }
+
+            int chaserRdfIdEd = outerTimerRdfId;
+
+            FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+            FRONTEND_Step(reusedBattle);
+            if (280 == outerTimerRdfId) {
+                int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(0);
+                int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(4) + 1;
+                for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
+                    auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto referencedP1 = referencedRdf->players_arr(0);
+                    auto referencedP2 = referencedRdf->players_arr(1);
+
+                    auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto challengingP1 = challengingRdf->players_arr(0);
+                    auto challengingP2 = challengingRdf->players_arr(1);
+
+                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
+                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                }
+            } else if (400 == outerTimerRdfId) {
+                int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(4);
+                int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(32) + 1;
+                for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
+                    auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto referencedP1 = referencedRdf->players_arr(0);
+                    auto referencedP2 = referencedRdf->players_arr(1);
+
+                    auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto challengingP1 = challengingRdf->players_arr(0);
+                    auto challengingP2 = challengingRdf->players_arr(1);
+
+                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
+                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                }
+            } else if (480 == outerTimerRdfId) {
+                int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(17);
+                int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(60) + 1;
+                for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
+                    auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto referencedP1 = referencedRdf->players_arr(0);
+                    auto referencedP2 = referencedRdf->players_arr(1);
+
+                    auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
+                    auto challengingP1 = challengingRdf->players_arr(0);
+                    auto challengingP2 = challengingRdf->players_arr(1);
+
+                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
+                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                }
+            }
+        }
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase11\n" << std::endl;
+    reusedBattle->Clear();   
+    APP_DestroyBattle(referenceBattle);
     return true;
 }
 
@@ -1643,10 +2152,10 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> hull3 = {
-        200, 0,
-        200, 1000,
+        100, 0,
         100, 1000,
-        100, 0
+        200, 1000,
+        200, 0
     };
 
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
@@ -1671,7 +2180,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    /*
+
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -1693,15 +2202,22 @@ int main(int argc, char** argv)
 
     initTest7Data();
     runTestCase7(battle, initializerMapData, selfJoinIndex);
-    
+
     initTest8Data();
     runTestCase8(battle, initializerMapData, selfJoinIndex);
-    
+    pbTestCaseDataAllocator.Reset();
+
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
-    */
+    pbTestCaseDataAllocator.Reset();
+
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
+
+    initTest11Data();
+    runTestCase11(battle, initializerMapData, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
 
     pbStarterWsReqAllocator.Reset();
 

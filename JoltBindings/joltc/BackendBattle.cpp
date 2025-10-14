@@ -123,7 +123,7 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
                     auto resultIfdBatchHolder = result->mutable_ifd_batch();
                     InputFrameDownsync* virtualIfd = resultIfdBatchHolder->Add(); // [REMINDER] Will allocate in the same arena
                     for (int k = 0; k < playersCnt; ++k) {
-                        if (0 < (inactiveJoinMask & calcJoinIndexMask(k + 1))) {
+                        if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
                             virtualIfd->add_input_list(0);
                         } else {
                             virtualIfd->add_input_list(playerInputFronts[k]);
@@ -214,10 +214,45 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
     return true;
 }
 
+bool BackendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int delayedIfdId, InputFrameDownsync* delayedIfd) {
+    FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
+    if (!nextFrameLog) {
+        nextFrameLog = frameLogBuffer.DryPut();
+    }
+    if (nextFrameLog->has_rdf()) {
+        auto res = nextFrameLog->release_rdf();
+    }
+    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
+    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
+    nextFrameLog->set_used_ifd_confirmed_list(delayedIfd->confirmed_list());
+    nextFrameLog->set_used_ifd_udp_confirmed_list(delayedIfd->udp_confirmed_list());
+    nextFrameLog->set_timer_rdf_id(currRdfId);
+    nextFrameLog->set_lcac_ifd_id(lcacIfdId);
+    nextFrameLog->set_chaser_st_rdf_id(0);
+    nextFrameLog->set_chaser_ed_rdf_id(0);
+    nextFrameLog->set_chaser_rdf_id_lower_bound(0);
+    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
+    inputListHolder->Clear();
+    inputListHolder->CopyFrom(delayedIfd->input_list());
+    return true;
+}
+
 bool BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
-    bool stepped = BaseBattle::Step(fromRdfId, toRdfId, virtualIfds);
-    dynamicsRdfId = toRdfId;
-    return stepped;
+    for (int currRdfId = fromRdfId; currRdfId < toRdfId; ++currRdfId) {
+        int delayedIfdId = ConvertToDelayedInputFrameId(dynamicsRdfId);
+        InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        if (nullptr == delayedIfd && nullptr != virtualIfds) {
+            auto ifdBatchPayload = virtualIfds->mutable_ifd_batch();
+            delayedIfd = ifdBatchPayload->Mutable(delayedIfdId - virtualIfds->st_ifd_id());
+        }
+        JPH_ASSERT(nullptr != delayedIfd);
+        RenderFrame* nextRdf = CalcSingleStep(currRdfId, delayedIfdId, delayedIfd);
+        if (frameLogEnabled) {
+            WriteSingleStepFrameLog(currRdfId, nextRdf, delayedIfdId, delayedIfd);
+        }
+        dynamicsRdfId = currRdfId + 1;
+    }
+    return true;
 }
 
 bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
