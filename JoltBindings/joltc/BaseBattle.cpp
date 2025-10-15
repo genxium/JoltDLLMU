@@ -352,8 +352,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         if (transientUdToBodyID.count(ud)) {
             auto bodyID = *(transientUdToBodyID[ud]);
             
-            bi->SetPosition(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
-            bi->SetLinearVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()));
+            bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat::sIdentity(), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
+            bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()), Vec3::sZero());
             const Skill* skill = nullptr;
             const BulletConfig* blConfig = nullptr;
             FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
@@ -384,11 +384,14 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
         const CharacterConfig* cc = getCc(currChd.species_id());
 
-        auto newPos = single->GetPosition();
+        RVec3 newPos;
+        Quat newRot;
+        single->GetPositionAndRotation(newPos, newRot);
+        auto newVel = single->GetLinearVelocity();
 
         CharacterCollideShapeCollector collector(bi, ud, UDT_PLAYER, &currChd, nextChd, single->GetUp(), newPos, this);
 
-        PostSimulationWithCollector(single, cCollisionTolerance, &collector); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+        PostSimulationWithCollector(newPos, newRot, newVel, single, cCollisionTolerance, &collector); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
 
         bool currNotDashing = isNotDashing(currChd);
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
@@ -410,8 +413,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         auto groundBodyUd = single->GetGroundUserData();
         bool groundBodyIsChCollider = transientUdToChCollider.count(groundBodyUd);
         bool cvOnWall = (0 > nextChd->dir_x()*single->GetGroundNormal().GetX() && !groundBodyID.IsInvalid() && !groundBodyIsChCollider && single->IsSlopeTooSteep(single->GetGroundNormal()));
-        bool cvSupported = single->IsSupported() && !cvOnWall; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
-        auto newVel = single->GetLinearVelocity();
+        bool cvSupported = single->IsSupported() && !cvOnWall && !groundBodyID.IsInvalid(); // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
         /* [WARNING]
         When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0. 
             
@@ -420,11 +422,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         - [PhysicsSystem::ProcessBodyPair::ReductionCollideShapeCollector::AddHit](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1105)
         - [PhysicsSystem::ProcessBodyPair](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1165)
         */
-        nextChd->set_x(newPos.GetX());
-        nextChd->set_y(newPos.GetY());
+        nextChd->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
+        nextChd->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
         nextChd->set_z(0);
-        nextChd->set_vel_x(newVel.GetX());
-        nextChd->set_vel_y(newVel.GetY());
+        nextChd->set_vel_x(IsVelocityComponentNearZero(newVel.GetX()) ? 0 : newVel.GetX());
+        nextChd->set_vel_y(IsVelocityComponentNearZero(newVel.GetY()) ? 0 : newVel.GetY());
         nextChd->set_vel_z(0);
 
         if (cvOnWall) {
@@ -443,13 +445,12 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             }
         }
 
-        bool cvInAir = (CharacterBase::EGroundState::InAir == cvGroundState || CharacterBase::EGroundState::NotSupported == cvGroundState || cvOnWall);
+        bool cvInAir = (!cvSupported || cvOnWall);
         bool hasBeenOnWallIdle1 = (OnWallIdle1 == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state());
         bool hasBeenOnWallAtk1 = (OnWallAtk1 == nextChd->ch_state() && OnWallAtk1 == currChd.ch_state());
         if ((hasBeenOnWallIdle1 || hasBeenOnWallAtk1) && nextChd->x() != currChd.x()) {
             nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
         }
-/*
 #ifndef NDEBUG
         if (groundBodyIsChCollider) {
             std::ostringstream oss;
@@ -457,7 +458,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             Debug::Log(oss.str(), DColor::Orange);
         }
 #endif
-*/
         postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
     }
 
@@ -620,6 +620,15 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         RenderFrame* holder = rdfBuffer.DryPut();
         holder->CopyFrom(startRdf);
         holder->set_id(gapRdfId);
+    }
+    if (frameLogEnabled) {
+        while (frameLogBuffer.EdFrameId <= stRdfId) {
+            int gapRdfId = frameLogBuffer.EdFrameId;
+            FrameLog* holder = frameLogBuffer.DryPut();
+            RenderFrame* heldRdf = holder->mutable_rdf();
+            heldRdf->CopyFrom(startRdf);
+            heldRdf->set_id(gapRdfId);
+        }
     }
 
     prefabbedInputList.assign(playersCnt, 0);
@@ -1504,9 +1513,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         auto ud = calcUserData(currPlayer);
         CH_COLLIDER_T* chCollider = getOrCreateCachedPlayerCollider(ud, currPlayer, cc, nextPlayer);
 
-        // [WARNING] Reset the possibly reused "CH_COLLIDER_T*/Body*" before physics update.
-        chCollider->SetPosition(RVec3Arg(currChd.x(), currChd.y(), currChd.z()));
-
         auto bodyID = chCollider->GetBodyID();
         bodyIDsToActivate.push_back(bodyID);
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
@@ -1521,8 +1527,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
         const CharacterConfig* cc = getCc(currChd.species_id());
         CH_COLLIDER_T* chCollider = getOrCreateCachedNpcCollider(ud, currNpc, cc, nextNpc);
-
-        chCollider->SetPosition(RVec3Arg(currChd.x(), currChd.y(), currChd.z()));
 
         auto bodyID = chCollider->GetBodyID();
         bodyIDsToActivate.push_back(bodyID);
@@ -2233,12 +2237,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 omitGravity |= (nullptr != activeSkillBuff && activeSkillBuff->omit_gravity());
             }
         }
-
-        if (nonAttackingSet.count(nextChd->ch_state()) && omitGravity && 0 < nextChd->vel_y() && !cc->anti_gravity_when_idle()) {
-            if (nextChd->vel_y() > cc->max_ascending_vel_y()) {
-                nextChd->set_vel_y(cc->max_ascending_vel_y());
-            }
-        }
     }
 
     if (!cvInAir && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
@@ -2277,12 +2275,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         if (0 > origFramesInActiveState) {
             nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
             nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
-        }
-    }
-
-    if (Def1 == nextChd->ch_state() || Def1Atked1 == nextChd->ch_state() || Def1Broken == nextChd->ch_state()) {
-        if (0 != nextChd->vel_x()) {
-            nextChd->set_vel_x(0);
         }
     }
 
@@ -2819,7 +2811,7 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::p
         calcChdShape(CharacterState::Idle1, cc, capsuleRadius, capsuleHalfHeight);
         auto chCollider = getOrCreateCachedPlayerCollider(ud, currPlayer, cc);
 
-        chCollider->SetPosition(safeDeactiviatedPosition);
+        chCollider->SetPositionAndRotation(safeDeactiviatedPosition, Quat::sIdentity());
     }
     
     for (auto it = preallocateNpcSpeciesDict.begin(); it != preallocateNpcSpeciesDict.end(); it++) {
@@ -2838,7 +2830,7 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::p
 
         for (int c = 0; c < npcSpeciesCnt; c++) {
             auto chCollider = createDefaultCharacterCollider(cc);
-            chCollider->SetPosition(safeDeactiviatedPosition);
+            chCollider->SetPositionAndRotation(safeDeactiviatedPosition, Quat::sIdentity());
             targetQue->push_back(chCollider);
         }
     }
@@ -3007,11 +2999,7 @@ void BaseBattle::OnContactCommon(
     }
 }
 
-void BaseBattle::PostSimulationWithCollector(CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector) {
-    // Get character position, rotation and velocity
-    RVec3 char_pos = chCollider->GetPosition();
-    Quat char_rot = chCollider->GetRotation();
-    Vec3 char_vel = chCollider->GetLinearVelocity();
+void BaseBattle::PostSimulationWithCollector(const RVec3& char_pos, const Quat& char_rot, const Vec3& char_vel, CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector) {
     
     // Collide shape
     chCollider->CheckCollision(char_pos, char_rot, char_vel, inMaxSeparationDistance, chCollider->GetShape(), char_pos, *collector, false);
@@ -3170,9 +3158,10 @@ bool BaseBattle::allocPhySys() {
     - Moreover, the impact of "PhysicsSettings.mUseManifoldReduction" precedes the solver of "ContactConstraintManager".
    */
     PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
-    clonedPhySettings.mUseBodyPairContactCache = true;
-    clonedPhySettings.mUseManifoldReduction = false;
+    clonedPhySettings.mUseManifoldReduction = true;
+
     clonedPhySettings.mConstraintWarmStart = false; // [WARNING] A practical test case to verify that this setting matters is "FrontendTest/runTestCase11".
+    clonedPhySettings.mUseBodyPairContactCache = false; // [WARNING] By keeping "mConstraintWarmStart = false", a practical test case to verify that this setting matters is "FrontendTest/runTestCase11" with "cLengthEps <= 1e-10" (i.e. if "cLengthEps >= 1e-2" this setting doesn't matter).
 
     phySys->SetPhysicsSettings(clonedPhySettings);
     

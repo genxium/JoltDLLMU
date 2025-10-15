@@ -1037,9 +1037,11 @@ message FrameLog {
     uint64 used_ifd_udp_confirmed_list = 5; 
     int32 timer_rdf_id = 6;
     int32 lcac_ifd_id = 7;
-    int32 chaser_st_rdf_id = 8;
-    int32 chaser_ed_rdf_id = 9;
-    int32 chaser_rdf_id_lower_bound = 10;
+    int32 chaser_rdf_id = 8;
+    int32 chaser_rdf_id_lower_bound = 9;
+    int32 chaser_st_rdf_id = 10;
+    int32 chaser_ed_rdf_id = 11;
+    bool  chaser_rdf_id_lower_bound_snatched = 12;
 }
 
 message BattleResult {

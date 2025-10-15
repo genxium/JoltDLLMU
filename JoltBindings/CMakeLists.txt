@@ -65,7 +65,7 @@ generate_export_header(${TARGET_NAME}
     EXPORT_FILE_NAME "${PB_GEN_ROOT}/joltc_export.h" # By default, this command generates a header file named <target-name-lowercase>_export.h in the current binary directory (CMAKE_CURRENT_BINARY_DIR), see https://cmake.org/cmake/help/latest/module/GenerateExportHeader.html.
 )
 
-if (MSVC)
+if(MSVC)
     target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     # Expand inline functions for easier debugging.
     target_compile_options(${TARGET_NAME} PUBLIC
@@ -83,6 +83,11 @@ endif()
 # Set the debug/non-debug build flags
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
+if(BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${TARGET_NAME} PUBLIC "_DEBUG>")
+else()
+    target_compile_definitions(${TARGET_NAME} PUBLIC "NDEBUG")
+endif()
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 target_sources(${TARGET_NAME} PRIVATE ${JOLT_PHYSICS_SRC_FILES})

@@ -374,7 +374,8 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
     return true;
 }
 
-bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing) {
+bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing, bool snatched) {
+    JPH_ASSERT(currRdfId + 1 == nextRdf->id());
     FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
     if (!nextFrameLog) {
         nextFrameLog = frameLogBuffer.DryPut();
@@ -382,28 +383,29 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
     if (nextFrameLog->has_rdf()) {
         auto res = nextFrameLog->release_rdf();
     }
+    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
+    inputListHolder->Clear();
     uint64_t tcpConfirmedList = delayedIfd->confirmed_list();
     uint64_t udpConfirmedList = delayedIfd->udp_confirmed_list();
-    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
-    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
     nextFrameLog->set_used_ifd_confirmed_list(tcpConfirmedList);
     nextFrameLog->set_used_ifd_udp_confirmed_list(udpConfirmedList);
+    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
+    inputListHolder->CopyFrom(delayedIfd->input_list());
+    nextFrameLog->set_chaser_rdf_id_lower_bound_snatched(snatched);
+    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
     nextFrameLog->set_timer_rdf_id(timerRdfId);
+    nextFrameLog->set_chaser_rdf_id(chaserRdfId);
+    nextFrameLog->set_chaser_rdf_id_lower_bound(chaserRdfIdLowerBound);
     nextFrameLog->set_lcac_ifd_id(lcacIfdId);
     if (isChasing) {
         nextFrameLog->set_chaser_st_rdf_id(fromRdfId);
         nextFrameLog->set_chaser_ed_rdf_id(toRdfId);
-        nextFrameLog->set_chaser_rdf_id_lower_bound(chaserRdfIdLowerBound);
     } else {
         nextFrameLog->set_chaser_st_rdf_id(0);
         nextFrameLog->set_chaser_ed_rdf_id(0);
-        nextFrameLog->set_chaser_rdf_id_lower_bound(0);
     }
-    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
-    inputListHolder->Clear();
-    inputListHolder->CopyFrom(delayedIfd->input_list());
 
-/*
+    /*
 #ifndef NDEBUG
     if (delayedIfdId > lcacIfdId && allConfirmedMask == tcpConfirmedList) {
         std::ostringstream oss;
@@ -415,21 +417,33 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
         Debug::Log(oss.str(), DColor::White);
     }
 #endif
-*/
-    
+    */
     return true;
 }
 
 bool FrontendBattle::Step() {
-    regulateCmdBeforeRender();
-    
     int delayedIfdId = ConvertToDelayedInputFrameId(timerRdfId);
-    InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
-    JPH_ASSERT(nullptr != delayedIfd);
-    auto nextRdf = BaseBattle::CalcSingleStep(timerRdfId, delayedIfdId, delayedIfd);
-    if (frameLogEnabled) {
-        WriteSingleStepFrameLog(timerRdfId, nextRdf, timerRdfId, timerRdfId+1, delayedIfdId, delayedIfd, false);
+    InputFrameDownsync* delayedIfd = nullptr;
+
+    RenderFrame* nextRdf = nullptr;
+    bool snatched = (timerRdfId + 1 == chaserRdfIdLowerBound);
+    if (snatched) {
+        delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+        nextRdf = rdfBuffer.GetByFrameId(chaserRdfIdLowerBound); // [WARNING] DON'T re-calculate if an advanced "chaserRdfIdLowerBound" has been received;
+    } else {
+        regulateCmdBeforeRender();
+        delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+
+        nextRdf = BaseBattle::CalcSingleStep(timerRdfId, delayedIfdId, delayedIfd);
     }
+    JPH_ASSERT(nullptr != nextRdf);
+
+    if (frameLogEnabled) {
+        WriteSingleStepFrameLog(timerRdfId, nextRdf, timerRdfId, timerRdfId + 1, delayedIfdId, delayedIfd, false, snatched);
+    }
+
     if (chaserRdfId == timerRdfId) {
         timerRdfId++;
         chaserRdfId++;
