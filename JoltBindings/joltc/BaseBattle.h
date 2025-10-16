@@ -215,6 +215,9 @@ public:
         return encodedPatternId;
     }
 
+    inline static bool IsVelocityComponentNearZero(float velComp) {
+        return -cVelCompEps < velComp && velComp < cVelCompEps;
+    }
 
     inline static bool IsLengthNearZero(float length) {
         return -cLengthEps < length && length < cLengthEps;
@@ -585,7 +588,7 @@ protected:
         }
     }
 
-    void PostSimulationWithCollector(CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector);
+    void PostSimulationWithCollector(const RVec3& char_pos, const Quat& char_rot, const Vec3& char_vel, CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector);
 
 private:
     Vec3 safeDeactiviatedPosition;
@@ -696,6 +699,8 @@ public:
     - by calling "PhysicsSystem::JobFindCollisions", it only appends newly discovered constraints, making use of counter "ContactConstraintManager.mNumConstraints"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.h#L515) to guarantee thread-safety of the constraint collection "ContactConstraintManager.mConstraints"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1126) -- a similar technique like that of "<proj-root>/JoltBindings/joltc/RingBufferMt";
     
     - by calling of "PhysicsSystem::JobSolvePositionConstraints" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L503, kindly note that "inCollisionSteps" of each "PhysicsSystem::Update" is always 1 in my current implementation of rollback-chasing), it only fetches "next island", making use of counter "PhysicsUpdateContext.mSolvePositionConstraintsNextIsland"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsUpdateContext.h#L93) to guarantee thread-safety of the island collection "IslandBuilder::mIslandsSorted"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/IslandBuilder.cpp#L408).
+
+    However, there's a "determinism caveat" associated with the aforementioned "PhysicsSystem::JobFindCollisions" and "PhysicsSystem::JobSolvePositionConstraints" -- as the appending and consuming of "ContactConstraintManager.mConstraints" and "IslandBuilder::mIslandsSorted" are randomized by multi-threading -- moreover, whether "IslandBuilder::mIslandsSorted" is actually sorted or not doesn't matter, the randomness comes from multi-threading intrinsically, you will execute "[AxisConstraintPart::SolvePositionConstraintWithMassOverride](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintPart/AxisConstraintPart.h#L605) -> [Body::Add/SubPositionStep](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h#L342)" in a random order just due to the use of multi-threading in "PhysicsSystem::JobSolvePositionConstraints" and "PhysicsSystem::JobSolveVelocityConstraints" and the lack of associativity in floating number calculations.     
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,

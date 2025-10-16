@@ -274,9 +274,13 @@ std::map<int, uint64_t> testCmds10 = {
 std::map<int, uint64_t> testCmds11 = {
     {0, 3},
     {32, 3},
-    {36, 19},
     {40, 3},
     {44, 0},
+    {160, 4}, // toGenIfdId=40
+    {163, 4}, // toGenIfdId=40
+    {164, 4}, // toGenIfdId=41
+    {166, 4}, // toGenIfdId=41
+    {167, 20}, // toGenIfdId=41, [WARNING] Intentionally trigger a self-input-induced rollback
     {191, 0},
     {192, 3},
     {200, 3},
@@ -306,6 +310,8 @@ std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots2;
 
 std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs3;
 std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots3; 
+
+std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots4; 
 
 std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots5;
 
@@ -632,6 +638,31 @@ void initTest3Data() {
         RenderFrame* refRdf = mockRefRdf(refRdfId);
         srvDownsyncSnapshot->set_ref_rdf_id(refRdfId);
         srvDownsyncSnapshot->set_allocated_ref_rdf(refRdf);
+    }
+}
+
+void initTest4Data() {
+    // incomingDownsyncSnapshots4
+    {
+        int receivedEdIfdId = 4;
+        int receivedStIfdId = 0;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedEdIfdId - 1) - 1; // A few rdfs after the last self-input generation, right before being used
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds4, ifdId));
+            ifdBatch->add_input_list(
+                6 > ifdId ?
+                4
+                :
+                (13 > ifdId ? 4 : 19)
+            );
+        }
+        int refRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(receivedEdIfdId - 1) + 1;
+        srvDownsyncSnapshot->set_ref_rdf_id(refRdfId);
+        srvDownsyncSnapshot->set_allocated_ref_rdf(mockRefRdf(refRdfId));
+        incomingDownsyncSnapshots4[receivedTimerRdfId] = srvDownsyncSnapshot;
     }
 }
 
@@ -1040,11 +1071,10 @@ void initTest10Data() {
 }
 
 void initTest11Data() {
-    // Intime reference inputs
     {
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
-        int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+        int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id()+2;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
@@ -1133,7 +1163,6 @@ void initTest11Data() {
         incomingUpsyncSnapshotReqs11Intime[receivedTimerRdfId] = req;
     }
 
-    // Rollback triggering inputs
     {
         int receivedTimerRdfId = 240;
         int receivedEdIfdId = 6;
@@ -1354,6 +1383,9 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 JPH_ASSERT(srvDownsyncSnapshot->ref_rdf_id() == reusedBattle->chaserRdfIdLowerBound);
                 outerTimerRdfId = reusedBattle->timerRdfId;
             }
+            if (srvDownsyncSnapshot->has_ref_rdf()) {
+                srvDownsyncSnapshot->release_ref_rdf();
+            }
         }
         if (incomingUpsyncSnapshotReqs2.count(outerTimerRdfId)) {
             auto req = incomingUpsyncSnapshotReqs2[outerTimerRdfId];
@@ -1453,6 +1485,9 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 JPH_ASSERT(outerTimerRdfId == reusedBattle->timerRdfId);
                 // no eviction occurred
             }
+            if (srvDownsyncSnapshot->has_ref_rdf()) {
+                srvDownsyncSnapshot->release_ref_rdf();
+            }
         }
         if (incomingUpsyncSnapshotReqs3.count(outerTimerRdfId)) {
             auto req = incomingUpsyncSnapshotReqs3[outerTimerRdfId];
@@ -1506,14 +1541,24 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
 }
 
 bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->SetFrameLogEnabled(true);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 0);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    int newChaserRdfId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
+        if (incomingDownsyncSnapshots4.count(outerTimerRdfId)) {
+            DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots4[outerTimerRdfId];
+            int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+            if (srvDownsyncSnapshot->has_ref_rdf()) {
+                srvDownsyncSnapshot->release_ref_rdf();
+            }
+        }
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
         if (!cmdInjected) {
@@ -1526,10 +1571,16 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
         FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
         FRONTEND_Step(reusedBattle);
+        if (17 == outerTimerRdfId) {
+            JPH_ASSERT(reusedBattle->chaserRdfIdLowerBound == outerTimerRdfId + 1);
+            auto frameLog = reusedBattle->frameLogBuffer.GetByFrameId(reusedBattle->chaserRdfIdLowerBound);
+            JPH_ASSERT(frameLog->rdf().id() == reusedBattle->chaserRdfIdLowerBound);
+            JPH_ASSERT(frameLog->chaser_rdf_id_lower_bound_snatched());
+        }
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase4\n" << std::endl;
+    std::cout << "Passed TestCase4: Advanced RefRdf in DownsyncSnapshot\n" << std::endl;
     reusedBattle->Clear();   
     return true;
 }
@@ -1555,6 +1606,9 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 JPH_ASSERT(25 == minPlayerInputFrontId && 25 == maxPlayerInputFrontId);
             } else if (26 == srvDownsyncSnapshot->st_ifd_id()) {
                 JPH_ASSERT(57 == newLcacIfdId);
+            }
+            if (srvDownsyncSnapshot->has_ref_rdf()) {
+                srvDownsyncSnapshot->release_ref_rdf();
             }
         }
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
@@ -1695,7 +1749,7 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
     }
 
-    std::cout << "Passed TestCase6\n" << std::endl;
+    std::cout << "Passed TestCase6: Rollback-chasing\n" << std::endl;
     reusedBattle->Clear();   
     APP_DestroyBattle(referenceBattle);
     return true;
@@ -1795,7 +1849,7 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         }
     }
 
-    std::cout << "Passed TestCase7\n" << std::endl;
+    std::cout << "Passed TestCase7: Rollback-chasing\n" << std::endl;
     reusedBattle->Clear();   
     APP_DestroyBattle(referenceBattle);
     return true;
@@ -1899,8 +1953,8 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
 }
 
 bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
-    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     reusedBattle->SetFrameLogEnabled(true);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
@@ -1921,6 +1975,9 @@ bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData
                 InputFrameDownsync* toTestIfd = reusedBattle->ifdBuffer.GetByFrameId(toTestIfdId);
                 JPH_ASSERT(nullptr != toTestIfd);
                 JPH_ASSERT(3 == toTestIfd->confirmed_list());
+            }
+            if (srvDownsyncSnapshot->has_ref_rdf()) {
+                srvDownsyncSnapshot->release_ref_rdf();
             }
         }
         if (incomingUpsyncSnapshotReqs10.count(outerTimerRdfId)) {
@@ -1972,6 +2029,7 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     FrontendBattle* referenceBattle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, true));
+    referenceBattle->SetFrameLogEnabled(true);
     referenceBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -2086,7 +2144,7 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase11\n" << std::endl;
+    std::cout << "Passed TestCase11: Rollback-chasing with character soft-pushback\n" << std::endl;
     reusedBattle->Clear();   
     APP_DestroyBattle(referenceBattle);
     return true;
@@ -2180,7 +2238,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-
+    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -2192,6 +2250,7 @@ int main(int argc, char** argv)
     initTest3Data();
     runTestCase3(battle, initializerMapData, selfJoinIndex);
 
+    initTest4Data();
     runTestCase4(battle, initializerMapData, selfJoinIndex);
     
     initTest5Data();
@@ -2214,7 +2273,7 @@ int main(int argc, char** argv)
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     initTest11Data();
     runTestCase11(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();

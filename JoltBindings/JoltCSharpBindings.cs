@@ -429,9 +429,11 @@ namespace JoltCSharp {
             log.UsedIfdUdpConfirmedList = 0; 
             log.TimerRdfId = 0;
             log.LcacIfdId = 0;
+            log.ChaserRdfId = 0;
+            log.ChaserRdfIdLowerBound = 0;
             log.ChaserStRdfId = 0;
             log.ChaserEdRdfId = 0;
-            log.ChaserRdfIdLowerBound = 0;
+            log.ChaserRdfIdLowerBoundSnatched = false;
         }
     }
 }
