@@ -13,6 +13,9 @@ public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
         downsyncSnapshotHolder = new DownsyncSnapshot();
         wsReqHolder = new WsReq();
+
+        allocPhySys();
+        jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
     }
 
     virtual ~BackendBattle() {
@@ -56,6 +59,28 @@ protected:
     void releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot);
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
     WsReq* wsReqHolder = nullptr;
+
+    virtual bool allocPhySys() override {
+        if (nullptr != phySys) return false;
+        phySys = new PhysicsSystem();
+        phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
+        phySys->SetBodyActivationListener(&bodyActivationListener);
+        phySys->SetContactListener(&contactListener);
+        phySys->SetGravity(Vec3(0, globalPrimitiveConsts->gravity_y(), 0));
+        phySys->SetContactListener(this);
+
+        PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
+        clonedPhySettings.mUseManifoldReduction = true;
+
+        clonedPhySettings.mConstraintWarmStart = true; 
+        clonedPhySettings.mUseBodyPairContactCache = true;
+
+        phySys->SetPhysicsSettings(clonedPhySettings);
+
+        bi = &(phySys->GetBodyInterface());
+
+        return true;
+    }
 };
 
 /*

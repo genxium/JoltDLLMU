@@ -622,15 +622,3 @@ void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, c
 #endif
 */
 }
-
-/*
-#ifndef NDEBUG
-        if (InAirIdle2ByJump == oldNextChState && InAirIdle2ByJump != nextChd->ch_state()) {
-            ////////////////////////////
-        }
-
-        if (InAirIdle1NoJump == nextChd->ch_state() && OnWallIdle1 == currChd.ch_state()) {
-            ////////////////////////////
-        }
-#endif
-*/

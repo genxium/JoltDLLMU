@@ -49,6 +49,6 @@ const float  cLengthEps = 1e-6;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;
 const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
-const float  cVelCompEps = 1e-6;
+const float  cVelCompEps = 1e-4;
 
 #endif

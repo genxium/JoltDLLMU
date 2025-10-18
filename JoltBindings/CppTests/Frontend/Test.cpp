@@ -1384,7 +1384,8 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 outerTimerRdfId = reusedBattle->timerRdfId;
             }
             if (srvDownsyncSnapshot->has_ref_rdf()) {
-                srvDownsyncSnapshot->release_ref_rdf();
+                auto rdf = srvDownsyncSnapshot->release_ref_rdf();
+                delete rdf;
             }
         }
         if (incomingUpsyncSnapshotReqs2.count(outerTimerRdfId)) {
@@ -1486,7 +1487,8 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 // no eviction occurred
             }
             if (srvDownsyncSnapshot->has_ref_rdf()) {
-                srvDownsyncSnapshot->release_ref_rdf();
+                auto rdf = srvDownsyncSnapshot->release_ref_rdf();
+                delete rdf;
             }
         }
         if (incomingUpsyncSnapshotReqs3.count(outerTimerRdfId)) {
@@ -1556,7 +1558,8 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
             bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
             if (srvDownsyncSnapshot->has_ref_rdf()) {
-                srvDownsyncSnapshot->release_ref_rdf();
+                auto rdf = srvDownsyncSnapshot->release_ref_rdf();
+                delete rdf;
             }
         }
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
@@ -1608,7 +1611,8 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
                 JPH_ASSERT(57 == newLcacIfdId);
             }
             if (srvDownsyncSnapshot->has_ref_rdf()) {
-                srvDownsyncSnapshot->release_ref_rdf();
+                auto rdf = srvDownsyncSnapshot->release_ref_rdf();
+                delete rdf;
             }
         }
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
@@ -1977,7 +1981,8 @@ bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData
                 JPH_ASSERT(3 == toTestIfd->confirmed_list());
             }
             if (srvDownsyncSnapshot->has_ref_rdf()) {
-                srvDownsyncSnapshot->release_ref_rdf();
+                auto rdf = srvDownsyncSnapshot->release_ref_rdf();
+                delete rdf;
             }
         }
         if (incomingUpsyncSnapshotReqs10.count(outerTimerRdfId)) {
