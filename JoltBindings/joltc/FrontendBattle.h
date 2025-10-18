@@ -15,6 +15,9 @@ public:
     FrontendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
         timerRdfId = globalPrimitiveConsts->starting_input_frame_id();
         onlineArenaMode = isOnlineArenaMode;
+
+        allocPhySys();
+        jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
     }
 
     virtual ~FrontendBattle() {
@@ -79,6 +82,41 @@ protected:
 
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
     WsReq* upsyncSnapshotReqHolder = nullptr;
+
+    virtual bool allocPhySys() override {
+        if (nullptr != phySys) return false;
+        phySys = new PhysicsSystem();
+        phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
+        phySys->SetBodyActivationListener(&bodyActivationListener);
+        phySys->SetContactListener(&contactListener);
+        phySys->SetGravity(Vec3(0, globalPrimitiveConsts->gravity_y(), 0));
+        phySys->SetContactListener(this);
+
+        /*
+        - When "PhysicsSettings.mUseBodyPairContactCache == true", Jolt will use caches extensively and might impact some "traversal-order-sensitive floating number calculation" during "rollback-chasing".
+            - ["CachedBodyPair"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L823) of ["ManifoldCache"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.h#L416)
+        - When "PhysicsSettings.mDeterministicSimulation == true", the engine sorts "regular Constraints" and "ContactConstraints" before solving them](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1415).
+        - When "PhysicsSettings.mConstraintWarmStart == true", Jolt uses "warm start" to solve constraints (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp), which will certainly impact determinism in "rollback-chasing".
+            - [One of the calls to ContactConstraintManager::WarmStartVelocityConstraints](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1348)
+        - Moreover, the impact of "PhysicsSettings.mUseManifoldReduction" precedes the solver of "ContactConstraintManager".
+       */
+        PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
+        clonedPhySettings.mUseManifoldReduction = true;
+
+        if (onlineArenaMode) {
+            clonedPhySettings.mConstraintWarmStart = false; // [WARNING] A practical test case to verify that this setting matters is "FrontendTest/runTestCase11".
+            clonedPhySettings.mUseBodyPairContactCache = false; // [WARNING] By keeping "mConstraintWarmStart = false", a practical test case to verify that this setting matters is "FrontendTest/runTestCase11" with "cLengthEps <= 1e-10" (i.e. if "cLengthEps >= 1e-2" this setting doesn't matter).
+        } else {
+            clonedPhySettings.mConstraintWarmStart = true;
+            clonedPhySettings.mUseBodyPairContactCache = true;
+        }
+      
+        phySys->SetPhysicsSettings(clonedPhySettings);
+
+        bi = &(phySys->GetBodyInterface());
+
+        return true;
+    }
 };
 
 #endif

@@ -19,6 +19,10 @@
 It's by design that "JPH::Character" instead of "JPH::CharacterVirtual" is used here while [their differences]("https://jrouwe.github.io/JoltPhysics/index.html#character-controllers) are understood.
 
 The lack of use of broadphase makes "JPH::CharacterVirtual" very inefficient in "Character v.s. Character" collision handling. See [CharacterVsCharacterCollisionSimple](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L34) for its official default implementation.
+
+My current choice is to
+- use "JPH::Character" for efficient "(Regular)Constraint & ContactConstraint" calculation in "JPH::PhysicsSystem" along with other "JPH:Body"s, then 
+- use "NarrowPhase" collision detection to handle application specific state transitions.
 */
 
 typedef struct VectorFloatHasher {
@@ -565,7 +569,7 @@ protected:
         return true;
     }
     
-    virtual bool allocPhySys();
+    virtual bool allocPhySys() = 0;
     virtual bool deallocPhySys();
 
     void stringifyPlayerInputsInIfdBuffer(std::ostringstream& oss, int joinIndexArrIdx) {
