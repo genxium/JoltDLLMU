@@ -635,7 +635,6 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
     int staticColliderId = 1;
     staticColliderBodyIDs.clear();
-    auto staticColliderShapesFromTiled = initializerMapData->serialized_barrier_polygons();
     for (int i = 0; i < initializerMapData->serialized_barrier_polygons_size(); i++) {
         auto& convexPolygon = initializerMapData->serialized_barrier_polygons(i);
         TriangleList triangles;
@@ -674,7 +673,7 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         staticColliderBodyIDs.push_back(body->GetID());
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i+1 << "-th static collider with bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
+        oss << "The " << i + 1 << "-th static collider with bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
             auto x = convexPolygon.points(pi);
             auto y = convexPolygon.points(pi + 1);
@@ -2797,12 +2796,12 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::p
     for (int i = 0; i < playersCnt; i++) {
         const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
         const CharacterDownsync& currChd = currPlayer.chd();
-#ifndef NDEBUG
-        std::ostringstream oss;
-        oss << "Player joinIndex=" << i+1 << " starts at position=(" << currChd.x() << ", " << currChd.y() << ", " << currChd.z() << ")";
-        Debug::Log(oss.str(), DColor::Orange);
-#endif
         uint64_t ud = calcUserData(currPlayer);
+#ifndef NDEBUG
+        std::ostringstream oss2;
+        oss2 << "[preallocateBodies] Player joinIndex=" << i+1 << " starts at position=(" << currChd.x() << ", " << currChd.y() << ", " << currChd.z() << "), species_id=" << currChd.species_id() << ", ud=" << ud; 
+        Debug::Log(oss2.str(), DColor::Orange);
+#endif
         const CharacterConfig* cc = getCc(currChd.species_id());
         float capsuleRadius = 0, capsuleHalfHeight = 0;
         calcChdShape(CharacterState::Idle1, cc, capsuleRadius, capsuleHalfHeight);

@@ -5,6 +5,11 @@ bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
 }
 
 bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "BackendBattle::ResetStartRdf starts for deserialized initializerMapData";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
     dynamicsRdfId = rdfBuffer.GetLast()->id();
     return res;
