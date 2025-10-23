@@ -426,7 +426,8 @@ protected:
     inline const CharacterConfig* getCc(uint32_t speciesId) {
         auto& ccs = globalConfigConsts->character_configs();
         if (!ccs.contains(speciesId)) {
-            return ccs.at(1);
+            // a fallback
+            return &ccs.at(1);
         }
         auto& v = ccs.at(speciesId);
         return &v;
