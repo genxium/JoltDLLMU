@@ -582,6 +582,12 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
     chaserRdfId = timerRdfId1;
 }
 
+void FrontendBattle::Clear() {
+    BaseBattle::Clear();
+    upsyncSnapshotReqHolder = nullptr;
+    downsyncSnapshotHolder = nullptr;
+}
+
 bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     initializerMapData->ParseFromArray(inBytes, inBytesCnt);
