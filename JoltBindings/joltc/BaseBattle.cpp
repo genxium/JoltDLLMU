@@ -448,6 +448,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         if ((hasBeenOnWallIdle1 || hasBeenOnWallAtk1) && nextChd->x() != currChd.x()) {
             nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
         }
+/*
 #ifndef NDEBUG
         if (groundBodyIsChCollider) {
             std::ostringstream oss;
@@ -455,6 +456,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             Debug::Log(oss.str(), DColor::Orange);
         }
 #endif
+*/
         postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
     }
 

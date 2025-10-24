@@ -68,6 +68,8 @@ public:
         return true;
     }
 
+    virtual void Clear();
+
     bool ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
     bool ResetStartRdf(const WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
 
