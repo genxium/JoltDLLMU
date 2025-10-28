@@ -293,6 +293,8 @@ public:
     }
     
 protected:
+    float fallenDeathHeight = -65535.0f; 
+
     BodyIDVector staticColliderBodyIDs;
     BodyIDVector bodyIDsToClear;
     BodyIDVector bodyIDsToAdd;
@@ -388,12 +390,12 @@ protected:
     void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
     void processPlayerInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
-    void processNpcInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd);
+    void processNpcInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd);
 
     void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
 
     void transitToGroundDodgedChState(CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
-    void calcFallenDeath(RenderFrame* nextRdf);
+    void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
     void resetJumpStartup(CharacterDownsync* nextChd, bool putBtnHoldingJammed = false);
     bool isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
     bool isJumpStartupJustEnded(const CharacterDownsync& currCd, const CharacterDownsync* nextCd, const CharacterConfig* cc);
@@ -408,6 +410,10 @@ protected:
     void processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc);
 
     void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
+
+    bool transitToDying(const CharacterDownsync& currChd, CharacterDownsync* nextChd);
+    bool transitToDying(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer);
+    bool transitToDying(const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc);
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
@@ -605,6 +611,9 @@ public:
         if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
             return JPH::ValidateResult::RejectContact;
         }
+        if (invinsibleSet.count(lhsCurrChd->ch_state()) || invinsibleSet.count(rhsCurrChd->ch_state())) {
+            return JPH::ValidateResult::RejectContact;
+        }
         return JPH::ValidateResult::AcceptContact;
     }
 
@@ -614,6 +623,10 @@ public:
         }
 
         if (!isBulletActive(rhsCurrBl)) {
+            return JPH::ValidateResult::RejectContact;
+        }
+
+        if (invinsibleSet.count(lhsCurrChd->ch_state())) {
             return JPH::ValidateResult::RejectContact;
         }
         return JPH::ValidateResult::AcceptContact;

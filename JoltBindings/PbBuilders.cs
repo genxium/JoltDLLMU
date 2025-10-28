@@ -64,12 +64,6 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetDir(int dirX, int dirY) {
-            this.DirX = dirX;
-            this.DirY = dirY;
-            return this;
-        }
-
         public BulletConfig SetHitboxOffsets(float hitboxOffsetX, float hitboxOffsetY) {
             this.HitboxOffsetX = hitboxOffsetX;
             this.HitboxOffsetY = hitboxOffsetY;
@@ -157,12 +151,6 @@ namespace jtshared {
 
         public BulletConfig SetBlowUp(bool val) {
             BlowUp = val;
-            return this;
-        }
-
-        public BulletConfig SetSpinAnchor(float x, float y) {
-            SpinAnchorX = x;
-            SpinAnchorY = y;
             return this;
         }
 

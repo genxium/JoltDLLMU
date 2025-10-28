@@ -5,6 +5,14 @@ package jtshared;
 // Providing "csharp_namespace" to force generating lowercase namespace, reference https://protobuf.dev/programming-guides/proto3/#packages 
 option csharp_namespace = "jtshared";
 
+message PbQuat {
+    // Quaternion
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
 enum BoxInterpolationType {
     UsePrev = 0; 
     Interpolate = 1;
@@ -510,6 +518,7 @@ message WsReq {
     SerializedTrapLocalIdToColliderAttrs serialized_trap_id_to_collider_attrs = 11; 
     SerializedTriggerEditorIdToLocalId serialized_trigger_editor_id_to_id = 12;
     map<int32, int32> preallocate_npc_species_dict = 13;
+    float fallen_death_height = 14;
 }
 
 message PatrolCue {
@@ -598,24 +607,23 @@ message BulletConfig {
 
     float self_lock_vel_x = 10;
     float self_lock_vel_y = 11;
+    float self_lock_vel_y_when_flying = 12;
 
-    float hitbox_offset_x = 12;
-    float hitbox_offset_y = 13;
-    float hitbox_half_size_x = 14;
-    float hitbox_half_size_y = 15;
+    float hitbox_offset_x = 13;
+    float hitbox_offset_y = 14;
+    float hitbox_half_size_x = 15;
+    float hitbox_half_size_y = 16;
 
-    bool blow_up = 16;
+    bool blow_up = 17;
 
-    int32 species_id = 17; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
-    int32 explosion_frames = 18;
+    int32 species_id = 18; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
+    int32 explosion_frames = 19;
 
-    BulletType b_type = 19;
-    MultiHitType mh_type = 20;
-    uint32 simultaneous_multi_hit_cnt = 21; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
+    BulletType b_type = 20;
+    MultiHitType mh_type = 21;
+    uint32 simultaneous_multi_hit_cnt = 22; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
 
-    float speed = 22; // For speed varying bullets, this is the initial speed
-    int32 dir_x = 23; // the initial direction indicator for X-axis
-    int32 dir_y = 24; // the initial direction indicator for Y-axis
+    float speed = 23; // For speed varying bullets, this is the initial speed
 
     map<int32, uint32> cancel_transit = 25; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
     int32 repeat_quota = 26; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
@@ -663,15 +671,10 @@ message BulletConfig {
     float vision_size_x = 56;
     float vision_size_y = 57;
 
-    float self_lock_vel_y_when_flying = 58;
-
     uint32 elemental_attrs = 59;
 
     bool cancellable_by_inventory_slot_c = 60;
     bool cancellable_by_inventory_slot_d = 61;
-
-    float spin_anchor_x = 62; // collision space translation from the original anchor of unrotated polygon 
-    float spin_anchor_y = 63; // collision space translation from the original anchor of unrotated polygon
 
     float beam_visual_size_y = 64;
 
@@ -683,11 +686,7 @@ message BulletConfig {
     bool wall_impact_melee_collision = 68; // Only applicable to "b_type == Melee"
 
     bool mh_inherits_spin = 69;
-    float init_spin_cos = 70;
-    float init_spin_sin = 71;
-
-    int32 finishing_frames = 72; // Only applicable to "true == ground_impact_melee_collision"
-    bool no_explosion_on_hard_pushback = 73;
+    PbQuat init_q = 70;
 
     int32 startup_vfx_species_id = 74; // currently only support 1 vfx config when starting up
 
@@ -721,6 +720,10 @@ message BulletConfig {
         
     bool takes_def1_as_hard_pushback = 96; // [WARNING] Always implies "beam_collision" and must be used together with "beam_collision".
 
+    int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
+    bool no_explosion_on_hard_pushback = 98;
+
+
     uint64 collision_type_mask = 1029;
     bool takes_gravity = 1030; // e.g. a bomb, a ground-wave
 
@@ -750,27 +753,30 @@ message Bullet {
     float x = 6;
     float y = 7;
     float z = 8;
-    float dir_x = 9;
-    float dir_y = 10;
-    float dir_z = 11;
 
-    float vel_x = 12;
-    float vel_y = 13;
-    float vel_z = 14;
+    /*
+     The unit-quaternion that transforms the "world-axes" to align with the bullet's "local-axes" as if the bullet always stays at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
 
-    float originated_x = 15;
-    float originated_y = 16;
-    float originated_z = 17;
+    Moreover, the body mesh starts with its "local-axes" aligned with the "world-axes". 
+    */
+    float q_x = 9;
+    float q_y = 10;
+    float q_z = 11;
+    float q_w = 12;
 
-    int32 repeat_quota_left = 18;
-    int32 remaining_hard_pushback_bounce_quota = 19;
-    uint64 target_ud = 20; 
-    int32 damage_dealed = 21;
-    IfaceCat exploded_on_ifc = 22;
+    float vel_x = 13;
+    float vel_y = 14;
+    float vel_z = 15;
 
-    // Not using quaternion yet because this is a 2D game.
-    float spin_cos = 23; // To be used after applying "dir_x (used for mirroring)"
-    float spin_sin = 24; // To be used after applying "dir_x (used for mirroring)"
+    float originated_x = 16;
+    float originated_y = 17;
+    float originated_z = 18;
+
+    int32 repeat_quota_left = 19;
+    int32 remaining_hard_pushback_bounce_quota = 20;
+    uint64 target_ud = 21; 
+    int32 damage_dealed = 22;
+    IfaceCat exploded_on_ifc = 23;
 
     int32 active_skill_hit = 25; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_hit" might've already been reset)
     uint32 skill_id = 26; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_id" might've already been reset); also for reverse lookup in multihit transition, in the most extreme case, a same "BulletConfig" instance is to be shared across different "Skill"s, thus we put "skill_id" in "BulletBattleAttr" instead.
@@ -795,26 +801,9 @@ message TrapConfig {
 
     bool deactivate_upon_triggered = 10;
 
-    float const_friction_vel_x_top = 11;
-    float const_friction_vel_x_bottom = 12;
-    float const_friction_vel_y_left = 13;
-    float const_friction_vel_y_right = 14;
+    float surface_friction = 11;
 
     bool patrol_cue_requires_full_contain = 15; // For accurate positioning
-
-    /*
-    [WARNING]
-
-    For a single "Trap", all of its "TrapColliderAttrs" respect the shared spin anchor & angular velocity.
-    */
-    float spin_anchor_x = 16; // collision space translation from the original anchor of unrotated polygon 
-    float spin_anchor_y = 17; // collision space translation from the original anchor of unrotated polygon
-
-    float angular_frame_vel_cos = 18;
-    float angular_frame_vel_sin = 19;
-
-    float intrinsic_spin_cos = 20;
-    float intrinsic_spin_sin = 21;
 
     bool atk1_upon_triggered = 22;
     uint32 atk1_skill_id = 23;
@@ -1071,12 +1060,6 @@ message DebuffConfig {
     int32 arr_idx = 5;
     int32 impact_per_interval = 6;
     int32 impact_interval = 7;
-    int32 friction_vel_x = 8;
-    int32 friction_vel_y = 9;
-
-    // "Acc" here means "acceleration"
-    int32 friction_acc_x = 10;
-    int32 friction_acc_y = 11;
 }
 
 message BuffConfig {
