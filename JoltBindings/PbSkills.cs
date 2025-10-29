@@ -59,8 +59,6 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
             Speed = 7.0f * BATTLE_DYNAMICS_FPS,
-            DirX = 2,
-            DirY = 0,
             Hardness = 4,
             ExplosionFrames = 25,
             BType = BulletType.MechanicalCartridge,

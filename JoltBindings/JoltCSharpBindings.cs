@@ -155,8 +155,10 @@ namespace JoltCSharp {
                 TeamId = teamId,
                 X = 0,
                 Y = 0,
-                DirX = 0,
-                DirY = 0,
+                QX = 0,
+                QY = 0,
+                QZ = 0,
+                QW = 1,
                 VelX = 0,
                 VelY = 0
             };
@@ -434,6 +436,77 @@ namespace JoltCSharp {
             log.ChaserStRdfId = 0;
             log.ChaserEdRdfId = 0;
             log.ChaserRdfIdLowerBoundSnatched = false;
+        }
+
+        public static (Skill?, BulletConfig?) FindBulletConfig(uint skillId, int skillHit) {
+            if (PbPrimitives.underlying.NoSkill == skillId) return (null, null);
+            if (PbPrimitives.underlying.NoSkillHit == skillHit) return (null, null);
+            var skillConfigs = PbSkills.underlying;
+            if (!skillConfigs.ContainsKey(skillId)) return (null, null);
+            var outSkill = skillConfigs[skillId];
+            if (null == outSkill.Hits || skillHit > outSkill.Hits.Count) {
+                return (null, null);
+            }
+            var outBulletConfig = outSkill.Hits[skillHit - 1];
+            return (outSkill, outBulletConfig);
+        }
+
+        public static bool IsBulletVanishing(Bullet bullet, BulletConfig bc) {
+            return BulletState.Vanishing == bullet.BlState;
+        }
+
+        public static bool IsBulletExploding(Bullet bullet, BulletConfig bc) {
+            switch (bc.BType) {
+            case BulletType.Melee:
+                return ((BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) && bullet.FramesInBlState < bc.ExplosionFrames);
+            case BulletType.MechanicalCartridge:
+            case BulletType.MagicalFireball:
+            case BulletType.GroundWave:
+                return (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState);
+            default:
+                return false;
+            }
+        }
+
+        public static bool IsBulletStartingUp(Bullet bullet, BulletConfig bc, int currRdfId) {
+            return BulletState.StartUp == bullet.BlState;
+        }
+
+        public static bool IsBulletActive(Bullet bullet) {
+            return (BulletState.Active == bullet.BlState);
+        }
+
+        public static bool IsBulletActive(Bullet bullet, BulletConfig bc, int currRdfId) {
+            if (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) {
+                return false;
+            }
+            return (bullet.OriginatedRenderFrameId + bc.StartupFrames < currRdfId) && (currRdfId < bullet.OriginatedRenderFrameId + bc.StartupFrames + bc.ActiveFrames);
+        }
+
+        public static bool IsBulletJustActive(Bullet bullet, BulletConfig bc, int currRdfId) {
+            if (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) {
+                return false;
+            }
+            // [WARNING] Practically a bullet might propagate for a few render frames before hitting its visually "VertMovingTrapLocalIdUponActive"!
+            int visualBufferRdfCnt = 3;
+            if (BulletState.Active == bullet.BlState) {
+                return visualBufferRdfCnt >= bullet.FramesInBlState;
+            }
+            return (bullet.OriginatedRenderFrameId + bc.StartupFrames < currRdfId && currRdfId <= bullet.OriginatedRenderFrameId + bc.StartupFrames + visualBufferRdfCnt);
+        }
+
+        public static bool IsPickableAlive(Pickable pickable, int currRdfId) {
+            return 0 < pickable.RemainingLifetimeRdfCount;
+        }
+
+        public static bool IsBulletAlive(Bullet bullet, BulletConfig bc, int currRdfId) {
+            if (BulletState.Vanishing == bullet.BlState) {
+                return bullet.FramesInBlState < bc.ActiveFrames + bc.ExplosionFrames;
+            }
+            if (BulletState.Exploding == bullet.BlState && MultiHitType.FromEmission != bc.MhType) {
+                return bullet.FramesInBlState < bc.ActiveFrames;
+            }
+            return (currRdfId < bullet.OriginatedRenderFrameId + bc.StartupFrames + bc.ActiveFrames);
         }
     }
 }

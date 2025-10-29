@@ -278,6 +278,33 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
     }
 }
 
+bool BaseBattle::transitToDying(const CharacterDownsync& currChd, CharacterDownsync* nextChd) {
+    if (CharacterState::Dying == currChd.ch_state()) return false;
+    nextChd->set_ch_state(CharacterState::Dying);
+    nextChd->set_frames_in_ch_state(0);
+    nextChd->set_frames_to_recover(0);
+    nextChd->set_frames_invinsible(0);
+    nextChd->set_frames_captured_by_inertia(0);
+    resetJumpStartup(nextChd);
+    return true;
+}
+
+bool BaseBattle::transitToDying(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer) {
+    auto& currChd = currPlayer.chd();
+    auto nextChd = nextPlayer->mutable_chd();
+    bool res = transitToDying(currChd, nextChd);
+    return res;
+}
+
+bool BaseBattle::transitToDying(const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc) {
+    auto& currChd = currNpc.chd();
+    auto nextChd = nextNpc->mutable_chd();
+    bool res = transitToDying(currChd, nextChd);
+    // For NPC should also reset patrol book-keepers
+    nextNpc->set_frames_in_patrol_cue(0);
+    return res;
+}
+
 void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd) {
     if (transientUdToChCollider.count(ud)) {
         auto chCollider = transientUdToChCollider[ud];
@@ -330,10 +357,9 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         auto currNpc = currRdf->npcs_arr(i);
+        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
         auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
         
-        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-
         auto currChd = currNpc.chd();
         auto nextChd = nextNpc->chd();
         auto ud = calcUserData(currNpc);
@@ -349,7 +375,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         if (transientUdToBodyID.count(ud)) {
             auto bodyID = *(transientUdToBodyID[ud]);
             
-            bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat::sIdentity(), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
+            bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
             bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()), Vec3::sZero());
             const Skill* skill = nullptr;
             const BulletConfig* blConfig = nullptr;
@@ -365,6 +391,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         }
     }
 
+    processNpcInputs(currRdfId, currRdf, dt, nextRdf, delayedIfdId, delayedIfd); // To see entities in vision before deciding Npc inputs
+
     // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details.
     phySys->Update(dt, 1, globalTempAllocator, jobSys); 
 
@@ -373,6 +401,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
         const CharacterDownsync& currChd = currPlayer.chd();
         auto nextChd = nextPlayer->mutable_chd();
+
         auto ud = calcUserData(currPlayer);
         JPH_ASSERT(transientUdToChCollider.count(ud));
         CH_COLLIDER_T* single = transientUdToChCollider[ud];
@@ -380,6 +409,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         auto bodyID = single->GetBodyID(); 
 
         const CharacterConfig* cc = getCc(currChd.species_id());
+        bool isDead = (0 >= nextChd->hp());
 
         RVec3 newPos;
         Quat newRot;
@@ -395,14 +425,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
         auto cvGroundState = single->GetGroundState();
 
-/*
-#ifndef NDEBUG
-        if (Walking == currChd.ch_state() && !inJumpStartupOrJustEnded && cvGroundState == CharacterBase::EGroundState::NotSupported) {
-            std::ostringstream oss;
-            Debug::Log(oss.str(), DColor::Orange);
-        }
-#endif
-*/
         bool oldNextNotDashing = isNotDashing(*nextChd);
         bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
         bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
@@ -458,6 +480,28 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 #endif
 */
         postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+
+        if (isDead) {
+            if (CharacterState::Dying != nextChd->ch_state()) {
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead with nextChd->hp()=" << nextChd->hp() << ", will transit into Dying";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+                transitToDying(currPlayer, nextPlayer);
+            } else if (globalPrimitiveConsts->dying_frames_to_recover() < nextChd->frames_in_ch_state()) {
+                nextChd->set_hp(cc->hp());
+                nextChd->set_mp(cc->mp());
+                nextChd->set_ch_state(CharacterState::Idle1);
+                nextChd->set_frames_in_ch_state(0);
+                nextChd->set_x(currPlayer.revival_x());
+                nextChd->set_y(currPlayer.revival_y());
+                nextChd->set_dir_x(currPlayer.revival_dir_x());
+                nextChd->set_dir_y(currPlayer.revival_dir_y());
+                nextChd->set_vel_x(0);
+                nextChd->set_vel_y(0);
+            }
+        }
     }
 
     for (int i = 0; i < currRdf->bullets_size(); i++) {
@@ -483,6 +527,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         }
     }
 
+    calcFallenDeath(currRdf, nextRdf);
     leftShiftDeadNpcs(currRdfId, nextRdf);
     leftShiftDeadBullets(currRdfId, nextRdf);
     leftShiftDeadPickables(currRdfId, nextRdf);
@@ -609,6 +654,7 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
     Also per experimental results, "PhysicsSystem::SaveState" and "PhysicsSystem::RestoreState" would NOT help reset or align "PhysicsSystem.mBodyInterfaceLocking.mBodyManager.mBodyIDFreeListStart".
     */
+    fallenDeathHeight = initializerMapData->fallen_death_height();
     auto startRdf = initializerMapData->self_parsed_rdf();
     playersCnt = startRdf.players_arr_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
@@ -658,6 +704,13 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
             triangles.push_back(Triangle(v2, v1, v3, 0)); // y: -, +, +
             triangles.push_back(Triangle(v3, v4, v2, 0)); // y: +, -, - 
+
+            if (y1 < fallenDeathHeight) {
+                fallenDeathHeight = y1;
+            } 
+            if (y2 < fallenDeathHeight) {
+                fallenDeathHeight = y2;
+            }
         }
         MeshShapeSettings bodyShapeSettings(triangles);
         MeshShapeSettings::ShapeResult shapeResult;
@@ -1177,15 +1230,40 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
         newOriginatedY = newY;
     }
 
-    float dstSpinCos = 1.f, dstSpinSin = 0.f;
+    float dstQx = 0.f, dstQy = 0.f, dstQz = 0.f, dstQw = 1.f;
     if (bulletConfig.mh_inherits_spin()) {
         if (nullptr != referenceBullet) {
-            dstSpinCos = referenceBullet->spin_cos();
-            dstSpinSin = referenceBullet->spin_sin();
+            dstQx = referenceBullet->q_x();
+            dstQy = referenceBullet->q_y();
+            dstQz = referenceBullet->q_z();
+            dstQw = referenceBullet->q_w();
         }
-    } else if (0 != bulletConfig.init_spin_cos() || 0 != bulletConfig.init_spin_sin()) {
-        dstSpinCos = bulletConfig.init_spin_cos();
-        dstSpinSin = 0 < xfac ? bulletConfig.init_spin_sin() : -bulletConfig.init_spin_sin();
+    } else if (bulletConfig.has_init_q()) {
+        auto& init_q = bulletConfig.init_q();
+        if (0 <= xfac) {
+            dstQx = init_q.x();
+            dstQy = init_q.y();
+            dstQz = init_q.z();
+            dstQw = init_q.w();
+        } else {
+            // Rotated around y-axis, i.e. (x=0, y=1, z=0, w=0), i.e. (0*i + 1*j + 0*k + 0) first, then apply "init_q_*"
+            dstQx = -init_q.z();
+            dstQy =  init_q.w();
+            dstQz =  init_q.x();
+            dstQw = -init_q.y();
+        }
+    } else {
+        if (0 <= xfac) {
+            dstQx = 0;
+            dstQy = 0;
+            dstQz = 0;
+            dstQw = 1;
+        } else {
+            dstQx = 0;
+            dstQy = 1;
+            dstQz = 0;
+            dstQw = 0;
+        }
     }
 
     auto initBlState = BulletState::StartUp;
@@ -1216,21 +1294,19 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
     nextBl->set_originated_y(newOriginatedY);
     nextBl->set_x(newX);
     nextBl->set_y(newY);
-    nextBl->set_dir_x(xfac * bulletConfig.dir_x());
-    nextBl->set_dir_y(yfac * bulletConfig.dir_y());
+    nextBl->set_q_x(dstQx);
+    nextBl->set_q_y(dstQy);
+    nextBl->set_q_z(dstQz);
+    nextBl->set_q_w(dstQw);
     nextBl->set_team_id(currChd.bullet_team_id());
 
-    float bulletDirMagSq = bulletConfig.dir_x() * bulletConfig.dir_x() + bulletConfig.dir_y() * bulletConfig.dir_y();
-    float invBulletDirMag = InvSqrt32(bulletDirMagSq);
-    auto bulletSpeedXfac = xfac * invBulletDirMag * bulletConfig.dir_x();
-    auto bulletSpeedYfac = yfac * invBulletDirMag * bulletConfig.dir_y();
-
-    nextBl->set_vel_x(bulletSpeedXfac * bulletConfig.speed());
-    nextBl->set_vel_y(bulletSpeedYfac * bulletConfig.speed());
+    JPH::Quat blInitQ(dstQx, dstQy, dstQz, dstQw);
+    Vec3Arg blInitVelocity(bulletConfig.speed(), 0, 0);
+    auto blEffVelocity = blInitQ*blInitVelocity;
+    nextBl->set_vel_x(blEffVelocity.GetX());
+    nextBl->set_vel_y(blEffVelocity.GetY());
     nextBl->set_skill_id(activeSkillId);
     nextBl->set_active_skill_hit(activeSkillHit);
-    nextBl->set_spin_cos(dstSpinCos);
-    nextBl->set_spin_sin(dstSpinSin);
     nextBl->set_repeat_quota_left(bulletConfig.repeat_quota());
     nextBl->set_remaining_hard_pushback_bounce_quota(bulletConfig.default_hard_pushback_bounce_quota());
     nextBl->set_exploded_on_ifc(bulletConfig.ifc());
@@ -1770,7 +1846,7 @@ void BaseBattle::derivePlayerOpPattern(const int rdfId, const CharacterDownsync&
 }
 
 void BaseBattle::deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
-
+    // TODO
 }
 
 std::vector<std::vector<int>> DIRECTION_DECODER = {
@@ -1845,7 +1921,7 @@ void BaseBattle::processPlayerInputs(const int currRdfId, const RenderFrame* cur
     }
 }
 
-void BaseBattle::processNpcInputs(const int currRdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const InputFrameDownsync* delayedIfd) {
+void BaseBattle::processNpcInputs(const int currRdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd) {
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
@@ -1994,6 +2070,8 @@ void BaseBattle::FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Ski
     outSkill = &(outSkillVal);
     if (skillHit > outSkill->hits_size()) {
         outSkill = nullptr;
+        outBulletConfig = nullptr;
+        return;
     }
     const BulletConfig& targetBlConfig = outSkill->hits(skillHit - 1);
     outBulletConfig = &targetBlConfig;
@@ -2379,34 +2457,34 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
     nextRdf->set_npc_count(aliveSlotI);
 }
 
-void BaseBattle::calcFallenDeath(RenderFrame* nextRdf) {
+void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf) {
     auto chConfigs = globalConfigConsts->character_configs();
 
     for (int i = 0; i < nextRdf->players_arr_size(); i++) {
-        auto player = nextRdf->mutable_players_arr(i);
-        auto chd = player->mutable_chd();
+        auto& currPlayer = currRdf->players_arr(i);
+        auto nextPlayer = nextRdf->mutable_players_arr(i);
+        auto chd = nextPlayer->mutable_chd();
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2*chConfig.capsule_half_height();
-        if (0 > chTop && Dying != chd->ch_state()) {
-            chd->set_hp(0);
-            chd->set_vel_x(0);
-            chd->set_ch_state(Dying);
-            chd->set_frames_to_recover(globalPrimitiveConsts->dying_frames_to_recover());
-            resetJumpStartup(chd);
+        if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdf->id() << ", player joinIndex=" << currPlayer.join_index() << " is dead due to fallen death with chTop=" << chTop << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+            transitToDying(currPlayer, nextPlayer);
         }
     }
 
     for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
-        auto player = nextRdf->mutable_npcs_arr(i);
-        auto chd = player->mutable_chd();
+        auto& currNpc = currRdf->npcs_arr(i);
+        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
+        auto nextNpc = nextRdf->mutable_npcs_arr(i);
+        auto chd = nextNpc->mutable_chd();
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2 * chConfig.capsule_half_height();
-        if (0 > chTop && Dying != chd->ch_state()) {
-            chd->set_hp(0);
-            chd->set_vel_x(0);
-            chd->set_ch_state(Dying);
-            chd->set_frames_to_recover(globalPrimitiveConsts->dying_frames_to_recover());
-            resetJumpStartup(chd);
+        if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
+            transitToDying(currNpc, nextNpc);
         }
     }
 
@@ -2414,7 +2492,7 @@ void BaseBattle::calcFallenDeath(RenderFrame* nextRdf) {
         auto pickable = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == pickable->id()) break;
         auto pickableTop = pickable->y() + globalPrimitiveConsts->default_pickable_hitbox_half_size_y();
-        if (0 > pickableTop && PickableState::PIdle == pickable->pk_state()) {
+        if (fallenDeathHeight > pickableTop && PickableState::PIdle == pickable->pk_state()) {
             pickable->set_pk_state(PickableState::PDisappearing);
             pickable->set_frames_in_pk_state(0);
             pickable->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
