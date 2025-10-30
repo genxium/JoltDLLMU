@@ -40,7 +40,7 @@ namespace JoltCSharp {
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
             CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
-            CapsuleHalfHeight = (16.0f),
+            CapsuleHalfHeight = (12.0f),
             ShrinkedCapsuleRadius = (8.0f),
             ShrinkedCapsuleHalfHeight = (9.0f),
             LayDownCapsuleRadius = (16.0f),
@@ -84,7 +84,7 @@ namespace JoltCSharp {
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
             CapsuleRadius = (8.0f),
-            CapsuleHalfHeight = (16.0f),
+            CapsuleHalfHeight = (12.0f),
             ShrinkedCapsuleRadius = (8.0f),
             ShrinkedCapsuleHalfHeight = (9.0f),
             LayDownCapsuleRadius = (16.0f),

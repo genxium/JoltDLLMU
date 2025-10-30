@@ -293,7 +293,7 @@ public:
     }
     
 protected:
-    float fallenDeathHeight = -65535.0f; 
+    float fallenDeathHeight = 0;
 
     BodyIDVector staticColliderBodyIDs;
     BodyIDVector bodyIDsToClear;
@@ -411,9 +411,9 @@ protected:
 
     void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
-    bool transitToDying(const CharacterDownsync& currChd, CharacterDownsync* nextChd);
-    bool transitToDying(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer);
-    bool transitToDying(const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc);
+    bool transitToDying(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd);
+    bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer);
+    bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc);
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
@@ -422,9 +422,9 @@ protected:
     void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf);
 
-    bool useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
+    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
 
-    void useInventorySlot(int rdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
+    void useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
     static bool IsChargingAtkChState(CharacterState chState) {
         return (CharacterState::Atk7_Charging == chState);
     }
