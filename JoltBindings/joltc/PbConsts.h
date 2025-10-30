@@ -38,13 +38,16 @@ const std::unordered_set<CharacterState> inAirSet = {
     Dashing // Yes dashing is an InAir state even if you dashed on the ground :)
 };
 
-const std::unordered_set<CharacterState> noOpSet = {
+const std::unordered_set<CharacterState> atkedSet = {
     Atked1,
     InAirAtked1,
     CrouchAtked1,
+};
+
+const std::unordered_set<CharacterState> noOpSet = {
     BlownUp1,
     LayDown1,
-    // [WARNING] During the invinsible frames of GET_UP1, the player is allowed to take any action
+    // [WARNING] During the invinsible frames of GetUp1, the player is allowed to take any action
     Dying,
     Dimmed,
     Awaking,

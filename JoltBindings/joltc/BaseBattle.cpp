@@ -278,7 +278,7 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
     }
 }
 
-bool BaseBattle::transitToDying(const CharacterDownsync& currChd, CharacterDownsync* nextChd) {
+bool BaseBattle::transitToDying(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd) {
     if (CharacterState::Dying == currChd.ch_state()) return false;
     nextChd->set_ch_state(CharacterState::Dying);
     nextChd->set_frames_in_ch_state(0);
@@ -289,17 +289,22 @@ bool BaseBattle::transitToDying(const CharacterDownsync& currChd, CharacterDowns
     return true;
 }
 
-bool BaseBattle::transitToDying(const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer) {
+bool BaseBattle::transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer) {
     auto& currChd = currPlayer.chd();
     auto nextChd = nextPlayer->mutable_chd();
-    bool res = transitToDying(currChd, nextChd);
+#ifndef NDEBUG
+    std::ostringstream oss;
+    oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead due to fallen death with nextChd->position=(" << nextChd->x() << "," << nextChd->y() << "), orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state() << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
+    Debug::Log(oss.str(), DColor::Orange);
+#endif
+    bool res = transitToDying(currRdfId, currChd, nextChd);
     return res;
 }
 
-bool BaseBattle::transitToDying(const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc) {
+bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc) {
     auto& currChd = currNpc.chd();
     auto nextChd = nextNpc->mutable_chd();
-    bool res = transitToDying(currChd, nextChd);
+    bool res = transitToDying(currRdfId, currChd, nextChd);
     // For NPC should also reset patrol book-keepers
     nextNpc->set_frames_in_patrol_cue(0);
     return res;
@@ -483,13 +488,13 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
         if (isDead) {
             if (CharacterState::Dying != nextChd->ch_state()) {
+                transitToDying(currRdfId, currPlayer, nextPlayer);
+            } else if (globalPrimitiveConsts->dying_frames_to_recover() < nextChd->frames_in_ch_state()) {
 #ifndef NDEBUG
                 std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead with nextChd->hp()=" << nextChd->hp() << ", will transit into Dying";
+                oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " reviving to nextChd->position=(" << currPlayer.revival_x() << "," << currPlayer.revival_y() << "), orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state();
                 Debug::Log(oss.str(), DColor::Orange);
 #endif
-                transitToDying(currPlayer, nextPlayer);
-            } else if (globalPrimitiveConsts->dying_frames_to_recover() < nextChd->frames_in_ch_state()) {
                 nextChd->set_hp(cc->hp());
                 nextChd->set_mp(cc->mp());
                 nextChd->set_ch_state(CharacterState::Idle1);
@@ -1188,12 +1193,12 @@ void BaseBattle::processInertiaFlying(int rdfId, float dt, const CharacterDownsy
 }
 
 
-bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
+bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
     if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
     if (nextRdf->bullet_id_counter() >= nextRdf->bullets_size()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
-        oss << "@rdfId=" << rdfId << ", bullet overwhelming#1";
+        oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ": bullet overwhelming#1";
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         return false;
@@ -1282,7 +1287,7 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
     int oldBulletCount = nextRdf->bullet_count();
     auto nextBl = nextRdf->mutable_bullets(oldBulletCount);
     nextBl->set_id(oldBulletIdCounter);
-    nextBl->set_originated_render_frame_id(rdfId);
+    nextBl->set_originated_render_frame_id(currRdfId);
     nextBl->set_bl_state(initBlState);
     nextBl->set_frames_in_bl_state(initFramesInBlState);
     int newBulletIdCounter = oldBulletIdCounter + 1;
@@ -1341,12 +1346,12 @@ bool BaseBattle::addNewBulletToNextFrame(int rdfId, const CharacterDownsync& cur
 /*
 #ifndef  NDEBUG
     std::ostringstream oss;
-    oss << "@rdfId=" << rdfId << ", added new bullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << ")";
+    oss << "@currRdfId=" << currRdfId << ", added new bullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << ")";
     Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
 */
     if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
-        return addNewBulletToNextFrame(rdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
+        return addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
     } else {
         return true;
     }
@@ -1892,6 +1897,8 @@ void BaseBattle::processPlayerInputs(const int currRdfId, const RenderFrame* cur
     for (int i = 0; i < playersCnt; i++) {
         const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
         const CharacterDownsync& currChd = currPlayer.chd();
+        if (noOpSet.count(currChd.ch_state())) continue;
+
         const CharacterConfig* cc = getCc(currChd.species_id());
         auto currChState = currChd.ch_state();
         bool currNotDashing = isNotDashing(currChd);
@@ -1900,7 +1907,7 @@ void BaseBattle::processPlayerInputs(const int currRdfId, const RenderFrame* cur
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
         bool currOnWall = onWallSet.count(currChState);
         bool currCrouching = isCrouching(currChState, cc);
-        bool currAtked = noOpSet.count(currChState);
+        bool currAtked = atkedSet.count(currChState);
         bool currInBlockStun = isInBlockStun(currChd);
         bool currParalyzed = false; // TODO
 
@@ -1934,7 +1941,7 @@ void BaseBattle::processNpcInputs(const int currRdfId, const RenderFrame* currRd
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
         bool currOnWall = onWallSet.count(currChState);
         bool currCrouching = isCrouching(currChState, cc);
-        bool currAtked = noOpSet.count(currChState);
+        bool currAtked = atkedSet.count(currChState);
         bool currInBlockStun = isInBlockStun(currChd);
         bool currParalyzed = false; // TODO
 
@@ -2460,6 +2467,7 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
 void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf) {
     auto chConfigs = globalConfigConsts->character_configs();
 
+    int currRdfId = currRdf->id();
     for (int i = 0; i < nextRdf->players_arr_size(); i++) {
         auto& currPlayer = currRdf->players_arr(i);
         auto nextPlayer = nextRdf->mutable_players_arr(i);
@@ -2467,12 +2475,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2*chConfig.capsule_half_height();
         if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
-#ifndef NDEBUG
-                std::ostringstream oss;
-                oss << "@currRdfId=" << currRdf->id() << ", player joinIndex=" << currPlayer.join_index() << " is dead due to fallen death with chTop=" << chTop << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
-                Debug::Log(oss.str(), DColor::Orange);
-#endif
-            transitToDying(currPlayer, nextPlayer);
+            transitToDying(currRdfId, currPlayer, nextPlayer);
         }
     }
 
@@ -2484,7 +2487,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2 * chConfig.capsule_half_height();
         if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
-            transitToDying(currNpc, nextNpc);
+            transitToDying(currRdfId, currNpc, nextNpc);
         }
     }
 
@@ -2576,7 +2579,7 @@ void BaseBattle::leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf) {
     nextRdf->set_pickable_count(aliveSlotI);
 }
 
-bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc) {
+bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc) {
     if (globalPrimitiveConsts->pattern_id_no_op() == patternId || globalPrimitiveConsts->pattern_id_unable_to_op() == patternId) {
         return false;
     }
@@ -2609,6 +2612,11 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
         int encodedPattern = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
         auto cancelTransitDict = activeBulletConfig->cancel_transit();
         if (!cancelTransitDict.count(encodedPattern)) {
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << " failed to cancel transit at position=(" << currChd.x() << "," << currChd.y() << "), ch_state=" << currChd.ch_state() << ", frames_in_ch_state=" << currChd.frames_in_ch_state() << ", frames_to_recover=" << currChd.frames_to_recover() << ", currActiveSkillId=" << currActiveSkillId << ", currActiveSkillHit=" << currActiveSkillHit;
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
             return false;
         }
         targetSkillId = cancelTransitDict[encodedPattern];
@@ -2620,7 +2628,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
 /*
 #ifndef NDEBUG
         std::ostringstream oss1;
-        oss1 << "@rdfId=" << rdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << ")";
+        oss1 << "@currRdfId=" << currRdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << ")";
         Debug::Log(oss1.str(), DColor::Orange);
 #endif // !NDEBUG
 */
@@ -2629,7 +2637,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
 /*
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@rdfId=" << rdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), but initSkillDict doesn't contain it!";
+            oss << "@currRdfId=" << currRdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), but initSkillDict doesn't contain it!";
             Debug::Log(oss.str(), DColor::Yellow);
 #endif // !NDEBUG
 */
@@ -2639,7 +2647,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
 /*
 #ifndef NDEBUG
         std::ostringstream oss2;
-        oss2 << "@rdfId=" << rdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), targetSkillId=" << targetSkillId << " selected";
+        oss2 << "@currRdfId=" << currRdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), targetSkillId=" << targetSkillId << " selected";
         Debug::Log(oss2.str(), DColor::Orange);
 #endif // !NDEBUG
 */
@@ -2648,7 +2656,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
     if (!skillConfigs.count(targetSkillId)) {
 #ifndef NDEBUG
          std::ostringstream oss;
-         oss << "@rdfId=" << rdfId << ", ud=" << ud << ", targetSkillId=" << targetSkillId << " not in the global skillConfigs with keys: [ ";
+         oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", targetSkillId=" << targetSkillId << " not in the global skillConfigs with keys: [ ";
         for (const auto& pair : skillConfigs) {
             oss << pair.first << " "; 
         }
@@ -2665,7 +2673,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
 /*
 #ifndef NDEBUG
          std::ostringstream oss;
-         oss << "@rdfId=" << rdfId << ", ud=" << ud << ", not enough mp to use targetSkillId=" << targetSkillId;
+         oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", not enough mp to use targetSkillId=" << targetSkillId;
          Debug::Log(oss.str(), DColor::Yellow);
 #endif // !NDEBUG
 */
@@ -2693,7 +2701,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
     const Bullet* referenceBullet = nullptr;
     const BulletConfig* referenceBulletConfig = nullptr;
     for (int i = 0; i < pivotBulletConfig.simultaneous_multi_hit_cnt() + 1; i++) {
-        if (!addNewBulletToNextFrame(rdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
+        if (!addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
             break;
         }
         nextChd->set_active_skill_hit(nextActiveSkillHit);
@@ -2718,7 +2726,7 @@ bool BaseBattle::useSkill(int rdfId, RenderFrame* nextRdf, const CharacterDownsy
     return true;
 }
 
-void BaseBattle::useInventorySlot(int rdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun) {
+void BaseBattle::useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun) {
     outSlotUsed = false;
     bool intendToDodgeInBlockStun = false;
     outDodgedInBlockStun = false;

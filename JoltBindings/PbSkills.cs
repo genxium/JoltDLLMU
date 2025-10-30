@@ -53,12 +53,12 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 12f,
-            HitboxOffsetY = 4f,
+            HitboxOffsetX = 10f,
+            HitboxOffsetY = 18f,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
-            Speed = 7.0f * BATTLE_DYNAMICS_FPS,
+            Speed = 6.3f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
             ExplosionFrames = 25,
             BType = BulletType.MechanicalCartridge,
@@ -74,16 +74,15 @@ namespace JoltCSharp {
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(14f, 10f)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
         private static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(12f, 10f)
+                                                                .SetHitboxOffsets(10f, 10f)
                                                                 .SetSelfLockVel(0, 0, 0);
 
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(14f, 10f)
+                                                                .SetHitboxOffsets(12f, 18f)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
