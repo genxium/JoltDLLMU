@@ -32,6 +32,7 @@ class RingBufferMt {
         std::atomic<int> Cnt;       // the count of valid elements in the buffer, used mainly to distinguish what "St == Ed" means for "Pop" and "Get" methods
         int N;
         std::vector<T*> Eles;
+
     public:
         RingBufferMt(int n);
         virtual ~RingBufferMt();
@@ -49,8 +50,33 @@ class RingBufferMt {
 
         // [WARNING] Always returns a non-null pointer to the slot for assignment -- when the candidate slot is nullptr, heap memory allocation will occur.
         virtual T* DryPut();   
+
+        virtual bool IsConsistent() {
+            if (!(0 <= St && N > St)) {
+                return false;
+            }
+            if (!(0 <= Ed && N >= Ed)) {
+                return false;
+            }
+            if (!(0 <= Cnt && N >= Cnt)) {
+                return false;
+            }
+            if (!(0 == dirtyPuttingCnt)) {
+                return false;
+            }
+            return (isConsistent1() || isConsistent2());
+        }
+
     protected:
         std::atomic<int> dirtyPuttingCnt;        // used for [Cnt-protection] in "DryPut()"
+
+        virtual bool isConsistent1() {
+            return (St + Cnt == Ed);
+        }
+
+        virtual bool isConsistent2() {
+            return (St + Cnt >= N && St + Cnt == Ed + N);
+        }
 
     public:
         std::string toSimpleStat() {
@@ -58,12 +84,20 @@ class RingBufferMt {
             oss << "St=" << St << ", Ed = " << Ed << ", Cnt / N = " << this->Cnt << "/" << this->N;
             return oss.str();
         }
-        
-        int GetDirtyPuttingCnt() {
-            return dirtyPuttingCnt;
-        }
 }; 
 
 #include "RingBufferMt.inl"
+
+/*
+The use of "RingBufferMt::DryPut() & RingBufferMt::Pop()/PopTail()" is analogous to "FixedSizeFreeList::ConstructObject & FixedSizeFreeList::DeconstructObject", however there're still a few noticeable differences.
+
+- By the use of "atomic<int> RingBufferMt.dirtyPuttingCnt", I have a few exception handling for "St/Ed/Cnt.compare_exchange_weak" while no equivalent exception handling is found in "FixedSizeFreeList".  
+
+- There's no concern about "FixedSizeFreeList::ConstructObject - FixedSizeFreeList::ConstructObject" intercepting execution, because in case of a conflict, some will fail [mFirstFreeObjectAndTag.compare_exchange_weak](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/FixedSizeFreeList.inl#L95) and allocation would NOT be executed.
+
+- There's some concern about "FixedSizeFreeList::DesstructObject - FixedSizeFreeList::ConstructObject" intercepting execution, because in case of a conflict, the failure of [FixedSizeFreeList::DesstructObject/mFirstFreeObjectAndTag.compare_exchange_weak](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/FixedSizeFreeList.inl#L198) would NOT rollback previous deallocation or the assignment of [deallocatedObject.mNextFreeObject](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/FixedSizeFreeList.inl#L192) -- what's worse, as only the destructor of Object is called (i.e. no "delete" called), the Object is NOT freed to be reused by [AlignedAllocate or "new"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/FixedSizeFreeList.inl#L74).
+    - Jolt resolves the concern by [putting an infinite loop wrapping "mFirstFreeObjectAndTag.compare_exchange_weak" together with its preceding "original first free look up"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/FixedSizeFreeList.inl#L185), which is valid but possibly inefficient. 
+
+*/
 
 #endif
