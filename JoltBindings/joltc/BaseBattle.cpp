@@ -1195,10 +1195,10 @@ void BaseBattle::processInertiaFlying(int rdfId, float dt, const CharacterDownsy
 
 bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
     if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
-    if (nextRdf->bullet_id_counter() >= nextRdf->bullets_size()) {
+    if (nextRdf->bullet_count() >= nextRdf->bullets_size()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ": bullet overwhelming#1";
+        oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", next_bullet_count=" << nextRdf->bullet_count() << ": bullet overwhelming#1";
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         return false;
