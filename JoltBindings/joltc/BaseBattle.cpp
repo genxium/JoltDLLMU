@@ -2262,13 +2262,15 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         if (Walking == currChd.ch_state() && (WalkingAtk1 == nextChd->ch_state() || WalkingAtk4 == nextChd->ch_state())) {
             uint32_t nextActiveSkillId = nextChd->active_skill_id();
             int nextActiveSkillHit = nextChd->active_skill_hit();
-            const Skill* nextActiveSkill = nullptr;
-            const BulletConfig* nextActiveBulletConfig = nullptr;
-            FindBulletConfig(nextActiveSkillId, nextActiveSkillHit, nextActiveSkill, nextActiveBulletConfig);
-            JPH_ASSERT(nullptr != nextActiveSkill && nullptr != nextActiveBulletConfig);
-            int newFramesInChState = currChd.frames_in_ch_state() + 1;
-            newFramesInChState %= nextActiveSkill->recovery_frames(); // [TODO] Enhance this for GUI smoothness.
-            nextChd->set_frames_in_ch_state(newFramesInChState);
+            if (globalPrimitiveConsts->no_skill() != nextActiveSkillId && globalPrimitiveConsts->no_skill_hit() != nextActiveSkillHit) {
+                const Skill* nextActiveSkill = nullptr;
+                const BulletConfig* nextActiveBulletConfig = nullptr;
+                FindBulletConfig(nextActiveSkillId, nextActiveSkillHit, nextActiveSkill, nextActiveBulletConfig);
+                JPH_ASSERT(nullptr != nextActiveSkill && nullptr != nextActiveBulletConfig);
+                int newFramesInChState = currChd.frames_in_ch_state() + 1;
+                newFramesInChState %= nextActiveSkill->recovery_frames(); // [TODO] Enhance this for GUI smoothness.
+                nextChd->set_frames_in_ch_state(newFramesInChState);
+            }
         } else if ((WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) && Walking == nextChd->ch_state()) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else if ((Atk1 == currChd.ch_state() && WalkingAtk1 == nextChd->ch_state()) || (Atk4 == currChd.ch_state() && WalkingAtk4 == nextChd->ch_state())) {
