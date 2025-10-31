@@ -120,13 +120,7 @@ bool runTestCase1() {
     std::ostringstream oss;
     oss << "popSuccessCnt=" << popSuccessCnt << "\npopFailureCnt=" << popFailureCnt << "\npopTailSuccessCnt=" << popTailSuccessCnt << "\npopTailFailureCnt=" << popTailFailureCnt << "\ndryPutSuccessCnt=" << dryPutSuccessCnt << "\ndryPutFailureCnt=" << dryPutFailureCnt << "\nrbmt.stat=" << rbmt.toSimpleStat();
     std::cout << oss.str() << std::endl;
-    assert(0 <= rbmt.St && rbmt.N > rbmt.St);
-    assert(0 <= rbmt.Ed && rbmt.N >= rbmt.Ed);
-    assert(0 <= rbmt.Cnt && rbmt.N >= rbmt.Cnt);
-    assert(0 == rbmt.GetDirtyPuttingCnt());
-    bool stCntEdConsistent1 = (rbmt.St + rbmt.Cnt == rbmt.Ed); 
-    bool stCntEdConsistent2 = (rbmt.St + rbmt.Cnt >= rbmt.N && rbmt.St + rbmt.Cnt == rbmt.Ed + N); 
-    assert(stCntEdConsistent1 || stCntEdConsistent2);
+    assert(rbmt.IsConsistent());
     std::cout << "Passed TestCase1" << std::endl;
     return true;
 }
