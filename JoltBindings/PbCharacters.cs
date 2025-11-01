@@ -130,6 +130,7 @@ namespace JoltCSharp {
         public static MapField<uint, CharacterConfig> underlying = new MapField<uint, CharacterConfig>() { };
 
         static PbCharacters() {
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), HunterPistolId);

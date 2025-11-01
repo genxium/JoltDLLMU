@@ -2,7 +2,9 @@ using jtshared;
 
 namespace JoltCSharp {
     public class PbPrimitives {
-        public static uint HunterPistolWallId = 68, HunterPistolId = 71, HunterPistolAirId = 72, HunterPistolWalkingId = 73, HunterDragonPunchId = 74, HunterAirSlashId = 75, HunterDashingId = 78, HunterSlidingId = 132, HunterPistolCrouchId = 133, MobileThunderCannonPrimerId = 143, MobileThunderCannonPrimerAirId = 144, MobileThunderCannonPrimerCrouchId = 145, MobileThunderCannonPrimerWallId = 146;
+        public static uint BladeGirlGroundSlash1Id = 1, BladeGirlGroundSlash2Id = 2, BladeGirlGroundSlash3Id = 3, BladeGirlGroundSuperSlashId = 4, BladeGirlDashingId = 5, BladeGirlDiverImpactId = 6, BladeGirlSlidingSlashId = 7, BladeGirlCrouchSlashId = 8, BladeGirlAirSlash1Id = 9, BladeGirlAirSlash2Id = 10, BladeGirlDragonPunchId = 11;
+
+        public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterDashingId = 134, HunterSlidingId = 135, HunterPistolCrouchId = 136, MobileThunderCannonPrimerId = 137, MobileThunderCannonPrimerAirId = 138, MobileThunderCannonPrimerCrouchId = 139, MobileThunderCannonPrimerWallId = 140;
 
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
