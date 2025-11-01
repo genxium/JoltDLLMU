@@ -53,8 +53,8 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 10f,
-            HitboxOffsetY = 18f,
+            HitboxOffsetX = 11f,
+            HitboxOffsetY = 20f,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
@@ -74,15 +74,16 @@ namespace JoltCSharp {
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
+                                                                .SetHitboxOffsets(10f, 24f)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
         private static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(10f, 10f)
+                                                                .SetHitboxOffsets(11f, 20f)
                                                                 .SetSelfLockVel(0, 0, 0);
 
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(12f, 18f)
+                                                                .SetHitboxOffsets(14f, 24f)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 

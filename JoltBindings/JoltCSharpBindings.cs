@@ -286,7 +286,6 @@ namespace JoltCSharp {
             chd.SpeciesId = PbPrimitives.SPECIES_NONE_CH;
 
             chd.FramesToRecover = 0;
-            chd.FramesCapturedByInertia = 0; 
 
             chd.Hp = 0;
             chd.Mp = 0;

@@ -241,7 +241,7 @@ message CharacterConfig {
     int32 mp_regen_interval = 11; // an integer of RenderFrame count
 
     float jumping_init_vel_y = 12;
-    int32 inertia_frames_to_recover = 13;
+
     bool dashing_enabled = 14;
     bool sliding_enabled = 15;
     bool on_wall_enabled = 16;
@@ -379,14 +379,13 @@ message CharacterDownsync {
     int32 dir_z = 6;   
 
     float vel_x = 7;
-    float vel_y = 8; // "vel_x" and "vel_y" is used to record the accumulated effect by inertia and accelerations (including gravity)
+    float vel_y = 8;
     float vel_z = 9;
 
     float speed = 10; // this is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
     uint32 species_id = 11; // For evolution during battle
 
     int32 frames_to_recover = 12;
-    int32 frames_captured_by_inertia = 13; 
 
     int32 hp = 14;
     int32 mp = 15;

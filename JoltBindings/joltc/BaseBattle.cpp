@@ -284,7 +284,6 @@ bool BaseBattle::transitToDying(const int currRdfId, const CharacterDownsync& cu
     nextChd->set_frames_in_ch_state(0);
     nextChd->set_frames_to_recover(0);
     nextChd->set_frames_invinsible(0);
-    nextChd->set_frames_captured_by_inertia(0);
     resetJumpStartup(nextChd);
     return true;
 }
@@ -799,7 +798,6 @@ void BaseBattle::transitToGroundDodgedChState(CharacterDownsync* nextChd, const 
     nextChd->set_frames_in_ch_state(0);
     nextChd->set_frames_to_recover(cc->ground_dodged_frames_to_recover());
     nextChd->set_frames_invinsible(cc->ground_dodged_frames_invinsible());
-    nextChd->set_frames_captured_by_inertia(0);
     nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
     nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
     if (0 == nextChd->vel_x()) {
@@ -1115,81 +1113,8 @@ void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, c
 }
 
 void BaseBattle::processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun) {
-    if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
-        return;
-    }
-    if (currInBlockStun) {
-        return;
-    }
-
-    // TODO: Interpolate velocity by "{CharacterConfig.speed, inertia_frames_to_recover, frames_captured_by_inertia}"?
-    bool currFreeFromInertia = (0 == currChd.frames_captured_by_inertia());
-    bool currBreakingFromInertia = (1 == currChd.frames_captured_by_inertia());
-
-    bool withInertiaBreakingState = (nextChd->jump_triggered() || (InAirIdle1ByWallJump == currChd.ch_state()));
-    bool alignedWithInertia = true;
-    bool exactTurningAround = false;
-    bool stoppingFromWalking = false;
-    if ((0 != effDx && 0 == currChd.vel_x()) || (0 != effDy && 0 == currChd.vel_y())) {
-        alignedWithInertia = false;
-    } else if ((0 == effDx && 0 != currChd.vel_x()) || (0 == effDy && 0 != currChd.vel_y())) {
-        alignedWithInertia = false;
-        stoppingFromWalking = true;
-    } else if ((0 > effDx * currChd.vel_x()) || (0 > effDy * currChd.vel_y())) {
-        alignedWithInertia = false;
-        exactTurningAround = true;
-    }
-
-    bool hasNonZeroSpeed = !(0 == cc->speed() && 0 == currChd.speed());
-    if (0 == currChd.frames_to_recover()) {
-        auto defaultInAirIdleChState = cc->use_idle1_as_flying_idle() ? Idle1 : Walking;
-        nextChd->set_ch_state(((Idle1 == currChd.ch_state() || InAirIdle1NoJump == currChd.ch_state()) && cc->anti_gravity_when_idle()) ? currChd.ch_state() : defaultInAirIdleChState); // When reaching here, the character is at least recovered from "Atked{N}" or "Atk{N}" state, thus revert back to a default action
-
-        if (alignedWithInertia || withInertiaBreakingState || currBreakingFromInertia) {
-            if (!alignedWithInertia) {
-                // Should reset "frames_captured_by_inertia" in this case!
-                nextChd->set_frames_captured_by_inertia(0);
-            }
-
-            if ((0 != effDx || 0 != effDy) && hasNonZeroSpeed) {
-                nextChd->set_dir_x(0 == effDx ? currChd.dir_x() : (0 > effDx ? -2 : +2));
-                nextChd->set_dir_y(0 == effDy ? currChd.dir_y() : (0 > effDy ? -1 : +1));
-                int xfac = 0 == effDx ? 0 : 0 > effDx ? -1 : +1;
-                int yfac = 0 == effDy ? 0 : 0 > effDy ? -1 : +1;
-                nextChd->set_vel_x(currParalyzed ? 0 : xfac * currChd.speed());
-                nextChd->set_vel_y(currParalyzed ? 0 : yfac * currChd.speed());
-                nextChd->set_ch_state(Walking);
-            } else {
-                // (0 == effDx && 0 == effDy) or speed is zero
-                processInertiaFlyingHandleZeroEffDxAndDy(rdfId, dt, currChd, nextChd, cc, currParalyzed);
-            }
-        } else if (currFreeFromInertia) {
-            auto effInertiaFramesToRecover = (0 < cc->inertia_frames_to_recover() ? cc->inertia_frames_to_recover() : 1);
-            auto effInertiaFramesToRecoverForWalkStarting = (0 < (effInertiaFramesToRecover >> 3) ? (effInertiaFramesToRecover >> 3) : 1);
-            if (exactTurningAround) {
-                // logger.LogInfo(stringifyPlayer(currChd) + " is turning around at currRdfId=" + currRdfId);
-                nextChd->set_ch_state(cc->has_turn_around_anim() ? TurnAround : Walking);
-                nextChd->set_frames_captured_by_inertia(effInertiaFramesToRecover);
-                if (effInertiaFramesToRecover > nextChd->frames_to_recover()) {
-                    // [WARNING] Deliberately not setting "nextChd->frames_to_recover()" if not turning around to allow using skills!
-                    nextChd->set_frames_to_recover(effInertiaFramesToRecover - 1); // To favor animation playing and prevent skill use when turning-around
-                }
-            } else if (stoppingFromWalking) {
-                // Keeps CharacterState and thus the animation to make user see graphical feedback asap.
-                nextChd->set_ch_state(cc->has_walk_stopping_anim() ? WalkStopping : Walking);
-                nextChd->set_frames_captured_by_inertia(effInertiaFramesToRecover);
-            } else {
-                // Updates CharacterState and thus the animation to make user see graphical feedback asap.
-                nextChd->set_frames_captured_by_inertia(effInertiaFramesToRecoverForWalkStarting);
-                nextChd->set_ch_state(Walking);
-            }
-        } else {
-            // [WARNING] Not free from inertia, just set proper next chState
-            if (0 != effDx || 0 != effDy) {
-                nextChd->set_ch_state(Walking);
-            }
-        }
-    }
+    // TBD
+    return;
 }
 
 
@@ -1460,7 +1385,6 @@ void BaseBattle::elapse1RdfForNpcChd(NpcCharacterDownsync* npcChd, const Charact
 
 void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* cc) {
     cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
-    cd->set_frames_captured_by_inertia(0 < cd->frames_captured_by_inertia() ? cd->frames_captured_by_inertia() - 1 : 0);
     cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
     cd->set_mp_regen_rdf_countdown(0 < cd->mp_regen_rdf_countdown() ? cd->mp_regen_rdf_countdown() - 1 : 0);
@@ -1758,7 +1682,7 @@ void BaseBattle::derivePlayerOpPattern(const int rdfId, const CharacterDownsync&
         // to favor smooth crouching transition
         outEffDx = ioIfDecoded.dx();
         outEffDy = ioIfDecoded.dy();
-    } else if (WalkingAtk1 == currChd.ch_state()) {
+    } else if (WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) {
         outEffDx = ioIfDecoded.dx();
     } else if (isInBlockStun(currChd)) {
         // Reserve only "effDy" for later use by "useSkill", e.g. to break free from block-stun by certain skills.
@@ -1767,7 +1691,7 @@ void BaseBattle::derivePlayerOpPattern(const int rdfId, const CharacterDownsync&
 
     outPatternId = globalPrimitiveConsts->pattern_id_no_op();
     int effFrontOrBack = (ioIfDecoded.dx() * currChd.dir_x()); // [WARNING] Deliberately using "ifDecoded.dx()" instead of "effDx (which could be 0 in block stun)" here!
-    bool canJumpWithinInertia = (0 == currChd.frames_to_recover() && ((cc->inertia_frames_to_recover() >> 1) > currChd.frames_captured_by_inertia())) || !notDashing;
+    bool canJumpWithinInertia = (0 == currChd.frames_to_recover()) || !notDashing;
     canJumpWithinInertia |= (WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state());
     if (0 < ioIfDecoded.btn_a_level()) {
         if (0 == currChd.btn_a_holding_rdf_cnt() && canJumpWithinInertia) {
@@ -2013,7 +1937,6 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
     */
 
     if (usedSkill) {
-        nextChd->set_frames_captured_by_inertia(0); // The use of a skill should break "CapturedByInertia"
         resetJumpStartup(nextChd);
 
         if (Dashing == outSkillConfig->bound_ch_state() && currEffInAir) {
@@ -2270,6 +2193,13 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 int newFramesInChState = currChd.frames_in_ch_state() + 1;
                 newFramesInChState %= nextActiveSkill->recovery_frames(); // [TODO] Enhance this for GUI smoothness.
                 nextChd->set_frames_in_ch_state(newFramesInChState);
+            } else {
+#ifndef NDEBUG
+                std::ostringstream oss1;
+                oss1 << "@currRdfId=" << currRdfId << ", chd ud=" << ud << " will transit back into Walking, orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state();
+                Debug::Log(oss1.str(), DColor::Orange);
+#endif // !NDEBUG
+                nextChd->set_ch_state(Walking);
             }
         } else if ((WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) && Walking == nextChd->ch_state()) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
@@ -2519,12 +2449,14 @@ void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf) {
         FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
 
         while (candidateI < nextRdf->bullets_size() && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
+/*
 #ifndef NDEBUG
             auto bulletId = candidate->id();
             std::ostringstream oss1;
             oss1 << "@currRdfId=" << currRdfId << ", bulletId=" << bulletId << " is dead and left shifted, bl_state=" << candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
             Debug::Log(oss1.str(), DColor::Orange);
 #endif // !NDEBUG
+*/
             candidateI++;
             candidate = &(nextRdf->bullets(candidateI));
         }
@@ -2614,11 +2546,13 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
         int encodedPattern = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
         auto cancelTransitDict = activeBulletConfig->cancel_transit();
         if (!cancelTransitDict.count(encodedPattern)) {
+/*
 #ifndef NDEBUG
             std::ostringstream oss;
             oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << " failed to cancel transit at position=(" << currChd.x() << "," << currChd.y() << "), ch_state=" << currChd.ch_state() << ", frames_in_ch_state=" << currChd.frames_in_ch_state() << ", frames_to_recover=" << currChd.frames_to_recover() << ", currActiveSkillId=" << currActiveSkillId << ", currActiveSkillHit=" << currActiveSkillHit;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
             return false;
         }
         targetSkillId = cancelTransitDict[encodedPattern];
@@ -3200,12 +3134,14 @@ void BaseBattle::handleLhsBulletCollisionMT(
             lhsNextBl->set_frames_in_bl_state(0);
             lhsNextBl->set_vel_x(0);
             lhsNextBl->set_vel_y(0);
+/*
 #ifndef NDEBUG
             std::ostringstream oss;
             auto bulletId = getUDPayload(udLhs);
             oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << ", ud=" << udLhs << ", bodyID=" << lhs.GetID().GetIndexAndSequenceNumber() << " explodes on obstacle";
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
+*/
         break;
         }
         case BulletType::MagicalFireball:
