@@ -143,6 +143,63 @@ RenderFrame* mockFallenDeathRdf() {
     return startRdf;
 }
 
+RenderFrame* mockBladeGirlSkillRdf() {
+    const int roomCapacity = 2;
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    int pickableLocalId = 1;
+    int npcLocalId = 1;
+    int bulletLocalId = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto playerCh1 = startRdf->mutable_players_arr(0);
+    auto ch1 = playerCh1->mutable_chd();
+    auto ch1Species = SPECIES_BLADEGIRL;
+    auto cc1 = characterConfigs[ch1Species];
+    ch1->set_x(-85);
+    ch1->set_y(200);
+    ch1->set_speed(cc1.speed());
+    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    ch1->set_frames_to_recover(0);
+    ch1->set_dir_x(2);
+    ch1->set_dir_y(0);
+    ch1->set_vel_x(0);
+    ch1->set_vel_y(0);
+    ch1->set_hp(cc1.hp());
+    ch1->set_species_id(ch1Species);
+    ch1->set_bullet_team_id(1);
+    playerCh1->set_join_index(1);
+    playerCh1->set_revival_x(ch1->x());
+    playerCh1->set_revival_y(ch1->y());
+
+    auto playerCh2 = startRdf->mutable_players_arr(1);
+    auto ch2 = playerCh2->mutable_chd();
+    auto ch2Species = SPECIES_BOUNTYHUNTER;
+    auto cc2 = characterConfigs[ch2Species];
+    ch2->set_x(+80);
+    ch2->set_y(200);
+    ch2->set_speed(cc2.speed());
+    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    ch2->set_frames_to_recover(0);
+    ch2->set_dir_x(-2);
+    ch2->set_dir_y(0);
+    ch2->set_vel_x(0);
+    ch2->set_vel_y(0);
+    ch2->set_hp(cc2.hp());
+    ch2->set_species_id(ch2Species);
+    ch1->set_bullet_team_id(2);
+    playerCh2->set_join_index(2);
+    playerCh2->set_revival_x(ch2->x());
+    playerCh2->set_revival_y(ch2->y());
+
+    startRdf->set_npc_id_counter(npcLocalId);
+    startRdf->set_bullet_id_counter(bulletLocalId);
+    startRdf->set_pickable_id_counter(pickableLocalId);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId) {
     const int roomCapacity = 2;
     auto refRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
@@ -349,6 +406,21 @@ std::map<int, uint64_t> testCmds11 = {
 std::map<int, uint64_t> testCmds12 = {
     {0, 3},
     {32, 0},
+    {39, 0},
+    {40, 32},
+    {41, 0},
+    {59, 0}, 
+    {60, 32}, 
+    {61, 0}, 
+    {69, 0}, 
+    {70, 32}, 
+    {71, 0} 
+};
+
+std::map<int, uint64_t> testCmds13 = {
+    {0, 3},
+    {32, 0},
+    {39, 0},
     {40, 32},
     {41, 0},
     {59, 0}, 
@@ -1435,6 +1507,9 @@ void initTest12Data() {
     }
 }
 
+void initTest13Data() {
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -2369,6 +2444,52 @@ bool runTestCase12(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
+bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds13, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase13/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+
+        if (40 <= outerTimerRdfId && outerTimerRdfId <= 70) {
+            RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+            auto& p1 = outerTimerRdf->players_arr(0);
+            auto& p1Chd = p1.chd();
+            auto& p2 = outerTimerRdf->players_arr(1);
+            auto& p2Chd = p2.chd();
+
+            if (43 == outerTimerRdfId) {
+                JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+                JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+            }
+
+            std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase13: BladeGirl skill\n" << std::endl;
+    reusedBattle->Clear();   
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -2510,6 +2631,20 @@ int main(int argc, char** argv)
 
     initTest12Data();
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
+    
+    WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
+    auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf();
+    for (auto hull : hulls) {
+        SerializableConvexPolygon* srcPolygon = bladeGirlSkillInitializerMapData->add_serialized_barrier_polygons();
+        for (auto xOrY : hull) {
+            srcPolygon->add_points(xOrY);
+        }
+    }
+    bladeGirlSkillInitializerMapData->set_allocated_self_parsed_rdf(bladeGirlSkillStartRdf);
+
+    initTest13Data();
+    runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
     pbStarterWsReqAllocator.Reset();

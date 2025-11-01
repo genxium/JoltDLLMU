@@ -47,6 +47,7 @@ namespace JoltCSharp {
             ActiveFrames = 360,
             HitStunFrames = 7,
             BlockStunFrames = 7,
+            CooldownFrames = 11,
             Damage = 10,
             PushbackVelX = 0.8f,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
@@ -58,6 +59,7 @@ namespace JoltCSharp {
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
+            ExplosionSpeciesId = 1,
             Speed = 6.3f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
             ExplosionFrames = 25,
@@ -89,9 +91,9 @@ namespace JoltCSharp {
 
         public static Skill HunterPistolWall = new Skill {
             Id = HunterPistolWallId,
-            RecoveryFrames = 18,
-            RecoveryFramesOnBlock = 18,
-            RecoveryFramesOnHit = 18,
+            RecoveryFrames = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
+            RecoveryFramesOnBlock = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
+            RecoveryFramesOnHit = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             TriggerType = SkillTriggerType.RisingEdge,
             BoundChState = CharacterState.OnWallAtk1
         }.AddHit(new BulletConfig(BasicPistolBulletAir)
@@ -133,7 +135,7 @@ namespace JoltCSharp {
             TriggerType = SkillTriggerType.RisingEdge,
             BoundChState = CharacterState.WalkingAtk1
         }
-        .AddHit(new BulletConfig(BasicPistolBulletGround)
+        .AddHit(new BulletConfig(BasicPistolBulletWalking)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, true), HunterDragonPunchId)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternDownB, false, false, false, false, false), HunterPistolCrouchId)
@@ -152,13 +154,198 @@ namespace JoltCSharp {
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, true, false, false, false), HunterDragonPunchId)
         );
 
+        public static BulletConfig BasicBladeHit1 = new BulletConfig {
+            StartupFrames = 5,
+            StartupInvinsibleFrames = 3,
+            ActiveFrames = 11,
+            HitStunFrames = 30,
+            BlockStunFrames = 8,
+            CooldownFrames = 5,
+            Damage = 10,
+            PushbackVelX = 0.3f,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 24f,
+            HitboxOffsetY = 17f,
+            HitboxHalfSizeX = 18f,
+            HitboxHalfSizeY = 18f,
+            CancellableStFrame = 10,
+            CancellableEdFrame = 21,
+            SpeciesId = 2,
+            ExplosionSpeciesId = 2,
+            ExplosionFrames = 25,
+            BType = BulletType.Melee,
+            Hardness = 5,
+            GuardBreakerExtraHitCnt = 1,
+            ReflectFireballXIfNotHarder = true,
+            CharacterEmitSfxName = "SlashEmitSpd1",
+            ExplosionSfxName="Melee_Explosion2",
+            ActiveVfxSpeciesId = 0, // TODO
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicBladeHit2 = new BulletConfig {
+            StartupFrames = 6,
+            StartupInvinsibleFrames = 3,
+            ActiveFrames = 12,
+            HitStunFrames = 40,
+            BlockStunFrames = 8,
+            CooldownFrames = 6,
+            Damage = 8,
+            PushbackVelX = 0.5f,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 24f,
+            HitboxOffsetY = 17f,
+            HitboxHalfSizeX = 18f,
+            HitboxHalfSizeY = 18f,
+            CancellableStFrame = 11,
+            CancellableEdFrame = 24,
+            SpeciesId = 2,
+            ExplosionSpeciesId = 2,
+            ExplosionFrames = 25,
+            BType = BulletType.Melee,
+            Hardness = 6,
+            GuardBreakerExtraHitCnt = 1,
+            ReflectFireballXIfNotHarder = true,
+            CharacterEmitSfxName = "SlashEmitSpd2",
+            ExplosionSfxName="Melee_Explosion2",
+            ActiveVfxSpeciesId = 0, // TODO
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicBladeHit3 = new BulletConfig {
+            StartupFrames = 15,
+            StartupInvinsibleFrames = 10,
+            ActiveFrames = 11,
+            HitStunFrames = 55,
+            BlockStunFrames = 8,
+            CooldownFrames = 25,
+            Damage = 15,
+            PushbackVelX = 0.5f,
+            PushbackVelY = -0.5f,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 36f,
+            HitboxOffsetY = 17f,
+            HitboxHalfSizeX = 24f,
+            HitboxHalfSizeY = 18f,
+            SpeciesId = 2,
+            ExplosionSpeciesId = 2,
+            ExplosionFrames = 25,
+            BType = BulletType.Melee,
+            Hardness = 7,
+            GuardBreakerExtraHitCnt = 1,
+            ReflectFireballXIfNotHarder = true,
+            CharacterEmitSfxName = "SlashEmitSpd3",
+            ExplosionSfxName="Melee_Explosion2",
+            ActiveVfxSpeciesId = 0, // TODO
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicBladeCrouchHit1 = new BulletConfig {
+            StartupFrames = 4,
+            StartupInvinsibleFrames = 2,
+            ActiveFrames = 4,
+            HitStunFrames = 15,
+            BlockStunFrames = 8,
+            CooldownFrames = 5,
+            Damage = 4,
+            PushbackVelX = 0.3f,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 24f,
+            HitboxOffsetY = 13f,
+            HitboxHalfSizeX = 18f,
+            HitboxHalfSizeY = 6f,
+            CancellableStFrame = 10,
+            CancellableEdFrame = 24,
+            SpeciesId = 2,
+            ExplosionSpeciesId = 2,
+            ExplosionFrames = 25,
+            BType = BulletType.Melee,
+            Hardness = 4,
+            GuardBreakerExtraHitCnt = 1,
+            ReflectFireballXIfNotHarder = true,
+            CharacterEmitSfxName = "SlashEmitSpd1",
+            ExplosionSfxName="Melee_Explosion2",
+            ActiveVfxSpeciesId = 0, // TODO
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1);
+
+        public static Skill BladeGirlGroundSlash1 = new Skill {
+            Id = BladeGirlGroundSlash1Id,
+            RecoveryFrames = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
+            TriggerType = SkillTriggerType.RisingEdge,
+            BoundChState = CharacterState.Atk1
+        }.AddHit(
+            new BulletConfig(BasicBladeHit1)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternB, false, false, false, false, false), BladeGirlGroundSlash2Id)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId)
+        );
+
+        public static Skill BladeGirlGroundSlash2 = new Skill {
+            Id = BladeGirlGroundSlash2Id,
+            RecoveryFrames = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
+            RecoveryFramesOnBlock = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
+            RecoveryFramesOnHit = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
+            TriggerType = SkillTriggerType.RisingEdge,
+            BoundChState = CharacterState.Atk2
+        }.AddHit(
+            new BulletConfig(BasicBladeHit2)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternB, false, false, false, false, false), BladeGirlGroundSlash3Id)
+        );
+
+        public static Skill BladeGirlGroundSlash3 = new Skill {
+            Id = BladeGirlGroundSlash3Id,
+            RecoveryFrames = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
+            RecoveryFramesOnBlock = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
+            RecoveryFramesOnHit = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
+            TriggerType = SkillTriggerType.RisingEdge,
+            BoundChState = CharacterState.Atk3
+        }.AddHit(BasicBladeHit3);
+
+        public static Skill BladeGirlCrouchSlash1 = new Skill {
+            Id = BladeGirlCrouchSlashId,
+            RecoveryFrames = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
+            TriggerType = SkillTriggerType.RisingEdge,
+            BoundChState = CharacterState.CrouchAtk1
+        }.AddHit(BasicBladeCrouchHit1);
+
+        public static Skill BladeGirlAirSlash1 = new Skill {
+            Id = BladeGirlAirSlash1Id,
+            RecoveryFrames = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
+            TriggerType = SkillTriggerType.RisingEdge,
+            BoundChState = CharacterState.InAirAtk1
+        }.AddHit(BasicBladeAirHit1);
 
         public static MapField<uint, Skill> underlying = new MapField<uint, Skill>() { };
 
         static PbSkills() {
-            underlying.Add(HunterPistolWallId, HunterPistolWall);
-            underlying.Add(HunterPistolId, HunterPistol);
+            underlying.Add(BladeGirlAirSlash1Id, BladeGirlAirSlash1);
+            underlying.Add(BladeGirlGroundSlash1Id, BladeGirlGroundSlash1);
+            underlying.Add(BladeGirlGroundSlash2Id, BladeGirlGroundSlash2);
+            underlying.Add(BladeGirlGroundSlash3Id, BladeGirlGroundSlash3);
+            underlying.Add(BladeGirlCrouchSlashId, BladeGirlCrouchSlash1);
+
             underlying.Add(HunterPistolAirId, HunterPistolAir);
+            underlying.Add(HunterPistolId, HunterPistol);
+            underlying.Add(HunterPistolWallId, HunterPistolWall);
             underlying.Add(HunterPistolWalkingId, HunterPistolWalking);
             underlying.Add(HunterPistolCrouchId, HunterPistolCrouch);
         }

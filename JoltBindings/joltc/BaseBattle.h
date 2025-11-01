@@ -719,6 +719,12 @@ public:
 
     However, there's a "determinism caveat" associated with the aforementioned "PhysicsSystem::JobFindCollisions" and "PhysicsSystem::JobSolvePositionConstraints" -- as the appending and consuming of "ContactConstraintManager.mConstraints" and "IslandBuilder::mIslandsSorted" are randomized by multi-threading, you will execute "[AxisConstraintPart::SolvePositionConstraintWithMassOverride](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintPart/AxisConstraintPart.h#L605) -> [Body::Add/SubPositionStep](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h#L342)" in a random order (i.e. whether "IslandBuilder::mIslandsSorted" is sorted or not doesn't matter, the randomness comes from multi-threading intrinsically) -- hence the solved positions & velocities would NOT be perfectly determinisitc due to the lack of associativity in floating number calculations.     
     */
+
+    /*
+    On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" or "handleLhsBulletCollision" within "OnContactCommon" -- take "Character" as an example,  
+    - during broadphase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle 1-character-narrowphase-per-thread in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold,

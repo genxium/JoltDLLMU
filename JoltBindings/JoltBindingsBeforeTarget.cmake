@@ -207,16 +207,27 @@ set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
 set(JOLTC_SRC_FILES
+    ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
+    ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
+    ${JOLTC_ROOT}/CollisionCallbacks.h
+    ${JOLTC_ROOT}/CollisionLayers.h
+    ${JOLTC_ROOT}/CppOnlyConsts.h
+    ${JOLTC_ROOT}/BaseBattle.h
+    ${JOLTC_ROOT}/BaseBattle.cpp
     ${JOLTC_ROOT}/BackendBattle.h
     ${JOLTC_ROOT}/BackendBattle.cpp
     ${JOLTC_ROOT}/FrontendBattle.h
     ${JOLTC_ROOT}/FrontendBattle.cpp
-    ${JOLTC_ROOT}/BaseBattle.h
-    ${JOLTC_ROOT}/BaseBattle.cpp
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
     ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
     ${JOLTC_ROOT}/joltc_api.h
     ${JOLTC_ROOT}/joltc_api.cpp
+    ${JOLTC_ROOT}/RingBuffer.h
+    ${JOLTC_ROOT}/RingBuffer.inl
+    ${JOLTC_ROOT}/FrameRingBuffer.h
+    ${JOLTC_ROOT}/FrameRingBuffer.inl
+    ${JOLTC_ROOT}/RingBufferMt.h
+    ${JOLTC_ROOT}/RingBufferMt.inl
     ${JOLTC_ROOT}/DebugLog.h
     ${JOLTC_ROOT}/DebugLog.cpp
 )

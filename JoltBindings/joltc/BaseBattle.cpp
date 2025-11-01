@@ -883,7 +883,11 @@ void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const
 }
 
 void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool currParalyzed) {
-    if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
+    if (0 < currChd.frames_to_recover()) {
+        return;
+    }
+
+    if (TransformingInto == currChd.ch_state() || TransformingInto == nextChd->ch_state()) {
         return;
     }
 
@@ -932,6 +936,10 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
 }
 
 void BaseBattle::processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc) {
+    if (0 < currChd.frames_to_recover()) {
+        return;
+    }
+
     bool jumpStarted = nextChd->jump_started();
     if (jumpStarted) {
         if (InAirIdle1ByWallJump == currChd.ch_state()) {
@@ -1483,7 +1491,7 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
         // Fill the gap
         auto ifdHolder = ifdBuffer.DryPut();
         JPH_ASSERT(nullptr != ifdHolder);
-        ifdHolder->set_confirmed_list(0u); // To avoid RingBuff reuse contamination.
+        ifdHolder->set_confirmed_list(0u); // To avoid RingBuffer reuse contamination.
         ifdHolder->set_udp_confirmed_list(0u);
 
         auto inputList = ifdHolder->mutable_input_list();
@@ -1959,36 +1967,38 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
         Debug::Log(oss1.str(), DColor::Orange);
 #endif // !NDEBUG
 */
-        return; // Don't allow movement if skill is used
-    }
-
-    prepareJumpStartup(rdfId, currChd, nextChd, currEffInAir, cc, currParalyzed);
-
-    // [WARNING] This is a necessary cleanup before "processInertiaWalking"!
-    if (1 == currChd.frames_to_recover() && 0 == nextChd->frames_to_recover() && (Atked1 == currChd.ch_state() || InAirAtked1 == currChd.ch_state() || CrouchAtked1 == currChd.ch_state())) {
-        nextChd->set_vel_x(0);
-        nextChd->set_vel_y(0);
-    }
-
-    if (!currChd.omit_gravity() && !cc->omit_gravity()) {
-        processInertiaWalking(rdfId, dt, currChd, nextChd, currEffInAir, effDx, effDy, cc, currParalyzed, currInBlockStun);
     } else {
-        processInertiaFlying(rdfId, dt, currChd, nextChd, effDx, effDy, cc, currParalyzed, currInBlockStun);
-    }
-    bool nextNotDashing = isNotDashing(*nextChd);
-    bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
-    processDelayedBulletSelfVel(rdfId, currChd, nextChd, cc, currParalyzed, nextEffInAir);
+        prepareJumpStartup(rdfId, currChd, nextChd, currEffInAir, cc, currParalyzed);
 
-    processJumpStarted(rdfId, currChd, nextChd, currEffInAir, cc);
+        // [WARNING] This is a necessary cleanup before "processInertiaWalking"!
+        if (1 == currChd.frames_to_recover() && 0 == nextChd->frames_to_recover() && (Atked1 == currChd.ch_state() || InAirAtked1 == currChd.ch_state() || CrouchAtked1 == currChd.ch_state())) {
+            nextChd->set_vel_x(0);
+            nextChd->set_vel_y(0);
+        }
 
-    if (globalPrimitiveConsts->pattern_id_unable_to_op() != patternId && cc->anti_gravity_when_idle() && (Walking == nextChd->ch_state() || InAirWalking == nextChd->ch_state()) && cc->anti_gravity_frames_lingering() < nextChd->frames_in_ch_state()) {
-        nextChd->set_ch_state(InAirIdle1NoJump);
-        nextChd->set_frames_in_ch_state(0);
-        nextChd->set_vel_x(0);
-    } else if (slowDownToAvoidOverlap) {
-        nextChd->set_vel_x(nextChd->vel_x() * 0.25);
-        nextChd->set_vel_y(nextChd->vel_y() * 0.25);
+        if (!currChd.omit_gravity() && !cc->omit_gravity()) {
+            processInertiaWalking(rdfId, dt, currChd, nextChd, currEffInAir, effDx, effDy, cc, currParalyzed, currInBlockStun);
+        } else {
+            processInertiaFlying(rdfId, dt, currChd, nextChd, effDx, effDy, cc, currParalyzed, currInBlockStun);
+        }
+        bool nextNotDashing = isNotDashing(*nextChd);
+        bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
+        processDelayedBulletSelfVel(rdfId, currChd, nextChd, cc, currParalyzed, nextEffInAir);
+
+        processJumpStarted(rdfId, currChd, nextChd, currEffInAir, cc);
+
+        if (0 >= currChd.frames_to_recover()) {
+            if (globalPrimitiveConsts->pattern_id_unable_to_op() != patternId && cc->anti_gravity_when_idle() && (Walking == nextChd->ch_state() || InAirWalking == nextChd->ch_state()) && cc->anti_gravity_frames_lingering() < nextChd->frames_in_ch_state()) {
+                nextChd->set_ch_state(InAirIdle1NoJump);
+                nextChd->set_frames_in_ch_state(0);
+                nextChd->set_vel_x(0);
+            } else if (slowDownToAvoidOverlap) {
+                nextChd->set_vel_x(nextChd->vel_x() * 0.25);
+                nextChd->set_vel_y(nextChd->vel_y() * 0.25);
+            }
+        }
     }
+
 }
 
 void BaseBattle::FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig) {
@@ -2528,6 +2538,7 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     int currActiveSkillId = currChd.active_skill_id();
     int currActiveSkillHit = currChd.active_skill_hit();
     int targetSkillId = globalPrimitiveConsts->no_skill();
+    bool fromCancellation = false;
     if (globalPrimitiveConsts->no_skill() != currActiveSkillId && globalPrimitiveConsts->no_skill_hit() != currActiveSkillHit) {
         FindBulletConfig(currActiveSkillId, currActiveSkillHit, activeSkillConfig, activeBulletConfig);
         if (nullptr == activeSkillConfig || nullptr == activeBulletConfig) {
@@ -2556,6 +2567,7 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
             return false;
         }
         targetSkillId = cancelTransitDict[encodedPattern];
+        fromCancellation = true;
     } else {
         if (notRecovered) {
             return false;
@@ -2590,15 +2602,6 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     }
 
     if (!skillConfigs.count(targetSkillId)) {
-#ifndef NDEBUG
-         std::ostringstream oss;
-         oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", targetSkillId=" << targetSkillId << " not in the global skillConfigs with keys: [ ";
-        for (const auto& pair : skillConfigs) {
-            oss << pair.first << " "; 
-        }
-        oss << "]";
-         Debug::Log(oss.str(), DColor::Yellow);
-#endif // !NDEBUG
         return false;
     }
 
@@ -2615,7 +2618,7 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
 */
         return false;
     }
-
+        
     outSkillId = targetSkillId;
     outSkill = &(targetSkillConfig);
 
@@ -2628,12 +2631,33 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     int xfac = (0 < nextChd->dir_x() ? 1 : -1);
     int yfac = (!cc->omit_gravity() ? 0 : (0 < nextChd->dir_y() ? 1 : -1));
 
-    nextChd->set_active_skill_id(targetSkillId);
-    nextChd->set_frames_to_recover(targetSkillConfig.recovery_frames());
-
     int nextActiveSkillHit = 1;
     auto pivotBulletConfig = targetSkillConfig.hits(nextActiveSkillHit - 1);
     outPivotBc = &pivotBulletConfig;
+
+    if (fromCancellation && (currChd.frames_in_ch_state() < pivotBulletConfig.cancellable_st_frame() || currChd.frames_in_ch_state() > pivotBulletConfig.cancellable_ed_frame())) {
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << " failed to cancel transit at position=(" << currChd.x() << "," << currChd.y() << "), ch_state=" << currChd.ch_state() << ", frames_in_ch_state=" << currChd.frames_in_ch_state() << ", frames_to_recover=" << currChd.frames_to_recover() << ", currActiveSkillId=" << currActiveSkillId << ", currActiveSkillHit=" << currActiveSkillHit << ", pivotBulletConfig.cancellable_st_frames=" << pivotBulletConfig.cancellable_st_frame() << ", pivotBulletConfig.cancellable_ed_frames=" << pivotBulletConfig.cancellable_ed_frame();
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+        outSkillId = globalPrimitiveConsts->no_skill();
+        outSkill = nullptr;
+        outPivotBc = nullptr;
+        return false; 
+    }
+
+#ifndef NDEBUG
+    if (fromCancellation) {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << " cancelled to transit to targetSkillId=" << targetSkillId << ", at position=(" << currChd.x() << "," << currChd.y() << "), ch_state=" << currChd.ch_state() << ", frames_in_ch_state=" << currChd.frames_in_ch_state() << ", frames_to_recover=" << currChd.frames_to_recover() << ", currActiveSkillId=" << currActiveSkillId << ", currActiveSkillHit=" << currActiveSkillHit << ", pivotBulletConfig.cancellable_st_frames=" << pivotBulletConfig.cancellable_st_frame() << ", pivotBulletConfig.cancellable_ed_frames=" << pivotBulletConfig.cancellable_ed_frame();
+            Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+
+    nextChd->set_active_skill_id(targetSkillId);
+    nextChd->set_frames_to_recover(targetSkillConfig.recovery_frames());
+
     const Bullet* referenceBullet = nullptr;
     const BulletConfig* referenceBulletConfig = nullptr;
     for (int i = 0; i < pivotBulletConfig.simultaneous_multi_hit_cnt() + 1; i++) {
