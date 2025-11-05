@@ -208,6 +208,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}
 
 set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
+    ${JOLTC_ROOT}/BulletCollideShapeCollector.h
     ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h

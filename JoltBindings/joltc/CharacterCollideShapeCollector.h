@@ -1,5 +1,5 @@
-#ifndef CHARACTER_COLLIDER_SHAPE_COLLECTOR_H_
-#define CHARACTER_COLLIDER_SHAPE_COLLECTOR_H_ 1
+#ifndef CHARACTER_COLLIDE_SHAPE_COLLECTOR_H_
+#define CHARACTER_COLLIDE_SHAPE_COLLECTOR_H_ 1
 
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include "BaseBattleCollisionFilter.h"
@@ -33,6 +33,7 @@ public:
 
         mFilter->handleLhsCharacterCollision(mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs);
     }
+
 private:
     const JPH::BodyInterface*     mBi;
     const uint64_t                mUd;

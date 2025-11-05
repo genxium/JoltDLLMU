@@ -3,6 +3,7 @@
 
 #include "joltc_export.h"
 #include "CharacterCollideShapeCollector.h"
+#include "BulletCollideShapeCollector.h"
 #include "FrameRingBuffer.h"
 
 #include "CollisionLayers.h"
@@ -388,10 +389,10 @@ protected:
 
     void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
-    void processPlayerInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync);
-    void processNpcInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd);
+    void processPlayerInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedInputFrameDownsync, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
+    void processNpcInputs(const int rdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
 
-    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf);
+    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
 
     void transitToGroundDodgedChState(CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
     void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
@@ -403,7 +404,7 @@ protected:
     void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
     void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
     void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
-    bool addNewBulletToNextFrame(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
+    bool addNewBulletToNextFrame(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
 
     void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool currParalyzed);
     void processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc);
@@ -416,14 +417,17 @@ protected:
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
+    virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
+
     virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
+
     void leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf);
-    void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletCount);
     void leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf);
 
-    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
+    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
 
-    void useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
+    void useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount);
     static bool IsChargingAtkChState(CharacterState chState) {
         return (CharacterState::Atk7_Charging == chState);
     }
@@ -553,7 +557,7 @@ protected:
         if (BulletState::Exploding == bullet->bl_state() && MultiHitType::FromEmission != bc->mh_type()) {
             return bullet->frames_in_bl_state() < bc->active_frames();
         }
-        return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames());
+        return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
     }
 
     inline bool isNpcJustDead(const CharacterDownsync* chd) {
@@ -660,17 +664,14 @@ public:
         return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
     }
 
-    virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
-        const JPH::Body& lhs, // the "Bullet"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
-        auto& lhsCurrBl = transientUdToCurrBl[udLhs];
+    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) {
         switch (udtRhs) {
         case UDT_PLAYER: {
             auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
             auto& rhsCurrChd = rhsCurrPlayer->chd();
             if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
                 return JPH::ValidateResult::RejectContact;
-            }                
+            }
             return JPH::ValidateResult::AcceptContact;
         }
         case UDT_NPC: {
@@ -686,7 +687,7 @@ public:
             auto& rhsCurrBl = transientUdToCurrBl[udRhs];
             if (lhsCurrBl->team_id() == rhsCurrBl->team_id()) {
                 return JPH::ValidateResult::RejectContact;
-            } 
+            }
             if (!isBulletActive(lhsCurrBl)) {
                 return JPH::ValidateResult::RejectContact;
             }
@@ -700,9 +701,20 @@ public:
         }
     }
 
+    virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
+        const JPH::Body& lhs, // the "Bullet"
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
+        auto& lhsCurrBl = transientUdToCurrBl[udLhs];
+        return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs);
+    }
+
     virtual void handleLhsCharacterCollision(
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
         const uint64_t udRhs, const uint64_t udtRhs);
+
+    virtual void handleLhsBulletCollision(
+        const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::CollideShapeResult& inResult);
 
 public:
     // #JPH::ContactListener
@@ -723,7 +735,7 @@ public:
     /*
     On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" or "handleLhsBulletCollision" within "OnContactCommon" -- take "Character" as an example,  
     - during broadphase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
-    - HOWEVER it's NOT worth such hassle! It's much simpler to handle 1-character-narrowphase-per-thread in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-narrowphase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
@@ -786,14 +798,6 @@ public:
         }
 
     }
-
-protected:
-    virtual void handleLhsBulletCollisionMT(
-        const uint64_t udLhs,
-        const JPH::Body& lhs, // the "Bullet"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs,
-        const JPH::ContactManifold& inManifold,
-        const JPH::ContactSettings& ioSettings);
 };
 
 #endif

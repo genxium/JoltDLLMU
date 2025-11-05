@@ -157,7 +157,7 @@ namespace JoltCSharp {
         public static BulletConfig BasicBladeHit1 = new BulletConfig {
             StartupFrames = 5,
             StartupInvinsibleFrames = 3,
-            ActiveFrames = 11,
+            ActiveFrames = 12,
             HitStunFrames = 30,
             BlockStunFrames = 8,
             CooldownFrames = 5,
@@ -221,7 +221,7 @@ namespace JoltCSharp {
         public static BulletConfig BasicBladeHit3 = new BulletConfig {
             StartupFrames = 15,
             StartupInvinsibleFrames = 10,
-            ActiveFrames = 11,
+            ActiveFrames = 12,
             HitStunFrames = 55,
             BlockStunFrames = 8,
             CooldownFrames = 25,
@@ -249,13 +249,13 @@ namespace JoltCSharp {
         };
 
         public static BulletConfig BasicBladeCrouchHit1 = new BulletConfig {
-            StartupFrames = 4,
+            StartupFrames = 5,
             StartupInvinsibleFrames = 2,
             ActiveFrames = 4,
             HitStunFrames = 15,
             BlockStunFrames = 8,
-            CooldownFrames = 5,
-            Damage = 4,
+            CooldownFrames = 4,
+            Damage = 5,
             PushbackVelX = 0.3f,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
@@ -305,6 +305,7 @@ namespace JoltCSharp {
         }.AddHit(
             new BulletConfig(BasicBladeHit2)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternB, false, false, false, false, false), BladeGirlGroundSlash3Id)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId)
         );
 
         public static Skill BladeGirlGroundSlash3 = new Skill {
