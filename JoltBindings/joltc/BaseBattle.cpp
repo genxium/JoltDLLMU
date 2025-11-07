@@ -508,7 +508,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 auto bodyID = *(transientUdToBodyID[ud]);
                 auto blShape = bi->GetShape(bodyID);
                 
-                auto& blCOMTransform = bi->GetCenterOfMassTransform(bodyID);
+                auto blCOMTransform = bi->GetCenterOfMassTransform(bodyID);
                 auto newPos = bi->GetPosition(bodyID);
                 auto newVel = bi->GetLinearVelocity(bodyID);
                 
