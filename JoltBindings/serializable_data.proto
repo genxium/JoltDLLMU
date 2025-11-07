@@ -241,7 +241,7 @@ message CharacterConfig {
     int32 mp_regen_interval = 11; // an integer of RenderFrame count
 
     float jumping_init_vel_y = 12;
-    int32 inertia_frames_to_recover = 13;
+
     bool dashing_enabled = 14;
     bool sliding_enabled = 15;
     bool on_wall_enabled = 16;
@@ -379,14 +379,13 @@ message CharacterDownsync {
     int32 dir_z = 6;   
 
     float vel_x = 7;
-    float vel_y = 8; // "vel_x" and "vel_y" is used to record the accumulated effect by inertia and accelerations (including gravity)
+    float vel_y = 8;
     float vel_z = 9;
 
     float speed = 10; // this is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
     uint32 species_id = 11; // For evolution during battle
 
     int32 frames_to_recover = 12;
-    int32 frames_captured_by_inertia = 13; 
 
     int32 hp = 14;
     int32 mp = 15;
@@ -598,32 +597,33 @@ message BulletConfig {
     int32 cancellable_st_frame = 2;
     int32 cancellable_ed_frame = 3;
     int32 active_frames = 4;
+    int32 cooldown_frames = 5;
 
-    int32 hit_stun_frames = 5;
-    int32 block_stun_frames = 6;
-    float pushback_vel_x = 7;
-    float pushback_vel_y = 8;
-    int32 damage = 9;
+    int32 hit_stun_frames = 6;
+    int32 block_stun_frames = 7;
+    float pushback_vel_x = 8;
+    float pushback_vel_y = 9;
+    int32 damage = 10;
 
-    float self_lock_vel_x = 10;
-    float self_lock_vel_y = 11;
-    float self_lock_vel_y_when_flying = 12;
+    float self_lock_vel_x = 11;
+    float self_lock_vel_y = 12;
+    float self_lock_vel_y_when_flying = 13;
 
-    float hitbox_offset_x = 13;
-    float hitbox_offset_y = 14;
-    float hitbox_half_size_x = 15;
-    float hitbox_half_size_y = 16;
+    float hitbox_offset_x = 14;
+    float hitbox_offset_y = 15;
+    float hitbox_half_size_x = 16;
+    float hitbox_half_size_y = 17;
 
-    bool blow_up = 17;
+    bool blow_up = 18;
 
-    int32 species_id = 18; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
-    int32 explosion_frames = 19;
+    int32 species_id = 19; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
+    int32 explosion_frames = 20;
 
-    BulletType b_type = 20;
-    MultiHitType mh_type = 21;
-    uint32 simultaneous_multi_hit_cnt = 22; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
+    BulletType b_type = 21;
+    MultiHitType mh_type = 22;
+    uint32 simultaneous_multi_hit_cnt = 23; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
 
-    float speed = 23; // For speed varying bullets, this is the initial speed
+    float speed = 24; // For speed varying bullets, this is the initial speed
 
     map<int32, uint32> cancel_transit = 25; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
     int32 repeat_quota = 26; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
@@ -723,6 +723,7 @@ message BulletConfig {
     int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
     bool no_explosion_on_hard_pushback = 98;
 
+    bool explode_on_multi_contact = 99; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
 
     uint64 collision_type_mask = 1029;
     bool takes_gravity = 1030; // e.g. a bomb, a ground-wave

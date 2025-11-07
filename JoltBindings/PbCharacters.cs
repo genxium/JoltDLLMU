@@ -23,7 +23,6 @@ namespace JoltCSharp {
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
             JumpingInitVelY = 8f * BATTLE_DYNAMICS_FPS, 
             AccMag = 7.8f * BATTLE_DYNAMICS_FPS,
-            InertiaFramesToRecover = 4,
             DashingEnabled = true,
             SlidingEnabled = true,
             OnWallEnabled = true,
@@ -40,9 +39,9 @@ namespace JoltCSharp {
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
             CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
-            CapsuleHalfHeight = (12.0f),
+            CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
-            ShrinkedCapsuleHalfHeight = (9.0f),
+            ShrinkedCapsuleHalfHeight = (12.0f),
             LayDownCapsuleRadius = (16.0f),
             LayDownCapsuleHalfHeight = (8.0f),
             DyingCapsuleRadius = (16.0f),
@@ -76,7 +75,6 @@ namespace JoltCSharp {
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
             JumpingInitVelY = 8.9f * BATTLE_DYNAMICS_FPS,
             AccMag = 7.8f * BATTLE_DYNAMICS_FPS,
-            InertiaFramesToRecover = 4,
             VisionOffsetX = (8.0f),
             VisionOffsetY = (16.0f),
             VisionSizeX = (160.0f),
@@ -84,9 +82,9 @@ namespace JoltCSharp {
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
             CapsuleRadius = (8.0f),
-            CapsuleHalfHeight = (12.0f),
+            CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
-            ShrinkedCapsuleHalfHeight = (9.0f),
+            ShrinkedCapsuleHalfHeight = (12.0f),
             LayDownCapsuleRadius = (16.0f),
             LayDownCapsuleHalfHeight = (8.0f),
             DyingCapsuleRadius = (16.0f),
@@ -132,8 +130,18 @@ namespace JoltCSharp {
         public static MapField<uint, CharacterConfig> underlying = new MapField<uint, CharacterConfig>() { };
 
         static PbCharacters() {
+            // BLADEGIRL
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
+
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BladeGirlAirSlash1Id);
+
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 
+            // BOUNTY_HUNTER
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), HunterPistolId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), HunterPistolWalkingId);
 

@@ -34,13 +34,24 @@ public:
         const JPH::Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) = 0;
 
+    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) = 0;
+
     virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) = 0;
     
+    /*
+    [WARNING] Per thread-safety concerns, for any collision pair in "handleLhsXxxCollision", only the impact to the lhs instance in "nextRdf" should be calculated and updated.
+
+    For example, for a same "character-bullet" collision, in "handleLhsCharacterCollision" we calculate damage and update hp, in "handleLhsBulletCollision" we calculate and update explosion status.
+    */
     virtual void handleLhsCharacterCollision(
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
         const uint64_t udRhs, const uint64_t udtRhs) = 0;
+
+    virtual void handleLhsBulletCollision(
+        const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::CollideShapeResult& inResult) = 0;
 
     virtual ~BaseBattleCollisionFilter() {
 
