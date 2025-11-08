@@ -348,28 +348,88 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     atomic<uint32_t> nextRdfBulletCount = nextRdf->bullet_count();
     atomic<uint32_t> nextRdfBulletIdCounter = nextRdf->bullet_id_counter();
 
-    processPlayerInputs(currRdfId, currRdf, dt, nextRdf, delayedIfdId, delayedIfd, nextRdfBulletCount, nextRdfBulletIdCounter);
+    batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf);
 
-    batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf); // [WARNING] After "processPlayerInputs" setting proper positions & velocities of "nextChd"s.
-
+    JobSystem::Barrier* prePhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     for (int i = 0; i < playersCnt; i++) {
-        auto currPlayer = currRdf->players_arr(i);
-        auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
-        auto currChd = currPlayer.chd();
-        auto nextChd = nextPlayer->chd();
-        auto ud = calcUserData(currPlayer);
-        updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
+        uint64_t singleInput = delayedIfd->input_list(i);
+        auto handle = jobSys->CreateJob("player-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, singleInput, dt, &nextRdfBulletCount, &nextRdfBulletIdCounter]() {
+            const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
+            PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
+            auto ud = calcUserData(currPlayer);
+            const CharacterDownsync& currChd = currPlayer.chd();
+            CharacterDownsync* nextChd = nextPlayer->mutable_chd();
+            if (!noOpSet.count(currChd.ch_state())) {
+                const CharacterConfig* cc = getCc(currChd.species_id());
+                auto currChState = currChd.ch_state();
+                bool currNotDashing = isNotDashing(currChd);
+                bool currDashing = !currNotDashing;
+                bool currWalking = walkingSet.count(currChState);
+                bool currEffInAir = isEffInAir(currChd, currNotDashing);
+                bool currOnWall = onWallSet.count(currChState);
+                bool currCrouching = isCrouching(currChState, cc);
+                bool currAtked = atkedSet.count(currChState);
+                bool currInBlockStun = isInBlockStun(currChd);
+                bool currParalyzed = false; // TODO
+
+                auto cv = transientUdToChCollider[ud];
+
+                int patternId = globalPrimitiveConsts->pattern_id_no_op();
+                bool jumpedOrNot = false;
+                bool slipJumpedOrNot = false;
+                int effDx = 0, effDy = 0;
+                InputFrameDecoded ifDecodedHolder;
+                decodeInput(singleInput, &ifDecodedHolder);
+                derivePlayerOpPattern(currRdfId, currChd, cc, nextChd, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
+                bool slowDownToAvoidOverlap = false;
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletIdCounter, nextRdfBulletCount);
+            }
+
+            updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd); // After "processSingleCharacterInput" setting proper "velocity" of "nextChd"
+        }, 0);
+        prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-        auto currNpc = currRdf->npcs_arr(i);
-        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-        auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
-        
-        auto currChd = currNpc.chd();
-        auto nextChd = nextNpc->chd();
-        auto ud = calcUserData(currNpc);
-        updateChColliderBeforePhysicsUpdate(ud, currChd, nextChd);
+        if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
+        auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, &nextRdfBulletCount, &nextRdfBulletIdCounter]() {
+            const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
+            NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+            auto ud = calcUserData(currNpc);
+            const CharacterDownsync& currChd = currNpc.chd();
+            CharacterDownsync* nextChd = nextNpc->mutable_chd();
+            if (!noOpSet.count(currChd.ch_state())) {
+                // TODO: Narrowphase collision check for vision to derive npc reaction first
+                const CharacterConfig* cc = getCc(currChd.species_id());
+                auto currChState = currChd.ch_state();
+                bool currNotDashing = isNotDashing(currChd);
+                bool currDashing = !currNotDashing;
+                bool currWalking = walkingSet.count(currChState);
+                bool currEffInAir = isEffInAir(currChd, currNotDashing);
+                bool currOnWall = onWallSet.count(currChState);
+                bool currCrouching = isCrouching(currChState, cc);
+                bool currAtked = atkedSet.count(currChState);
+                bool currInBlockStun = isInBlockStun(currChd);
+                bool currParalyzed = false; // TODO
+
+                auto cv = transientUdToChCollider[ud];
+
+                int patternId = globalPrimitiveConsts->pattern_id_no_op();
+                bool jumpedOrNot = false;
+                bool slipJumpedOrNot = false;
+                int effDx = 0, effDy = 0;
+                deriveNpcOpPattern(currRdfId, currChd, cc, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
+
+                bool slowDownToAvoidOverlap = false; // TODO
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletIdCounter, nextRdfBulletCount);
+                /*
+                if (usedSkill) {
+                    nextNpc->set_cached_cue_cmd(0);
+                }
+                */
+            }
+            updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd);
+        }, 0);
     }
 
     // Update positions and velocities of active bullets
@@ -397,8 +457,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         }
     }
 
-    JobSystem::Barrier* prePhysicsUpdateMTBarrier = jobSys->CreateBarrier();
-    processNpcInputs(currRdfId, currRdf, dt, nextRdf, delayedIfdId, delayedIfd, nextRdfBulletIdCounter, nextRdfBulletCount); // To see entities in vision before deciding Npc inputs
     jobSys->WaitForJobs(prePhysicsUpdateMTBarrier);
     jobSys->DestroyBarrier(prePhysicsUpdateMTBarrier);
 
@@ -1837,79 +1895,6 @@ bool BaseBattle::decodeInput(uint64_t encodedInput, InputFrameDecoded* holder) {
     return true;
 }
 
-void BaseBattle::processPlayerInputs(const int currRdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
-    for (int i = 0; i < playersCnt; i++) {
-        const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
-        const CharacterDownsync& currChd = currPlayer.chd();
-        if (noOpSet.count(currChd.ch_state())) continue;
-
-        const CharacterConfig* cc = getCc(currChd.species_id());
-        auto currChState = currChd.ch_state();
-        bool currNotDashing = isNotDashing(currChd);
-        bool currDashing = !currNotDashing;
-        bool currWalking = walkingSet.count(currChState);
-        bool currEffInAir = isEffInAir(currChd, currNotDashing);
-        bool currOnWall = onWallSet.count(currChState);
-        bool currCrouching = isCrouching(currChState, cc);
-        bool currAtked = atkedSet.count(currChState);
-        bool currInBlockStun = isInBlockStun(currChd);
-        bool currParalyzed = false; // TODO
-
-        PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i);
-        CharacterDownsync* nextChd = nextPlayer->mutable_chd();
-        auto ud = calcUserData(currPlayer);
-        auto cv = transientUdToChCollider[ud];
-
-        int patternId = globalPrimitiveConsts->pattern_id_no_op();
-        bool jumpedOrNot = false;
-        bool slipJumpedOrNot = false;
-        int effDx = 0, effDy = 0;
-        uint64_t singleInput = delayedIfd->input_list(i);
-        decodeInput(singleInput, &ifDecodedHolder);
-        derivePlayerOpPattern(currRdfId, currChd, cc, nextChd, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
-        bool slowDownToAvoidOverlap = false;
-        processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletCount, nextRdfBulletIdCounter);
-    }
-}
-
-void BaseBattle::processNpcInputs(const int currRdfId, const RenderFrame* currRdf, float dt, RenderFrame* nextRdf, const int delayedIfdId, const InputFrameDownsync* delayedIfd, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
-    for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-        const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
-        if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-        const CharacterDownsync& currChd = currNpc.chd();
-        const CharacterConfig* cc = getCc(currChd.species_id());
-        auto currChState = currChd.ch_state();
-        bool currNotDashing = isNotDashing(currChd);
-        bool currDashing = !currNotDashing;
-        bool currWalking = walkingSet.count(currChState);
-        bool currEffInAir = isEffInAir(currChd, currNotDashing);
-        bool currOnWall = onWallSet.count(currChState);
-        bool currCrouching = isCrouching(currChState, cc);
-        bool currAtked = atkedSet.count(currChState);
-        bool currInBlockStun = isInBlockStun(currChd);
-        bool currParalyzed = false; // TODO
-
-        NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs_arr(i);
-        CharacterDownsync* nextChd = nextNpc->mutable_chd();
-        auto ud = calcUserData(currNpc);
-        auto cv = transientUdToChCollider[ud];
-
-        int patternId = globalPrimitiveConsts->pattern_id_no_op();
-        bool jumpedOrNot = false;
-        bool slipJumpedOrNot = false;
-        int effDx = 0, effDy = 0;
-        deriveNpcOpPattern(currRdfId, currChd, cc, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
-
-        bool slowDownToAvoidOverlap = false; // TODO
-        processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletIdCounter, nextRdfBulletCount);
-        /*
-        if (usedSkill) {
-            nextNpc->set_cached_cue_cmd(0);
-        }
-        */
-    }
-}
-
 void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
     bool slotUsed = false;
     uint32_t slotLockedSkillId = globalPrimitiveConsts->no_skill();
@@ -3132,19 +3117,15 @@ void BaseBattle::handleLhsCharacterCollision(
 #endif
             return;
         }
+
+        if (0 < currChd->frames_invinsible()) {
+            break;
+        }
         auto rhsNextBl = transientUdToNextBl[udRhs];
         const Skill* rhsSkill = nullptr;
         const BulletConfig* rhsBlConfig = nullptr;
         FindBulletConfig(rhsNextBl->skill_id(), rhsNextBl->active_skill_hit(), rhsSkill, rhsBlConfig);
 
-        rhsNextBl->set_bl_state(BulletState::Exploding);
-        rhsNextBl->set_frames_in_bl_state(0);
-        rhsNextBl->set_vel_x(0);
-        rhsNextBl->set_vel_y(0);
-
-        if (0 < currChd->frames_invinsible()) {
-            break;
-        }
         // [TODO] Check currChd.bullet_immune_records
 
         nextChd->set_hp(nextChd->hp() - rhsBlConfig->damage());
@@ -3164,6 +3145,9 @@ void BaseBattle::handleLhsBulletCollision(
     FindBulletConfig(currBl->skill_id(), currBl->active_skill_hit(), lhsSkill, lhsBlConfig);
 
     switch (udtRhs) {
+    case UDT_PLAYER:
+    case UDT_NPC:
+    case UDT_TRAP:
     case UDT_OBSTACLE:
         switch (lhsBlConfig->b_type()) {
         case BulletType::MechanicalCartridge: {
@@ -3174,7 +3158,7 @@ void BaseBattle::handleLhsBulletCollision(
 /*
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << ", ud=" << udLhs << " explodes on obstacle at position=(" << currBl->x() << ", " << currBl->y() << ")";
+            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << ", ud=" << udLhs << " explodes on udtRhs=" << udtRhs << " at position=(" << currBl->x() << ", " << currBl->y() << ")";
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
 */
@@ -3190,8 +3174,8 @@ void BaseBattle::handleLhsBulletCollision(
         break;
         } 
         break;
-    case UDT_BL:
-        // TODO
+    case UDT_TRIGGER:
+        // TODO: Depending on the type of trigger, might NOT explode
         break;
     default:
         break;
