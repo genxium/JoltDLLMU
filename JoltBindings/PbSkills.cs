@@ -167,7 +167,7 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 24f,
+            HitboxOffsetX = 10f,
             HitboxOffsetY = 17f,
             HitboxHalfSizeX = 18f,
             HitboxHalfSizeY = 18f,
@@ -182,6 +182,7 @@ namespace JoltCSharp {
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd1",
             ExplosionSfxName="Melee_Explosion2",
+            RemainsUponHit = true,
             ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
@@ -199,7 +200,7 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 24f,
+            HitboxOffsetX = 12f,
             HitboxOffsetY = 17f,
             HitboxHalfSizeX = 18f,
             HitboxHalfSizeY = 18f,
@@ -214,6 +215,7 @@ namespace JoltCSharp {
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd2",
             ExplosionSfxName="Melee_Explosion2",
+            RemainsUponHit = true,
             ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
@@ -231,9 +233,9 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 36f,
+            HitboxOffsetX = 24f,
             HitboxOffsetY = 17f,
-            HitboxHalfSizeX = 24f,
+            HitboxHalfSizeX = 22f,
             HitboxHalfSizeY = 18f,
             SpeciesId = 2,
             ExplosionSpeciesId = 2,
@@ -244,6 +246,7 @@ namespace JoltCSharp {
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd3",
             ExplosionSfxName="Melee_Explosion2",
+            RemainsUponHit = true,
             ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
@@ -261,7 +264,7 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 24f,
+            HitboxOffsetX = 10f,
             HitboxOffsetY = 13f,
             HitboxHalfSizeX = 18f,
             HitboxHalfSizeY = 6f,
@@ -276,6 +279,7 @@ namespace JoltCSharp {
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd1",
             ExplosionSfxName="Melee_Explosion2",
+            RemainsUponHit = true,
             ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };

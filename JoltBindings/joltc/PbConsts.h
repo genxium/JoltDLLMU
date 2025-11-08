@@ -33,9 +33,9 @@ const std::unordered_set<CharacterState> inAirSet = {
     BlownUp1,
     OnWallIdle1,
     OnWallAtk1,
+    InAirDashing,
     InAirWalking,
     InAirWalkStopping,
-    Dashing // Yes dashing is an InAir state even if you dashed on the ground :)
 };
 
 const std::unordered_set<CharacterState> atkedSet = {
@@ -84,6 +84,7 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,
     InAirIdle2ByJump,
+    InAirDashing,
     InAirWalking,
     InAirWalkStopping,
     OnWallIdle1,
@@ -110,6 +111,7 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     InAirIdle1ByJump,
     InAirIdle2ByJump,
     InAirIdle1ByWallJump,
+    InAirDashing,
     InAirAtk1,
     InAirAtk2,
     InAirAtk6,

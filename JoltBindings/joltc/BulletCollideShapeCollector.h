@@ -7,7 +7,10 @@
 class BulletCollideShapeCollector : public JPH::CollideShapeCollector {
 
 public:
-    explicit BulletCollideShapeCollector(const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const Bullet* currBl, Bullet* nextBl, BaseBattleCollisionFilter* filter) : mBi(bi), mUd(ud), mUdt(udt), mCurrBl(currBl), mNextBl(nextBl), mFilter(filter) {}
+    explicit BulletCollideShapeCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const Bullet* currBl, Bullet* nextBl, BaseBattleCollisionFilter* filter) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrBl(currBl), mNextBl(nextBl), mFilter(filter) {}
+
+    int                     mCurrRdfId;
+    RenderFrame*            mNextRdf;
 
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
@@ -18,7 +21,7 @@ public:
             return;
         }
 
-        mFilter->handleLhsBulletCollision(mUd, mUdt, mCurrBl, mNextBl, udRhs, udtRhs, inResult);
+        mFilter->handleLhsBulletCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrBl, mNextBl, udRhs, udtRhs, inResult);
     }
 
 private:
