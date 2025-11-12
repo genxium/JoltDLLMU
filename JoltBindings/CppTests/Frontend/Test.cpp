@@ -39,45 +39,45 @@ RenderFrame* mockStartRdf() {
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
-    auto playerCh1 = startRdf->mutable_players_arr(0);
-    auto ch1 = playerCh1->mutable_chd();
-    auto ch1Species = SPECIES_BOUNTYHUNTER;
-    auto cc1 = characterConfigs[ch1Species];
-    ch1->set_x(-85);
-    ch1->set_y(200);
-    ch1->set_speed(cc1.speed());
-    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch1->set_frames_to_recover(0);
-    ch1->set_dir_x(2);
-    ch1->set_dir_y(0);
-    ch1->set_vel_x(0);
-    ch1->set_vel_y(0);
-    ch1->set_hp(cc1.hp());
-    ch1->set_species_id(ch1Species);
-    ch1->set_bullet_team_id(1);
-    playerCh1->set_join_index(1);
-    playerCh1->set_revival_x(ch1->x());
-    playerCh1->set_revival_y(ch1->y());
+    auto player1 = startRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_dir_x(2);
+    playerCh1->set_dir_y(0);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
 
-    auto playerCh2 = startRdf->mutable_players_arr(1);
-    auto ch2 = playerCh2->mutable_chd();
-    auto ch2Species = SPECIES_BLADEGIRL;
-    auto cc2 = characterConfigs[ch2Species];
-    ch2->set_x(+90);
-    ch2->set_y(300);
-    ch2->set_speed(cc2.speed());
-    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch2->set_frames_to_recover(0);
-    ch2->set_dir_x(-2);
-    ch2->set_dir_y(0);
-    ch2->set_vel_x(0);
-    ch2->set_vel_y(0);
-    ch2->set_hp(cc2.hp());
-    ch2->set_species_id(ch2Species);
-    ch1->set_bullet_team_id(2);
-    playerCh2->set_join_index(2);
-    playerCh2->set_revival_x(ch2->x());
-    playerCh2->set_revival_y(ch2->y());
+    auto player2 = startRdf->mutable_players_arr(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+90);
+    playerCh2->set_y(300);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_dir_x(-2);
+    playerCh2->set_dir_y(0);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
 
     startRdf->set_npc_id_counter(npcLocalId);
     startRdf->set_bullet_id_counter(bulletLocalId);
@@ -96,45 +96,45 @@ RenderFrame* mockFallenDeathRdf() {
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
-    auto playerCh1 = startRdf->mutable_players_arr(0);
-    auto ch1 = playerCh1->mutable_chd();
-    auto ch1Species = SPECIES_BOUNTYHUNTER;
-    auto cc1 = characterConfigs[ch1Species];
-    ch1->set_x(-85);
-    ch1->set_y(200);
-    ch1->set_speed(cc1.speed());
-    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch1->set_frames_to_recover(0);
-    ch1->set_dir_x(2);
-    ch1->set_dir_y(0);
-    ch1->set_vel_x(0);
-    ch1->set_vel_y(0);
-    ch1->set_hp(cc1.hp());
-    ch1->set_species_id(ch1Species);
-    ch1->set_bullet_team_id(1);
-    playerCh1->set_join_index(1);
-    playerCh1->set_revival_x(ch1->x());
-    playerCh1->set_revival_y(ch1->y());
+    auto player1 = startRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_dir_x(2);
+    playerCh1->set_dir_y(0);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
 
-    auto playerCh2 = startRdf->mutable_players_arr(1);
-    auto ch2 = playerCh2->mutable_chd();
-    auto ch2Species = SPECIES_BLADEGIRL;
-    auto cc2 = characterConfigs[ch2Species];
-    ch2->set_x(+80);
-    ch2->set_y(200);
-    ch2->set_speed(cc2.speed());
-    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch2->set_frames_to_recover(0);
-    ch2->set_dir_x(-2);
-    ch2->set_dir_y(0);
-    ch2->set_vel_x(0);
-    ch2->set_vel_y(0);
-    ch2->set_hp(cc2.hp());
-    ch2->set_species_id(ch2Species);
-    ch1->set_bullet_team_id(2);
-    playerCh2->set_join_index(2);
-    playerCh2->set_revival_x(ch2->x());
-    playerCh2->set_revival_y(ch2->y());
+    auto player2 = startRdf->mutable_players_arr(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+80);
+    playerCh2->set_y(200);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_dir_x(-2);
+    playerCh2->set_dir_y(0);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
 
     startRdf->set_npc_id_counter(npcLocalId);
     startRdf->set_bullet_id_counter(bulletLocalId);
@@ -153,47 +153,67 @@ RenderFrame* mockBladeGirlSkillRdf() {
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
-    auto playerCh1 = startRdf->mutable_players_arr(0);
-    auto ch1 = playerCh1->mutable_chd();
-    auto ch1Species = SPECIES_BLADEGIRL;
-    auto cc1 = characterConfigs[ch1Species];
-    ch1->set_x(-85);
-    ch1->set_y(200);
-    ch1->set_speed(cc1.speed());
-    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch1->set_frames_to_recover(0);
-    ch1->set_dir_x(2);
-    ch1->set_dir_y(0);
-    ch1->set_vel_x(0);
-    ch1->set_vel_y(0);
-    ch1->set_hp(cc1.hp());
-    ch1->set_species_id(ch1Species);
-    ch1->set_bullet_team_id(1);
-    playerCh1->set_join_index(1);
-    playerCh1->set_revival_x(ch1->x());
-    playerCh1->set_revival_y(ch1->y());
+    auto player1 = startRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = SPECIES_BLADEGIRL;
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_dir_x(2);
+    playerCh1->set_dir_y(0);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
 
-    auto playerCh2 = startRdf->mutable_players_arr(1);
-    auto ch2 = playerCh2->mutable_chd();
-    auto ch2Species = SPECIES_BOUNTYHUNTER;
-    auto cc2 = characterConfigs[ch2Species];
-    ch2->set_x(+80);
-    ch2->set_y(200);
-    ch2->set_speed(cc2.speed());
-    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch2->set_frames_to_recover(0);
-    ch2->set_dir_x(-2);
-    ch2->set_dir_y(0);
-    ch2->set_vel_x(0);
-    ch2->set_vel_y(0);
-    ch2->set_hp(cc2.hp());
-    ch2->set_species_id(ch2Species);
-    ch1->set_bullet_team_id(2);
-    playerCh2->set_join_index(2);
-    playerCh2->set_revival_x(ch2->x());
-    playerCh2->set_revival_y(ch2->y());
+    auto player2 = startRdf->mutable_players_arr(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = SPECIES_BOUNTYHUNTER;
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+90);
+    playerCh2->set_y(200);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_dir_x(-2);
+    playerCh2->set_dir_y(0);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
 
+    auto npc1 = startRdf->mutable_npcs_arr(0);
+    npc1->set_id(npcLocalId++);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+5);
+    npcCh1->set_y(200);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_dir_x(-2);
+    npcCh1->set_dir_y(0);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+    
     startRdf->set_npc_id_counter(npcLocalId);
+    startRdf->set_npc_count(npcLocalId);
+
     startRdf->set_bullet_id_counter(bulletLocalId);
     startRdf->set_pickable_id_counter(pickableLocalId);
 
@@ -208,39 +228,39 @@ RenderFrame* mockRefRdf(int refRdfId) {
     int npcLocalId = 1;
     int bulletLocalId = 1;
 
-    auto playerCh1 = refRdf->mutable_players_arr(0);
-    auto ch1 = playerCh1->mutable_chd();
-    ch1->set_x(-93);
-    ch1->set_y(100);
-    ch1->set_speed(10);
-    ch1->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch1->set_frames_to_recover(0);
-    ch1->set_dir_x(-2);
-    ch1->set_dir_y(0);
-    ch1->set_vel_x(0);
-    ch1->set_vel_y(0);
-    ch1->set_hp(100);
-    ch1->set_species_id(SPECIES_BLADEGIRL);
-    playerCh1->set_join_index(1);
-    playerCh1->set_revival_x(ch1->x());
-    playerCh1->set_revival_y(ch1->y());
+    auto player1 = refRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    playerCh1->set_x(-93);
+    playerCh1->set_y(100);
+    playerCh1->set_speed(10);
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_dir_x(-2);
+    playerCh1->set_dir_y(0);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(100);
+    playerCh1->set_species_id(SPECIES_BLADEGIRL);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
 
-    auto playerCh2 = refRdf->mutable_players_arr(1);
-    auto ch2 = playerCh2->mutable_chd();
-    ch2->set_x(50);
-    ch2->set_y(100);
-    ch2->set_speed(10);
-    ch2->set_ch_state(CharacterState::InAirIdle1NoJump);
-    ch2->set_frames_to_recover(0);
-    ch2->set_dir_x(+2);
-    ch2->set_dir_y(0);
-    ch2->set_vel_x(0);
-    ch2->set_vel_y(0);
-    ch2->set_hp(100);
-    ch2->set_species_id(SPECIES_BOUNTYHUNTER);
-    playerCh2->set_join_index(2);
-    playerCh2->set_revival_x(ch2->x());
-    playerCh2->set_revival_y(ch2->y());
+    auto player2 = refRdf->mutable_players_arr(1);
+    auto playerCh2 = player2->mutable_chd();
+    playerCh2->set_x(50);
+    playerCh2->set_y(100);
+    playerCh2->set_speed(10);
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_dir_x(+2);
+    playerCh2->set_dir_y(0);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(100);
+    playerCh2->set_species_id(SPECIES_BOUNTYHUNTER);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
 
     refRdf->set_npc_id_counter(npcLocalId);
     refRdf->set_bullet_id_counter(bulletLocalId);
@@ -419,10 +439,7 @@ std::map<int, uint64_t> testCmds12 = {
 
 std::map<int, uint64_t> testCmds13 = {
     {0, 3},
-    {32, 0},
-    {39, 0},
-    {40, 32},
-    {41, 0},
+    {58, 3}, 
     {59, 0}, 
     {60, 32}, 
     {61, 0}, 
@@ -2466,19 +2483,23 @@ bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
         FRONTEND_Step(reusedBattle);
 
-        if (40 <= outerTimerRdfId && outerTimerRdfId <= 70) {
-            RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
-            auto& p1 = outerTimerRdf->players_arr(0);
-            auto& p1Chd = p1.chd();
-            auto& p2 = outerTimerRdf->players_arr(1);
-            auto& p2Chd = p2.chd();
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players_arr(0);
+        auto& p1Chd = p1.chd();
+        auto& p2 = outerTimerRdf->players_arr(1);
+        auto& p2Chd = p2.chd();
+        
+        auto& npc1 = outerTimerRdf->npcs_arr(0);
+        auto& npc1Chd = npc1.chd();
 
-            if (43 == outerTimerRdfId) {
-                JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-                JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
-            }
+        if (63 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+        }
 
-            std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+        if (60 <= outerTimerRdfId && outerTimerRdfId <= 70) {
+            //std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState=" << npc1Chd.ch_state() << ", framesInChState=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.dir_x() << ", " << npc1Chd.dir_y() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -2579,7 +2600,6 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -2632,9 +2652,10 @@ int main(int argc, char** argv)
     initTest12Data();
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+
     WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf();
+
     for (auto hull : hulls) {
         SerializableConvexPolygon* srcPolygon = bladeGirlSkillInitializerMapData->add_serialized_barrier_polygons();
         for (auto xOrY : hull) {
@@ -2642,7 +2663,7 @@ int main(int argc, char** argv)
         }
     }
     bladeGirlSkillInitializerMapData->set_allocated_self_parsed_rdf(bladeGirlSkillStartRdf);
-
+    
     initTest13Data();
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();

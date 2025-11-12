@@ -1,6 +1,7 @@
 #ifndef BASE_BATTLE_COLLISION_FILTER_H_
 #define BASE_BATTLE_COLLISION_FILTER_H_ 1
 
+#include <atomic>
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Math/Float2.h>
@@ -24,6 +25,9 @@
 
 class BaseBattleCollisionFilter {
 public:
+    std::atomic<uint32_t>       mNextRdfBulletIdCounter = 0;
+    std::atomic<uint32_t>       mNextRdfBulletCount = 0;
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) = 0;
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) = 0;
@@ -46,12 +50,19 @@ public:
     For example, for a same "character-bullet" collision, in "handleLhsCharacterCollision" we calculate damage and update hp, in "handleLhsBulletCollision" we calculate and update explosion status.
     */
     virtual void handleLhsCharacterCollision(
+        const int currRdfId,
+        RenderFrame* nextRdf,
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
-        const uint64_t udRhs, const uint64_t udtRhs) = 0;
+        const uint64_t udRhs, const uint64_t udtRhs,
+        const JPH::CollideShapeResult& inResult,
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) = 0;
 
     virtual void handleLhsBulletCollision(
+        const int currRdfId,
+        RenderFrame* nextRdf,
         const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::CollideShapeResult& inResult) = 0;
+        const uint64_t udRhs, const uint64_t udtRhs, 
+        const JPH::CollideShapeResult& inResult) = 0;
 
     virtual ~BaseBattleCollisionFilter() {
 

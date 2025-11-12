@@ -14,6 +14,8 @@
 #include <cstdarg>
 #include <thread>
 #include <string>
+#include <climits> // Required for "INT_MAX"
+#include <cmath> // Required for "ceil()"
 
 #ifndef NDEBUG
 #include "DebugLog.h"
@@ -144,7 +146,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider(const uint64_t ud,
 
         The feasibility of this hack is based on 3 facts.
         1. There's no shared "Shape" instance between "CH_COLLIDER_T" instances (and no shared "RotatedTranslatedShape::mInnerShape" either).
-        2. This function "getOrCreateCachedCharacterCollider" is only used in a single-threaded context (i.e. as a preparation before the multi-threaded "PhysicsSystem::Update" or "Character::PostSimulation").
+        2. This function "getOrCreateCachedCharacterCollider" is only used in a single-threaded context (i.e. as a preparation before the multi-threaded "PhysicsSystem::Update").
         3. Operator "=" for "RefConst<Shape>" would NOT call "Release()" when the new pointer address is the same as the old one.
         */
         Vec3Arg previousShapeCom = shape->GetCenterOfMass();
@@ -183,13 +185,14 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider(const uint64_t ud,
 JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType) {
     calcBlCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, blCacheKeyHolder);
     EMotionType immediateMotionType = calcBlMotionType(blType);
+    bool immediateIsSensor = calcBlIsSensor(blType);
     Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
     float newConvexRadius = 0;
     Body* blCollider = nullptr;
     auto it = cachedBlColliders.find(blCacheKeyHolder);
     if (it == cachedBlColliders.end() || it->second.empty()) {
         if (blStockCache->empty()) {
-            blCollider = createDefaultBulletCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType);
+            blCollider = createDefaultBulletCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType, immediateIsSensor);
             JPH_ASSERT(nullptr != blCollider);
         } else {
             blCollider = blStockCache->back();
@@ -209,8 +212,8 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
     const BoxShape* shape = static_cast<const BoxShape*>(blCollider->GetShape());
     auto existingHalfExtent = shape->GetHalfExtent();
     auto existingConvexRadius = shape->GetConvexRadius();
-
-    if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType) {
+    auto existingIsSensor = blCollider->IsSensor();
+    if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType || existingIsSensor != immediateIsSensor) {
         Vec3Arg previousShapeCom = shape->GetCenterOfMass();
 
         int oldShapeRefCnt = shape->GetRefCount();
@@ -219,6 +222,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
         BoxShape* newShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
 
         blCollider->SetShapeInternal(newShape, true);
+        blCollider->SetIsSensor(immediateIsSensor);
         blCollider->SetMotionType(immediateMotionType);
         bi->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
 
@@ -345,15 +349,15 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     elapse1RdfForRdf(currRdfId, nextRdf);
 
     float dt = globalPrimitiveConsts->estimated_seconds_per_rdf();
-    atomic<uint32_t> nextRdfBulletCount = nextRdf->bullet_count();
-    atomic<uint32_t> nextRdfBulletIdCounter = nextRdf->bullet_id_counter();
+    mNextRdfBulletIdCounter = nextRdf->bullet_id_counter();
+    mNextRdfBulletCount = nextRdf->bullet_count();
 
     batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf);
 
     JobSystem::Barrier* prePhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     for (int i = 0; i < playersCnt; i++) {
         uint64_t singleInput = delayedIfd->input_list(i);
-        auto handle = jobSys->CreateJob("player-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, singleInput, dt, &nextRdfBulletCount, &nextRdfBulletIdCounter]() {
+        auto handle = jobSys->CreateJob("player-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, singleInput, dt]() {
             const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
             PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
             auto ud = calcUserData(currPlayer);
@@ -382,7 +386,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 decodeInput(singleInput, &ifDecodedHolder);
                 derivePlayerOpPattern(currRdfId, currChd, cc, nextChd, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
                 bool slowDownToAvoidOverlap = false;
-                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletIdCounter, nextRdfBulletCount);
+                bool usedSkill = false;
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, usedSkill);
             }
 
             updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd); // After "processSingleCharacterInput" setting proper "velocity" of "nextChd"
@@ -392,7 +397,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
-        auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, &nextRdfBulletCount, &nextRdfBulletIdCounter]() {
+        auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
             NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
             auto ud = calcUserData(currNpc);
@@ -421,15 +426,16 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 deriveNpcOpPattern(currRdfId, currChd, cc, currEffInAir, currNotDashing, ifDecodedHolder, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy);
 
                 bool slowDownToAvoidOverlap = false; // TODO
-                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, nextRdfBulletIdCounter, nextRdfBulletCount);
-                /*
+                bool usedSkill = false;
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, usedSkill);
+                
                 if (usedSkill) {
                     nextNpc->set_cached_cue_cmd(0);
                 }
-                */
             }
             updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd);
         }, 0);
+        prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
     // Update positions and velocities of active bullets
@@ -548,7 +554,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
-            stepSingleChdState(currRdfId, currRdf, nextRdf, ud, UDT_PLAYER, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
+            stepSingleChdState(currRdfId, currRdf, nextRdf, ud, UDT_NPC, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
             postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
         }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
@@ -557,7 +563,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < currRdf->bullets_size(); i++) {
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
         auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this]() {
-            const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update, same applies for the use of "PostSimulationWithCollector -> Character::CheckCollision(...)".
+            const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
             const Bullet& currBl = currRdf->bullets(i);
             Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
             auto ud = calcUserData(currBl);
@@ -587,12 +593,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                     }
                 };
                 BulletBodyFilter blBodyFilter(bodyID);
-                BulletCollideShapeCollector collector(bi, ud, UDT_BL, &currBl, nextBl, this);
+                BulletCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, UDT_BL, &currBl, nextBl, this);
                 narrowPhaseQueryNoLock.CollideShape(blShape, Vec3::sOne(), blCOMTransform, settings, newPos, collector, phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING), phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING), blBodyFilter);
 
                 JPH_ASSERT(transientUdToNextBl.count(ud));
                 auto& nextBl = transientUdToNextBl[ud];
-
 
                 nextBl->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
                 nextBl->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
@@ -610,11 +615,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     
     calcFallenDeath(currRdf, nextRdf);
     leftShiftDeadNpcs(currRdfId, nextRdf);
-    leftShiftDeadBullets(currRdfId, nextRdf, nextRdfBulletCount);
+    leftShiftDeadBullets(currRdfId, nextRdf, mNextRdfBulletCount);
     leftShiftDeadPickables(currRdfId, nextRdf);
     batchRemoveFromPhySysAndCache(currRdfId, currRdf);
 
-    nextRdf->set_bullet_id_counter(nextRdfBulletIdCounter.load());
+    nextRdf->set_bullet_id_counter(mNextRdfBulletIdCounter.load());
 
     return nextRdf;
 }
@@ -982,7 +987,6 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
         return;
     }
 
-    // TODO: Interpolate velocity by "{init_jump_vel_y, frames_to_start_jump, proactive_jump_startup_frames}"?
     if (isJumpStartupJustEnded(currChd, nextChd, cc)) {
         nextChd->set_jump_started(true);
     } else if ((nextChd->jump_triggered() || nextChd->slip_jump_triggered()) && (!currChd.jump_started() && !nextChd->jump_started())) {
@@ -1204,15 +1208,56 @@ void BaseBattle::processInertiaFlying(int rdfId, float dt, const CharacterDownsy
     return;
 }
 
+bool BaseBattle::addNewExplosionToNextFrame(int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const CollideShapeResult& inResult) {
+    uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfBulletCount >= nextRdf->bullets_size()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", bulletId=" << referenceBullet->id() << ": bullet overwhelming when adding explosion#1";
+        --mNextRdfBulletCount;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+        return false;
+    }
 
-bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
+    auto newPos = inResult.mContactPointOn1 + Vec3(referenceBullet->x(), referenceBullet->y(), 0);
+    float newOriginatedX = newPos.GetX(), newOriginatedY = newPos.GetY(), newX = newPos.GetX(), newY = newPos.GetY();
+    float dstQx = referenceBullet->q_x();
+    float dstQy = referenceBullet->q_y();
+    float dstQz = referenceBullet->q_z();
+    float dstQw = referenceBullet->q_w();
+
+    auto initBlState = BulletState::Exploding;
+    int initFramesInBlState = 0;
+
+    int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
+    auto nextBl = nextRdf->mutable_bullets(oldNextRdfBulletCount);
+    nextBl->CopyFrom(*referenceBullet);
+    nextBl->set_id(oldNextRdfBulletIdCounter);
+    nextBl->set_originated_render_frame_id(currRdfId);
+    nextBl->set_bl_state(initBlState);
+    nextBl->set_frames_in_bl_state(initFramesInBlState);
+    nextBl->set_originated_x(newOriginatedX);
+    nextBl->set_originated_y(newOriginatedY);
+    nextBl->set_x(newX);
+    nextBl->set_y(newY);
+    nextBl->set_q_x(dstQx);
+    nextBl->set_q_y(dstQy);
+    nextBl->set_q_z(dstQz);
+    nextBl->set_q_w(dstQw);
+
+    return true;
+}
+
+
+bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, int xfac, int yfac, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
     if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
-    uint32_t oldNextRdfBulletCount = nextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
+    uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
     if (oldNextRdfBulletCount >= nextRdf->bullets_size()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming#1";
-        --nextRdfBulletCount;
+        --mNextRdfBulletCount;
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         return false;
@@ -1297,7 +1342,7 @@ bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync&
         newOriginatedY = newY;
     }
 
-    int oldNextRdfBulletIdCounter = nextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
+    int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
     auto nextBl = nextRdf->mutable_bullets(oldNextRdfBulletCount);
     nextBl->set_id(oldNextRdfBulletIdCounter);
     nextBl->set_originated_render_frame_id(currRdfId);
@@ -1354,7 +1399,7 @@ bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync&
 #endif // ! NDEBUG
 */
     if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
-        return addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId, nextRdfBulletIdCounter, nextRdfBulletCount);
+        return addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
     } else {
         return true;
     }
@@ -1364,14 +1409,14 @@ void BaseBattle::elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf) {
     for (int i = 0; i < playersCnt; i++) {
         auto player = nextRdf->mutable_players_arr(i);
         const CharacterConfig* cc = getCc(player->chd().species_id());
-        elapse1RdfForPlayerChd(player, cc);
+        elapse1RdfForPlayerChd(currRdfId, player, cc);
     }
 
     for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
         auto npc = nextRdf->mutable_npcs_arr(i);
         if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
-        const CharacterConfig* cc = getCc(npc->chd().species_id()); // TODO
-        elapse1RdfForNpcChd(npc, cc);
+        const CharacterConfig* cc = getCc(npc->chd().species_id());
+        elapse1RdfForNpcChd(currRdfId, npc, cc);
     }
 
     for (int i = 0; i < nextRdf->bullets_size(); i++) {
@@ -1448,20 +1493,20 @@ void BaseBattle::elapse1RdfForBl(int currRdfId, Bullet* bl, const Skill* skill, 
     bl->set_frames_in_bl_state(newFramesInBlState);
 }
 
-void BaseBattle::elapse1RdfForPlayerChd(PlayerCharacterDownsync* playerChd, const CharacterConfig* cc) {
+void BaseBattle::elapse1RdfForPlayerChd(const int currRdfId, PlayerCharacterDownsync* playerChd, const CharacterConfig* cc) {
     auto chd = playerChd->mutable_chd();
-    elapse1RdfForChd(chd, cc);
+    elapse1RdfForChd(currRdfId, chd, cc);
     playerChd->set_not_enough_mp_hint_rdf_countdown(0 < playerChd->not_enough_mp_hint_rdf_countdown() ? playerChd->not_enough_mp_hint_rdf_countdown() - 1 : 0);
 
 }
 
-void BaseBattle::elapse1RdfForNpcChd(NpcCharacterDownsync* npcChd, const CharacterConfig* cc) {
+void BaseBattle::elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* npcChd, const CharacterConfig* cc) {
     auto chd = npcChd->mutable_chd();
-    elapse1RdfForChd(chd, cc);
+    elapse1RdfForChd(currRdfId, chd, cc);
     npcChd->set_frames_in_patrol_cue(0 < npcChd->frames_in_patrol_cue() ? npcChd->frames_in_patrol_cue() - 1 : 0);
 }
 
-void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* cc) {
+void BaseBattle::elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, const CharacterConfig* cc) {
     cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
     cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
@@ -1486,6 +1531,17 @@ void BaseBattle::elapse1RdfForChd(CharacterDownsync* cd, const CharacterConfig* 
     }
 
     cd->set_flying_rdf_countdown((globalPrimitiveConsts->max_flying_rdf_cnt() == cc->flying_quota_rdf_cnt() ? globalPrimitiveConsts->max_flying_rdf_cnt() : (0 < cd->flying_rdf_countdown() ? cd->flying_rdf_countdown() - 1 : 0)));
+
+    for (int i = 0; i < cd->bullet_immune_records_size(); ++i) {
+        auto cand = cd->mutable_bullet_immune_records(i);
+        if (globalPrimitiveConsts->terminating_bullet_id() == cand->bullet_id()) break;
+        if (0 >= cand->remaining_lifetime_rdf_count()) {
+            continue;
+        }
+        auto newRemainingLifetimeRdfCount = cand->remaining_lifetime_rdf_count() - 1;
+        cand->set_remaining_lifetime_rdf_count(newRemainingLifetimeRdfCount);
+    }
+    leftShiftDeadBlImmuneRecords(currRdfId, cd);
 }
 
 InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
@@ -1895,11 +1951,11 @@ bool BaseBattle::decodeInput(uint64_t encodedInput, InputFrameDecoded* holder) {
     return true;
 }
 
-void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
+void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill) {
     bool slotUsed = false;
     uint32_t slotLockedSkillId = globalPrimitiveConsts->no_skill();
     bool dodgedInBlockStun = false;
-    // TODO: Call "useInventorySlot" properly 
+    // TODO: Call "useInventorySlot" appropriately 
 
     nextChd->set_jump_triggered(jumpedOrNot);
     nextChd->set_slip_jump_triggered(nextChd->slip_jump_triggered() || slipJumpedOrNot);
@@ -1932,7 +1988,7 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
     const Skill* outSkillConfig = nullptr;
     const BulletConfig* outPivotBc = nullptr;
 
-    bool usedSkill = dodgedInBlockStun ? false : useSkill(rdfId, nextRdf, currChd, ud, cc, nextChd, effDx, effDy, patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, outSkillId, outSkillConfig, outPivotBc, nextRdfBulletIdCounter, nextRdfBulletCount);
+    usedSkill = dodgedInBlockStun ? false : useSkill(rdfId, nextRdf, currChd, ud, cc, nextChd, effDx, effDy, patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, outSkillId, outSkillConfig, outPivotBc);
 
     /*
     if (cc->btn_b_auto_unhold_ch_states().contains(nextChd->ch_state())) {
@@ -2442,10 +2498,10 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     }
 }
 
-void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletCount) {
+void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& mNextRdfBulletCount) {
     int aliveSlotI = 0, candidateI = 0;
-    int nextRdfBulletCountVal = nextRdfBulletCount.load();
-    while (candidateI < nextRdfBulletCountVal) {
+    int mNextRdfBulletCountVal = mNextRdfBulletCount.load();
+    while (candidateI < mNextRdfBulletCountVal) {
         const Bullet* candidate = &(nextRdf->bullets(candidateI));
         if (globalPrimitiveConsts->terminating_bullet_id() == candidate->id()) {
             break;
@@ -2456,7 +2512,7 @@ void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomi
         const BulletConfig* bulletConfig = nullptr;
         FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
 
-        while (candidateI < nextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
+        while (candidateI < mNextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
 /*
 #ifndef NDEBUG
             auto bulletId = candidate->id();
@@ -2486,7 +2542,7 @@ void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomi
     if (aliveSlotI < nextRdf->bullets_size()) {
         nextRdf->mutable_bullets(aliveSlotI)->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
-    nextRdfBulletCount = aliveSlotI;
+    mNextRdfBulletCount = aliveSlotI;
     nextRdf->set_bullet_count(aliveSlotI);
 }
 
@@ -2522,7 +2578,56 @@ void BaseBattle::leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf) {
     nextRdf->set_pickable_count(aliveSlotI);
 }
 
-bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
+void BaseBattle::leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* nextChd) {
+    int aliveBlImmuneRcdI = 0, candBlImmuneRcdI = 0;
+    while (candBlImmuneRcdI < nextChd->bullet_immune_records_size()) {
+        auto cand = nextChd->mutable_bullet_immune_records(candBlImmuneRcdI);
+        if (globalPrimitiveConsts->terminating_bullet_id() == cand->bullet_id()) {
+            break;
+        }
+
+        while (globalPrimitiveConsts->terminating_bullet_id() != cand->bullet_id() && 0 >= cand->remaining_lifetime_rdf_count()) {
+            // meets a dead "BulletImmuneRecord", moves to next
+            candBlImmuneRcdI++;
+            if (candBlImmuneRcdI >= nextChd->bullet_immune_records_size()) break;
+            cand = nextChd->mutable_bullet_immune_records(candBlImmuneRcdI);
+        }
+
+        if (candBlImmuneRcdI >= nextChd->bullet_immune_records_size() || globalPrimitiveConsts->terminating_bullet_id() == nextChd->bullet_immune_records(candBlImmuneRcdI).bullet_id()) {
+            break;
+        }
+
+        if (candBlImmuneRcdI != aliveBlImmuneRcdI) {
+            auto src = nextChd->bullet_immune_records(candBlImmuneRcdI);
+            auto dst = nextChd->mutable_bullet_immune_records(aliveBlImmuneRcdI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candBlImmuneRcdI++;
+        aliveBlImmuneRcdI++;
+    }
+
+    if (aliveBlImmuneRcdI < nextChd->bullet_immune_records_size()) {
+        auto terminatingCand = nextChd->mutable_bullet_immune_records(aliveBlImmuneRcdI);
+        terminatingCand->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
+        terminatingCand->set_remaining_lifetime_rdf_count(0);
+    }
+}
+
+void BaseBattle::leftShiftDeadIvSlots(int currRdfId, CharacterDownsync* nextChd) {
+    // TODO
+}
+
+void BaseBattle::leftShiftDeadBuffs(int currRdfId, CharacterDownsync* nextChd) {
+    // TODO
+}
+
+void BaseBattle::leftShiftDeadDebuffs(int currRdfId, CharacterDownsync* nextChd) {
+    // TODO
+}
+
+bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc) {
     if (globalPrimitiveConsts->pattern_id_no_op() == patternId || globalPrimitiveConsts->pattern_id_unable_to_op() == patternId) {
         return false;
     }
@@ -2606,16 +2711,19 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
             return false;
         }
         targetSkillId = initSkillDict[encodedPattern];
-/*
 #ifndef NDEBUG
         std::ostringstream oss2;
-        oss2 << "@currRdfId=" << currRdfId << ", ud=" << ud << " tries to use init skill by (patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), targetSkillId=" << targetSkillId << " selected";
+        oss2 << "@currRdfId=" << currRdfId << ", ud=" << ud << " tries to use init skill by (currX=" << currChd.x() << ", currY=" << currChd.y() << ", currVelX=" << currChd.vel_x() << ", " << ", currVelY=" << currChd.vel_y() << ", patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ", encodedPattern=" << encodedPattern << "), targetSkillId=" << targetSkillId << " selected";
         Debug::Log(oss2.str(), DColor::Orange);
 #endif // !NDEBUG
-*/
     }
 
     if (!skillConfigs.count(targetSkillId)) {
+#ifndef NDEBUG
+         std::ostringstream oss;
+         oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", skillConfigs size=" << skillConfigs.size() << " doesn't contain targetSkillId=" << targetSkillId;
+         Debug::Log(oss.str(), DColor::Yellow);
+#endif // !NDEBUG
         return false;
     }
 
@@ -2623,13 +2731,11 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
 
     if (targetSkillConfig.mp_delta() > currChd.mp()) {
         // notEnoughMp = true; // TODO
-/*
 #ifndef NDEBUG
          std::ostringstream oss;
          oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", not enough mp to use targetSkillId=" << targetSkillId;
          Debug::Log(oss.str(), DColor::Yellow);
 #endif // !NDEBUG
-*/
         return false;
     }
         
@@ -2655,7 +2761,7 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     const Bullet* referenceBullet = nullptr;
     const BulletConfig* referenceBulletConfig = nullptr;
     for (int i = 0; i < pivotBulletConfig.simultaneous_multi_hit_cnt() + 1; i++) {
-        if (!addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id(), nextRdfBulletIdCounter, nextRdfBulletCount)) {
+        if (!addNewBulletToNextFrame(currRdfId, currChd, nextChd, cc, currParalyzed, currEffInAir, xfac, yfac, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
             break;
         }
         nextChd->set_active_skill_hit(nextActiveSkillHit);
@@ -2677,10 +2783,16 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
+
+#ifndef NDEBUG
+    std::ostringstream oss3;
+    oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by (nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextX=" << nextChd->x() << ", nextY=" << nextChd->y() << ", nextVelX=" << nextChd->vel_x() << ", " << ", nextVelY=" << nextChd->vel_y() << ", patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ")";
+    Debug::Log(oss3.str(), DColor::Orange);
+#endif // !NDEBUG
     return true;
 }
 
-void BaseBattle::useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun, atomic<uint32_t>& nextRdfBulletIdCounter, atomic<uint32_t>& nextRdfBulletCount) {
+void BaseBattle::useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun) {
     outSlotUsed = false;
     bool intendToDodgeInBlockStun = false;
     outDodgedInBlockStun = false;
@@ -2817,7 +2929,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     return ret;
 }
 
-Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType immediateMotionType) {
+Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType immediateMotionType, bool isSensor) {
     outConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
     if (cDefaultHalfThickness < outConvexRadius) {
         outConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
@@ -2827,6 +2939,7 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mGravityFactor = 0; // TODO
+    bodyCreationSettings.mIsSensor = isSensor; // TODO
     Body* body = bi->CreateBody(bodyCreationSettings);
     JPH_ASSERT(nullptr != body);
     blStockCache->push_back(body);
@@ -3016,33 +3129,6 @@ void BaseBattle::OnContactCommon(
     // Intentionally left blank by the time of writing.
 }
 
-void BaseBattle::PostSimulationWithCollector(const RVec3& char_pos, const Quat& char_rot, const Vec3& char_vel, CH_COLLIDER_T* chCollider, float inMaxSeparationDistance, CharacterCollideShapeCollector* collector) {
-    
-    // Collide shape
-    chCollider->CheckCollision(char_pos, char_rot, char_vel, inMaxSeparationDistance, chCollider->GetShape(), char_pos, *collector, false);
-
-    // Copy results
-    chCollider->SetGroundBodyID(collector->mGroundBodyID, collector->mGroundBodySubShapeID);
-    chCollider->SetGroundBodyPosition(collector->mGroundPosition, collector->mGroundNormal);
-
-    if (!collector->mGroundBodyID.IsInvalid()) {
-        // Update ground state
-        RMat44 inv_transform = RMat44::sInverseRotationTranslation(char_rot, char_pos);
-        if (chCollider->GetSupportingVolume()->SignedDistance(Vec3(inv_transform * collector->mGroundPosition)) > 0.0f)
-            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::NotSupported);
-        else if (chCollider->IsSlopeTooSteep(collector->mGroundNormal))
-            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::OnSteepGround);
-        else
-            chCollider->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
-
-        // Copy other body properties
-        chCollider->SetGroundBodyUd(bi->GetMaterial(collector->mGroundBodyID, collector->mGroundBodySubShapeID), bi->GetPointVelocity(collector->mGroundBodyID, collector->mGroundPosition), bi->GetUserData(collector->mGroundBodyID));
-    } else {
-        chCollider->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
-        chCollider->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, Vec3::sZero(), 0);
-    }
-}
-
 void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState) {
     auto bodyID = single->GetBodyID();
 
@@ -3050,8 +3136,52 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     Quat newRot;
     single->GetPositionAndRotation(newPos, newRot);
     auto newVel = single->GetLinearVelocity();
-    CharacterCollideShapeCollector collector(bi, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this);
-    PostSimulationWithCollector(newPos, newRot, newVel, single, cCollisionTolerance, &collector); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    CharacterCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+
+    const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
+
+    // Collide shape
+    auto chCOMTransform = bi->GetCenterOfMassTransform(bodyID);
+
+    // Settings for collide shape
+    CollideShapeSettings settings;
+    settings.mMaxSeparationDistance = cCollisionTolerance;
+    settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
+    settings.mActiveEdgeMovementDirection = newVel;
+    settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
+
+    class CharacterBodyFilter : public IgnoreSingleBodyFilter {
+    public:
+        using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
+
+        virtual bool	ShouldCollideLocked(const Body& inBody) const override
+        {
+            return true; // Don't skip when "inBody" is sensor!
+        }
+    };
+    CharacterBodyFilter chBodyFilter(bodyID);
+    narrowPhaseQueryNoLock.CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, settings, newPos, collector, phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING), phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING), chBodyFilter);
+    
+    // Copy results
+    single->SetGroundBodyID(collector.mGroundBodyID, collector.mGroundBodySubShapeID);
+    single->SetGroundBodyPosition(collector.mGroundPosition, collector.mGroundNormal);
+
+    if (!collector.mGroundBodyID.IsInvalid()) {
+        // Update ground state
+        RMat44 inv_transform = RMat44::sInverseRotationTranslation(newRot, newPos);
+        if (single->GetSupportingVolume()->SignedDistance(Vec3(inv_transform * collector.mGroundPosition)) > 0.0f)
+            single->SetGroundState(JPH::CharacterBase::EGroundState::NotSupported);
+        else if (single->IsSlopeTooSteep(collector.mGroundNormal))
+            single->SetGroundState(JPH::CharacterBase::EGroundState::OnSteepGround);
+        else
+            single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
+
+        // Copy other body properties
+        single->SetGroundBodyUd(bi->GetMaterial(collector.mGroundBodyID, collector.mGroundBodySubShapeID), bi->GetPointVelocity(collector.mGroundBodyID, collector.mGroundPosition), bi->GetUserData(collector.mGroundBodyID));
+    } else {
+        single->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
+        single->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, Vec3::sZero(), 0);
+    }
 
     inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
     cvGroundState = single->GetGroundState();
@@ -3100,11 +3230,45 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     if ((hasBeenOnWallIdle1 || hasBeenOnWallAtk1) && nextChd->x() != currChd.x()) {
         nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
     }
+
+    if (0 < collector.newEffDamage) {
+        if (!noOpSet.count(nextChd->ch_state())) {
+            if (collector.newEffBlownUp) {
+                nextChd->set_ch_state(BlownUp1);
+            } else {
+                if (cvOnWall || cvInAir) {
+                    nextChd->set_ch_state(InAirAtked1);
+                } else {
+                    nextChd->set_ch_state(Atked1);
+                }
+            }
+            nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
+            nextChd->set_vel_x(collector.newEffPushbackVelX);
+            nextChd->set_vel_y(collector.newEffPushbackVelY);
+            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
+        } else if (Atked1 == nextChd->ch_state() || InAirAtked1 == nextChd->ch_state()) {
+            if (collector.newEffBlownUp) {
+                nextChd->set_ch_state(BlownUp1);
+            }
+            if (collector.newEffFramesToRecover > nextChd->frames_to_recover()) {
+                nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
+                nextChd->set_vel_x(collector.newEffPushbackVelX);
+                nextChd->set_vel_y(collector.newEffPushbackVelY);
+            }
+            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
+        } else if (BlownUp1 == nextChd->ch_state()){
+            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
+        } 
+    }
 }
 
 void BaseBattle::handleLhsCharacterCollision(
+    const int currRdfId, 
+    RenderFrame* nextRdf,
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
-    const uint64_t udRhs, const uint64_t udtRhs) {
+    const uint64_t udRhs, const uint64_t udtRhs, 
+    const CollideShapeResult& inResult,
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) {
 
     switch (udtRhs) {
     case UDT_BL:
@@ -3112,7 +3276,7 @@ void BaseBattle::handleLhsCharacterCollision(
 #ifndef NDEBUG
             std::ostringstream oss;
             auto bulletId = getUDPayload(udRhs);
-            oss << "handleLhsCharacterCollision/nextBl with id=" << bulletId << " is NOT FOUND";
+            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", id=" << bulletId << " is NOT FOUND";
             Debug::Log(oss.str(), DColor::Orange);
 #endif
             return;
@@ -3121,22 +3285,88 @@ void BaseBattle::handleLhsCharacterCollision(
         if (0 < currChd->frames_invinsible()) {
             break;
         }
-        auto rhsNextBl = transientUdToNextBl[udRhs];
+        Bullet* rhsNextBl = transientUdToNextBl[udRhs];
+        if (!isBulletActive(rhsNextBl)) {
+            break;
+        }
         const Skill* rhsSkill = nullptr;
         const BulletConfig* rhsBlConfig = nullptr;
         FindBulletConfig(rhsNextBl->skill_id(), rhsNextBl->active_skill_hit(), rhsSkill, rhsBlConfig);
 
-        // [TODO] Check currChd.bullet_immune_records
+        bool successfulDef1 = false; // TODO
+        if (rhsBlConfig->remains_upon_hit()) {
+            int immuneRcdI = 0;
+            bool shouldBeImmune = false;
+            while (immuneRcdI < nextChd->bullet_immune_records_size()) {
+                auto& candidate = nextChd->bullet_immune_records(immuneRcdI);
+                if (globalPrimitiveConsts->terminating_bullet_id() == candidate.bullet_id()) break;
+                if (candidate.bullet_id() == rhsNextBl->id()) {
+                    shouldBeImmune = true;
+                    break;
+                }
+                immuneRcdI++;
+            }
 
-        nextChd->set_hp(nextChd->hp() - rhsBlConfig->damage());
+            if (shouldBeImmune) {
+                break;
+            }
+            
+            if (!(successfulDef1 && rhsBlConfig->takes_def1_as_hard_pushback())) {
+                int nextImmuneRcdI = immuneRcdI;
+                int terminatingImmuneRcdI = nextImmuneRcdI + 1;
+                if (nextImmuneRcdI == nextChd->bullet_immune_records_size()) {
+                    nextImmuneRcdI = 0;
+                    terminatingImmuneRcdI = nextChd->bullet_immune_records_size(); // [WARNING] DON'T update termination in this case! 
+                }
+                auto nextImmuneRcd = nextChd->mutable_bullet_immune_records(nextImmuneRcdI);
+                nextImmuneRcd->set_bullet_id(rhsNextBl->id());
+                nextImmuneRcd->set_remaining_lifetime_rdf_count((INT_MAX <= rhsBlConfig->hit_stun_frames()) ? INT_MAX : (rhsBlConfig->hit_stun_frames() << 3));
 
-        // [TODO] Add to nextChd.bullet_immune_records
+                if (terminatingImmuneRcdI < nextChd->bullet_immune_records_size()) {
+                    auto terminatingImmuneRcd = nextChd->mutable_bullet_immune_records(terminatingImmuneRcdI);
+                    terminatingImmuneRcd->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
+                    terminatingImmuneRcd->set_remaining_lifetime_rdf_count(0);
+                }
+            }
+        }
+
+        const CharacterConfig* cc = getCc(currChd->species_id());
+        if (!(successfulDef1 && 0 >= cc->def1_damage_yield())) {
+            int effDamage = successfulDef1 ? (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage()) : rhsBlConfig->damage(); 
+            outNewDamage += effDamage; 
+            if (rhsBlConfig->blow_up()) {
+                outNewEffBlownUp = true;
+            }
+            addNewExplosionToNextFrame(currRdfId, nextRdf, rhsNextBl, inResult);
+        }
+
+        JPH::Quat blQ(rhsNextBl->q_x(), rhsNextBl->q_y(), rhsNextBl->q_z(), rhsNextBl->q_w());
+        Vec3Arg blInitPushbackVelocity(rhsBlConfig->pushback_vel_x(), rhsBlConfig->pushback_vel_y(), 0);
+        auto blEffPushbackVelocity = blQ*blInitPushbackVelocity;
+        if (std::abs(blEffPushbackVelocity.GetX()) > std::abs(outNewEffPushbackVelX)) {
+            outNewEffPushbackVelX = blEffPushbackVelocity.GetX(); 
+        }
+        if (std::abs(blEffPushbackVelocity.GetY()) > std::abs(outNewEffPushbackVelY)) {
+            outNewEffPushbackVelY = blEffPushbackVelocity.GetY(); 
+        } 
+
+        if (!successfulDef1) {
+            if (rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
+                outNewEffFramesToRecover = rhsBlConfig->hit_stun_frames(); 
+            }
+        } else {
+            if (rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
+                outNewEffFramesToRecover = rhsBlConfig->block_stun_frames(); 
+            }
+        }
 
         break;
     }
 }
 
 void BaseBattle::handleLhsBulletCollision(
+    const int currRdfId, 
+    RenderFrame* nextRdf,
     const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
     const uint64_t udRhs, const uint64_t udtRhs, const JPH::CollideShapeResult& inResult) {
     auto bulletId = currBl->id();
@@ -3151,14 +3381,17 @@ void BaseBattle::handleLhsBulletCollision(
     case UDT_OBSTACLE:
         switch (lhsBlConfig->b_type()) {
         case BulletType::MechanicalCartridge: {
+            auto explosionPos = inResult.mContactPointOn1 + Vec3(currBl->x(), currBl->y(), 0);
             nextBl->set_bl_state(BulletState::Exploding);
             nextBl->set_frames_in_bl_state(0);
+            nextBl->set_x(explosionPos.GetX());
+            nextBl->set_y(explosionPos.GetY());
             nextBl->set_vel_x(0);
             nextBl->set_vel_y(0);
 /*
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "handleLhsBulletCollision/nextBl with id=" << bulletId << ", ud=" << udLhs << " explodes on udtRhs=" << udtRhs << " at position=(" << currBl->x() << ", " << currBl->y() << ")";
+            oss << "handleLhsBulletCollision/nextBl with currRdfId=" << currRdfId << ", id=" << bulletId << ", ud=" << udLhs << " explodes on udtRhs=" << udtRhs << " at position=(" << currBl->x() << ", " << currBl->y() << ")";
             Debug::Log(oss.str(), DColor::Orange);
 #endif // !NDEBUG
 */

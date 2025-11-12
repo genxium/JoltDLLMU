@@ -156,6 +156,9 @@ enum CharacterState {
     GroundDodged = 25;
     BackWalking = 26;
 
+    InAirDashing = 27;
+    InAirBackDashing = 28;
+
     OnWallIdle1 = 128; 
 
     CrouchIdle1 = 256; 

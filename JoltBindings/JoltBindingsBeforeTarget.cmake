@@ -212,6 +212,7 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h
+    ${JOLTC_ROOT}/PbConsts.h
     ${JOLTC_ROOT}/CppOnlyConsts.h
     ${JOLTC_ROOT}/BaseBattle.h
     ${JOLTC_ROOT}/BaseBattle.cpp
