@@ -21,8 +21,8 @@ public:
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
     int                     newEffFramesToRecover = 0;
-    float                   newEffPushbackVelX = 0;
-    float                   newEffPushbackVelY = 0;
+    float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
+    float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);

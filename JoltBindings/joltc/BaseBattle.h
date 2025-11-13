@@ -539,23 +539,14 @@ protected:
         return (BulletState::Active == bullet->bl_state());
     }
 
-    inline bool isBulletActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
-        if (BulletState::Exploding == bullet->bl_state() || BulletState::Vanishing == bullet->bl_state()) {
-            return false;
-        }
-        return (bullet->originated_render_frame_id() + bc->startup_frames() < currRdfId) && (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames());
-    }
-
     inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
-        if (BulletState::Exploding == bullet->bl_state() || BulletState::Vanishing == bullet->bl_state()) {
-            return false;
-        }
         // [WARNING] Practically a bullet might propagate for a few render frames before hitting its visually "VertMovingTrapLocalIdUponActive"!
         int visualBufferRdfCnt = 3;
         if (BulletState::Active == bullet->bl_state()) {
             return visualBufferRdfCnt >= bullet->frames_in_bl_state();
+        } else {
+            return false;
         }
-        return (bullet->originated_render_frame_id() + bc->startup_frames() < currRdfId && currRdfId <= bullet->originated_render_frame_id() + bc->startup_frames() + visualBufferRdfCnt);
     }
 
     inline bool isPickableAlive(const Pickable* pickable, int currRdfId) {
