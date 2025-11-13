@@ -37,6 +37,7 @@ const uint32_t cMaxBodies = 1024;
 const uint32_t cNumBodyMutexes = 0;
 const uint32_t cMaxBodyPairs = 1024;
 const uint32_t cMaxContactConstraints = 1024;
+const float  cDefaultChDensity = 0.5f;
 const float  cDefaultFriction = 0.0f; 
 const float  cDefaultThickness = 0.02f; // An impossibly small value
 const float  cDefaultHalfThickness = cDefaultThickness * 0.5f;

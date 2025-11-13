@@ -523,6 +523,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                     nextChd->set_y(currPlayer.revival_y());
                     nextChd->set_dir_x(currPlayer.revival_dir_x());
                     nextChd->set_dir_y(currPlayer.revival_dir_y());
+                    nextChd->set_new_birth_rdf_countdown(5);
                     nextChd->set_vel_x(0);
                     nextChd->set_vel_y(0);
                 }
@@ -1241,10 +1242,6 @@ bool BaseBattle::addNewExplosionToNextFrame(int currRdfId, RenderFrame* nextRdf,
     nextBl->set_originated_y(newOriginatedY);
     nextBl->set_x(newX);
     nextBl->set_y(newY);
-    nextBl->set_q_x(dstQx);
-    nextBl->set_q_y(dstQy);
-    nextBl->set_q_z(dstQz);
-    nextBl->set_q_w(dstQw);
 
     return true;
 }
@@ -1678,7 +1675,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         const Skill* skill = nullptr;
         const BulletConfig* bulletConfig = nullptr;
         FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
-        if (isBulletActive(&currBl, bulletConfig, currRdf->id())) {
+        if (isBulletActive(&currBl)) {
             auto blCollider = getOrCreateCachedBulletCollider(ud, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), bulletConfig->b_type());
             auto bodyID = blCollider->GetID();
             transientUdToCurrBl[ud] = &currBl;
@@ -2913,6 +2910,7 @@ void BaseBattle::useInventorySlot(int currRdfId, int patternId, const CharacterD
 
 CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig* cc) {
     CapsuleShape* chShapeCenterAnchor = new CapsuleShape(cc->capsule_half_height(), cc->capsule_radius()); // lifecycle to be held by "RotatedTranslatedShape::mInnerShape"
+    chShapeCenterAnchor->SetDensity(cDefaultChDensity);
     RotatedTranslatedShape* chShape = new RotatedTranslatedShape(Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor); // lifecycle to be held by "CharacterVirtual::mShape"
 
     Ref<CharacterSettings> settings = new CharacterSettings();
@@ -2922,7 +2920,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     settings->mSupportingVolume = Plane(Vec3::sAxisY(), -cc->capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
     settings->mEnhancedInternalEdgeRemoval = cEnhancedInternalEdgeRemoval;
     settings->mShape = chShape;
-    
+    settings->mMass = chShape->GetMassProperties().mMass;
     auto ret = new Character(settings, safeDeactiviatedPosition, Quat::sIdentity(), 0, phySys);
 	ret->AddToPhysicsSystem(EActivation::DontActivate);
     
@@ -2936,6 +2934,7 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     }
     Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, outConvexRadius); // transient, to be discarded after creating "body"
+    settings->mDensity = cDefaultBlDensity;
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mGravityFactor = 0; // TODO
@@ -3243,8 +3242,12 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 }
             }
             nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
-            nextChd->set_vel_x(collector.newEffPushbackVelX);
-            nextChd->set_vel_y(collector.newEffPushbackVelY);
+            if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelX) {
+                nextChd->set_vel_x(collector.newEffPushbackVelX);
+            } 
+            if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelY) {
+                nextChd->set_vel_y(collector.newEffPushbackVelY);
+            }
             nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
         } else if (Atked1 == nextChd->ch_state() || InAirAtked1 == nextChd->ch_state()) {
             if (collector.newEffBlownUp) {
@@ -3252,8 +3255,12 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             }
             if (collector.newEffFramesToRecover > nextChd->frames_to_recover()) {
                 nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
-                nextChd->set_vel_x(collector.newEffPushbackVelX);
-                nextChd->set_vel_y(collector.newEffPushbackVelY);
+                if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelX) {
+                    nextChd->set_vel_x(collector.newEffPushbackVelX);
+                } 
+                if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelY) {
+                    nextChd->set_vel_y(collector.newEffPushbackVelY);
+                }
             }
             nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
         } else if (BlownUp1 == nextChd->ch_state()){
@@ -3272,7 +3279,7 @@ void BaseBattle::handleLhsCharacterCollision(
 
     switch (udtRhs) {
     case UDT_BL:
-        if (!transientUdToNextBl.count(udRhs)) {
+        if (!transientUdToCurrBl.count(udRhs)) {
 #ifndef NDEBUG
             std::ostringstream oss;
             auto bulletId = getUDPayload(udRhs);
@@ -3285,13 +3292,13 @@ void BaseBattle::handleLhsCharacterCollision(
         if (0 < currChd->frames_invinsible()) {
             break;
         }
-        Bullet* rhsNextBl = transientUdToNextBl[udRhs];
-        if (!isBulletActive(rhsNextBl)) {
+        const Bullet* rhsCurrBl = transientUdToCurrBl[udRhs];
+        if (!isBulletActive(rhsCurrBl)) {
             break;
         }
         const Skill* rhsSkill = nullptr;
         const BulletConfig* rhsBlConfig = nullptr;
-        FindBulletConfig(rhsNextBl->skill_id(), rhsNextBl->active_skill_hit(), rhsSkill, rhsBlConfig);
+        FindBulletConfig(rhsCurrBl->skill_id(), rhsCurrBl->active_skill_hit(), rhsSkill, rhsBlConfig);
 
         bool successfulDef1 = false; // TODO
         if (rhsBlConfig->remains_upon_hit()) {
@@ -3300,7 +3307,7 @@ void BaseBattle::handleLhsCharacterCollision(
             while (immuneRcdI < nextChd->bullet_immune_records_size()) {
                 auto& candidate = nextChd->bullet_immune_records(immuneRcdI);
                 if (globalPrimitiveConsts->terminating_bullet_id() == candidate.bullet_id()) break;
-                if (candidate.bullet_id() == rhsNextBl->id()) {
+                if (candidate.bullet_id() == rhsCurrBl->id()) {
                     shouldBeImmune = true;
                     break;
                 }
@@ -3319,7 +3326,7 @@ void BaseBattle::handleLhsCharacterCollision(
                     terminatingImmuneRcdI = nextChd->bullet_immune_records_size(); // [WARNING] DON'T update termination in this case! 
                 }
                 auto nextImmuneRcd = nextChd->mutable_bullet_immune_records(nextImmuneRcdI);
-                nextImmuneRcd->set_bullet_id(rhsNextBl->id());
+                nextImmuneRcd->set_bullet_id(rhsCurrBl->id());
                 nextImmuneRcd->set_remaining_lifetime_rdf_count((INT_MAX <= rhsBlConfig->hit_stun_frames()) ? INT_MAX : (rhsBlConfig->hit_stun_frames() << 3));
 
                 if (terminatingImmuneRcdI < nextChd->bullet_immune_records_size()) {
@@ -3337,18 +3344,24 @@ void BaseBattle::handleLhsCharacterCollision(
             if (rhsBlConfig->blow_up()) {
                 outNewEffBlownUp = true;
             }
-            addNewExplosionToNextFrame(currRdfId, nextRdf, rhsNextBl, inResult);
+            if (rhsBlConfig->remains_upon_hit()) {
+                addNewExplosionToNextFrame(currRdfId, nextRdf, rhsCurrBl, inResult);
+            }
         }
 
-        JPH::Quat blQ(rhsNextBl->q_x(), rhsNextBl->q_y(), rhsNextBl->q_z(), rhsNextBl->q_w());
+        JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
         Vec3Arg blInitPushbackVelocity(rhsBlConfig->pushback_vel_x(), rhsBlConfig->pushback_vel_y(), 0);
         auto blEffPushbackVelocity = blQ*blInitPushbackVelocity;
-        if (std::abs(blEffPushbackVelocity.GetX()) > std::abs(outNewEffPushbackVelX)) {
-            outNewEffPushbackVelX = blEffPushbackVelocity.GetX(); 
+        if (globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_x()) {
+            if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelX || std::abs(blEffPushbackVelocity.GetX()) > std::abs(outNewEffPushbackVelX)) {
+                outNewEffPushbackVelX = blEffPushbackVelocity.GetX();
+            }
         }
-        if (std::abs(blEffPushbackVelocity.GetY()) > std::abs(outNewEffPushbackVelY)) {
-            outNewEffPushbackVelY = blEffPushbackVelocity.GetY(); 
-        } 
+        if (globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_y()) {
+            if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelY || std::abs(blEffPushbackVelocity.GetY()) > std::abs(outNewEffPushbackVelY)) {
+                outNewEffPushbackVelY = blEffPushbackVelocity.GetY();
+            }
+        }
 
         if (!successfulDef1) {
             if (rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {

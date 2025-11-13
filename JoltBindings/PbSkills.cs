@@ -49,7 +49,7 @@ namespace JoltCSharp {
             BlockStunFrames = 7,
             CooldownFrames = 11,
             Damage = 10,
-            PushbackVelX = 0.8f,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
@@ -60,9 +60,10 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 2,
             SpeciesId = 1,
             ExplosionSpeciesId = 1,
-            Speed = 6.3f * BATTLE_DYNAMICS_FPS,
+            Speed = 6.0f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
             ExplosionFrames = 25,
+            // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
             BType = BulletType.MechanicalCartridge,
             CharacterEmitSfxName = "PistolEmit",
             ActiveVfxSpeciesId = 0, // TODO
