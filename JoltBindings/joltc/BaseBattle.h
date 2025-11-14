@@ -220,10 +220,6 @@ public:
         return encodedPatternId;
     }
 
-    inline static bool IsVelocityComponentNearZero(float velComp) {
-        return -cVelCompEps < velComp && velComp < cVelCompEps;
-    }
-
     inline static bool IsLengthNearZero(float length) {
         return -cLengthEps < length && length < cLengthEps;
     }
@@ -415,7 +411,7 @@ protected:
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
-    virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
+    virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
 
     virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
 
@@ -479,7 +475,7 @@ protected:
 
     Body*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
 
-    void preallocateBodies(const RenderFrame* startRdf, const ::google::protobuf::Map<::google::protobuf::int32, ::google::protobuf::int32 >& preallocateNpcSpeciesDict);
+    void preallocateBodies(const RenderFrame* startRdf, const ::google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict);
 
     inline void calcChdShape(const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
 
@@ -572,7 +568,7 @@ protected:
     }
 
     inline bool publishNpcKilledEvt(int rdfId, uint64_t publishingEvtMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
-        if (globalPrimitiveConsts->terminating_evtsub_id() == nextRdfTrigger->demanded_evt_mask()) return false;
+        if (0 == nextRdfTrigger->demanded_evt_mask()) return false;
         nextRdfTrigger->set_fulfilled_evt_mask(nextRdfTrigger->fulfilled_evt_mask() | publishingEvtMask);
         nextRdfTrigger->set_offender_ud(offenderUd);
         nextRdfTrigger->set_offender_bullet_team_id(offenderBulletTeamId);

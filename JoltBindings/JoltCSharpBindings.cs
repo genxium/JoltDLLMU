@@ -412,9 +412,9 @@ namespace JoltCSharp {
             if (null != req.SerializedTrapIdToColliderAttrs) {
                 req.SerializedTrapIdToColliderAttrs.Dict.Clear();
             }
-            if (null != req.SerializedTriggerEditorIdToId) {
-                req.SerializedTriggerEditorIdToId.Dict.Clear();
-                req.SerializedTriggerEditorIdToId.Dict2.Clear();
+            if (null != req.SerializedTriggerEditorIdDict) {
+                req.SerializedTriggerEditorIdDict.Dict.Clear();
+                req.SerializedTriggerEditorIdDict.Dict2.Clear();
             }
         }
 

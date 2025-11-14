@@ -19,7 +19,7 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetStartupVfxSpeciesId(int val) {
+        public BulletConfig SetStartupVfxSpeciesId(uint val) {
             this.StartupVfxSpeciesId = val;
             return this;
         }
@@ -140,7 +140,7 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetActiveVfxSpeciesId(int val) {
+        public BulletConfig SetActiveVfxSpeciesId(uint val) {
             ActiveVfxSpeciesId = val;
             return this;
         }

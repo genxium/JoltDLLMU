@@ -472,7 +472,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     JobSystem::Barrier* postPhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     const BaseBattle* battle = this;
     for (int i = 0; i < playersCnt; i++) {
-        auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this]() {
+        auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             auto currPlayer = currRdf->players_arr(i);
             auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
             const CharacterDownsync& currChd = currPlayer.chd();
@@ -493,7 +493,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
-            stepSingleChdState(currRdfId, currRdf, nextRdf, ud, UDT_PLAYER, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
 
             /*
             #ifndef NDEBUG
@@ -534,7 +534,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
-        auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this]() {
+        auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             auto currNpc = currRdf->npcs_arr(i);
             auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
 
@@ -555,7 +555,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
-            stepSingleChdState(currRdfId, currRdf, nextRdf, ud, UDT_NPC, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
             postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
         }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
@@ -563,7 +563,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     for (int i = 0; i < currRdf->bullets_size(); i++) {
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
-        auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this]() {
+        auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
             const Bullet& currBl = currRdf->bullets(i);
             Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
@@ -603,8 +603,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 nextBl->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
                 nextBl->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
                 nextBl->set_z(0);
-                nextBl->set_vel_x(IsLengthNearZero(newVel.GetX()) ? 0 : newVel.GetX());
-                nextBl->set_vel_y(IsLengthNearZero(newVel.GetY()) ? 0 : newVel.GetY());
+                nextBl->set_vel_x(IsLengthNearZero(newVel.GetX()*dt) ? 0 : newVel.GetX());
+                nextBl->set_vel_y(IsLengthNearZero(newVel.GetY()*dt) ? 0 : newVel.GetY());
                 nextBl->set_vel_z(0);
             }
         }, 0);
@@ -2946,7 +2946,7 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     return body;
 }
 
-void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::protobuf::Map<::google::protobuf::int32, ::google::protobuf::int32 >& preallocateNpcSpeciesDict) {
+void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict) {
     for (int i = 0; i < playersCnt; i++) {
         const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
         const CharacterDownsync& currChd = currPlayer.chd();
@@ -3128,7 +3128,7 @@ void BaseBattle::OnContactCommon(
     // Intentionally left blank by the time of writing.
 }
 
-void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState) {
+void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState) {
     auto bodyID = single->GetBodyID();
 
     RVec3 newPos;
@@ -3201,8 +3201,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     nextChd->set_x(IsLengthNearZero(newPos.GetX()) ? 0 : newPos.GetX());
     nextChd->set_y(IsLengthNearZero(newPos.GetY()) ? 0 : newPos.GetY());
     nextChd->set_z(0);
-    nextChd->set_vel_x(IsVelocityComponentNearZero(newVel.GetX()) ? 0 : newVel.GetX());
-    nextChd->set_vel_y(IsVelocityComponentNearZero(newVel.GetY()) ? 0 : newVel.GetY());
+    nextChd->set_vel_x(IsLengthNearZero(newVel.GetX()*dt) ? 0 : newVel.GetX());
+    nextChd->set_vel_y(IsLengthNearZero(newVel.GetY()*dt) ? 0 : newVel.GetY());
     nextChd->set_vel_z(0);
 
     isDead = (0 >= nextChd->hp());
