@@ -141,7 +141,7 @@ enum CharacterState {
     Dashing = 14;
     Sliding = 15;
 
-    Dimmed = 16; // Pre-activated state for evtsub-based NPC 
+    Dimmed = 16; // Pre-activated state for trigger-based NPC 
     TransformingInto = 17; // When at this state, the character has already completed transform, i.e. in new species_id
 
     BackDashing = 18;
@@ -377,33 +377,47 @@ message CharacterDownsync {
     float x = 1;
     float y = 2;
     float z = 3;
-    int32 dir_x = 4;
-    int32 dir_y = 5;   
-    int32 dir_z = 6;   
 
-    float vel_x = 7;
-    float vel_y = 8;
-    float vel_z = 9;
+    /*
+    The unit-quaternion that transforms the "world-axes" to align with the character's "local-axes" as if the bullet always stayed at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
 
-    float speed = 10; // this is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
-    uint32 species_id = 11; // For evolution during battle
+    Moreover, the body mesh starts with its "local-axes" aligned with the "world-axes". 
+    */
+    float q_x = 4;
+    float q_y = 5;
+    float q_z = 6;
+    float q_w = 7;
 
-    int32 frames_to_recover = 12;
+    float vel_x = 8;
+    float vel_y = 9;
+    float vel_z = 10;
 
-    int32 hp = 14;
-    int32 mp = 15;
+    /*
+    The unit-quaternion that rotates the character's aiming direction LOCALLY after "q_*". 
+    */
+    float aiming_q_x = 11;
+    float aiming_q_y = 12;
+    float aiming_q_z = 13;
+    float aiming_q_w = 14;
 
-    int32 ch_collision_team_id = 16;
+    int32 hp = 15;
+    int32 mp = 16;
 
     CharacterState ch_state = 17;
     int32 frames_in_ch_state = 18; // number of frames elapsed in the current character state   
     bool jump_triggered = 19;
     bool omit_gravity = 20;
 
+    uint32 species_id = 21; // For evolution during battle
+    float speed = 22; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
+
     bool forced_crouching = 23; // by design a standalone field only inferred by the collision result of "Step" instead of "character_state", because we need check the transition for "character_state" from this field, i.e. "forced_crouching (prev -> curr)"
 
     bool slip_jump_triggered = 24;
     bool primarily_on_slippable_hard_pushback = 25; // by design a standalone field only inferred by the calc result of "Battle.Step" instead of "character_state"
+
+    int32 frames_to_recover = 26;
+
     int32 new_birth_rdf_countdown = 27;
 
     int32 frames_invinsible = 28;
@@ -441,16 +455,18 @@ message CharacterDownsync {
 
     uint64 locking_on_ud = 51;
 
-    repeated Buff buff_list = 52; 
-    repeated Debuff debuff_list = 53; 
+    int32 ch_collision_team_id = 52;
 
-    InventorySlot atk1_magazine = 54; 
-    InventorySlot super_atk_gauge = 55; 
-    Inventory inventory = 56;
+    repeated Buff buff_list = 53; 
+    repeated Debuff debuff_list = 54; 
 
-    repeated BulletImmuneRecord bullet_immune_records = 57;
+    InventorySlot atk1_magazine = 55; 
+    InventorySlot super_atk_gauge = 56; 
+    Inventory inventory = 57;
 
-    repeated float kinematic_knobs = 58; // including both forward-kinematics and inverse-kinematics   
+    repeated BulletImmuneRecord bullet_immune_records = 58;
+
+    repeated float kinematic_knobs = 59; // including both forward-kinematics and inverse-kinematics   
 }
 
 message PlayerCharacterDownsync {
@@ -462,10 +478,14 @@ message PlayerCharacterDownsync {
 
     float revival_x = 5;
     float revival_y = 6;
-    int32 revival_dir_x = 7;
-    int32 revival_dir_y = 8;
+    float revival_z = 7;
 
-    int32 not_enough_mp_hint_rdf_countdown = 9;
+    int32 revival_q_x = 8;
+    int32 revival_q_y = 9;
+    int32 revival_q_z = 10;
+    int32 revival_q_w = 11;
+
+    int32 not_enough_mp_hint_rdf_countdown = 12;
 }
 
 message NpcCharacterDownsync {
@@ -489,6 +509,8 @@ message NpcCharacterDownsync {
     uint32 killed_to_drop_consumable_species_id = 12;
     uint32 killed_to_drop_buff_species_id = 13;
     uint32 killed_to_drop_pickup_skill_id = 14;
+
+    bool is_main_tower_of_team = 15;
 }
 
 message InputFrameDecoded {
@@ -518,8 +540,8 @@ message WsReq {
     repeated SerializedStaticPatrolCueCollider serialized_static_patrol_cues = 9;
     repeated SerializedStaticTrapCollider serialized_static_traps = 10;
     SerializedTrapLocalIdToColliderAttrs serialized_trap_id_to_collider_attrs = 11; 
-    SerializedTriggerEditorIdToLocalId serialized_trigger_editor_id_to_id = 12;
-    map<int32, int32> preallocate_npc_species_dict = 13;
+    SerializedTriggerEditorIdDict serialized_trigger_editor_id_dict = 12;
+    map<uint32, uint32> preallocate_npc_species_dict = 13;
     float fallen_death_height = 14;
 }
 
@@ -585,7 +607,7 @@ enum VfxMotionType {
 }
 
 message VfxConfig {
-    int32 species_id = 1;
+    uint32 species_id = 1;
     VfxMotionType motion_type = 2;
     VfxDurationType duration_type = 3;
     bool on_character = 4;
@@ -619,7 +641,7 @@ message BulletConfig {
 
     bool blow_up = 18;
 
-    int32 species_id = 19; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
+    uint32 species_id = 19; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
     int32 explosion_frames = 20;
 
     BulletType b_type = 21;
@@ -631,15 +653,15 @@ message BulletConfig {
     map<int32, uint32> cancel_transit = 25; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
     int32 repeat_quota = 26; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
 
-    int32 active_vfx_species_id = 27; // currently only support 1 vfx config when active
-    int32 explosion_vfx_species_id = 28; // currently only support 1 vfx config when exploding
+    uint32 active_vfx_species_id = 27; // currently only support 1 vfx config when active
+    uint32 explosion_vfx_species_id = 28; // currently only support 1 vfx config when exploding
 
     bool allows_walking = 29;
     bool allows_crouching = 30;
     int32 hardness = 31;
     int32 startup_invinsible_frames = 32;
     int32 hit_invinsible_frames = 33;
-    int32 explosion_species_id = 34;
+    uint32 explosion_species_id = 34;
 
     int32 perp_acc_mag = 35; // acceleration magnitude perpendicular to instantaneous velocity per second
 
@@ -691,7 +713,7 @@ message BulletConfig {
     bool mh_inherits_spin = 69;
     PbQuat init_q = 70;
 
-    int32 startup_vfx_species_id = 74; // currently only support 1 vfx config when starting up
+    uint32 startup_vfx_species_id = 74; // currently only support 1 vfx config when starting up
 
     IfaceCat ifc = 75;
     bool reflect_fireball_x_if_not_harder = 76;
@@ -712,7 +734,7 @@ message BulletConfig {
 
     bool use_ch_offset_regardless_of_emission_mh = 89;
 
-    int32 inplace_vanish_explosion_species_id = 90;
+    uint32 inplace_vanish_explosion_species_id = 90;
 
     int32 anim_looping_rdf_offset = 91;  
     int32 explosion_anim_looping_rdf_offset = 92;  
@@ -759,7 +781,7 @@ message Bullet {
     float z = 8;
 
     /*
-     The unit-quaternion that transforms the "world-axes" to align with the bullet's "local-axes" as if the bullet always stays at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
+    The unit-quaternion that transforms the "world-axes" to align with the bullet's "local-axes" as if the bullet always stayed at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
 
     Moreover, the body mesh starts with its "local-axes" aligned with the "world-axes". 
     */
@@ -791,8 +813,8 @@ message Bullet {
 }
 
 message TrapConfig {
-    int32 species_id = 1;
-    int32 explosion_species_id = 2; 
+    uint32 species_id = 1;
+    uint32 explosion_species_id = 2; 
     int32 explosion_frames = 3;
     bool blow_up = 4;
 
@@ -818,7 +840,7 @@ message TrapConfig {
 }
 
 message TrapConfigFromTiled {
-    int32 species_id = 1; // Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
+    uint32 species_id = 1; // Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
     int32 quota = 2;
 
     float speed = 3; // For speed varying bullets, this is the initial speed
@@ -847,7 +869,7 @@ message TrapColliderAttr {
     bool provides_slip_jump = 8;
     bool prohibits_wall_grabbing = 9;
     bool forces_crouching = 10;
-    int32 species_id = 11; // Redundancy for referencing "Trap_config"
+    uint32 species_id = 11; // Redundancy for referencing "Trap_config"
     int32 only_allows_aligned_vel_x = 12;
     int32 only_allows_aligned_vel_y = 13;
 
@@ -902,7 +924,7 @@ enum TriggerType {
 }
 
 message TriggerConfig {
-    int32 species_id = 1;
+    uint32 species_id = 1;
     string species_name = 2; 
     TriggerType trigger_type = 3;
     /*
@@ -1096,7 +1118,7 @@ message BuffConfig {
     // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
     repeated uint32 associated_debuffs = 17;   
 
-    int32 character_vfx_species_id = 18;
+    uint32 character_vfx_species_id = 18;
     bool is_pixelated_vfx_on_character = 19;
 }
 
@@ -1297,9 +1319,9 @@ message SerializedTrapLocalIdToColliderAttrs {
     map<int32, TrapColliderAttrArray> dict = 1;
 }
 
-message SerializedTriggerEditorIdToLocalId {
-    map<int32, int32> dict = 1;
-    map<int32, TriggerConfigFromTiled> dict2 = 2;
+message SerializedTriggerEditorIdDict {
+    map<uint32, uint32> dict = 1;
+    map<uint32, TriggerConfigFromTiled> dict2 = 2;
 }
 
 enum PickupType {
@@ -1311,14 +1333,14 @@ message PickableConfigFromTiled {
     int32 init_virtual_grid_x = 1;
     int32 init_virtual_grid_y = 2;
     bool takes_gravity = 3; 
-    int32 first_show_rdf_id = 4; // If "MAGIC_EVTSUB_ID_NONE != subscription_id", then this field represents the "first_show_rdf_id" after subscription_id is fulfilled
+    int32 first_show_rdf_id = 4; // If "terminating_trigger_editor_id != subscription_id", then this field represents the "first_show_rdf_id" after subscription_id is fulfilled
     int32 recur_quota = 5;
     uint32 recur_interval_rdf_count = 6;
     uint32 lifetime_rdf_count_per_occurrence = 7;
     PickupType pickup_type = 8;
     uint32 stock_quota_per_occurrence = 9; // Only meaningful when "pickup_type == PutIntoInventory"
     int32 subscription_id = 10;
-    int32 vfx_species_id = 11; // Always use pixelated vfx
+    uint32 vfx_species_id = 11; // Always use pixelated vfx
 
     uint32 consumable_species_id = 1024; 
     uint32 buff_species_id = 1025;
@@ -1363,8 +1385,8 @@ message TriggerColliderAttr {
 }
 
 message TriggerConfigFromTiled {
-    int32 editor_id = 1;
-    int32 species_id = 2;
+    uint32 editor_id = 1;
+    uint32 species_id = 2;
     int32 delayed_frames = 3;  
     int32 recovery_frames = 4;
     int32 bullet_team_id = 5; 
@@ -1399,8 +1421,8 @@ message TriggerConfigFromTiled {
 }
 
 message Trigger {
-    int32 editor_id = 1;
-    int32 id = 2;
+    uint32 id = 1;
+    uint32 editor_id = 2;
     int32 frames_to_fire = 3; 
     int32 frames_to_recover = 4; // if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 < sub_cycle_quota_left" and itself becomes 0
     int32 quota = 5; // the initial value is from static config, but decreases upon use 
@@ -1506,8 +1528,8 @@ message PrimitiveConsts {
     int32 max_btn_holding_rdf_cnt = 48;
     int32 max_flying_rdf_cnt = 49;
     int32 max_reverse_pushback_frames_to_recover = 50;
-    int32 terminating_evtsub_id = 51;
-    int32 magic_evtsub_id_dummy = 52;
+    uint32 terminating_trigger_editor_id = 51;
+
     int32 speed_not_hit_not_specified = 53;
     int32 default_prealloc_npc_capacity = 54; // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
     int32 default_prealloc_bullet_capacity = 55; // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)

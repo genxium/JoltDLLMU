@@ -274,9 +274,15 @@ namespace JoltCSharp {
             chd.Y = 0; 
             chd.Z = 0; 
             
-            chd.DirX = 0; 
-            chd.DirY = 0; 
-            chd.DirZ = 0; 
+            chd.QX = 0; 
+            chd.QY = 0; 
+            chd.QZ = 0; 
+            chd.QW = 0; 
+
+            chd.AimingQX = 0; 
+            chd.AimingQY = 0; 
+            chd.AimingQZ = 0; 
+            chd.AimingQW = 0; 
 
             chd.VelX = 0; 
             chd.VelY = 0; 
@@ -337,6 +343,12 @@ namespace JoltCSharp {
 
         public static void PreemptPlayerCharacterDownsyncBeforeMerge(PlayerCharacterDownsync playerCharacterDownsync, PrimitiveConsts primitives) {
             PreemptCharacterDownsyncBeforeMerge(playerCharacterDownsync.Chd, primitives);
+            playerCharacterDownsync.RevivalX = 0;
+            playerCharacterDownsync.RevivalY = 0;
+            playerCharacterDownsync.RevivalQX = 0;
+            playerCharacterDownsync.RevivalQY = 0;
+            playerCharacterDownsync.RevivalQZ = 0;
+            playerCharacterDownsync.RevivalQW = 0;
         }
 
         public static void PreemptInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd, PrimitiveConsts primitives) {
@@ -412,9 +424,9 @@ namespace JoltCSharp {
             if (null != req.SerializedTrapIdToColliderAttrs) {
                 req.SerializedTrapIdToColliderAttrs.Dict.Clear();
             }
-            if (null != req.SerializedTriggerEditorIdToId) {
-                req.SerializedTriggerEditorIdToId.Dict.Clear();
-                req.SerializedTriggerEditorIdToId.Dict2.Clear();
+            if (null != req.SerializedTriggerEditorIdDict) {
+                req.SerializedTriggerEditorIdDict.Dict.Clear();
+                req.SerializedTriggerEditorIdDict.Dict2.Clear();
             }
         }
 

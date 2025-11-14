@@ -48,8 +48,14 @@ RenderFrame* mockStartRdf() {
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh1->set_frames_to_recover(0);
-    playerCh1->set_dir_x(2);
-    playerCh1->set_dir_y(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(cc1.hp());
@@ -58,6 +64,10 @@ RenderFrame* mockStartRdf() {
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
@@ -68,8 +78,14 @@ RenderFrame* mockStartRdf() {
     playerCh2->set_speed(cc2.speed());
     playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh2->set_frames_to_recover(0);
-    playerCh2->set_dir_x(-2);
-    playerCh2->set_dir_y(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(cc2.hp());
@@ -78,6 +94,10 @@ RenderFrame* mockStartRdf() {
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     startRdf->set_npc_id_counter(npcLocalId);
     startRdf->set_bullet_id_counter(bulletLocalId);
@@ -105,8 +125,14 @@ RenderFrame* mockFallenDeathRdf() {
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh1->set_frames_to_recover(0);
-    playerCh1->set_dir_x(2);
-    playerCh1->set_dir_y(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(cc1.hp());
@@ -115,6 +141,10 @@ RenderFrame* mockFallenDeathRdf() {
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
@@ -125,8 +155,14 @@ RenderFrame* mockFallenDeathRdf() {
     playerCh2->set_speed(cc2.speed());
     playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh2->set_frames_to_recover(0);
-    playerCh2->set_dir_x(-2);
-    playerCh2->set_dir_y(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(cc2.hp());
@@ -135,6 +171,10 @@ RenderFrame* mockFallenDeathRdf() {
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     startRdf->set_npc_id_counter(npcLocalId);
     startRdf->set_bullet_id_counter(bulletLocalId);
@@ -162,8 +202,14 @@ RenderFrame* mockBladeGirlSkillRdf() {
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh1->set_frames_to_recover(0);
-    playerCh1->set_dir_x(2);
-    playerCh1->set_dir_y(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(cc1.hp());
@@ -172,6 +218,10 @@ RenderFrame* mockBladeGirlSkillRdf() {
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
@@ -182,8 +232,14 @@ RenderFrame* mockBladeGirlSkillRdf() {
     playerCh2->set_speed(cc2.speed());
     playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh2->set_frames_to_recover(0);
-    playerCh2->set_dir_x(-2);
-    playerCh2->set_dir_y(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(cc2.hp());
@@ -192,6 +248,10 @@ RenderFrame* mockBladeGirlSkillRdf() {
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcLocalId++);
@@ -203,8 +263,14 @@ RenderFrame* mockBladeGirlSkillRdf() {
     npcCh1->set_speed(npcCc1.speed());
     npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     npcCh1->set_frames_to_recover(0);
-    npcCh1->set_dir_x(-2);
-    npcCh1->set_dir_y(0);
+    npcCh1->set_q_x(cTurnbackAroundYAxis.GetX());
+    npcCh1->set_q_y(cTurnbackAroundYAxis.GetY());
+    npcCh1->set_q_z(cTurnbackAroundYAxis.GetZ());
+    npcCh1->set_q_w(cTurnbackAroundYAxis.GetW());
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
     npcCh1->set_vel_x(0);
     npcCh1->set_vel_y(0);
     npcCh1->set_hp(npcCc1.hp());
@@ -239,8 +305,14 @@ RenderFrame* mockBountyHunterSkillRdf() {
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh1->set_frames_to_recover(0);
-    playerCh1->set_dir_x(2);
-    playerCh1->set_dir_y(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(cc1.hp());
@@ -249,6 +321,10 @@ RenderFrame* mockBountyHunterSkillRdf() {
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
@@ -259,8 +335,14 @@ RenderFrame* mockBountyHunterSkillRdf() {
     playerCh2->set_speed(cc2.speed());
     playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh2->set_frames_to_recover(0);
-    playerCh2->set_dir_x(-2);
-    playerCh2->set_dir_y(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(cc2.hp());
@@ -269,6 +351,10 @@ RenderFrame* mockBountyHunterSkillRdf() {
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcLocalId++);
@@ -280,8 +366,14 @@ RenderFrame* mockBountyHunterSkillRdf() {
     npcCh1->set_speed(npcCc1.speed());
     npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     npcCh1->set_frames_to_recover(0);
-    npcCh1->set_dir_x(-2);
-    npcCh1->set_dir_y(0);
+    npcCh1->set_q_x(cTurnbackAroundYAxis.GetX());
+    npcCh1->set_q_y(cTurnbackAroundYAxis.GetY());
+    npcCh1->set_q_z(cTurnbackAroundYAxis.GetZ());
+    npcCh1->set_q_w(cTurnbackAroundYAxis.GetW());
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
     npcCh1->set_vel_x(0);
     npcCh1->set_vel_y(0);
     npcCh1->set_hp(npcCc1.hp());
@@ -312,8 +404,14 @@ RenderFrame* mockRefRdf(int refRdfId) {
     playerCh1->set_speed(10);
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh1->set_frames_to_recover(0);
-    playerCh1->set_dir_x(-2);
-    playerCh1->set_dir_y(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(100);
@@ -321,6 +419,10 @@ RenderFrame* mockRefRdf(int refRdfId) {
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
 
     auto player2 = refRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
@@ -329,8 +431,14 @@ RenderFrame* mockRefRdf(int refRdfId) {
     playerCh2->set_speed(10);
     playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
     playerCh2->set_frames_to_recover(0);
-    playerCh2->set_dir_x(+2);
-    playerCh2->set_dir_y(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(100);
@@ -338,6 +446,10 @@ RenderFrame* mockRefRdf(int refRdfId) {
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     refRdf->set_npc_id_counter(npcLocalId);
     refRdf->set_bullet_id_counter(bulletLocalId);
@@ -440,7 +552,7 @@ std::map<int, uint64_t> testCmds9 = {
     {0, 3},
     {59, 3},
     {60, 0},
-    {61, 4},
+    {64, 4},
     {119, 4},
     {120, 0},
     {180, 0},
@@ -531,8 +643,10 @@ std::map<int, uint64_t> testCmds14 = {
     {51, 0}, 
     {60, 0}, 
     {61, 0}, 
+    {67, 0},
+    {68, 32},
     {69, 0}, 
-    {70, 32}, 
+    {70, 0}, 
     {71, 0},
     {100, 0},
     {111, 19},
@@ -2539,9 +2653,7 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
             auto referencedP2 = referencedRdf->players_arr(1);
             auto p2Chd = referencedP2.chd();
 
-            //std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
-
-            std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
         if (doCompareWithRollback) {
@@ -2640,14 +2752,14 @@ bool runTestCase12(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
         FRONTEND_Step(reusedBattle);
 
-        if (192 <= outerTimerRdfId && outerTimerRdfId <= 200) {
+        if (0 <= outerTimerRdfId && outerTimerRdfId <= 300) {
             RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
             auto& p1 = outerTimerRdf->players_arr(0);
             auto& p1Chd = p1.chd();
             auto& p2 = outerTimerRdf->players_arr(1);
             auto& p2Chd = p2.chd();
 
-            std::cout << "TestCase12/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase12/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -2696,8 +2808,7 @@ bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (60 <= outerTimerRdfId && outerTimerRdfId <= 70) {
-            //std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
-            std::cout << "TestCase13/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState=" << npc1Chd.ch_state() << ", framesInChState=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.dir_x() << ", " << npc1Chd.dir_y() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -2747,17 +2858,30 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         auto& npc1 = outerTimerRdf->npcs_arr(0);
         auto& npc1Chd = npc1.chd();
 
-        if (73 == outerTimerRdfId) {
+        if (71 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(2 == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         }
 
         if (70 <= outerTimerRdfId && outerTimerRdfId <= 90) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState=" << npc1Chd.ch_state() << ", framesInChState=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.dir_x() << ", " << npc1Chd.dir_y() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+
+            JPH_ASSERT(150 == p2Chd.hp());
+        }
+
+        if (183 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         }
 
         if (110 <= outerTimerRdfId && outerTimerRdfId <= 280) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.dir_x() << ", " << p1Chd.dir_y() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.dir_x() << ", " << p2Chd.dir_y() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+
+            JPH_ASSERT(140 == npc1Chd.hp());
+        }
+
+        if (300 == outerTimerRdfId) {
+            JPH_ASSERT(140 == p2Chd.hp());
         }
 
         outerTimerRdfId++;
@@ -2885,11 +3009,11 @@ int main(int argc, char** argv)
     initTest8Data();
     runTestCase8(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -2911,7 +3035,7 @@ int main(int argc, char** argv)
     initTest12Data();
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf();
 
@@ -2941,7 +3065,7 @@ int main(int argc, char** argv)
     initTest14Data();
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     pbStarterWsReqAllocator.Reset();
 
     // clean up

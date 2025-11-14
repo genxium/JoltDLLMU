@@ -1,6 +1,8 @@
 #ifndef CPP_ONLY_CONSTS_H
 #define CPP_ONLY_CONSTS_H 1
 
+#include "PbConsts.h"
+
 /*
 The "const nomenclature" is as follows.
 - Constant integer
@@ -46,10 +48,9 @@ const float  cDefaultBarrierHalfThickness = cDefaultBarrierThickness * 0.5f;
 const float  cDefaultBlHalfLength = cDefaultHalfThickness;
 const float  cDefaultBlDensity = 0.1f;
 const float  cCollisionTolerance = 0.05f;
-const float  cLengthEps = 1e-6;
+const float  cLengthEps = 1e-3;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;
 const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
-const float  cVelCompEps = 1e-4;
 
 #endif
