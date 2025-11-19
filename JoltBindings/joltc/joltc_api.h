@@ -62,7 +62,7 @@ The equivalent to [DLLMU-v2.3.4 "inputBufferLock"](https://github.com/genxium/De
 
 Note that in addition to guarding write-operations to "inputBuffer/ifdBuffer", "inputBufferLock" MUST also guard "sending of DownsyncSnapshot" to preserve the same "order of message sending" as the "order of message generation", i.e. order of "DownsyncSnapshot.st_ifd_id" received on frontend via TCP must be non-descending, see https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1371 for more information.
 */
-JPH_CAPI void* BACKEND_CreateBattle();
+JPH_CAPI void* BACKEND_CreateBattle(int rdfBufferSize);
 JPH_CAPI bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt);
 JPH_CAPI bool BACKEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId); // [WARNING] Possibly writes "DownsyncSnapshot" into "outBytesPreallocatedStart" 
 JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);

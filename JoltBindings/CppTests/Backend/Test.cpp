@@ -543,7 +543,7 @@ int main(int argc, char** argv)
     
     RegisterDebugCallback(DebugLogCb);
 
-    BackendBattle* battle = static_cast<BackendBattle*>(BACKEND_CreateBattle());
+    BackendBattle* battle = static_cast<BackendBattle*>(BACKEND_CreateBattle(2));
     std::cout << "Created battle = " << battle << std::endl;
 
     auto startRdf = mockStartRdf();

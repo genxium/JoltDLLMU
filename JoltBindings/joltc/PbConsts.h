@@ -34,8 +34,10 @@ const std::unordered_set<CharacterState> inAirSet = {
     OnWallIdle1,
     OnWallAtk1,
     InAirDashing,
+    InAirBackDashing,
     InAirWalking,
     InAirWalkStopping,
+    InAirTurnAround,
 };
 
 const std::unordered_set<CharacterState> atkedSet = {
@@ -80,6 +82,8 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     BackDashing,
     Sliding,
     GroundDodged, 
+    TurnAround,
+    InAirTurnAround,
     InAirIdle1NoJump,
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,
@@ -87,6 +91,7 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     InAirDashing,
     InAirWalking,
     InAirWalkStopping,
+    InAirBackDashing,
     OnWallIdle1,
     CrouchIdle1,
     GetUp1,
@@ -124,6 +129,11 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     CrouchIdle1,
     CrouchAtk1,
     CrouchAtked1,
+    /*
+    // [WARNING] Intentionally NOT added here.
+    BackDashing,
+    InAirBackDashing,
+    */
 };
 
 #endif

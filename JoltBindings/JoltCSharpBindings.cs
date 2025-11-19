@@ -100,7 +100,7 @@ namespace JoltCSharp {
         public static extern bool FRONTEND_OnDownsyncSnapshotReceived(UIntPtr inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern UIntPtr BACKEND_CreateBattle();
+        public static extern UIntPtr BACKEND_CreateBattle(int rdfBufferSize);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]

@@ -548,10 +548,10 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
         auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            auto currNpc = currRdf->npcs_arr(i);
+            const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
             auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
 
-            auto currChd = currNpc.chd();
+            const CharacterDownsync& currChd = currNpc.chd();
             auto nextChd = nextNpc->mutable_chd();
             auto ud = calcUserData(currNpc);
 
@@ -1210,8 +1210,12 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
                 nextChd->set_ch_state(Idle1);
             } else {
                 nextChd->set_ch_state(Walking);
-                if (exactTurningAround && cc->has_turn_around_anim() && !currEffInAir) {
-                    nextChd->set_ch_state(TurnAround);
+                if (exactTurningAround && cc->has_turn_around_anim()) {
+                    if (currEffInAir) {
+                        nextChd->set_ch_state(InAirTurnAround);
+                    } else {
+                        nextChd->set_ch_state(TurnAround);
+                    }
                 }
             }
         }
@@ -1570,6 +1574,9 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, co
         cand->set_remaining_lifetime_rdf_count(newRemainingLifetimeRdfCount);
     }
     leftShiftDeadBlImmuneRecords(currRdfId, cd);
+    leftShiftDeadIvSlots(currRdfId, cd);
+    leftShiftDeadBuffs(currRdfId, cd);
+    leftShiftDeadDebuffs(currRdfId, cd);
 }
 
 InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
@@ -2156,13 +2163,14 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case Def1:
             case Def1Broken:
             case Walking:
-            case TurnAround:
                 if (Walking == oldNextChState) {
                     if (cc->omit_gravity()) {
                         // [WARNING] No need to distinguish in this case.
                         break;
                     } else if (nextChd->omit_gravity()) {
-                        nextChd->set_ch_state(InAirWalking);
+                        if (cc->has_in_air_walking_anim()) {
+                            nextChd->set_ch_state(InAirWalking);
+                        }
                         break;
                     }
                 }
@@ -2188,14 +2196,32 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     nextChd->set_remaining_def1_quota(0);
                 }
                 break;
+            case TurnAround:
+                if (cc->omit_gravity()) {
+                    // [WARNING] No need to distinguish in this case.
+                    break;
+                } else {
+                    if (cc->has_in_air_turn_around_anim()) {
+                        nextChd->set_ch_state(InAirTurnAround);
+                    }
+                    break;
+                }
             case WalkStopping:
                 if (cc->omit_gravity()) {
                     // [WARNING] No need to distinguish in this case.
                     break;
-                } else if (nextChd->omit_gravity()) {
-                    nextChd->set_ch_state(cc->has_in_air_walk_stopping_anim() ? InAirWalkStopping : InAirWalking);
+                } else {
+                    if (cc->has_in_air_walk_stopping_anim()) {
+                        nextChd->set_ch_state(InAirWalkStopping);
+                    }
                     break;
                 }
+                break;
+            case BackDashing:
+                nextChd->set_ch_state(InAirBackDashing);
+                break;
+            case InAirDashing:
+                nextChd->set_ch_state(Dashing);
                 break;
             case Atk1:
                 nextChd->set_ch_state(InAirAtk1);
@@ -2234,6 +2260,21 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case Def1:
             case Def1Broken:
                 // Not changing anything.
+                break;
+            case InAirWalking:
+                nextChd->set_ch_state(Walking);
+                break;
+            case InAirTurnAround:
+                nextChd->set_ch_state(TurnAround);
+                break;
+            case InAirWalkStopping:
+                nextChd->set_ch_state(WalkStopping);
+                break;
+            case InAirBackDashing:
+                nextChd->set_ch_state(BackDashing);
+                break;
+            case InAirDashing:
+                nextChd->set_ch_state(Dashing);
                 break;
             default:
                 nextChd->set_ch_state(Idle1);
@@ -2302,6 +2343,16 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         } else if ((Atk1 == currChd.ch_state() && WalkingAtk1 == nextChd->ch_state()) || (Atk4 == currChd.ch_state() && WalkingAtk4 == nextChd->ch_state())) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else if ((WalkingAtk1 == currChd.ch_state() && Atk1 == nextChd->ch_state()) || (WalkingAtk4 == currChd.ch_state() && Atk4 == nextChd->ch_state())) {
+            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        } else if ((Walking == currChd.ch_state() && InAirWalking == nextChd->ch_state()) || (InAirWalking == currChd.ch_state() && Walking == nextChd->ch_state())) {
+            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        } else if ((TurnAround == currChd.ch_state() && InAirTurnAround == nextChd->ch_state()) || (InAirTurnAround == currChd.ch_state() && TurnAround == nextChd->ch_state())) {
+            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        } else if ((WalkStopping == currChd.ch_state() && InAirWalkStopping == nextChd->ch_state()) || (InAirWalkStopping == currChd.ch_state() && WalkStopping == nextChd->ch_state())) {
+            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        } else if ((BackDashing == currChd.ch_state() && InAirBackDashing == nextChd->ch_state()) || (InAirBackDashing == currChd.ch_state() && BackDashing == nextChd->ch_state())) {
+            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        } else if ((Dashing == currChd.ch_state() && InAirDashing == nextChd->ch_state()) || (InAirDashing == currChd.ch_state() && Dashing == nextChd->ch_state())) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else {
             bool isAtk1Transition = (Atk1 == currChd.ch_state() && InAirAtk1 == nextChd->ch_state()) || (InAirAtk1 == currChd.ch_state() && Atk1 == nextChd->ch_state());
@@ -2435,13 +2486,13 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 }
 
 void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
-    int aliveSlotI = 0, candidateI = 0;
-    auto characterConfigs = globalConfigConsts->character_configs();
-    while (candidateI < nextRdf->npcs_arr_size()) {
-        auto candidate = nextRdf->npcs_arr(candidateI);
+    int aliveI = 0, candI = 0;
+    auto& characterConfigs = globalConfigConsts->character_configs();
+    while (candI < nextRdf->npcs_arr_size()) {
+        const NpcCharacterDownsync& candidate = nextRdf->npcs_arr(candI);
         if (globalPrimitiveConsts->terminating_character_id() == candidate.id()) break;
-        auto chd = candidate.chd();
-        auto candidateConfig = characterConfigs.at(chd.species_id());
+        const CharacterDownsync& chd = candidate.chd();
+        const CharacterConfig& candidateConfig = characterConfigs.at(chd.species_id());
 
         /*
         // TODO: Drop pickable
@@ -2452,7 +2503,7 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
         }
         */
         
-        while (candidateI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate.id() && isNpcDeadToDisappear(&chd)) {
+        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate.id() && isNpcDeadToDisappear(&chd)) {
             if (globalPrimitiveConsts->terminating_trigger_id() != candidate.publishing_to_trigger_id_upon_killed()) {
                 auto targetTriggerInNextFrame = nextRdf->mutable_triggers_arr(candidate.publishing_to_trigger_id_upon_killed()-1);
                 if (0 == chd.last_damaged_by_ud() && globalPrimitiveConsts->terminating_bullet_team_id() == chd.last_damaged_by_bullet_team_id()) {
@@ -2469,35 +2520,36 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
                     publishNpcKilledEvt(currRdfId, candidate.publishing_evt_mask_upon_killed(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
                 }
             }
-            candidateI++;
+            candI++;
         }
 
-        if (candidateI >= nextRdf->npcs_arr_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs_arr(candidateI).id()) {
+        if (candI >= nextRdf->npcs_arr_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs_arr(candI).id()) {
             break;
         }
 
-        if (candidateI != aliveSlotI) {
-            auto src = nextRdf->npcs_arr(candidateI);
-            auto dst = nextRdf->mutable_npcs_arr(aliveSlotI);
+        if (candI != aliveI) {
+            const NpcCharacterDownsync& src = nextRdf->npcs_arr(candI);
+            auto dst = nextRdf->mutable_npcs_arr(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
 
-        candidateI++;
-        aliveSlotI++;
+        candI++;
+        aliveI++;
     }
-    if (aliveSlotI < nextRdf->npcs_arr_size()) {
-        nextRdf->mutable_npcs_arr(aliveSlotI)->set_id(globalPrimitiveConsts->terminating_character_id());
+    if (aliveI < nextRdf->npcs_arr_size()) {
+        auto terminatingCand = nextRdf->mutable_npcs_arr(aliveI);
+        terminatingCand->set_id(globalPrimitiveConsts->terminating_character_id());
     }
-    nextRdf->set_npc_count(aliveSlotI);
+    nextRdf->set_npc_count(aliveI);
 }
 
 void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf) {
-    auto chConfigs = globalConfigConsts->character_configs();
+    auto& chConfigs = globalConfigConsts->character_configs();
 
     int currRdfId = currRdf->id();
     for (int i = 0; i < nextRdf->players_arr_size(); i++) {
-        auto& currPlayer = currRdf->players_arr(i);
+        const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
         auto nextPlayer = nextRdf->mutable_players_arr(i);
         auto chd = nextPlayer->mutable_chd();
         auto chConfig = chConfigs.at(chd->species_id());
@@ -2508,11 +2560,11 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     }
 
     for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
-        auto& currNpc = currRdf->npcs_arr(i);
+        const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
         auto nextNpc = nextRdf->mutable_npcs_arr(i);
         auto chd = nextNpc->mutable_chd();
-        auto chConfig = chConfigs.at(chd->species_id());
+        const CharacterConfig& chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2 * chConfig.capsule_half_height();
         if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
             transitToDying(currRdfId, currNpc, nextNpc);
@@ -2520,22 +2572,22 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     }
 
     for (int i = 0; i < nextRdf->pickables_size(); i++) {
-        auto pickable = nextRdf->mutable_pickables(i);
-        if (globalPrimitiveConsts->terminating_pickable_id() == pickable->id()) break;
-        auto pickableTop = pickable->y() + globalPrimitiveConsts->default_pickable_hitbox_half_size_y();
-        if (fallenDeathHeight > pickableTop && PickableState::PIdle == pickable->pk_state()) {
-            pickable->set_pk_state(PickableState::PDisappearing);
-            pickable->set_frames_in_pk_state(0);
-            pickable->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
+        auto nextPickable = nextRdf->mutable_pickables(i);
+        if (globalPrimitiveConsts->terminating_pickable_id() == nextPickable->id()) break;
+        auto pickableTop = nextPickable->y() + globalPrimitiveConsts->default_pickable_hitbox_half_size_y();
+        if (fallenDeathHeight > pickableTop && PickableState::PIdle == nextPickable->pk_state()) {
+            nextPickable->set_pk_state(PickableState::PDisappearing);
+            nextPickable->set_frames_in_pk_state(0);
+            nextPickable->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
         }
     }
 }
 
 void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& mNextRdfBulletCount) {
-    int aliveSlotI = 0, candidateI = 0;
+    int aliveI = 0, candI = 0;
     int mNextRdfBulletCountVal = mNextRdfBulletCount.load();
-    while (candidateI < mNextRdfBulletCountVal) {
-        const Bullet* candidate = &(nextRdf->bullets(candidateI));
+    while (candI < mNextRdfBulletCountVal) {
+        const Bullet* candidate = &(nextRdf->bullets(candI));
         if (globalPrimitiveConsts->terminating_bullet_id() == candidate->id()) {
             break;
         }
@@ -2545,119 +2597,211 @@ void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomi
         const BulletConfig* bulletConfig = nullptr;
         FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
 
-        while (candidateI < mNextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
-/*
-#ifndef NDEBUG
-            auto bulletId = candidate->id();
-            std::ostringstream oss1;
-            oss1 << "@currRdfId=" << currRdfId << ", bulletId=" << bulletId << " is dead and left shifted, bl_state=" << candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
-            Debug::Log(oss1.str(), DColor::Orange);
-#endif // !NDEBUG
-*/
-            candidateI++;
-            candidate = &(nextRdf->bullets(candidateI));
+        while (candI < mNextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
+            candI++;
+            candidate = &(nextRdf->bullets(candI));
         }
 
-        if (candidateI >= nextRdf->bullets_size() || globalPrimitiveConsts->terminating_bullet_id() == nextRdf->bullets(candidateI).id()) {
+        if (candI >= nextRdf->bullets_size() || globalPrimitiveConsts->terminating_bullet_id() == nextRdf->bullets(candI).id()) {
             break;
         }
 
-        if (candidateI != aliveSlotI) {
-            auto src = nextRdf->bullets(candidateI);
-            auto dst = nextRdf->mutable_bullets(aliveSlotI);
+        if (candI != aliveI) {
+            auto src = nextRdf->bullets(candI);
+            auto dst = nextRdf->mutable_bullets(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
 
-        candidateI++;
-        aliveSlotI++;
+        candI++;
+        aliveI++;
     }
-    if (aliveSlotI < nextRdf->bullets_size()) {
-        nextRdf->mutable_bullets(aliveSlotI)->set_id(globalPrimitiveConsts->terminating_bullet_id());
+    if (aliveI < nextRdf->bullets_size()) {
+        auto terminatingCand = nextRdf->mutable_bullets(aliveI);
+        terminatingCand->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
-    mNextRdfBulletCount = aliveSlotI;
-    nextRdf->set_bullet_count(aliveSlotI);
+    mNextRdfBulletCount = aliveI;
+    nextRdf->set_bullet_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf) {
-    int aliveSlotI = 0, candidateI = 0;
-    while (candidateI < nextRdf->pickables_size()) {
-        auto candidate = nextRdf->pickables(candidateI);
-        if (globalPrimitiveConsts->terminating_pickable_id() == candidate.id()) {
+    int aliveI = 0, candI = 0;
+    while (candI < nextRdf->pickables_size()) {
+        const Pickable* cand = &(nextRdf->pickables(candI));
+        if (globalPrimitiveConsts->terminating_pickable_id() == cand->id()) {
             break;
         }
-        while (candidateI < nextRdf->pickables_size() && globalPrimitiveConsts->terminating_pickable_id() != candidate.id() && !isPickableAlive(&candidate, currRdfId)) {
-            // TODO: Handle self recurring pickables
-            candidateI++;
+        while (candI < nextRdf->pickables_size() && globalPrimitiveConsts->terminating_pickable_id() != cand->id() && !isPickableAlive(cand, currRdfId)) {
+            candI++;
+            if (candI >= nextRdf->pickables_size()) break;
+            cand = &(nextRdf->pickables(candI));
         }
 
-        if (candidateI >= nextRdf->pickables_size() || globalPrimitiveConsts->terminating_pickable_id() == nextRdf->pickables(candidateI).id()) {
+        if (candI >= nextRdf->pickables_size() || globalPrimitiveConsts->terminating_pickable_id() == nextRdf->pickables(candI).id()) {
             break;
         }
 
-        if (candidateI != aliveSlotI) {
-            auto src = nextRdf->bullets(candidateI);
-            auto dst = nextRdf->mutable_bullets(aliveSlotI);
+        if (candI != aliveI) {
+            const Pickable& src = nextRdf->pickables(candI);
+            auto dst = nextRdf->mutable_pickables(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
 
-        candidateI++;
-        aliveSlotI++;
+        candI++;
+        aliveI++;
     }
-    if (aliveSlotI < nextRdf->pickables_size()) {
-        nextRdf->mutable_pickables(aliveSlotI)->set_id(globalPrimitiveConsts->terminating_pickable_id());
+    if (aliveI < nextRdf->pickables_size()) {
+        auto terminatingCand = nextRdf->mutable_pickables(aliveI);
+        terminatingCand->set_id(globalPrimitiveConsts->terminating_pickable_id());
     }
-    nextRdf->set_pickable_count(aliveSlotI);
+    nextRdf->set_pickable_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* nextChd) {
-    int aliveBlImmuneRcdI = 0, candBlImmuneRcdI = 0;
-    while (candBlImmuneRcdI < nextChd->bullet_immune_records_size()) {
-        auto cand = nextChd->mutable_bullet_immune_records(candBlImmuneRcdI);
+    int aliveI = 0, candI = 0;
+    while (candI < nextChd->bullet_immune_records_size()) {
+        const BulletImmuneRecord* cand = &(nextChd->bullet_immune_records(candI));
         if (globalPrimitiveConsts->terminating_bullet_id() == cand->bullet_id()) {
             break;
         }
 
         while (globalPrimitiveConsts->terminating_bullet_id() != cand->bullet_id() && 0 >= cand->remaining_lifetime_rdf_count()) {
             // meets a dead "BulletImmuneRecord", moves to next
-            candBlImmuneRcdI++;
-            if (candBlImmuneRcdI >= nextChd->bullet_immune_records_size()) break;
-            cand = nextChd->mutable_bullet_immune_records(candBlImmuneRcdI);
+            candI++;
+            if (candI >= nextChd->bullet_immune_records_size()) break;
+            cand = &(nextChd->bullet_immune_records(candI));
         }
 
-        if (candBlImmuneRcdI >= nextChd->bullet_immune_records_size() || globalPrimitiveConsts->terminating_bullet_id() == nextChd->bullet_immune_records(candBlImmuneRcdI).bullet_id()) {
+        if (candI >= nextChd->bullet_immune_records_size() || globalPrimitiveConsts->terminating_bullet_id() == nextChd->bullet_immune_records(candI).bullet_id()) {
             break;
         }
 
-        if (candBlImmuneRcdI != aliveBlImmuneRcdI) {
-            auto src = nextChd->bullet_immune_records(candBlImmuneRcdI);
-            auto dst = nextChd->mutable_bullet_immune_records(aliveBlImmuneRcdI);
+        if (candI != aliveI) {
+            const BulletImmuneRecord& src = nextChd->bullet_immune_records(candI);
+            auto dst = nextChd->mutable_bullet_immune_records(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
 
-        candBlImmuneRcdI++;
-        aliveBlImmuneRcdI++;
+        candI++;
+        aliveI++;
     }
 
-    if (aliveBlImmuneRcdI < nextChd->bullet_immune_records_size()) {
-        auto terminatingCand = nextChd->mutable_bullet_immune_records(aliveBlImmuneRcdI);
+    if (aliveI < nextChd->bullet_immune_records_size()) {
+        auto terminatingCand = nextChd->mutable_bullet_immune_records(aliveI);
         terminatingCand->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
         terminatingCand->set_remaining_lifetime_rdf_count(0);
     }
 }
 
 void BaseBattle::leftShiftDeadIvSlots(int currRdfId, CharacterDownsync* nextChd) {
-    // TODO
+    int aliveI = 0, candI = 0;
+    auto nextInventory = nextChd->mutable_inventory(); 
+    while (candI < nextInventory->slots_size()) {
+        const InventorySlot* cand = &(nextInventory->slots(candI));
+        if (InventorySlotStockType::NoneIv == cand->stock_type()) {
+            break;
+        }
+
+        while (InventorySlotStockType::NoneIv != cand->stock_type() && 0 >= cand->quota()) {
+            candI++;
+            if (candI >= nextInventory->slots_size()) break;
+            cand = &(nextInventory->slots(candI));
+        }
+
+        if (candI >= nextInventory->slots_size() || InventorySlotStockType::NoneIv == nextInventory->slots(candI).stock_type()) {
+            break;
+        }
+
+        if (candI != aliveI) {
+            const InventorySlot& src = nextInventory->slots(candI);
+            auto dst = nextInventory->mutable_slots(aliveI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candI++;
+        aliveI++;
+    }
+
+    if (aliveI < nextInventory->slots_size()) {
+        auto terminatingCand = nextInventory->mutable_slots(aliveI);
+        terminatingCand->set_stock_type(InventorySlotStockType::NoneIv);
+        terminatingCand->set_quota(0);
+    }
 }
 
 void BaseBattle::leftShiftDeadBuffs(int currRdfId, CharacterDownsync* nextChd) {
-    // TODO
+    int aliveI = 0, candI = 0;
+    while (candI < nextChd->buff_list_size()) {
+        const Buff* cand = &(nextChd->buff_list(candI));
+        if (globalPrimitiveConsts->terminating_buff_species_id() == cand->species_id()) {
+            break;
+        }
+
+        while (globalPrimitiveConsts->terminating_buff_species_id() != cand->species_id() && 0 >= cand->stock()) {
+            candI++;
+            if (candI >= nextChd->buff_list_size()) break;
+            cand = &(nextChd->buff_list(candI));
+        }
+
+        if (candI >= nextChd->buff_list_size() || globalPrimitiveConsts->terminating_buff_species_id() == nextChd->buff_list(candI).species_id()) {
+            break;
+        }
+
+        if (candI != aliveI) {
+            const Buff& src = nextChd->buff_list(candI);
+            auto dst = nextChd->mutable_buff_list(aliveI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candI++;
+        aliveI++;
+    }
+
+    if (aliveI < nextChd->buff_list_size()) {
+        auto terminatingCand = nextChd->mutable_buff_list(aliveI);
+        terminatingCand->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
+        terminatingCand->set_stock(0);
+    }
 }
 
 void BaseBattle::leftShiftDeadDebuffs(int currRdfId, CharacterDownsync* nextChd) {
-    // TODO
+    int aliveI = 0, candI = 0;
+    while (candI < nextChd->debuff_list_size()) {
+        const Debuff* cand = &(nextChd->debuff_list(candI));
+        if (globalPrimitiveConsts->terminating_debuff_species_id() == cand->species_id()) {
+            break;
+        }
+
+        while (globalPrimitiveConsts->terminating_debuff_species_id() != cand->species_id() && 0 >= cand->stock()) {
+            candI++;
+            if (candI >= nextChd->debuff_list_size()) break;
+            cand = &(nextChd->debuff_list(candI));
+        }
+
+        if (candI >= nextChd->debuff_list_size() || globalPrimitiveConsts->terminating_debuff_species_id() == nextChd->debuff_list(candI).species_id()) {
+            break;
+        }
+
+        if (candI != aliveI) {
+            const Debuff& src = nextChd->debuff_list(candI);
+            auto dst = nextChd->mutable_debuff_list(aliveI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candI++;
+        aliveI++;
+    }
+
+    if (aliveI < nextChd->debuff_list_size()) {
+        auto terminatingCand = nextChd->mutable_debuff_list(aliveI);
+        terminatingCand->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
+        terminatingCand->set_stock(0);
+    }
 }
 
 bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc) {
