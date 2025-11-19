@@ -133,10 +133,22 @@ bool APP_GetFrameLog(void* inBattle, int inRdfId, char* outBytesPreallocatedStar
     BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
     if (nullptr == battle) return false;
     FrameLog* frameLog = battle->frameLogBuffer.GetByFrameId(inRdfId);
-    if (nullptr == frameLog) return false;
+    if (nullptr == frameLog) {
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "@inRdfId=" << inRdfId << ", couldn't get frameLog, frameLogBuff stat=" << battle->frameLogBuffer.toSimpleStat();
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+        return false;
+    }
 
     long byteSize = frameLog->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "@inRdfId=" << inRdfId << ", couldn't serialize frameLog, frameLogBuff stat=" << battle->frameLogBuffer.toSimpleStat() << ", byteSize=" << byteSize << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
         return false;
     }
     *outBytesCntLimit = byteSize;
@@ -168,8 +180,8 @@ uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t value) {
     return battle->SetInactiveJoinMask(value);
 }
 
-void* BACKEND_CreateBattle() {
-    int rdfBufferSize = 2; // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
+void* BACKEND_CreateBattle(int rdfBufferSize) {
+    // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
     BackendBattle* result = new BackendBattle(rdfBufferSize, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
 #ifndef NDEBUG
     Debug::Log("BACKEND_CreateBattle/C++", DColor::Green);

@@ -2270,33 +2270,20 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(25) + 1;
             for (int recRdfId = 1; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
                 auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
-                auto referencedP2 = referencedRdf->players_arr(1);
-
                 auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
-                auto challengingP2 = challengingRdf->players_arr(1);
-
-                BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
             }
         } else if (320 == outerTimerRdfId) {
             int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(59) + 1;  
-
             auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(lastToBeConsistentRdfId);
-            auto referencedP2 = referencedRdf->players_arr(1);
-
             auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(lastToBeConsistentRdfId);
-            auto challengingP2 = challengingRdf->players_arr(1);
-
-            BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+            BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
         } else if (330 == outerTimerRdfId) {
             int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(60) + 1;
             for (int tRdfId = globalPrimitiveConsts->starting_render_frame_id(); tRdfId <= lastToBeConsistentRdfId; tRdfId++) {
                 auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(tRdfId);
-                auto referencedP2 = referencedRdf->players_arr(1);
-
                 auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(tRdfId);
-                auto challengingP2 = challengingRdf->players_arr(1);
-
-                BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
             }
         }
         outerTimerRdfId++;
@@ -2319,7 +2306,6 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             outBytesCnt = pbBufferSizeLimit;
             APP_GetRdf(reusedBattle, outerTimerRdfId, rdfFetchBuffer, &outBytesCnt);
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
-            
         }
     }
 
@@ -2391,12 +2377,8 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             }
             for (int tRdfId = globalPrimitiveConsts->starting_render_frame_id(); tRdfId <= lastToBeConsistentRdfId; tRdfId++) {
                 auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(tRdfId);
-                auto referencedP2 = referencedRdf->players_arr(1);
-
                 auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(tRdfId);
-                auto challengingP2 = challengingRdf->players_arr(1);
-
-                BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
             }
         }
         outerTimerRdfId++;
@@ -2653,7 +2635,9 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
             auto referencedP2 = referencedRdf->players_arr(1);
             auto p2Chd = referencedP2.chd();
 
+            /*
             std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            */
         }
 
         if (doCompareWithRollback) {
@@ -2672,45 +2656,24 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
                 int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(4) + 1;
                 for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
                     auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto referencedP1 = referencedRdf->players_arr(0);
-                    auto referencedP2 = referencedRdf->players_arr(1);
-
                     auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto challengingP1 = challengingRdf->players_arr(0);
-                    auto challengingP2 = challengingRdf->players_arr(1);
-
-                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
-                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                    BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
                 }
             } else if (400 == outerTimerRdfId) {
                 int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(4);
                 int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(32) + 1;
                 for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
                     auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto referencedP1 = referencedRdf->players_arr(0);
-                    auto referencedP2 = referencedRdf->players_arr(1);
-
                     auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto challengingP1 = challengingRdf->players_arr(0);
-                    auto challengingP2 = challengingRdf->players_arr(1);
-
-                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
-                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                    BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
                 }
             } else if (480 == outerTimerRdfId) {
                 int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(17);
                 int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(60) + 1;
                 for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
                     auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto referencedP1 = referencedRdf->players_arr(0);
-                    auto referencedP2 = referencedRdf->players_arr(1);
-
                     auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(recRdfId);
-                    auto challengingP1 = challengingRdf->players_arr(0);
-                    auto challengingP2 = challengingRdf->players_arr(1);
-
-                    BaseBattle::AssertNearlySame(referencedP1, challengingP1);
-                    BaseBattle::AssertNearlySame(referencedP2, challengingP2);
+                    BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
                 }
             }
         }
@@ -2759,7 +2722,9 @@ bool runTestCase12(FrontendBattle* reusedBattle, const WsReq* initializerMapData
             auto& p2 = outerTimerRdf->players_arr(1);
             auto& p2Chd = p2.chd();
 
+            /*
             std::cout << "TestCase12/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            */
         }
 
         outerTimerRdfId++;
@@ -2808,7 +2773,9 @@ bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (60 <= outerTimerRdfId && outerTimerRdfId <= 70) {
+            /*
             std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            */
         }
 
         outerTimerRdfId++;
@@ -2864,8 +2831,9 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (70 <= outerTimerRdfId && outerTimerRdfId <= 90) {
+            /*
             std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
-
+            */
             JPH_ASSERT(150 == p2Chd.hp());
         }
 
@@ -2875,8 +2843,9 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (110 <= outerTimerRdfId && outerTimerRdfId <= 280) {
+            /*
             std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
-
+            */
             JPH_ASSERT(140 == npc1Chd.hp());
         }
 

@@ -245,7 +245,41 @@ public:
         return IsLengthDiffNearlySame(rhs - lhs);
     }
 
+    inline static void AssertNearlySame(const RenderFrame* lhs, const RenderFrame* rhs) {
+        JPH_ASSERT(lhs->players_arr_size() == rhs->players_arr_size());
+        for (int i = 0; i < lhs->players_arr_size(); i++) {
+            auto lhsCh = lhs->players_arr(i);
+            auto rhsCh = rhs->players_arr(i);
+            BaseBattle::AssertNearlySame(lhsCh, rhsCh);
+        }
+        JPH_ASSERT(lhs->npcs_arr_size() == rhs->npcs_arr_size());
+        JPH_ASSERT(lhs->npc_count() == rhs->npc_count());
+        JPH_ASSERT(lhs->npc_id_counter() == rhs->npc_id_counter());
+        for (int i = 0; i < lhs->npcs_arr_size(); i++) {
+            auto lhsCh = lhs->npcs_arr(i);
+            auto rhsCh = rhs->npcs_arr(i);
+            BaseBattle::AssertNearlySame(lhsCh, rhsCh);
+            if (globalPrimitiveConsts->terminating_character_id() == lhsCh.id()) break;
+        }
+        JPH_ASSERT(lhs->bullets_size() == rhs->bullets_size());
+        JPH_ASSERT(lhs->bullet_id_counter() == rhs->bullet_id_counter());
+        JPH_ASSERT(lhs->bullet_count() == rhs->bullet_count());
+        for (int i = 0; i < lhs->bullets_size(); i++) {
+            auto lhsB = lhs->bullets(i);
+            auto rhsB = rhs->bullets(i);
+            BaseBattle::AssertNearlySame(lhsB, rhsB);
+            if (globalPrimitiveConsts->terminating_bullet_id() == lhsB.id()) break;
+        }
+    }
+
     inline static void AssertNearlySame(const PlayerCharacterDownsync& lhs, const PlayerCharacterDownsync& rhs) {
+        auto lhsChd = lhs.chd();
+        auto rhsChd = rhs.chd();
+        AssertNearlySame(lhsChd, rhsChd);
+    }
+
+    inline static void AssertNearlySame(const NpcCharacterDownsync& lhs, const NpcCharacterDownsync& rhs) {
+        JPH_ASSERT(lhs.id() == rhs.id());
         auto lhsChd = lhs.chd();
         auto rhsChd = rhs.chd();
         AssertNearlySame(lhsChd, rhsChd);
@@ -272,6 +306,29 @@ public:
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
         JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
         JPH_ASSERT(lhsQ.IsClose(rhsQ));
+    }
+
+    inline static void AssertNearlySame(const Bullet& lhs, const Bullet& rhs) {
+        JPH_ASSERT(lhs.bl_state() == rhs.bl_state());
+        JPH_ASSERT(lhs.frames_in_bl_state() == rhs.frames_in_bl_state());
+        JPH_ASSERT(lhs.ud() == rhs.ud());
+        JPH_ASSERT(lhs.originated_render_frame_id() == rhs.originated_render_frame_id());
+        JPH_ASSERT(lhs.offender_ud() == rhs.offender_ud());
+        JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
+        JPH_ASSERT(isNearlySame(lhs.originated_x(), lhs.originated_y(), lhs.originated_z(), rhs.originated_x(), rhs.originated_y(), rhs.originated_z()));
+        JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
+        JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
+        JPH_ASSERT(lhsQ.IsClose(rhsQ));
+        JPH_ASSERT(lhs.repeat_quota_left() == rhs.repeat_quota_left());
+        JPH_ASSERT(lhs.remaining_hard_pushback_bounce_quota() == rhs.remaining_hard_pushback_bounce_quota());
+        JPH_ASSERT(lhs.target_ud() == rhs.target_ud());
+        JPH_ASSERT(lhs.damage_dealed() == rhs.damage_dealed());
+
+        JPH_ASSERT(lhs.exploded_on_ifc() == rhs.exploded_on_ifc());
+        JPH_ASSERT(lhs.active_skill_hit() == rhs.active_skill_hit());
+        JPH_ASSERT(lhs.skill_id() == rhs.skill_id());
+        JPH_ASSERT(lhs.id() == rhs.id());
+        JPH_ASSERT(lhs.team_id() == rhs.team_id());
     }
 
     inline static bool isNearlySame(Vec3& lhs, Vec3& rhs) {
