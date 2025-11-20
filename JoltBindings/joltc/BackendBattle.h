@@ -45,12 +45,11 @@ public:
     bool OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outForceConfirmedStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
     bool WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int delayedIfdId, InputFrameDownsync* delayedIfd);
-    bool Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
+    int Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds = nullptr);
+    int MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
     virtual bool ResetStartRdf(const WsReq* initializerMapData);
-
-    bool MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
     int GetDynamicsRdfId();
 

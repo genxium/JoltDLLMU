@@ -59,7 +59,7 @@ namespace JoltCSharp {
             GroundDodgedFramesInvinsible = 25, 
             GroundDodgedFramesToRecover = 30, 
             GroundDodgedSpeed = (4.0f) * BATTLE_DYNAMICS_FPS, 
-            GaugeIncWhenKilled = 80,
+            GaugeIncWhenExhausted = 80,
             Ifc = IfaceCat.Flesh,
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
@@ -121,9 +121,43 @@ namespace JoltCSharp {
                 SkillId = HunterPistolId,
                 SkillIdAir = HunterPistolId,
             },
-            GaugeIncWhenKilled = 80,
+            GaugeIncWhenExhausted = 80,
             HasBtnBCharging = true,
             Ifc = IfaceCat.Flesh,
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+        };
+
+        public static CharacterConfig BLACKSABER1 = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKSABER1,
+            SpeciesName = "BlackSaber1",
+            Hp = 40,
+            LayDownFrames = 12,
+            LayDownFramesToRecover = 12,
+            GetUpInvinsibleFrames = 19,
+            GetUpFramesToRecover = 14,
+            Speed = 1.2f * BATTLE_DYNAMICS_FPS,
+            JumpingInitVelY = 0, 
+            AccMag = 6.8f * BATTLE_DYNAMICS_FPS,
+            VisionOffsetX = (8.0f),
+            VisionOffsetY = (5.0f),
+            VisionSizeX = (220.0f),
+            VisionSizeY = (100.0f),
+            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
+            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
+            CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (16.0f),
+            ShrinkedCapsuleRadius = (8.0f),
+            ShrinkedCapsuleHalfHeight = (12.0f),
+            LayDownCapsuleRadius = (16.0f),
+            LayDownCapsuleHalfHeight = (8.0f),
+            DyingCapsuleRadius = (16.0f),
+            DyingCapsuleHalfHeight = (6.0f),
+            HasTurnAroundAnim = false,
+            Hardness = 6,
+            HasDimmedAnim = false,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+            GaugeIncWhenExhausted = 50,
+            Ifc = IfaceCat.Metal,
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
 
@@ -152,6 +186,9 @@ namespace JoltCSharp {
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
+
+            // BLACKSABER1
+            underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
         }
     }
 }

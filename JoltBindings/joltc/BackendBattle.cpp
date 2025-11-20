@@ -242,7 +242,7 @@ bool BackendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf,
     return true;
 }
 
-bool BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
+int BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfds) {
     for (int currRdfId = fromRdfId; currRdfId < toRdfId; ++currRdfId) {
         int delayedIfdId = ConvertToDelayedInputFrameId(dynamicsRdfId);
         InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
@@ -256,24 +256,29 @@ bool BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIf
             WriteSingleStepFrameLog(currRdfId, nextRdf, delayedIfdId, delayedIfd);
         }
         dynamicsRdfId = currRdfId + 1;
+        if (isBattleSettled(nextRdf)) {
+            return nextRdf->id();
+        }
     }
-    return true;
+    return toRdfId;
 }
 
-bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+int BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
     *outOldDynamicsRdfId = dynamicsRdfId;
     int oldLcacIfdId = moveForwardLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal); // If "ifdBuffer" is not full, then "lcacIfdId" might've never advanced during the current traversal
     *outOldLcacIfdId = oldLcacIfdId;
     *outNewLcacIfdId = lcacIfdId;
+
     *outNewDynamicsRdfId = dynamicsRdfId;
 
-    *outNewDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
-    if (0 <= lcacIfdId && *outOldDynamicsRdfId < *outNewDynamicsRdfId) {
-        bool stepped = Step(*outOldDynamicsRdfId, *outNewDynamicsRdfId);
-        if (!stepped) {
+    int intendedNewDynamicsRdfId = ConvertToLastUsedRenderFrameId(lcacIfdId) + 1;
+    if (0 <= lcacIfdId && *outOldDynamicsRdfId < intendedNewDynamicsRdfId) {
+        int stoppedAtRdfId = Step(*outOldDynamicsRdfId, intendedNewDynamicsRdfId);
+        *outNewDynamicsRdfId = stoppedAtRdfId;
+        if (stoppedAtRdfId != intendedNewDynamicsRdfId) {
             *outBytesCntLimit = 0;
-            return false;
+            return stoppedAtRdfId;
         }
 /*
 #ifndef NDEBUG
@@ -289,16 +294,16 @@ bool BackendBattle::MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcac
         long byteSize = result->ByteSizeLong();
         if (byteSize > *outBytesCntLimit) {
             releaseDownsyncSnapshotArenaOwnership(result);
-            return false;
+            return stoppedAtRdfId;
         }
         *outBytesCntLimit = byteSize;
         result->SerializeToArray(outBytesPreallocatedStart, byteSize);
         releaseDownsyncSnapshotArenaOwnership(result);
 
-        return true;
+        return stoppedAtRdfId;
     } else {
         *outBytesCntLimit = 0;
-        return true;
+        return *outNewDynamicsRdfId;
     }
 }
 

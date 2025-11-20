@@ -22,9 +22,9 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
@@ -80,9 +80,11 @@ RenderFrame* mockStartRdf() {
     player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_npc_count(npcIdCounter-1);
 
     return startRdf;
 }
@@ -183,7 +185,8 @@ int main(int argc, char** argv)
 
     WsReq wsReq;
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = wsReq.add_serialized_barrier_polygons();
+        auto srcBarrier = wsReq.add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }

@@ -195,10 +195,16 @@ bool BACKEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBy
     return backendBattle->OnUpsyncSnapshotReqReceived(inBytes, inBytesCnt, fromUdp, fromTcp, outBytesPreallocatedStart, outBytesCntLimit, outStEvictedCnt, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
+int BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     if (nullptr == backendBattle) return false;
     return backendBattle->Step(fromRdfId, toRdfId);
+}
+
+int BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    auto backendBattle = static_cast<BackendBattle*>(inBattle);
+    if (nullptr == backendBattle) return false;
+    return backendBattle->MoveForwardLcacIfdIdAndStep(withRefRdf, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
 bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt) {
@@ -211,12 +217,6 @@ int BACKEND_GetDynamicsRdfId(void* inBattle) {
     auto backendBattle = static_cast<BackendBattle*>(inBattle);
     if (nullptr == backendBattle) return false;
     return backendBattle->GetDynamicsRdfId();
-}
-
-bool BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
-    auto backendBattle = static_cast<BackendBattle*>(inBattle);
-    if (nullptr == backendBattle) return false;
-    return backendBattle->MoveForwardLcacIfdIdAndStep(withRefRdf, outOldLcacIfdId, outNewLcacIfdId, outOldDynamicsRdfId, outNewDynamicsRdfId, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
 void* FRONTEND_CreateBattle(int rdfBufferSize, bool isOnlineArenaMode) {

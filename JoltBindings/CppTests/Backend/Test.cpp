@@ -27,9 +27,9 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(1);
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
     auto characterConfigs = globalConfigConsts->character_configs();
 
     auto player1 = startRdf->mutable_players_arr(0);
@@ -82,9 +82,12 @@ RenderFrame* mockStartRdf() {
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
 
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
 
     return startRdf;
 }
@@ -549,7 +552,8 @@ int main(int argc, char** argv)
     auto startRdf = mockStartRdf();
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = initializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }

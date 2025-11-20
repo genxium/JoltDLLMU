@@ -1,3 +1,11 @@
+# Does this lib actually work?
+
+Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here's [a screen-recording of a battle over the internet (ping around 20ms~300ms during test)](https://pan.baidu.com/s/1SdXJFFyo0_z0G8yhuavpKQ?pwd=43jb).
+
+![latest_demo](./Screenshots/DLLMUJolt_milestone_1.gif)
+
+Afterall, the underlying netcode is the same as [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4).
+
 # Why not use a "static library `joltc`"?
 
 The main target `joltc.dll` (or `libjoltc.so`) is used by `JoltCSharpBindings.cs` via `DllImport("joltc")` which doesn't support static library, so there's no need to support static library build in the cmake scripts.

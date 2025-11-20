@@ -336,7 +336,7 @@ message CharacterConfig {
     bool is_key_ch = 85;
 
     bool allows_same_team_soft_pushback = 86; // For bricks
-    int32 gauge_inc_when_killed = 87;
+    int32 gauge_inc_when_exhausted = 87;
 
     bool jumping_instead_of_walking = 88;
     uint32 vision_search_interval_pow2Minus1U = 89;
@@ -503,16 +503,17 @@ message NpcCharacterDownsync {
     int32 waiving_patrol_cue_id = 5;
     NpcGoal goal_as_npc = 6;
 
-    uint64 publishing_evt_mask_upon_killed = 7;
-    uint32 publishing_to_trigger_id_upon_killed = 8;
+    uint64 publishing_evt_mask_upon_exhausted = 7;
+    uint32 publishing_to_trigger_id_upon_exhausted = 8;
+
     uint32 subscribes_to_trigger_id = 9; 
 
     bool captured_by_patrol_cue = 10;
     int32 frames_in_patrol_cue = 11;
 
-    uint32 killed_to_drop_consumable_species_id = 12;
-    uint32 killed_to_drop_buff_species_id = 13;
-    uint32 killed_to_drop_pickup_skill_id = 14;
+    uint32 exhausted_to_drop_consumable_species_id = 12;
+    uint32 exhausted_to_drop_buff_species_id = 13;
+    uint32 exhausted_to_drop_pickup_skill_id = 14;
 
     bool is_main_tower_of_team = 15;
 }
@@ -540,12 +541,10 @@ message WsReq {
     UpsyncSnapshot upsync_snapshot = 5;
     RenderFrame self_parsed_rdf = 6;
     int32 battle_duration_seconds = 7;
-    repeated SerializableConvexPolygon serialized_barrier_polygons = 8;
-    repeated SerializedStaticPatrolCueCollider serialized_static_patrol_cues = 9;
+    repeated SerializedBarrierCollider serialized_barriers = 8;
     repeated SerializedStaticTrapCollider serialized_static_traps = 10;
-    SerializedTrapLocalIdToColliderAttrs serialized_trap_id_to_collider_attrs = 11; 
-    SerializedTriggerEditorIdDict serialized_trigger_editor_id_dict = 12;
-    map<uint32, uint32> preallocate_npc_species_dict = 13;
+    map<uint32, uint32> preallocate_npc_species_dict = 11;
+    map<uint32, TriggerConfigFromTiled> trigger_config_from_tile_dict = 12;
     float fallen_death_height = 14;
 }
 
@@ -851,46 +850,34 @@ message TrapConfigFromTiled {
     int32 dir_x = 4; // the initial direction indicator for X-axis
     int32 dir_y = 5; // the initial direction indicator for Y-axis
 
-    int32 subscribes_to_id = 7; // [WARNING] This is a "trigger editor id", I don't want to overcomplicated the config of traps, use an additional Trigger to bridge complicated subscription combination between other triggers and a trap
-    int32 subscribes_to_id_after_initial_fire = 8; // [WARNING] For boss door only, couldn't coexist with "subscribes_to_id_after_initial_fire" 
-    int32 subscribes_to_id_alt = 9; // [WARNING] For elevator only, couldn't coexist with "subscribes_to_id_after_initial_fire"
-
     float box_cw = 10;
     float box_ch = 11;
     
     float init_no_angular_vel = 12;
 }
 
+message BarrierColliderAttr {
+    bool provides_hard_pushback = 1;
+    bool provides_slip_jump = 2;
+    bool prohibits_wall_grabbing = 3;
+    bool forces_crouching = 4;
+    int32 only_allows_aligned_vel_x = 5;
+    int32 only_allows_aligned_vel_y = 6;
+}
+
 message TrapColliderAttr {
-    // In the case of a trap, it might own multiple hitboxes and each hitbox is drawn in Tiled and assigned after parsing the tmx file, thus not put in static config.
-    int32 hitbox_offset_x = 1;
-    int32 hitbox_offset_y = 2;
-    int32 hitbox_half_size_x = 3;
-    int32 hitbox_half_size_y = 4;
-    bool provides_hard_pushback = 5;
-    bool provides_damage = 6;
-    bool provides_escape = 7;
-    bool provides_slip_jump = 8;
-    bool prohibits_wall_grabbing = 9;
-    bool forces_crouching = 10;
-    uint32 species_id = 11; // Redundancy for referencing "Trap_config"
-    int32 only_allows_aligned_vel_x = 12;
-    int32 only_allows_aligned_vel_y = 13;
+    bool provides_damage = 1;
 
-    bool as_patrol_cue = 14;
-    PatrolCue tc_pc = 15;
-
-    uint32 id = 1024; // ref-back upon collision, for damage handling
-    uint64 collision_type_mask = 1029;
+    bool as_patrol_cue = 2;
+    PatrolCue tc_pc = 3;
 }
 
 /*
    What distinguished "Trap" and "Npc(typed CharacterDownsync)" is that a "Trap" often has much simpler skillset, vision/patrol reaction -- yet more complicated boundaries and hard/soft pushback config.
  */
 message Trap {
-    uint32 id = 1; // [WARNING] Used to look up proper "List<TrapColliderAttr>" which is configured in Tiled Editor and remained static during the whole battle!
+    uint32 id = 1; 
     int32 patrol_cue_angular_vel_flip_mark = 2;
-    TrapConfigFromTiled config_from_tiled = 3;
 
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
@@ -903,42 +890,24 @@ message Trap {
     uint32 subscribes_to_trigger_id = 11;
     uint32 subscribes_to_trigger_id_alt = 12;
 
-    float spin_cos = 13; // To be used after applying "dir_x (used for mirroring)"
-    float spin_sin = 14; // To be used after applying "dir_x (used for mirroring)"
+    float x = 13; 
+    float y = 14;
+    float z = 15;
 
-    float angular_frame_vel_cos = 15;
-    float angular_frame_vel_sin = 16;
+    float q_x = 16; 
+    float q_y = 17;
+    float q_z = 18;
+    float q_w = 19;
 
-    float x = 17; 
-    float y = 18;
-    int32 dir_x = 19;
-    int32 dir_y = 20;
-    float vel_x = 21;
-    float vel_y = 22;
-}
+    // Linear velocity.
+    float vel_x = 20;
+    float vel_y = 21;
+    float vel_z = 22;
 
-enum TriggerType {
-    TtNone = 0;
-    TtTrivial = 1; // Just by "demandedEvtMask == fulfilledEvtMask" without any other timer or collision requirement 
-    TtCyclicTimed = 2;
-    TtIndiWave = 3;
-    TtSyncWave = 4;
-    TtMovement = 5;
-    TtAttack = 6;
-}
-
-message TriggerConfig {
-    uint32 species_id = 1;
-    string species_name = 2; 
-    TriggerType trigger_type = 3;
-    /*
-       :repeats "quota" times
-       |<-------------------------------------- recoveryFrames ----------------------------->|<-----------------recoveryFrames ---------->|.......
-       :repeats "subCycleQuota" times                                                        :repeats "subCycleQuota" times
-       |<-delayedFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|       |.......
-       |TReady           |TCoolingDown             |TCoolingDown(replay)     |TCoolingDown(replay)     |TReady |.......
-     */
-    uint64 collision_type_mask = 4; // of this trigger
+    // Angular velocity.
+    float ang_vel_x = 23;
+    float ang_vel_y = 24;
+    float ang_vel_z = 25;
 }
 
 message PeerUdpAddr {
@@ -946,6 +915,10 @@ message PeerUdpAddr {
     int32 port = 2;
     int32 auth_key = 3;
     uint32 seq_no = 4;
+}
+
+message StepResult {
+    repeated Trigger fulfilled_triggers = 1;
 }
 
 message RenderFrame {
@@ -959,14 +932,21 @@ message RenderFrame {
     repeated Pickable pickables = 8;  
 
     uint32 bullet_id_counter = 9;
-    uint32 npc_id_counter = 10;
-    uint32 dynamic_trap_id_counter = 11;
-    uint32 pickable_id_counter = 12;
+    uint32 bullet_count = 10;
 
-    uint32 bullet_count = 13;
-    uint32 npc_count = 14;
-    uint32 dynamic_trap_count = 15;
+    uint32 npc_id_counter = 11;
+    uint32 npc_count = 12;
+
+    // [WARNING] There's no "trigger_id_counter" by design, every "Trigger.id" is assigned in UI almost arbitrarily.
+    uint32 trigger_count = 13; 
+
+    uint32 pickable_id_counter = 15;
     uint32 pickable_count = 16;
+
+    uint32 dynamic_trap_id_counter = 17;
+    uint32 dynamic_trap_count = 18;
+
+    StepResult prev_rdf_step_result = 512;
 }
 
 message BattlePrepareInfo {
@@ -1301,69 +1281,65 @@ message SerializableConvexPolygon {
     repeated float points = 3;
 }
 
-message SerializedStaticPatrolCueCollider {
-    PatrolCue attr = 1; 
+message SerializedBarrierCollider {
+    BarrierColliderAttr attr = 1;  
     SerializableConvexPolygon polygon = 2;
 }
 
 message SerializedStaticTrapCollider {
-    TrapColliderAttr attr = 1; // "TrapColliderAttr.collision_type_mask" is a little peculiar, it can be a composite of different COLLISION_*_INDEX_PREFIX, thus often NOT taken care of by the COLLIDABLE_PAIRS set 
-    SerializableConvexPolygon polygon = 2;
-}
-
-message SerializedStaticTriggerCollider {
-    TriggerColliderAttr attr = 1; // "collision_type_mask" can be derived from here
-    SerializableConvexPolygon polygon = 2;
-}
-
-message TrapColliderAttrArray {
-    repeated TrapColliderAttr list = 1;
-}
-
-message SerializedTrapLocalIdToColliderAttrs {
-    map<int32, TrapColliderAttrArray> dict = 1;
-}
-
-message SerializedTriggerEditorIdDict {
-    map<uint32, uint32> dict = 1;
-    map<uint32, TriggerConfigFromTiled> dict2 = 2;
+    TrapColliderAttr attr = 1;  
+    BarrierColliderAttr barrier_attr = 2;  
+    SerializableConvexPolygon polygon = 3;
 }
 
 enum PickupType {
-    Immediate = 0;
-    PutIntoInventory = 1; 
+    PkNone = 0;
+
+    HpSmallImmediate = 1;
+    HpMediumImmediate = 2;
+    HpBigImmediate = 3;
+
+    MpSmallImmediate = 4;
+    MpMediumImmediate = 5;
+    MpBigImmediate = 6;
+
+    Skill1IntoInventory = 512;
+
+    Buff1IntoInventory = 1024;
+}
+
+message PickableConfig {
+    PickupType pickup_type = 1;
+    bool takes_gravity = 2; 
+    uint32 vfx_species_id = 3; // Always use pixelated vfx
 }
 
 message PickableConfigFromTiled {
-    int32 init_virtual_grid_x = 1;
-    int32 init_virtual_grid_y = 2;
-    bool takes_gravity = 3; 
-    int32 first_show_rdf_id = 4; // If "terminating_trigger_editor_id != subscription_id", then this field represents the "first_show_rdf_id" after subscription_id is fulfilled
-    int32 recur_quota = 5;
-    uint32 recur_interval_rdf_count = 6;
-    uint32 lifetime_rdf_count_per_occurrence = 7;
-    PickupType pickup_type = 8;
-    uint32 stock_quota_per_occurrence = 9; // Only meaningful when "pickup_type == PutIntoInventory"
-    int32 subscription_id = 10;
-    uint32 vfx_species_id = 11; // Always use pixelated vfx
-
-    uint32 consumable_species_id = 1024; 
-    uint32 buff_species_id = 1025;
-    uint32 skill_id= 1026;
+    PickupType pickup_type = 1;
+    int32 recur_quota = 2;
+    uint32 lifetime_rdf_count_per_occurrence = 3;
+    uint32 stock_quota_per_occurrence = 4;
 }
 
 message Pickable {
     uint32 id = 1;
-    float x = 2;
-    float y = 3;
-    PickableConfigFromTiled config_from_tiled = 4; 
-    int32 remaining_lifetime_rdf_count = 5; 
-    int32 remaining_recur_quota = 6;
-    float vel_x = 7;
-    float vel_y = 8;
-    PickableState pk_state = 9;    
-    int32 frames_in_pk_state = 10;    
-    uint64 picker_ud = 11;
+
+    PickupType pickup_type = 2;
+    PickableState pk_state = 3;    
+    int32 frames_in_pk_state = 4;    
+
+    float x = 5;
+    float y = 6;
+    float z = 7;
+
+    float vel_x = 8;
+    float vel_y = 9;
+    float vel_z = 10;
+
+    int32 remaining_lifetime_rdf_count = 11; 
+    int32 remaining_recur_quota = 12;
+
+    uint64 picker_ud = 512;
 }
 
 message InjectedCmdConfig {
@@ -1384,14 +1360,12 @@ message PickableSpawnerConfig {
     repeated PickupType pickup_type_list = 4;    
 }
 
-message TriggerColliderAttr {
-    int32 id = 1;    
-    int32 species_id = 2;
+message TriggerConfig {
+    uint32 tt = 1;
 }
 
 message TriggerConfigFromTiled {
-    uint32 editor_id = 1;
-    uint32 species_id = 2;
+    uint32 tt = 1;
     int32 delayed_frames = 3;  
     int32 recovery_frames = 4;
     int32 bullet_team_id = 5; 
@@ -1401,57 +1375,63 @@ message TriggerConfigFromTiled {
 
     int32 quota_cap = 8;
 
-    repeated int32 subscribes_to_id_list = 9;
-    repeated int32 subscribes_to_exhausted_id_list = 10;
-
     float new_revival_x = 11;
     float new_revival_y = 12;
-    int32 init_dir_x = 13;
-    int32 init_dir_y = 14;
+    float init_qx = 13;
+    float init_qy = 14;
+    float init_qz = 15;
+    float init_qw = 16;
 
-    uint64 publishing_evt_mask_upon_exhausted = 15; 
+    uint64 publishing_evt_mask_upon_exhausted = 17; 
+    uint32 publishing_to_trigger_id_upon_exhausted = 18;
 
-    repeated CharacterSpawnerConfig character_spawner_time_seq = 16; // MUST Be configured by increasing "cutoff_rdf_id"!
-    repeated PickableSpawnerConfig pickable_spawner_time_seq = 17; // MUST Be configured by increasing "cutoff_rdf_id"!
+    int32 force_ctrl_rdf_count = 19;
+    uint64 force_ctrl_cmd = 20;
 
-    int32 force_ctrl_rdf_count = 18;
-    uint64 force_ctrl_cmd = 19;
+    int32 story_point_id = 512;
+    int32 bgm_id = 513;
+    bool is_boss_savepoint = 514; 
+    map<uint32, bool> boss_species_set = 515;   
 
-    bool reload_colliders_in_new_phase = 20; // When set to "true", will (a.) remove all NPCs activated before current rdf_id (b.) remove all traps/pickables/barriers whose collision boxes not fully contained in this trigger's box
-
-    int32 story_point_id = 1024;
-    int32 bgm_id = 1025;
-    map<uint32, bool> boss_species_set = 1026;   
-    bool is_boss_savepoint = 1027; 
+    repeated CharacterSpawnerConfig character_spawner_time_seq = 1024; // MUST Be configured by increasing "cutoff_rdf_id"!
+    repeated PickableSpawnerConfig pickable_spawner_time_seq = 1025; // MUST Be configured by increasing "cutoff_rdf_id"!
 }
 
 message Trigger {
+    /*
+       :repeats "quota" times
+       |<-------------------------------------- recoveryFrames ----------------------------->|<-----------------recoveryFrames ---------->|.......
+       :repeats "subCycleQuota" times                                                        :repeats "subCycleQuota" times
+       |<-delayedFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|       |.......
+       |TReady           |TCoolingDown             |TCoolingDown(replay)     |TCoolingDown(replay)     |TReady |.......
+     */
+
     uint32 id = 1;
-    uint32 editor_id = 2;
     int32 frames_to_fire = 3; 
-    int32 frames_to_recover = 4; // if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 < sub_cycle_quota_left" and itself becomes 0
+    int32 frames_to_recover = 4; // if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 < sub_cycle_quota" and itself becomes 0
     int32 quota = 5; // the initial value is from static config, but decreases upon use 
     int32 bullet_team_id = 6; 
 
-    int32 dir_x = 7;
-
-    int32 sub_cycle_quota_left = 9; // resets whenever "frames_to_recover" becomes 0; for TRIGGER_MASK_BY_WAVE, this field is repurposed as the "remaining NPC count of current wave" 
+    int32 sub_cycle_quota = 9; // resets whenever "frames_to_recover" becomes 0; for WaveNpcSpawner, this field is repurposed as the "remaining NPC count of current wave (i.e. current sub-cycle)" 
 
     TriggerState state = 10; 
     int32 frames_in_state = 11; 
 
     float x = 12;
     float y = 13;
+    float z = 14;
 
-    uint64 demanded_evt_mask = 14; // Even the "demanded_evt_mask" changes with time/battle progress
-    uint64 fulfilled_evt_mask = 15;
-    uint64 wave_npc_killed_evt_mask_counter = 16;
+    uint64 demanded_evt_mask = 15; // [WARNING] changes with time/battle progress
+    uint64 fulfilled_evt_mask = 16;
+    uint64 wave_npc_exhausted_evt_mask_counter = 17;
 
-    uint64 subscriber_ids_mask = 17; // For fast reverse-referencing
-    uint64 exhaust_subscriber_ids_mask = 18; // For fast reverse-referencing
+    uint64 publishing_evt_mask_upon_exhausted = 18; 
+    uint32 publishing_to_trigger_id_upon_exhausted = 19;
 
-    uint64 offender_ud = 19; 
-    int32 offender_bullet_team_id = 20; 
+    uint64 offender_ud = 20; 
+    int32 offender_bullet_team_id = 21; 
+
+    uint32 trigger_type = 22;
 }
 
 message PlayerMetaInfo {
@@ -1533,7 +1513,6 @@ message PrimitiveConsts {
     int32 max_btn_holding_rdf_cnt = 48;
     int32 max_flying_rdf_cnt = 49;
     int32 max_reverse_pushback_frames_to_recover = 50;
-    uint32 terminating_trigger_editor_id = 51;
 
     int32 speed_not_hit_not_specified = 53;
     int32 default_prealloc_npc_capacity = 54; // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
@@ -1598,9 +1577,9 @@ message PrimitiveConsts {
     uint32 terminating_pickable_id = 101;
     uint32 terminating_bullet_id = 102;
     int32 terminating_bullet_team_id = 103; // Default for proto int32 to save space
-    uint32 terminating_buff_species_id = 104; // Default for proto int32 to save space in "CharacterDownsync.killedToDropBuffSpeciesId"
+    uint32 terminating_buff_species_id = 104; // Default for proto int32 to save space
     uint32 terminating_debuff_species_id = 105;
-    uint32 terminating_consumable_species_id = 106; // Default for proto int32 to save space in "CharacterDownsync.killedToDropConsumableSpeciesId"
+    uint32 terminating_consumable_species_id = 106; // Default for proto int32 to save space
 
     int32 frontend_ws_recv_bytelength = 107; // Expirically enough and not too big to have a graphic smoothness impact when receiving
     int32 backend_ws_recv_bytelength = 108; // Slightly larger than FRONTEND_WS_RECV_BYTELENGTH because it has to receive some initial collider information
@@ -1667,15 +1646,28 @@ message PrimitiveConsts {
 
     int32 starting_render_frame_id = 155;
     int32 starting_input_frame_id = 156;
+
+    uint32 tt_none = 157; 
+
+    uint32 tt_cyclic_timed = 158;
+    uint32 tt_by_movement = 159;
+    uint32 tt_by_attack = 160;
+
+    uint32 tt_indi_wave_npc_spawner = 161;
+    uint32 tt_sync_wave_npc_spawner = 162;
+
+    uint32 tt_save_point_only = 163;
+    uint32 tt_story_point_only = 164;
+    uint32 tt_save_and_story_point = 165;
+
+    uint32 tt_victory = 166; 
 }
 
 message ConfigConsts {
     map<uint32, CharacterConfig> character_configs = 1;
     map<uint32, Skill> skill_configs = 2;
-    map<uint32, DebuffConfig> debuff_configs = 3;
-}
-
-message StepResult {
-    repeated Trigger updated_triggers_arr = 1;
-    uint32 updated_triggers_count = 2;
+    map<uint32, BuffConfig> buff_configs = 3;
+    map<uint32, DebuffConfig> debuff_configs = 4;
+    map<uint32, TriggerConfig> trigger_configs = 5;
+    map<uint32, TrapConfig> trap_configs = 6;
 }

@@ -115,15 +115,13 @@ namespace JoltCSharp {
         public static extern bool BACKEND_ProduceDownsyncSnapshot(UIntPtr inBattle, ulong unconfirmedMask, int stIfdId, int edIfdId, [MarshalAs(UnmanagedType.U1)] bool withRefRdf, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool BACKEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId);
+        public static extern int BACKEND_Step(UIntPtr inBattle, int fromRdfId, int toRdfId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int BACKEND_MoveForwardLcacIfdIdAndStep(UIntPtr inBattle, [MarshalAs(UnmanagedType.U1)] bool withRefRdf, int* oldLcacIfdId, int* newLcacIfdId, int* oldDynamicsRdfId, int* newDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int BACKEND_GetDynamicsRdfId(UIntPtr inBattle);
-
-        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool BACKEND_MoveForwardLcacIfdIdAndStep(UIntPtr inBattle, [MarshalAs(UnmanagedType.U1)] bool withRefRdf, int* oldLcacIfdId, int* newLcacIfdId, int* oldDynamicsRdfId, int* newDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
         //------------------------------------------------------------------------------------------------
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl)]
@@ -174,8 +172,8 @@ namespace JoltCSharp {
         public static NpcCharacterDownsync NewPreallocatedNpcCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity, PrimitiveConsts primitives) {
             var single = new NpcCharacterDownsync();
             single.Id = primitives.TerminatingCharacterId;
-            single.KilledToDropBuffSpeciesId = primitives.TerminatingBuffSpeciesId;
-            single.KilledToDropConsumableSpeciesId = primitives.TerminatingConsumableSpeciesId;
+            single.ExhaustedToDropBuffSpeciesId = primitives.TerminatingBuffSpeciesId;
+            single.ExhaustedToDropConsumableSpeciesId = primitives.TerminatingConsumableSpeciesId;
             single.Chd = NewPreallocatedCharacterDownsync(buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity, primitives);
             return single;
         }
@@ -234,7 +232,6 @@ namespace JoltCSharp {
                 var single = NewPreallocatedBullet(primitives.TerminatingBulletId, 0, 0, 0, BulletState.StartUp, 0);
                 ret.Bullets.Add(single);
             }
-
 
             return ret;
         }
@@ -412,21 +409,11 @@ namespace JoltCSharp {
             if (null != req.SelfParsedRdf) {
                 PreemptRenderFrameBeforeMerge(req.SelfParsedRdf, primitives);
             }
-            if (null != req.SerializedBarrierPolygons) {
-                req.SerializedBarrierPolygons.Clear();
-            }
-            if (null != req.SerializedStaticPatrolCues) {
-                req.SerializedStaticPatrolCues.Clear();
+            if (null != req.SerializedBarriers) {
+                req.SerializedBarriers.Clear();
             }
             if (null != req.SerializedStaticTraps) {
                 req.SerializedStaticTraps.Clear();
-            }
-            if (null != req.SerializedTrapIdToColliderAttrs) {
-                req.SerializedTrapIdToColliderAttrs.Dict.Clear();
-            }
-            if (null != req.SerializedTriggerEditorIdDict) {
-                req.SerializedTriggerEditorIdDict.Dict.Clear();
-                req.SerializedTriggerEditorIdDict.Dict2.Clear();
             }
         }
 

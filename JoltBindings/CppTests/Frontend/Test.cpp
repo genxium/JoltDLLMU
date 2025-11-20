@@ -33,9 +33,9 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -99,9 +99,9 @@ RenderFrame* mockStartRdf() {
     player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
 
     return startRdf;
 }
@@ -110,9 +110,9 @@ RenderFrame* mockFallenDeathRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -176,9 +176,9 @@ RenderFrame* mockFallenDeathRdf() {
     player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
 
     return startRdf;
 }
@@ -187,9 +187,9 @@ RenderFrame* mockBladeGirlSkillRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -254,7 +254,7 @@ RenderFrame* mockBladeGirlSkillRdf() {
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     auto npc1 = startRdf->mutable_npcs_arr(0);
-    npc1->set_id(npcLocalId++);
+    npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
     auto npcCh1Species = SPECIES_BLADEGIRL;
     auto npcCc1 = characterConfigs[npcCh1Species];
@@ -277,11 +277,11 @@ RenderFrame* mockBladeGirlSkillRdf() {
     npcCh1->set_species_id(npcCh1Species);
     npcCh1->set_bullet_team_id(3);
     
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_npc_count(npcLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
 
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
 
     return startRdf;
 }
@@ -290,9 +290,9 @@ RenderFrame* mockBountyHunterSkillRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -357,7 +357,7 @@ RenderFrame* mockBountyHunterSkillRdf() {
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     auto npc1 = startRdf->mutable_npcs_arr(0);
-    npc1->set_id(npcLocalId++);
+    npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
     auto npcCh1Species = SPECIES_BLADEGIRL;
     auto npcCc1 = characterConfigs[npcCh1Species];
@@ -380,11 +380,96 @@ RenderFrame* mockBountyHunterSkillRdf() {
     npcCh1->set_species_id(npcCh1Species);
     npcCh1->set_bullet_team_id(3);
     
-    startRdf->set_npc_id_counter(npcLocalId);
-    startRdf->set_npc_count(npcLocalId);
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
 
-    startRdf->set_bullet_id_counter(bulletLocalId);
-    startRdf->set_pickable_id_counter(pickableLocalId);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
+RenderFrame* mockVictoryRdf() {
+    const int roomCapacity = 1;
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
+
+    int triggerCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    uint32_t victoryTriggerId = 42;
+
+    auto npc1 = startRdf->mutable_npcs_arr(0);
+    npc1->set_id(npcIdCounter++);
+    npc1->set_publishing_to_trigger_id_upon_exhausted(victoryTriggerId);    
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+5);
+    npcCh1->set_y(200);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(cTurnbackAroundYAxis.GetX());
+    npcCh1->set_q_y(cTurnbackAroundYAxis.GetY());
+    npcCh1->set_q_z(cTurnbackAroundYAxis.GetZ());
+    npcCh1->set_q_w(cTurnbackAroundYAxis.GetW());
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(10); // For easier death
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+
+    auto tr1 = startRdf->add_triggers_arr();
+    tr1->set_id(victoryTriggerId);
+    tr1->set_trigger_type(globalPrimitiveConsts->tt_victory());
+    ++triggerCount;
+    
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_trigger_count(triggerCount);
 
     return startRdf;
 }
@@ -393,9 +478,9 @@ RenderFrame* mockRefRdf(int refRdfId) {
     const int roomCapacity = 2;
     auto refRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     refRdf->set_id(refRdfId);
-    int pickableLocalId = 1;
-    int npcLocalId = 1;
-    int bulletLocalId = 1;
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
 
     auto player1 = refRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
@@ -451,9 +536,9 @@ RenderFrame* mockRefRdf(int refRdfId) {
     player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
-    refRdf->set_npc_id_counter(npcLocalId);
-    refRdf->set_bullet_id_counter(bulletLocalId);
-    refRdf->set_pickable_id_counter(pickableLocalId);
+    refRdf->set_npc_id_counter(npcIdCounter);
+    refRdf->set_bullet_id_counter(bulletIdCounter);
+    refRdf->set_pickable_id_counter(pickableIdCounter);
 
     return refRdf;
 }
@@ -674,6 +759,29 @@ std::map<int, uint64_t> testCmds14 = {
     {283, 0},
     {284, 32},
     {296, 32},
+    {1024, 0}
+};
+
+std::map<int, uint64_t> testCmds15 = {
+    {0, 3},
+    {50, 3}, 
+    {51, 0}, 
+    {60, 0}, 
+    {61, 0}, 
+    {67, 0},
+    {68, 32},
+    {69, 0}, 
+    {70, 0}, 
+    {71, 0},
+    {100, 0},
+    {111, 0},
+    {110, 0},
+    {119, 0},
+    {120, 0},
+    {122, 0},
+    {179, 0},
+    {180, 32},
+    {181, 0},
     {1024, 0}
 };
 
@@ -1839,6 +1947,9 @@ void initTest14Data() {
     }
 }
 
+void initTest15Data() {
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -2862,6 +2973,66 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
+bool runTestCase15(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds15, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase15/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+
+        auto& tr1 = outerTimerRdf->triggers_arr(0);
+
+        auto& p1 = outerTimerRdf->players_arr(0);
+        auto& p1Chd = p1.chd();
+        
+        auto& npc1 = outerTimerRdf->npcs_arr(0);
+        auto& npc1Chd = npc1.chd();
+
+        if (1 == outerTimerRdfId) {
+            JPH_ASSERT(1 == tr1.demanded_evt_mask());
+            JPH_ASSERT(0 == tr1.fulfilled_evt_mask());
+            JPH_ASSERT(1 == npc1.publishing_evt_mask_upon_exhausted());
+            JPH_ASSERT(42 == npc1.publishing_to_trigger_id_upon_exhausted());
+        } 
+
+        if (71 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+        }
+
+        if (88 == outerTimerRdfId) {
+            auto& prevRdfStepResult = outerTimerRdf->prev_rdf_step_result();
+            JPH_ASSERT(1 == prevRdfStepResult.fulfilled_triggers_size());
+            auto& prevRdfFulfilledTr1 = prevRdfStepResult.fulfilled_triggers(0);
+            JPH_ASSERT(globalPrimitiveConsts->tt_victory() == prevRdfFulfilledTr1.trigger_type());
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase15: Victory trigger by killing NPC\n" << std::endl;
+    reusedBattle->Clear();   
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -2943,7 +3114,8 @@ int main(int argc, char** argv)
     auto startRdf = mockStartRdf();
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = initializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -2951,7 +3123,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -2994,7 +3166,8 @@ int main(int argc, char** argv)
     WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto fallenDeathStartRdf = mockFallenDeathRdf();
     for (auto hull : fallenDeathHulls) {
-        SerializableConvexPolygon* srcPolygon = fallenDeathInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = fallenDeathInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -3009,7 +3182,8 @@ int main(int argc, char** argv)
     auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf();
 
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = bladeGirlSkillInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = bladeGirlSkillInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -3024,7 +3198,8 @@ int main(int argc, char** argv)
     auto bountyHunterSkillStartRdf = mockBountyHunterSkillRdf();
     
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = bountyHunterSkillInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = bountyHunterSkillInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -3033,6 +3208,22 @@ int main(int argc, char** argv)
 
     initTest14Data();
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
+    
+    WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
+    auto victoryTriggerStartRdf = mockVictoryRdf();
+    
+    for (auto hull : hulls) {
+        auto srcBarrier = victoryTriggerInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
+        for (auto xOrY : hull) {
+            srcPolygon->add_points(xOrY);
+        }
+    }
+    victoryTriggerInitializerMapData->set_allocated_self_parsed_rdf(victoryTriggerStartRdf);
+
+    initTest15Data();
+    runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
     pbStarterWsReqAllocator.Reset();
