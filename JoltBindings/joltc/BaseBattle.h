@@ -178,6 +178,8 @@ public:
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
     virtual bool ResetStartRdf(const WsReq* initializerMapData);
 
+    virtual bool initializeTriggerDemandedEvtMask(RenderFrame* startRdf);
+
     static void NewPreallocatedBullet(Bullet* single, int bulletLocalId, int originatedRenderFrameId, int teamId, BulletState blState, int framesInBlState);
     static void NewPreallocatedCharacterDownsync(CharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity);
     static void NewPreallocatedPlayerCharacterDownsync(PlayerCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity);
@@ -361,6 +363,7 @@ protected:
     inline void elapse1RdfForPlayerChd(const int currRdfId, PlayerCharacterDownsync* playerChd, const CharacterConfig* cc);
     inline void elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* npcChd, const CharacterConfig* cc);
     inline void elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, const CharacterConfig* cc);
+    inline void elapse1RdfForTrigger(Trigger* tr);
     inline void elapse1RdfForPickable(Pickable* pk);
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
@@ -383,6 +386,9 @@ protected:
 
     std::unordered_map<uint64_t, const Bullet*> transientUdToCurrBl;
     std::unordered_map<uint64_t, Bullet*> transientUdToNextBl;
+
+    std::unordered_map<uint64_t, const Trigger*> transientUdToCurrTrigger;
+    std::unordered_map<uint64_t, Trigger*> transientUdToNextTrigger;
 
     std::unordered_map<uint64_t, const Trap*> transientUdToCurrTrap;
     std::unordered_map<uint64_t, Trap*> transientUdToNextTrap;
@@ -471,8 +477,9 @@ protected:
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
     virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
-
     virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
+
+    virtual void stepSingleTriggerState(int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger);
 
     void leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& nextRdfBulletCount);
@@ -626,14 +633,11 @@ protected:
         return (0 >= chd->hp() && 0 >= chd->frames_to_recover());
     }
 
-    inline bool publishNpcKilledEvt(int rdfId, uint64_t publishingEvtMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
+    inline bool publishNpcExhaustedEvt(int rdfId, uint64_t publishingEvtMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
         if (0 == nextRdfTrigger->demanded_evt_mask()) return false;
         nextRdfTrigger->set_fulfilled_evt_mask(nextRdfTrigger->fulfilled_evt_mask() | publishingEvtMask);
         nextRdfTrigger->set_offender_ud(offenderUd);
         nextRdfTrigger->set_offender_bullet_team_id(offenderBulletTeamId);
-#ifndef NDEBUG
-        //Debug::Log(String.Format("@rdfId={0}, published evtmask = {1} to trigger editor id = {2}, local id = {3}, fulfilledEvtMask = {4}, demandedEvtMask = {5} by npc killed", rdfId, publishingEvtMask, nextRdfTrigger.EditorId, nextRdfTrigger.TriggerLocalId, nextRdfTrigger.FulfilledEvtMask, nextRdfTrigger.DemandedEvtMask));
-#endif // !NDEBUG
         return true;
     }
     

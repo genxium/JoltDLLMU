@@ -32,8 +32,8 @@ const uint64_t UDT_OBSTACLE = (U64_0 << 32);
 const uint64_t UDT_PLAYER = (U64_1 << 32);
 const uint64_t UDT_NPC = (U64_1 << 33);
 const uint64_t UDT_BL = (U64_1 << 33) + (U64_1 << 32);
-const uint64_t UDT_TRAP = (U64_1 << 34);
-const uint64_t UDT_TRIGGER = (U64_1 << 34) + (U64_1 << 32);
+const uint64_t UDT_TRIGGER = (U64_1 << 34);
+const uint64_t UDT_TRAP = (U64_1 << 34) + (U64_1 << 32);
 
 const uint32_t cMaxBodies = 1024;
 const uint32_t cNumBodyMutexes = 0;

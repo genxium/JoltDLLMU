@@ -59,7 +59,7 @@ namespace JoltCSharp {
             GroundDodgedFramesInvinsible = 25, 
             GroundDodgedFramesToRecover = 30, 
             GroundDodgedSpeed = (4.0f) * BATTLE_DYNAMICS_FPS, 
-            GaugeIncWhenKilled = 80,
+            GaugeIncWhenExhausted = 80,
             Ifc = IfaceCat.Flesh,
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
@@ -121,7 +121,7 @@ namespace JoltCSharp {
                 SkillId = HunterPistolId,
                 SkillIdAir = HunterPistolId,
             },
-            GaugeIncWhenKilled = 80,
+            GaugeIncWhenExhausted = 80,
             HasBtnBCharging = true,
             Ifc = IfaceCat.Flesh,
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,

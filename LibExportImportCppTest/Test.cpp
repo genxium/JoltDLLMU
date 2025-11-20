@@ -183,7 +183,8 @@ int main(int argc, char** argv)
 
     WsReq wsReq;
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = wsReq.add_serialized_barrier_polygons();
+        auto srcBarrier = wsReq.add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }

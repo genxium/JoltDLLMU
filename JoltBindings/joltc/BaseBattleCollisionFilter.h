@@ -80,6 +80,10 @@ public:
         return UDT_BL + bl.id();
     }
 
+    inline const uint64_t calcUserData(const Trigger& tr) const {
+        return UDT_TRIGGER + tr.id();
+    }
+
     inline const uint64_t calcStaticColliderUserData(const int staticColliderId) const {
         return UDT_OBSTACLE + staticColliderId;
     }

@@ -44,7 +44,7 @@ namespace jtshared {
             "anRzaGFyZWQuU3RlYW1BdXRoZW50aWNhdGVVc2VyVGlja2V0UGF5bG9hZFJl",
             "c3AigAEKEEJhdHRsZUludml0YXRpb24SFgoOZnJvbV9wbGF5ZXJfaWQYASAB",
             "KAkSFwoPdG9fYmF0dGxlc3J2X2lkGAIgASgNEhUKDWJvdW5kX3Jvb21faWQY",
-            "AyABKAUSEgoKZXhwaXJlc19hdBgEIAEoAxIQCghwYXNzY29kZRgFIAEoCSKN",
+            "AyABKAUSEgoKZXhwaXJlc19hdBgEIAEoAxIQCghwYXNzY29kZRgFIAEoCSKQ",
             "HgoPQ2hhcmFjdGVyQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SFAoMc3Bl",
             "Y2llc19uYW1lGAIgASgJEgoKAmhwGAMgASgFEgoKAm1wGAQgASgFEhcKD2xh",
             "eV9kb3duX2ZyYW1lcxgFIAEoBRIiChpsYXlfZG93bl9mcmFtZXNfdG9fcmVj",
@@ -100,700 +100,671 @@ namespace jtshared {
             "ZV93ZWFrbmVzcxhRIAEoDRIWCg5lbGVfcmVzaXN0YW5jZRhSIAEoDRIaChJo",
             "YXNfYnRuX2JfY2hhcmdpbmcYUyABKAgSJAocYnRuX2JfY2hhcmdlZF92Znhf",
             "c3BlY2llc19pZBhUIAEoBRIRCglpc19rZXlfY2gYVSABKAgSJgoeYWxsb3dz",
-            "X3NhbWVfdGVhbV9zb2Z0X3B1c2hiYWNrGFYgASgIEh0KFWdhdWdlX2luY193",
-            "aGVuX2tpbGxlZBhXIAEoBRIiChpqdW1waW5nX2luc3RlYWRfb2Zfd2Fsa2lu",
-            "ZxhYIAEoCBIqCiJ2aXNpb25fc2VhcmNoX2ludGVydmFsX3BvdzJNaW51czFV",
-            "GFkgASgNEikKIXZpc2lvbl9zZWFyY2hfaW50ZXJ2YWxfcG93Mk1pbnVzMRha",
-            "IAEoBRIiChpucGNfbm9fZGVmYXVsdF9haXJfd2Fsa2luZxhbIAEoCBImCh5u",
-            "cGNfcHJpb3JpdGl6ZV9idWxsZXRfaGFuZGxpbmcYXCABKAgSIwobbnBjX3By",
-            "aW9yaXRpemVfYWxseV9oZWFsaW5nGF0gASgIEiYKHm5wY19ub3RfaHVudGlu",
-            "Z19pbl9haXJfb3Bwb19jaBheIAEoCBIoCiB0cmFuc2Zvcm1faW50b19mcmFt",
-            "ZXNfdG9fcmVjb3ZlchhfIAEoBRIoCiB0cmFuc2Zvcm1faW50b19mcmFtZXNf",
-            "aW52aW5zaWJsZRhgIAEoBRIhChlhd2FraW5nX2ZyYW1lc190b19yZWNvdmVy",
-            "GGEgASgFEiEKGWF3YWtpbmdfZnJhbWVzX2ludmluc2libGUYYiABKAUSIAoY",
-            "dXNlX2lkbGUxX2FzX2ZseWluZ19pZGxlGGMgASgIEg8KB25vX2ZsZWUYZCAB",
-            "KAgSDwoHYWNjX21hZxhlIAEoAhI0Cg1hdGsxX21hZ2F6aW5lGGYgASgLMh0u",
-            "anRzaGFyZWQuSW52ZW50b3J5U2xvdENvbmZpZxI2Cg9zdXBlcl9hdGtfZ3Vh",
-            "Z2UYZyABKAsyHS5qdHNoYXJlZC5JbnZlbnRvcnlTbG90Q29uZmlnEjsKFGlu",
-            "aXRfaW52ZW50b3J5X3Nsb3RzGGggAygLMh0uanRzaGFyZWQuSW52ZW50b3J5",
-            "U2xvdENvbmZpZxJaChtidG5fYl9hdXRvX3VuaG9sZF9jaF9zdGF0ZXMYaSAD",
-            "KAsyNS5qdHNoYXJlZC5DaGFyYWN0ZXJDb25maWcuQnRuQkF1dG9VbmhvbGRD",
-            "aFN0YXRlc0VudHJ5EkkKEWxvb3BpbmdfY2hfc3RhdGVzGGogAygLMi4uanRz",
-            "aGFyZWQuQ2hhcmFjdGVyQ29uZmlnLkxvb3BpbmdDaFN0YXRlc0VudHJ5EksK",
-            "EmluaXRfc2tpbGxfdHJhbnNpdBhrIAMoCzIvLmp0c2hhcmVkLkNoYXJhY3Rl",
-            "ckNvbmZpZy5Jbml0U2tpbGxUcmFuc2l0RW50cnkSIAoXaGFzX2luX2Fpcl93",
-            "YWxraW5nX2FuaW0YgAQgASgIEh0KFGhhc190dXJuX2Fyb3VuZF9hbmltGIEE",
-            "IAEoCBIkChtoYXNfaW5fYWlyX3R1cm5fYXJvdW5kX2FuaW0YggQgASgIEh8K",
-            "Fmhhc193YWxrX3N0b3BwaW5nX2FuaW0YgwQgASgIEiYKHWhhc19pbl9haXJf",
-            "d2Fsa19zdG9wcGluZ19hbmltGIQEIAEoCBIYCg9oYXNfZGltbWVkX2FuaW0Y",
-            "hQQgASgIEhkKEGhhc19hd2FraW5nX2FuaW0YhgQgASgIGj0KG0J0bkJBdXRv",
-            "VW5ob2xkQ2hTdGF0ZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiAB",
-            "KAU6AjgBGjYKFExvb3BpbmdDaFN0YXRlc0VudHJ5EgsKA2tleRgBIAEoBRIN",
-            "CgV2YWx1ZRgCIAEoBToCOAEaNwoVSW5pdFNraWxsVHJhbnNpdEVudHJ5EgsK",
-            "A2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoDToCOAEiywwKEUNoYXJhY3RlckRv",
-            "d25zeW5jEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6GAMgASgCEgsKA3Ff",
-            "eBgEIAEoAhILCgNxX3kYBSABKAISCwoDcV96GAYgASgCEgsKA3FfdxgHIAEo",
-            "AhINCgV2ZWxfeBgIIAEoAhINCgV2ZWxfeRgJIAEoAhINCgV2ZWxfehgKIAEo",
-            "AhISCgphaW1pbmdfcV94GAsgASgCEhIKCmFpbWluZ19xX3kYDCABKAISEgoK",
-            "YWltaW5nX3FfehgNIAEoAhISCgphaW1pbmdfcV93GA4gASgCEgoKAmhwGA8g",
-            "ASgFEgoKAm1wGBAgASgFEioKCGNoX3N0YXRlGBEgASgOMhguanRzaGFyZWQu",
-            "Q2hhcmFjdGVyU3RhdGUSGgoSZnJhbWVzX2luX2NoX3N0YXRlGBIgASgFEhYK",
-            "Dmp1bXBfdHJpZ2dlcmVkGBMgASgIEhQKDG9taXRfZ3Jhdml0eRgUIAEoCBIS",
-            "CgpzcGVjaWVzX2lkGBUgASgNEg0KBXNwZWVkGBYgASgCEhgKEGZvcmNlZF9j",
-            "cm91Y2hpbmcYFyABKAgSGwoTc2xpcF9qdW1wX3RyaWdnZXJlZBgYIAEoCBIs",
-            "CiRwcmltYXJpbHlfb25fc2xpcHBhYmxlX2hhcmRfcHVzaGJhY2sYGSABKAgS",
-            "GQoRZnJhbWVzX3RvX3JlY292ZXIYGiABKAUSHwoXbmV3X2JpcnRoX3JkZl9j",
-            "b3VudGRvd24YGyABKAUSGQoRZnJhbWVzX2ludmluc2libGUYHCABKAUSFAoM",
-            "anVtcF9zdGFydGVkGB0gASgIEhwKFGZyYW1lc190b19zdGFydF9qdW1wGB4g",
-            "ASgFEhYKDmJ1bGxldF90ZWFtX2lkGB8gASgFEiAKGHJlbWFpbmluZ19haXJf",
-            "anVtcF9xdW90YRggIAEoDRIgChhyZW1haW5pbmdfYWlyX2Rhc2hfcXVvdGEY",
-            "ISABKA0SIgoaZGFtYWdlZF9oaW50X3JkZl9jb3VudGRvd24YIiABKAUSHwoX",
-            "ZGFtYWdlZF9lbGVtZW50YWxfYXR0cnMYIyABKA0SHAoUcmVtYWluaW5nX2Rl",
-            "ZjFfcXVvdGEYJCABKA0SFQoNY29tYm9faGl0X2NudBglIAEoDRIdChVjb21i",
-            "b19mcmFtZXNfcmVtYWluZWQYJiABKAUSGgoSbGFzdF9kYW1hZ2VkX2J5X3Vk",
-            "GCcgASgEEiYKHmxhc3RfZGFtYWdlZF9ieV9idWxsZXRfdGVhbV9pZBgoIAEo",
-            "BRIXCg9hY3RpdmVfc2tpbGxfaWQYKSABKA0SGAoQYWN0aXZlX3NraWxsX2hp",
-            "dBgqIAEoBRIdChVidG5fYV9ob2xkaW5nX3JkZl9jbnQYKyABKAUSHQoVYnRu",
-            "X2JfaG9sZGluZ19yZGZfY250GCwgASgFEh0KFWJ0bl9jX2hvbGRpbmdfcmRm",
-            "X2NudBgtIAEoBRIdChVidG5fZF9ob2xkaW5nX3JkZl9jbnQYLiABKAUSHQoV",
-            "YnRuX2VfaG9sZGluZ19yZGZfY250GC8gASgFEh8KF3BhcnJ5X3ByZXBfcmRm",
-            "X2NudF9kb3duGDAgASgFEh4KFm1wX3JlZ2VuX3JkZl9jb3VudGRvd24YMSAB",
-            "KAUSHAoUZmx5aW5nX3JkZl9jb3VudGRvd24YMiABKAUSFQoNbG9ja2luZ19v",
-            "bl91ZBgzIAEoBBIcChRjaF9jb2xsaXNpb25fdGVhbV9pZBg0IAEoBRIhCgli",
-            "dWZmX2xpc3QYNSADKAsyDi5qdHNoYXJlZC5CdWZmEiUKC2RlYnVmZl9saXN0",
-            "GDYgAygLMhAuanRzaGFyZWQuRGVidWZmEi4KDWF0azFfbWFnYXppbmUYNyAB",
-            "KAsyFy5qdHNoYXJlZC5JbnZlbnRvcnlTbG90EjAKD3N1cGVyX2F0a19nYXVn",
-            "ZRg4IAEoCzIXLmp0c2hhcmVkLkludmVudG9yeVNsb3QSJgoJaW52ZW50b3J5",
-            "GDkgASgLMhMuanRzaGFyZWQuSW52ZW50b3J5EjsKFWJ1bGxldF9pbW11bmVf",
-            "cmVjb3Jkcxg6IAMoCzIcLmp0c2hhcmVkLkJ1bGxldEltbXVuZVJlY29yZBIX",
-            "Cg9raW5lbWF0aWNfa25vYnMYOyADKAIitQIKF1BsYXllckNoYXJhY3RlckRv",
-            "d25zeW5jEigKA2NoZBgBIAEoCzIbLmp0c2hhcmVkLkNoYXJhY3RlckRvd25z",
-            "eW5jEhIKCmpvaW5faW5kZXgYAiABKA0SEQoJYmVhdHNfY250GAMgASgNEhIK",
-            "CmJlYXRlbl9jbnQYBCABKA0SEQoJcmV2aXZhbF94GAUgASgCEhEKCXJldml2",
-            "YWxfeRgGIAEoAhIRCglyZXZpdmFsX3oYByABKAISEwoLcmV2aXZhbF9xX3gY",
-            "CCABKAUSEwoLcmV2aXZhbF9xX3kYCSABKAUSEwoLcmV2aXZhbF9xX3oYCiAB",
-            "KAUSEwoLcmV2aXZhbF9xX3cYCyABKAUSKAogbm90X2Vub3VnaF9tcF9oaW50",
-            "X3JkZl9jb3VudGRvd24YDCABKAUimQQKFE5wY0NoYXJhY3RlckRvd25zeW5j",
-            "EigKA2NoZBgBIAEoCzIbLmp0c2hhcmVkLkNoYXJhY3RlckRvd25zeW5jEgoK",
-            "AmlkGAIgASgNEhgKEGFjdGl2YXRlZF9yZGZfaWQYAyABKAUSFgoOY2FjaGVk",
-            "X2N1ZV9jbWQYBCABKAQSHQoVd2FpdmluZ19wYXRyb2xfY3VlX2lkGAUgASgF",
-            "EiYKC2dvYWxfYXNfbnBjGAYgASgOMhEuanRzaGFyZWQuTnBjR29hbBInCh9w",
-            "dWJsaXNoaW5nX2V2dF9tYXNrX3Vwb25fa2lsbGVkGAcgASgEEiwKJHB1Ymxp",
-            "c2hpbmdfdG9fdHJpZ2dlcl9pZF91cG9uX2tpbGxlZBgIIAEoDRIgChhzdWJz",
-            "Y3JpYmVzX3RvX3RyaWdnZXJfaWQYCSABKA0SHgoWY2FwdHVyZWRfYnlfcGF0",
-            "cm9sX2N1ZRgKIAEoCBIcChRmcmFtZXNfaW5fcGF0cm9sX2N1ZRgLIAEoBRIs",
-            "CiRraWxsZWRfdG9fZHJvcF9jb25zdW1hYmxlX3NwZWNpZXNfaWQYDCABKA0S",
-            "Jgoea2lsbGVkX3RvX2Ryb3BfYnVmZl9zcGVjaWVzX2lkGA0gASgNEiYKHmtp",
-            "bGxlZF90b19kcm9wX3BpY2t1cF9za2lsbF9pZBgOIAEoDRIdChVpc19tYWlu",
-            "X3Rvd2VyX29mX3RlYW0YDyABKAgilAEKEUlucHV0RnJhbWVEZWNvZGVkEgoK",
-            "AmR4GAEgASgFEgoKAmR5GAIgASgFEhMKC2J0bl9hX2xldmVsGAMgASgFEhMK",
-            "C2J0bl9iX2xldmVsGAQgASgFEhMKC2J0bl9jX2xldmVsGAUgASgFEhMKC2J0",
-            "bl9kX2xldmVsGAYgASgFEhMKC2J0bl9lX2xldmVsGAcgASgFIjUKDlVwc3lu",
-            "Y1NuYXBzaG90EhEKCXN0X2lmZF9pZBgBIAEoBRIQCghjbWRfbGlzdBgCIAMo",
-            "BCKxBgoFV3NSZXESDgoGc2VxX25vGAEgASgNEhIKCmpvaW5faW5kZXgYAiAB",
-            "KA0SIAoDYWN0GAMgASgOMhMuanRzaGFyZWQuVXBzeW5jQWN0EhAKCGF1dGhf",
-            "a2V5GAQgASgFEjEKD3Vwc3luY19zbmFwc2hvdBgFIAEoCzIYLmp0c2hhcmVk",
-            "LlVwc3luY1NuYXBzaG90Ei4KD3NlbGZfcGFyc2VkX3JkZhgGIAEoCzIVLmp0",
-            "c2hhcmVkLlJlbmRlckZyYW1lEh8KF2JhdHRsZV9kdXJhdGlvbl9zZWNvbmRz",
-            "GAcgASgFEkgKG3NlcmlhbGl6ZWRfYmFycmllcl9wb2x5Z29ucxgIIAMoCzIj",
-            "Lmp0c2hhcmVkLlNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24SUgodc2VyaWFs",
-            "aXplZF9zdGF0aWNfcGF0cm9sX2N1ZXMYCSADKAsyKy5qdHNoYXJlZC5TZXJp",
-            "YWxpemVkU3RhdGljUGF0cm9sQ3VlQ29sbGlkZXISRwoXc2VyaWFsaXplZF9z",
-            "dGF0aWNfdHJhcHMYCiADKAsyJi5qdHNoYXJlZC5TZXJpYWxpemVkU3RhdGlj",
-            "VHJhcENvbGxpZGVyElwKJHNlcmlhbGl6ZWRfdHJhcF9pZF90b19jb2xsaWRl",
-            "cl9hdHRycxgLIAEoCzIuLmp0c2hhcmVkLlNlcmlhbGl6ZWRUcmFwTG9jYWxJ",
-            "ZFRvQ29sbGlkZXJBdHRycxJSCiFzZXJpYWxpemVkX3RyaWdnZXJfZWRpdG9y",
-            "X2lkX2RpY3QYDCABKAsyJy5qdHNoYXJlZC5TZXJpYWxpemVkVHJpZ2dlckVk",
-            "aXRvcklkRGljdBJUChxwcmVhbGxvY2F0ZV9ucGNfc3BlY2llc19kaWN0GA0g",
-            "AygLMi4uanRzaGFyZWQuV3NSZXEuUHJlYWxsb2NhdGVOcGNTcGVjaWVzRGlj",
-            "dEVudHJ5EhsKE2ZhbGxlbl9kZWF0aF9oZWlnaHQYDiABKAIaQAoeUHJlYWxs",
-            "b2NhdGVOcGNTcGVjaWVzRGljdEVudHJ5EgsKA2tleRgBIAEoDRINCgV2YWx1",
-            "ZRgCIAEoDToCOAEi4QEKCVBhdHJvbEN1ZRIKCgJpZBgBIAEoBRIOCgZmbF9h",
-            "Y3QYAiABKAQSDgoGZnJfYWN0GAMgASgEEhkKEWZsX2NhcHR1cmVfZnJhbWVz",
-            "GAQgASgFEhkKEWZyX2NhcHR1cmVfZnJhbWVzGAUgASgFEg4KBmZkX2FjdBgG",
-            "IAEoBBIOCgZmdV9hY3QYByABKAQSGQoRZmRfY2FwdHVyZV9mcmFtZXMYCCAB",
-            "KAUSGQoRZnVfY2FwdHVyZV9mcmFtZXMYCSABKAUSHAoTY29sbGlzaW9uX3R5",
-            "cGVfbWFzaxiFCCABKAQi4wEKCVZmeENvbmZpZxISCgpzcGVjaWVzX2lkGAEg",
-            "ASgNEiwKC21vdGlvbl90eXBlGAIgASgOMhcuanRzaGFyZWQuVmZ4TW90aW9u",
-            "VHlwZRIwCg1kdXJhdGlvbl90eXBlGAMgASgOMhkuanRzaGFyZWQuVmZ4RHVy",
-            "YXRpb25UeXBlEhQKDG9uX2NoYXJhY3RlchgEIAEoCBIRCglvbl9idWxsZXQY",
-            "BSABKAgSDwoHb25fdHJhcBgGIAEoCBIZChF1c2VfcGl4ZWxhdGVkX3ZlchgH",
-            "IAEoCBINCgRuYW1lGIAIIAEoCSKnGgoMQnVsbGV0Q29uZmlnEhYKDnN0YXJ0",
-            "dXBfZnJhbWVzGAEgASgFEhwKFGNhbmNlbGxhYmxlX3N0X2ZyYW1lGAIgASgF",
-            "EhwKFGNhbmNlbGxhYmxlX2VkX2ZyYW1lGAMgASgFEhUKDWFjdGl2ZV9mcmFt",
-            "ZXMYBCABKAUSFwoPY29vbGRvd25fZnJhbWVzGAUgASgFEhcKD2hpdF9zdHVu",
-            "X2ZyYW1lcxgGIAEoBRIZChFibG9ja19zdHVuX2ZyYW1lcxgHIAEoBRIWCg5w",
-            "dXNoYmFja192ZWxfeBgIIAEoAhIWCg5wdXNoYmFja192ZWxfeRgJIAEoAhIO",
-            "CgZkYW1hZ2UYCiABKAUSFwoPc2VsZl9sb2NrX3ZlbF94GAsgASgCEhcKD3Nl",
-            "bGZfbG9ja192ZWxfeRgMIAEoAhIjChtzZWxmX2xvY2tfdmVsX3lfd2hlbl9m",
-            "bHlpbmcYDSABKAISFwoPaGl0Ym94X29mZnNldF94GA4gASgCEhcKD2hpdGJv",
-            "eF9vZmZzZXRfeRgPIAEoAhIaChJoaXRib3hfaGFsZl9zaXplX3gYECABKAIS",
-            "GgoSaGl0Ym94X2hhbGZfc2l6ZV95GBEgASgCEg8KB2Jsb3dfdXAYEiABKAgS",
-            "EgoKc3BlY2llc19pZBgTIAEoDRIYChBleHBsb3Npb25fZnJhbWVzGBQgASgF",
-            "EiQKBmJfdHlwZRgVIAEoDjIULmp0c2hhcmVkLkJ1bGxldFR5cGUSJwoHbWhf",
-            "dHlwZRgWIAEoDjIWLmp0c2hhcmVkLk11bHRpSGl0VHlwZRIiChpzaW11bHRh",
-            "bmVvdXNfbXVsdGlfaGl0X2NudBgXIAEoDRINCgVzcGVlZBgYIAEoAhJBCg5j",
-            "YW5jZWxfdHJhbnNpdBgZIAMoCzIpLmp0c2hhcmVkLkJ1bGxldENvbmZpZy5D",
-            "YW5jZWxUcmFuc2l0RW50cnkSFAoMcmVwZWF0X3F1b3RhGBogASgFEh0KFWFj",
-            "dGl2ZV92Znhfc3BlY2llc19pZBgbIAEoDRIgChhleHBsb3Npb25fdmZ4X3Nw",
-            "ZWNpZXNfaWQYHCABKA0SFgoOYWxsb3dzX3dhbGtpbmcYHSABKAgSGAoQYWxs",
-            "b3dzX2Nyb3VjaGluZxgeIAEoCBIQCghoYXJkbmVzcxgfIAEoBRIhChlzdGFy",
-            "dHVwX2ludmluc2libGVfZnJhbWVzGCAgASgFEh0KFWhpdF9pbnZpbnNpYmxl",
-            "X2ZyYW1lcxghIAEoBRIcChRleHBsb3Npb25fc3BlY2llc19pZBgiIAEoDRIU",
-            "CgxwZXJwX2FjY19tYWcYIyABKAUSIAoYZGVsYXlfc2VsZl92ZWxfdG9fYWN0",
-            "aXZlGCQgASgIEhgKEHNwZWVkX2lmX25vdF9oaXQYJSABKAISGgoSb21pdF9z",
-            "b2Z0X3B1c2hiYWNrGCYgASgIEhkKEWhpdGJveF9zaXplX2luY194GCcgASgC",
-            "EhkKEWhpdGJveF9zaXplX2luY195GCggASgCEhgKEHJlbWFpbnNfdXBvbl9o",
-            "aXQYKSABKAgSHgoWcm90YXRlc19hbG9uZ192ZWxvY2l0eRgqIAEoCBIqCiJk",
-            "ZWZhdWx0X2hhcmRfcHVzaGJhY2tfYm91bmNlX3F1b3RhGCsgASgFEigKIGhh",
-            "cmRfcHVzaGJhY2tfYm91bmNlX25vcm1fZmFjdG9yGCwgASgCEikKIWhhcmRf",
-            "cHVzaGJhY2tfYm91bmNlX3NoZWVyX2ZhY3RvchgtIAEoAhIfChdpc19waXhl",
-            "bGF0ZWRfYWN0aXZlX3ZmeBguIAEoCBIjChtpc19waXhlbGF0ZWRfZXhwbG9z",
-            "dGlvbl92ZngYLyABKAgSHgoWbWhfdmFuaXNoX29uX21lbGVlX2hpdBgwIAEo",
-            "CBIdChVtaF91cGRhdGVzX29yaWdpbl9wb3MYMiABKAgSFgoOYmVhbV9jb2xs",
-            "aXNpb24YMyABKAgSHQoVYW5ndWxhcl9mcmFtZV92ZWxfY29zGDQgASgCEh0K",
-            "FWFuZ3VsYXJfZnJhbWVfdmVsX3Npbhg1IAEoAhIXCg92aXNpb25fb2Zmc2V0",
-            "X3gYNiABKAISFwoPdmlzaW9uX29mZnNldF95GDcgASgCEhUKDXZpc2lvbl9z",
-            "aXplX3gYOCABKAISFQoNdmlzaW9uX3NpemVfeRg5IAEoAhIXCg9lbGVtZW50",
-            "YWxfYXR0cnMYOyABKA0SJwofY2FuY2VsbGFibGVfYnlfaW52ZW50b3J5X3Ns",
-            "b3RfYxg8IAEoCBInCh9jYW5jZWxsYWJsZV9ieV9pbnZlbnRvcnlfc2xvdF9k",
-            "GD0gASgIEhoKEmJlYW1fdmlzdWFsX3NpemVfeRhAIAEoAhImCh50b3VjaF9l",
-            "eHBsb3Npb25fYm9tYl9jb2xsaXNpb24YQSABKAgSHgoWYWlyX3JpZGluZ19n",
-            "cm91bmRfd2F2ZRhCIAEoCBIlCh1ncm91bmRfaW1wYWN0X21lbGVlX2NvbGxp",
-            "c2lvbhhDIAEoCBIjCht3YWxsX2ltcGFjdF9tZWxlZV9jb2xsaXNpb24YRCAB",
-            "KAgSGAoQbWhfaW5oZXJpdHNfc3BpbhhFIAEoCBIgCgZpbml0X3EYRiABKAsy",
-            "EC5qdHNoYXJlZC5QYlF1YXQSHgoWc3RhcnR1cF92Znhfc3BlY2llc19pZBhK",
-            "IAEoDRIfCgNpZmMYSyABKA4yEi5qdHNoYXJlZC5JZmFjZUNhdBIoCiByZWZs",
-            "ZWN0X2ZpcmViYWxsX3hfaWZfbm90X2hhcmRlchhMIAEoCBItCiVyZWplY3Rf",
-            "cmVmbGVjdGlvbl9mcm9tX2Fub3RoZXJfYnVsbGV0GE0gASgIEh8KF3Byb3Zp",
-            "ZGVzX3hIYXJkX3B1c2hiYWNrGE4gASgIEiMKG3Byb3ZpZGVzX3lIYXJkX3B1",
-            "c2hiYWNrX3RvcBhPIAEoCBImCh5wcm92aWRlc195SGFyZF9wdXNoYmFja19i",
-            "b3R0b20YUCABKAgSIQoZaWdub3JlX3Nsb3BlX2RlY2VsZXJhdGlvbhhRIAEo",
-            "CBIhChlyb3RhdGVfb2ZmZW5kZXJfd2l0aF9zcGluGFIgASgIEiAKGG1oX25v",
-            "dF90cmlnZ2VyX29uX2NoX2hpdBhTIAEoCBIrCiNtaF9ub3RfdHJpZ2dlcl9v",
-            "bl9oYXJkZXJfYnVsbGV0X2hpdBhUIAEoCBIrCiNtaF9ub3RfdHJpZ2dlcl9v",
-            "bl9oYXJkX3B1c2hiYWNrX2hpdBhVIAEoCBIWCg5ob3BwZXJfbWlzc2lsZRhW",
-            "IAEoCBIWCg5iZWFtX3JlbmRlcmluZxhXIAEoCBIqCiJtaXNzaWxlX3NlYXJj",
-            "aF9pbnRlcnZhbF9wb3cyTWludXMxGFggASgNEi8KJ3VzZV9jaF9vZmZzZXRf",
-            "cmVnYXJkbGVzc19vZl9lbWlzc2lvbl9taBhZIAEoCBIrCiNpbnBsYWNlX3Zh",
-            "bmlzaF9leHBsb3Npb25fc3BlY2llc19pZBhaIAEoDRIfChdhbmltX2xvb3Bp",
-            "bmdfcmRmX29mZnNldBhbIAEoBRIpCiFleHBsb3Npb25fYW5pbV9sb29waW5n",
-            "X3JkZl9vZmZzZXQYXCABKAUSIQoZZ2F1Z2VfaW5jX3JlZHVjdGlvbl9yYXRp",
-            "bxhdIAEoAhImCh5taF9pbmhlcml0c19mcmFtZXNfaW5fYmxfc3RhdGUYXiAB",
-            "KAgSIwobZ3VhcmRfYnJlYWtlcl9leHRyYV9oaXRfY250GF8gASgNEiMKG3Rh",
-            "a2VzX2RlZjFfYXNfaGFyZF9wdXNoYmFjaxhgIAEoCBIYChBmaW5pc2hpbmdf",
-            "ZnJhbWVzGGEgASgFEiUKHW5vX2V4cGxvc2lvbl9vbl9oYXJkX3B1c2hiYWNr",
-            "GGIgASgIEiAKGGV4cGxvZGVfb25fbXVsdGlfY29udGFjdBhjIAEoCBIcChNj",
-            "b2xsaXNpb25fdHlwZV9tYXNrGIUIIAEoBBIWCg10YWtlc19ncmF2aXR5GIYI",
-            "IAEoCBIqCgtidWZmX2NvbmZpZxiHCCABKAsyFC5qdHNoYXJlZC5CdWZmQ29u",
-            "ZmlnEiAKF2NoYXJhY3Rlcl9lbWl0X3NmeF9uYW1lGIAQIAEoCRIfChZmaXJl",
-            "YmFsbF9lbWl0X3NmeF9uYW1lGIEQIAEoCRIbChJleHBsb3Npb25fc2Z4X25h",
-            "bWUYghAgASgJEhgKD2FjdGl2ZV9zZnhfbmFtZRiDECABKAkSJAobZXhwbG9z",
-            "aW9uX29uX2ZsZXNoX3NmeF9uYW1lGIQQIAEoCRIjChpleHBsb3Npb25fb25f",
-            "cm9ja19zZnhfbmFtZRiFECABKAkSJAobZXhwbG9zaW9uX29uX21ldGFsX3Nm",
-            "eF9uYW1lGIYQIAEoCRIjChpleHBsb3Npb25fb25fd29vZF9zZnhfbmFtZRiH",
-            "ECABKAkaNAoSQ2FuY2VsVHJhbnNpdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2",
-            "YWx1ZRgCIAEoDToCOAEivwQKBkJ1bGxldBInCghibF9zdGF0ZRgBIAEoDjIV",
-            "Lmp0c2hhcmVkLkJ1bGxldFN0YXRlEhoKEmZyYW1lc19pbl9ibF9zdGF0ZRgC",
-            "IAEoBRIKCgJ1ZBgDIAEoBBIiChpvcmlnaW5hdGVkX3JlbmRlcl9mcmFtZV9p",
-            "ZBgEIAEoBRITCgtvZmZlbmRlcl91ZBgFIAEoBBIJCgF4GAYgASgCEgkKAXkY",
-            "ByABKAISCQoBehgIIAEoAhILCgNxX3gYCSABKAISCwoDcV95GAogASgCEgsK",
-            "A3FfehgLIAEoAhILCgNxX3cYDCABKAISDQoFdmVsX3gYDSABKAISDQoFdmVs",
-            "X3kYDiABKAISDQoFdmVsX3oYDyABKAISFAoMb3JpZ2luYXRlZF94GBAgASgC",
-            "EhQKDG9yaWdpbmF0ZWRfeRgRIAEoAhIUCgxvcmlnaW5hdGVkX3oYEiABKAIS",
-            "GQoRcmVwZWF0X3F1b3RhX2xlZnQYEyABKAUSLAokcmVtYWluaW5nX2hhcmRf",
-            "cHVzaGJhY2tfYm91bmNlX3F1b3RhGBQgASgFEhEKCXRhcmdldF91ZBgVIAEo",
-            "BBIVCg1kYW1hZ2VfZGVhbGVkGBYgASgFEisKD2V4cGxvZGVkX29uX2lmYxgX",
-            "IAEoDjISLmp0c2hhcmVkLklmYWNlQ2F0EhgKEGFjdGl2ZV9za2lsbF9oaXQY",
-            "GSABKAUSEAoIc2tpbGxfaWQYGiABKA0SCgoCaWQYGyABKA0SDwoHdGVhbV9p",
-            "ZBgcIAEoBSK8AwoKVHJhcENvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgNEhwK",
-            "FGV4cGxvc2lvbl9zcGVjaWVzX2lkGAIgASgNEhgKEGV4cGxvc2lvbl9mcmFt",
-            "ZXMYAyABKAUSDwoHYmxvd191cBgEIAEoCBIOCgZkYW1hZ2UYBSABKAUSFwoP",
-            "aGl0X3N0dW5fZnJhbWVzGAYgASgFEh0KFWhpdF9pbnZpbnNpYmxlX2ZyYW1l",
-            "cxgHIAEoBRIVCg1kZWFjdGl2YXRhYmxlGAggASgIEhAKCGhhcmRuZXNzGAkg",
-            "ASgFEiEKGWRlYWN0aXZhdGVfdXBvbl90cmlnZ2VyZWQYCiABKAgSGAoQc3Vy",
-            "ZmFjZV9mcmljdGlvbhgLIAEoAhIoCiBwYXRyb2xfY3VlX3JlcXVpcmVzX2Z1",
-            "bGxfY29udGFpbhgPIAEoCBIbChNhdGsxX3Vwb25fdHJpZ2dlcmVkGBYgASgI",
-            "EhUKDWF0azFfc2tpbGxfaWQYFyABKA0SEQoJaXNfcm90YXJ5GBggASgIEhsK",
-            "E25vX3hfZmxpcF9yZW5kZXJpbmcYGSABKAgSFQoMc3BlY2llc19uYW1lGIAI",
-            "IAEoCSKHAgoTVHJhcENvbmZpZ0Zyb21UaWxlZBISCgpzcGVjaWVzX2lkGAEg",
-            "ASgNEg0KBXF1b3RhGAIgASgFEg0KBXNwZWVkGAMgASgCEg0KBWRpcl94GAQg",
-            "ASgFEg0KBWRpcl95GAUgASgFEhgKEHN1YnNjcmliZXNfdG9faWQYByABKAUS",
-            "Kwojc3Vic2NyaWJlc190b19pZF9hZnRlcl9pbml0aWFsX2ZpcmUYCCABKAUS",
-            "HAoUc3Vic2NyaWJlc190b19pZF9hbHQYCSABKAUSDgoGYm94X2N3GAogASgC",
-            "Eg4KBmJveF9jaBgLIAEoAhIbChNpbml0X25vX2FuZ3VsYXJfdmVsGAwgASgC",
-            "IuUDChBUcmFwQ29sbGlkZXJBdHRyEhcKD2hpdGJveF9vZmZzZXRfeBgBIAEo",
-            "BRIXCg9oaXRib3hfb2Zmc2V0X3kYAiABKAUSGgoSaGl0Ym94X2hhbGZfc2l6",
-            "ZV94GAMgASgFEhoKEmhpdGJveF9oYWxmX3NpemVfeRgEIAEoBRIeChZwcm92",
-            "aWRlc19oYXJkX3B1c2hiYWNrGAUgASgIEhcKD3Byb3ZpZGVzX2RhbWFnZRgG",
-            "IAEoCBIXCg9wcm92aWRlc19lc2NhcGUYByABKAgSGgoScHJvdmlkZXNfc2xp",
-            "cF9qdW1wGAggASgIEh8KF3Byb2hpYml0c193YWxsX2dyYWJiaW5nGAkgASgI",
-            "EhgKEGZvcmNlc19jcm91Y2hpbmcYCiABKAgSEgoKc3BlY2llc19pZBgLIAEo",
-            "DRIhChlvbmx5X2FsbG93c19hbGlnbmVkX3ZlbF94GAwgASgFEiEKGW9ubHlf",
-            "YWxsb3dzX2FsaWduZWRfdmVsX3kYDSABKAUSFQoNYXNfcGF0cm9sX2N1ZRgO",
-            "IAEoCBIiCgV0Y19wYxgPIAEoCzITLmp0c2hhcmVkLlBhdHJvbEN1ZRILCgJp",
-            "ZBiACCABKA0SHAoTY29sbGlzaW9uX3R5cGVfbWFzaxiFCCABKAQizQQKBFRy",
-            "YXASCgoCaWQYASABKA0SKAogcGF0cm9sX2N1ZV9hbmd1bGFyX3ZlbF9mbGlw",
-            "X21hcmsYAiABKAUSOAoRY29uZmlnX2Zyb21fdGlsZWQYAyABKAsyHS5qdHNo",
-            "YXJlZC5UcmFwQ29uZmlnRnJvbVRpbGVkEicKCnRyYXBfc3RhdGUYBCABKA4y",
-            "Ey5qdHNoYXJlZC5UcmFwU3RhdGUSHAoUZnJhbWVzX2luX3RyYXBfc3RhdGUY",
-            "BSABKAUSEQoJaXNfc3RhdGljGAYgASgIEh4KFmNhcHR1cmVkX2J5X3BhdHJv",
-            "bF9jdWUYByABKAgSHAoUZnJhbWVzX2luX3BhdHJvbF9jdWUYCCABKAUSHQoV",
-            "d2FpdmluZ19wYXRyb2xfY3VlX2lkGAkgASgFEiIKGndhaXZpbmdfc3BvbnRh",
-            "bmVvdXNfcGF0cm9sGAogASgIEiAKGHN1YnNjcmliZXNfdG9fdHJpZ2dlcl9p",
-            "ZBgLIAEoDRIkChxzdWJzY3JpYmVzX3RvX3RyaWdnZXJfaWRfYWx0GAwgASgN",
-            "EhAKCHNwaW5fY29zGA0gASgCEhAKCHNwaW5fc2luGA4gASgCEh0KFWFuZ3Vs",
-            "YXJfZnJhbWVfdmVsX2NvcxgPIAEoAhIdChVhbmd1bGFyX2ZyYW1lX3ZlbF9z",
-            "aW4YECABKAISCQoBeBgRIAEoAhIJCgF5GBIgASgCEg0KBWRpcl94GBMgASgF",
-            "Eg0KBWRpcl95GBQgASgFEg0KBXZlbF94GBUgASgCEg0KBXZlbF95GBYgASgC",
-            "IoMBCg1UcmlnZ2VyQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SFAoMc3Bl",
-            "Y2llc19uYW1lGAIgASgJEisKDHRyaWdnZXJfdHlwZRgDIAEoDjIVLmp0c2hh",
-            "cmVkLlRyaWdnZXJUeXBlEhsKE2NvbGxpc2lvbl90eXBlX21hc2sYBCABKAQi",
-            "SQoLUGVlclVkcEFkZHISCgoCaXAYASABKAkSDAoEcG9ydBgCIAEoBRIQCghh",
-            "dXRoX2tleRgDIAEoBRIOCgZzZXFfbm8YBCABKA0iiAQKC1JlbmRlckZyYW1l",
-            "EgoKAmlkGAEgASgFEjYKC3BsYXllcnNfYXJyGAIgAygLMiEuanRzaGFyZWQu",
-            "UGxheWVyQ2hhcmFjdGVyRG93bnN5bmMSFwoPY291bnRkb3duX25hbm9zGAMg",
-            "ASgDEiEKB2J1bGxldHMYBCADKAsyEC5qdHNoYXJlZC5CdWxsZXQSMAoIbnBj",
-            "c19hcnIYBSADKAsyHi5qdHNoYXJlZC5OcGNDaGFyYWN0ZXJEb3duc3luYxIp",
-            "ChFkeW5hbWljX3RyYXBzX2FychgGIAMoCzIOLmp0c2hhcmVkLlRyYXASJwoM",
-            "dHJpZ2dlcnNfYXJyGAcgAygLMhEuanRzaGFyZWQuVHJpZ2dlchIlCglwaWNr",
-            "YWJsZXMYCCADKAsyEi5qdHNoYXJlZC5QaWNrYWJsZRIZChFidWxsZXRfaWRf",
-            "Y291bnRlchgJIAEoDRIWCg5ucGNfaWRfY291bnRlchgKIAEoDRIfChdkeW5h",
-            "bWljX3RyYXBfaWRfY291bnRlchgLIAEoDRIbChNwaWNrYWJsZV9pZF9jb3Vu",
-            "dGVyGAwgASgNEhQKDGJ1bGxldF9jb3VudBgNIAEoDRIRCglucGNfY291bnQY",
-            "DiABKA0SGgoSZHluYW1pY190cmFwX2NvdW50GA8gASgNEhYKDnBpY2thYmxl",
-            "X2NvdW50GBAgASgNIpcBChFCYXR0bGVQcmVwYXJlSW5mbxISCgpzdGFnZV9u",
-            "YW1lGAEgASgJEhUKDWJvdW5kX3Jvb21faWQYAiABKAUSHgoWYmF0dGxlX2R1",
-            "cmF0aW9uX2ZyYW1lcxgDIAEoAxIbChNib3VuZF9yb29tX2NhcGFjaXR5GAQg",
-            "ASgFEhoKEWZyYW1lX2xvZ19lbmFibGVkGIEIIAEoCCJcChJJbnB1dEZyYW1l",
-            "RG93bnN5bmMSEgoKaW5wdXRfbGlzdBgBIAMoBBIWCg5jb25maXJtZWRfbGlz",
-            "dBgCIAEoBBIaChJ1ZHBfY29uZmlybWVkX2xpc3QYAyABKAQi7QMKEERvd25z",
-            "eW5jU25hcHNob3QSEgoKcmVmX3JkZl9pZBgBIAEoBRImCgdyZWZfcmRmGAIg",
-            "ASgLMhUuanRzaGFyZWQuUmVuZGVyRnJhbWUSGAoQdW5jb25maXJtZWRfbWFz",
-            "axgDIAEoBBIRCglzdF9pZmRfaWQYBCABKAUSLwoJaWZkX2JhdGNoGAUgAygL",
-            "MhwuanRzaGFyZWQuSW5wdXRGcmFtZURvd25zeW5jEiIKA2FjdBgHIAEoDjIV",
-            "Lmp0c2hhcmVkLkRvd25zeW5jQWN0EjEKDHByZXBhcmVfaW5mbxgIIAEoCzIb",
-            "Lmp0c2hhcmVkLkJhdHRsZVByZXBhcmVJbmZvEjIKE2Fzc2lnbmVkX3VkcF90",
-            "dW5uZWwYCSABKAsyFS5qdHNoYXJlZC5QZWVyVWRwQWRkchIxChJwZWVyX3Vk",
-            "cF9hZGRyX2xpc3QYCiADKAsyFS5qdHNoYXJlZC5QZWVyVWRwQWRkchIdChVw",
-            "YXJ0aWNpcGFudF9jaGFuZ2VfaWQYCyABKAUSGgoSaW5hY3RpdmVfam9pbl9t",
-            "YXNrGAwgASgEEhcKD3BlZXJfam9pbl9pbmRleBgNIAEoDRIbChNwZWVyX2J1",
-            "bGxldF90ZWFtX2lkGA4gASgFEhAKB2Vycl9tc2cYgAQgASgJIvgCCgVTa2ls",
-            "bBIXCg9yZWNvdmVyeV9mcmFtZXMYAiABKAUSIAoYcmVjb3ZlcnlfZnJhbWVz",
-            "X29uX2Jsb2NrGAMgASgFEh4KFnJlY292ZXJ5X2ZyYW1lc19vbl9oaXQYBCAB",
-            "KAUSMAoMdHJpZ2dlcl90eXBlGAUgASgOMhouanRzaGFyZWQuU2tpbGxUcmln",
-            "Z2VyVHlwZRIwCg5ib3VuZF9jaF9zdGF0ZRgGIAEoDjIYLmp0c2hhcmVkLkNo",
-            "YXJhY3RlclN0YXRlEjcKFWJvdW5kX2NoX3N0YXRlX29uX2hpdBgHIAEoDjIY",
-            "Lmp0c2hhcmVkLkNoYXJhY3RlclN0YXRlEhAKCG1wX2RlbHRhGAggASgFEgoK",
-            "AmlkGAkgASgNEiUKBGhpdHMYgAggAygLMhYuanRzaGFyZWQuQnVsbGV0Q29u",
-            "ZmlnEjIKE3NlbGZfbm9uX3N0b2NrX2J1ZmYYgQggASgLMhQuanRzaGFyZWQu",
-            "QnVmZkNvbmZpZyL0AgoIRnJhbWVMb2cSIgoDcmRmGAEgASgLMhUuanRzaGFy",
-            "ZWQuUmVuZGVyRnJhbWUSHAoUYWN0dWFsbHlfdXNlZF9pZmRfaWQYAiABKAUS",
-            "GwoTdXNlZF9pZmRfaW5wdXRfbGlzdBgDIAMoBBIfChd1c2VkX2lmZF9jb25m",
-            "aXJtZWRfbGlzdBgEIAEoBBIjCht1c2VkX2lmZF91ZHBfY29uZmlybWVkX2xp",
-            "c3QYBSABKAQSFAoMdGltZXJfcmRmX2lkGAYgASgFEhMKC2xjYWNfaWZkX2lk",
-            "GAcgASgFEhUKDWNoYXNlcl9yZGZfaWQYCCABKAUSIQoZY2hhc2VyX3JkZl9p",
-            "ZF9sb3dlcl9ib3VuZBgJIAEoBRIYChBjaGFzZXJfc3RfcmRmX2lkGAogASgF",
-            "EhgKEGNoYXNlcl9lZF9yZGZfaWQYCyABKAUSKgoiY2hhc2VyX3JkZl9pZF9s",
-            "b3dlcl9ib3VuZF9zbmF0Y2hlZBgMIAEoCCJICgxCYXR0bGVSZXN1bHQSGQoR",
-            "d2lubmVyX2pvaW5faW5kZXgYASABKA0SHQoVd2lubmVyX2J1bGxldF90ZWFt",
-            "X2lkGAIgASgFIskBCgxEZWJ1ZmZDb25maWcSEgoKc3BlY2llc19pZBgBIAEo",
-            "DRIrCgpzdG9ja190eXBlGAIgASgOMhcuanRzaGFyZWQuQnVmZlN0b2NrVHlw",
-            "ZRINCgVzdG9jaxgDIAEoBRIiCgR0eXBlGAQgASgOMhQuanRzaGFyZWQuRGVi",
-            "dWZmVHlwZRIPCgdhcnJfaWR4GAUgASgFEhsKE2ltcGFjdF9wZXJfaW50ZXJ2",
-            "YWwYBiABKAUSFwoPaW1wYWN0X2ludGVydmFsGAcgASgFIqwECgpCdWZmQ29u",
-            "ZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SKwoKc3RvY2tfdHlwZRgCIAEoDjIX",
-            "Lmp0c2hhcmVkLkJ1ZmZTdG9ja1R5cGUSDQoFc3RvY2sYAyABKAUSEwoLc3Bl",
-            "ZWRfZGVsdGEYBCABKAISIAoYaGl0Ym94X2hhbGZfc2l6ZV94X2RlbHRhGAUg",
-            "ASgCEiAKGGhpdGJveF9oYWxmX3NpemVfeV9kZWx0YRgGIAEoAhIUCgxkYW1h",
-            "Z2VfZGVsdGEYByABKAUSIgoaZGFtYWdlX2RlbHRhX2J5X3BlcmNlbnRhZ2UY",
-            "CCABKAUSIAoYY2hhcmFjdGVyX2hhcmRuZXNzX2RlbHRhGAkgASgFEhwKFG1l",
-            "bGVlX2hhcmRuZXNzX2RlbHRhGAogASgFEh8KF2ZpcmViYWxsX2hhcmRuZXNz",
-            "X2RlbHRhGAsgASgFEhIKCmludmluc2libGUYDCABKAgSGwoTeGZvcm1fY2hf",
-            "c3BlY2llc19pZBgNIAEoDRIbChNyZXBlbF9zb2Z0X3B1c2hiYWNrGA4gASgI",
-            "EhQKDG9taXRfZ3Jhdml0eRgPIAEoCBIRCglhdXRvX2RlZjEYECABKAgSGgoS",
-            "YXNzb2NpYXRlZF9kZWJ1ZmZzGBEgAygNEiAKGGNoYXJhY3Rlcl92Znhfc3Bl",
-            "Y2llc19pZBgSIAEoDRIlCh1pc19waXhlbGF0ZWRfdmZ4X29uX2NoYXJhY3Rl",
-            "chgTIAEoCCKmAQoEQnVmZhISCgpzcGVjaWVzX2lkGAEgASgNEg0KBXN0b2Nr",
-            "GAIgASgFEiIKGm9yaWdpbmF0ZWRfcmVuZGVyX2ZyYW1lX2lkGAMgASgFEhoK",
-            "Em9yaWdfY2hfc3BlY2llc19pZBgEIAEoDRIgChhvcmlnX3JlcGVsX3NvZnRf",
-            "cHVzaGJhY2sYBSABKAgSGQoRb3JpZ19vbWl0X2dyYXZpdHkYBiABKAgiKwoG",
-            "RGVidWZmEhIKCnNwZWNpZXNfaWQYASABKA0SDQoFc3RvY2sYAiABKAUiTQoS",
-            "QnVsbGV0SW1tdW5lUmVjb3JkEhEKCWJ1bGxldF9pZBgBIAEoDRIkChxyZW1h",
-            "aW5pbmdfbGlmZXRpbWVfcmRmX2NvdW50GAIgASgFInoKEENvbnN1bWFibGVD",
-            "b25maWcSEgoKc3BlY2llc19pZBgBIAEoDRIUCgxyZWZpbGxfZGVsdGEYAiAB",
-            "KAUSGAoQdmZ4X2lkX29uX3BpY2tlchgDIAEoBRIiChppc19waXhlbGF0ZWRf",
-            "dmZ4X29uX3BpY2tlchgEIAEoCCJlChNQaWNrYWJsZVNraWxsQ29uZmlnEhAK",
-            "CHNraWxsX2lkGAEgASgNEhgKEHZmeF9pZF9vbl9waWNrZXIYAiABKAUSIgoa",
-            "aXNfcGl4ZWxhdGVkX3ZmeF9vbl9waWNrZXIYAyABKAgikQIKE0ludmVudG9y",
-            "eVNsb3RDb25maWcSNAoKc3RvY2tfdHlwZRgBIAEoDjIgLmp0c2hhcmVkLklu",
-            "dmVudG9yeVNsb3RTdG9ja1R5cGUSDQoFcXVvdGEYAiABKA0SGQoRZnJhbWVz",
-            "X3RvX3JlY292ZXIYAyABKAUSFwoPYnVmZl9zcGVjaWVzX2lkGAQgASgNEhAK",
-            "CHNraWxsX2lkGAUgASgNEhQKDHNraWxsX2lkX2FpchgGIAEoDRIWCg5nYXVn",
-            "ZV9yZXF1aXJlZBgHIAEoBRIjChtmdWxsX2NoYXJnZV9idWZmX3NwZWNpZXNf",
-            "aWQYCCABKA0SHAoUZnVsbF9jaGFyZ2Vfc2tpbGxfaWQYCSABKA0ihgEKDUlu",
-            "dmVudG9yeVNsb3QSNAoKc3RvY2tfdHlwZRgBIAEoDjIgLmp0c2hhcmVkLklu",
-            "dmVudG9yeVNsb3RTdG9ja1R5cGUSDQoFcXVvdGEYAiABKA0SGQoRZnJhbWVz",
-            "X3RvX3JlY292ZXIYAyABKAUSFQoNZ2F1Z2VfY2hhcmdlZBgEIAEoBSIzCglJ",
-            "bnZlbnRvcnkSJgoFc2xvdHMYASADKAsyFy5qdHNoYXJlZC5JbnZlbnRvcnlT",
-            "bG90IiUKD0JhdHRsZUVxdWlwbWVudBISCgpzcGVjaWVzX2lkGAEgASgNIiYK",
-            "DlBsYXllclNldHRpbmdzEhQKDHNvdW5kX3ZvbHVtZRgBIAEoBSL0AgoUUGxh",
-            "eWVyUmVnaW9uUHJvZ3Jlc3MSEQoJcmVnaW9uX2lkGAEgASgFEh0KFWNvbXBs",
-            "ZXRlZF9sZXZlbF9jb3VudBgCIAEoBRJZChZyZW1haW5pbmdfZGVwZW5kZW5j",
-            "aWVzGAMgAygLMjkuanRzaGFyZWQuUGxheWVyUmVnaW9uUHJvZ3Jlc3MuUmVt",
-            "YWluaW5nRGVwZW5kZW5jaWVzRW50cnkSVQoUcmVtb3ZlZF9kZXBlbmRlbmNp",
-            "ZXMYBCADKAsyNy5qdHNoYXJlZC5QbGF5ZXJSZWdpb25Qcm9ncmVzcy5SZW1v",
-            "dmVkRGVwZW5kZW5jaWVzRW50cnkaPAoaUmVtYWluaW5nRGVwZW5kZW5jaWVz",
-            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ARo6ChhSZW1v",
-            "dmVkRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIg",
-            "ASgIOgI4ASLUBAoTUGxheWVyTGV2ZWxQcm9ncmVzcxIRCglyZWdpb25faWQY",
-            "ASABKAUSEAoIbGV2ZWxfaWQYAiABKAUSFQoNaGlnaGVzdF9zY29yZRgDIAEo",
-            "BRItCiVzaG9ydGVzdF9maW5pc2hfdGltZV9hdF9oaWdoZXN0X3Njb3JlGAQg",
-            "ASgFEi0KJWNoYXJhY3Rlcl9zcGVjaWVzX2lkX2F0X2hpZ2hlc3Rfc2NvcmUY",
-            "BSABKA0SHAoUc2hvcnRlc3RfZmluaXNoX3RpbWUYBiABKAUSJQodc2NvcmVf",
-            "YXRfc2hvcnRlc3RfZmluaXNoX3RpbWUYByABKAUSNAosY2hhcmFjdGVyX3Nw",
-            "ZWNpZXNfaWRfYXRfc2hvcnRlc3RfZmluaXNoX3RpbWUYCCABKA0SWAoWcmVt",
-            "YWluaW5nX2RlcGVuZGVuY2llcxgJIAMoCzI4Lmp0c2hhcmVkLlBsYXllckxl",
-            "dmVsUHJvZ3Jlc3MuUmVtYWluaW5nRGVwZW5kZW5jaWVzRW50cnkSVAoUcmVt",
-            "b3ZlZF9kZXBlbmRlbmNpZXMYCiADKAsyNi5qdHNoYXJlZC5QbGF5ZXJMZXZl",
-            "bFByb2dyZXNzLlJlbW92ZWREZXBlbmRlbmNpZXNFbnRyeRo8ChpSZW1haW5p",
-            "bmdEZXBlbmRlbmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiAB",
-            "KAg6AjgBGjoKGFJlbW92ZWREZXBlbmRlbmNpZXNFbnRyeRILCgNrZXkYASAB",
-            "KAUSDQoFdmFsdWUYAiABKAg6AjgBItwCChZQbGF5ZXJDaFVubG9ja1Byb2dy",
-            "ZXNzEhIKCnNwZWNpZXNfaWQYASABKA0SWwoWcmVtYWluaW5nX2RlcGVuZGVu",
-            "Y2llcxgCIAMoCzI7Lmp0c2hhcmVkLlBsYXllckNoVW5sb2NrUHJvZ3Jlc3Mu",
-            "UmVtYWluaW5nRGVwZW5kZW5jaWVzRW50cnkSVwoUcmVtb3ZlZF9kZXBlbmRl",
-            "bmNpZXMYAyADKAsyOS5qdHNoYXJlZC5QbGF5ZXJDaFVubG9ja1Byb2dyZXNz",
-            "LlJlbW92ZWREZXBlbmRlbmNpZXNFbnRyeRo8ChpSZW1haW5pbmdEZXBlbmRl",
-            "bmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjoK",
-            "GFJlbW92ZWREZXBlbmRlbmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFs",
-            "dWUYAiABKAg6AjgBIq0FChNQbGF5ZXJTdG9yeVByb2dyZXNzElMKFHJlZ2lv",
-            "bl9wcm9ncmVzc19kaWN0GAEgAygLMjUuanRzaGFyZWQuUGxheWVyU3RvcnlQ",
-            "cm9ncmVzcy5SZWdpb25Qcm9ncmVzc0RpY3RFbnRyeRJRChNsZXZlbF9wcm9n",
-            "cmVzc19kaWN0GAIgAygLMjQuanRzaGFyZWQuUGxheWVyU3RvcnlQcm9ncmVz",
-            "cy5MZXZlbFByb2dyZXNzRGljdEVudHJ5EhgKEGN1cnNvcl9yZWdpb25faWQY",
-            "AyABKAUSFwoPY3Vyc29yX2xldmVsX2lkGAQgASgFEjEKBHZpZXcYBSABKA4y",
-            "Iy5qdHNoYXJlZC5QbGF5ZXJTdG9yeU1vZGVTZWxlY3RWaWV3EhsKE3NhdmVk",
-            "X2F0X2dtdF9taWxsaXMYBiABKAQSWAoXY2hfdW5sb2NrX3Byb2dyZXNzX2Rp",
-            "Y3QYByADKAsyNy5qdHNoYXJlZC5QbGF5ZXJTdG9yeVByb2dyZXNzLkNoVW5s",
-            "b2NrUHJvZ3Jlc3NEaWN0RW50cnkaWQoXUmVnaW9uUHJvZ3Jlc3NEaWN0RW50",
-            "cnkSCwoDa2V5GAEgASgFEi0KBXZhbHVlGAIgASgLMh4uanRzaGFyZWQuUGxh",
-            "eWVyUmVnaW9uUHJvZ3Jlc3M6AjgBGlcKFkxldmVsUHJvZ3Jlc3NEaWN0RW50",
-            "cnkSCwoDa2V5GAEgASgFEiwKBXZhbHVlGAIgASgLMh0uanRzaGFyZWQuUGxh",
-            "eWVyTGV2ZWxQcm9ncmVzczoCOAEaXQoZQ2hVbmxvY2tQcm9ncmVzc0RpY3RF",
-            "bnRyeRILCgNrZXkYASABKA0SLwoFdmFsdWUYAiABKAsyIC5qdHNoYXJlZC5Q",
-            "bGF5ZXJDaFVubG9ja1Byb2dyZXNzOgI4ASKKAgoZUGxheWVyT25saW5lQXJl",
-            "bmFQcm9ncmVzcxIbChNzYXZlZF9hdF9nbXRfbWlsbGlzGAEgASgEEhEKCXBs",
-            "YXllcl9pZBgCIAEoCRJeChdjaF91bmxvY2tfcHJvZ3Jlc3NfZGljdBgDIAMo",
-            "CzI9Lmp0c2hhcmVkLlBsYXllck9ubGluZUFyZW5hUHJvZ3Jlc3MuQ2hVbmxv",
-            "Y2tQcm9ncmVzc0RpY3RFbnRyeRpdChlDaFVubG9ja1Byb2dyZXNzRGljdEVu",
-            "dHJ5EgsKA2tleRgBIAEoDRIvCgV2YWx1ZRgCIAEoCzIgLmp0c2hhcmVkLlBs",
-            "YXllckNoVW5sb2NrUHJvZ3Jlc3M6AjgBIm4KFFN0b3J5UG9pbnREaWFsb2dM",
-            "aW5lEhMKC25hcnJhdG9yX3VkGAEgASgEEhsKE25hcnJhdG9yX3NwZWNpZXNf",
-            "aWQYAiABKA0SDwoHY29udGVudBgDIAEoCRITCgtkb3duX29yX25vdBgEIAEo",
-            "CCJgCg5TdG9yeVBvaW50U3RlcBItCgVsaW5lcxgBIAMoCzIeLmp0c2hhcmVk",
-            "LlN0b3J5UG9pbnREaWFsb2dMaW5lEh8KF25vbmN0cmxfYWxpdmVfcmRmX2Nv",
-            "dW50GAIgASgFIl0KClN0b3J5UG9pbnQSJwoFc3RlcHMYASADKAsyGC5qdHNo",
-            "YXJlZC5TdG9yeVBvaW50U3RlcBIPCgdub25jdHJsGAIgASgIEhUKDWN1dHNj",
-            "ZW5lX25hbWUYAyABKAkigwEKCkxldmVsU3RvcnkSMAoGcG9pbnRzGAEgAygL",
-            "MiAuanRzaGFyZWQuTGV2ZWxTdG9yeS5Qb2ludHNFbnRyeRpDCgtQb2ludHNF",
-            "bnRyeRILCgNrZXkYASABKAUSIwoFdmFsdWUYAiABKAsyFC5qdHNoYXJlZC5T",
-            "dG9yeVBvaW50OgI4ASJPChlTZXJpYWxpemFibGVDb252ZXhQb2x5Z29uEhAK",
-            "CGFuY2hvcl94GAEgASgCEhAKCGFuY2hvcl95GAIgASgCEg4KBnBvaW50cxgD",
-            "IAMoAiJ8CiFTZXJpYWxpemVkU3RhdGljUGF0cm9sQ3VlQ29sbGlkZXISIQoE",
-            "YXR0chgBIAEoCzITLmp0c2hhcmVkLlBhdHJvbEN1ZRI0Cgdwb2x5Z29uGAIg",
-            "ASgLMiMuanRzaGFyZWQuU2VyaWFsaXphYmxlQ29udmV4UG9seWdvbiJ+ChxT",
-            "ZXJpYWxpemVkU3RhdGljVHJhcENvbGxpZGVyEigKBGF0dHIYASABKAsyGi5q",
-            "dHNoYXJlZC5UcmFwQ29sbGlkZXJBdHRyEjQKB3BvbHlnb24YAiABKAsyIy5q",
-            "dHNoYXJlZC5TZXJpYWxpemFibGVDb252ZXhQb2x5Z29uIoQBCh9TZXJpYWxp",
-            "emVkU3RhdGljVHJpZ2dlckNvbGxpZGVyEisKBGF0dHIYASABKAsyHS5qdHNo",
-            "YXJlZC5UcmlnZ2VyQ29sbGlkZXJBdHRyEjQKB3BvbHlnb24YAiABKAsyIy5q",
-            "dHNoYXJlZC5TZXJpYWxpemFibGVDb252ZXhQb2x5Z29uIkEKFVRyYXBDb2xs",
-            "aWRlckF0dHJBcnJheRIoCgRsaXN0GAEgAygLMhouanRzaGFyZWQuVHJhcENv",
-            "bGxpZGVyQXR0ciK8AQokU2VyaWFsaXplZFRyYXBMb2NhbElkVG9Db2xsaWRl",
-            "ckF0dHJzEkYKBGRpY3QYASADKAsyOC5qdHNoYXJlZC5TZXJpYWxpemVkVHJh",
-            "cExvY2FsSWRUb0NvbGxpZGVyQXR0cnMuRGljdEVudHJ5GkwKCURpY3RFbnRy",
-            "eRILCgNrZXkYASABKAUSLgoFdmFsdWUYAiABKAsyHy5qdHNoYXJlZC5UcmFw",
-            "Q29sbGlkZXJBdHRyQXJyYXk6AjgBIqACCh1TZXJpYWxpemVkVHJpZ2dlckVk",
-            "aXRvcklkRGljdBI/CgRkaWN0GAEgAygLMjEuanRzaGFyZWQuU2VyaWFsaXpl",
-            "ZFRyaWdnZXJFZGl0b3JJZERpY3QuRGljdEVudHJ5EkEKBWRpY3QyGAIgAygL",
-            "MjIuanRzaGFyZWQuU2VyaWFsaXplZFRyaWdnZXJFZGl0b3JJZERpY3QuRGlj",
-            "dDJFbnRyeRorCglEaWN0RW50cnkSCwoDa2V5GAEgASgNEg0KBXZhbHVlGAIg",
-            "ASgNOgI4ARpOCgpEaWN0MkVudHJ5EgsKA2tleRgBIAEoDRIvCgV2YWx1ZRgC",
-            "IAEoCzIgLmp0c2hhcmVkLlRyaWdnZXJDb25maWdGcm9tVGlsZWQ6AjgBIrQD",
-            "ChdQaWNrYWJsZUNvbmZpZ0Zyb21UaWxlZBIbChNpbml0X3ZpcnR1YWxfZ3Jp",
-            "ZF94GAEgASgFEhsKE2luaXRfdmlydHVhbF9ncmlkX3kYAiABKAUSFQoNdGFr",
-            "ZXNfZ3Jhdml0eRgDIAEoCBIZChFmaXJzdF9zaG93X3JkZl9pZBgEIAEoBRIT",
-            "CgtyZWN1cl9xdW90YRgFIAEoBRIgChhyZWN1cl9pbnRlcnZhbF9yZGZfY291",
-            "bnQYBiABKA0SKQohbGlmZXRpbWVfcmRmX2NvdW50X3Blcl9vY2N1cnJlbmNl",
-            "GAcgASgNEikKC3BpY2t1cF90eXBlGAggASgOMhQuanRzaGFyZWQuUGlja3Vw",
-            "VHlwZRIiChpzdG9ja19xdW90YV9wZXJfb2NjdXJyZW5jZRgJIAEoDRIXCg9z",
-            "dWJzY3JpcHRpb25faWQYCiABKAUSFgoOdmZ4X3NwZWNpZXNfaWQYCyABKA0S",
-            "HgoVY29uc3VtYWJsZV9zcGVjaWVzX2lkGIAIIAEoDRIYCg9idWZmX3NwZWNp",
-            "ZXNfaWQYgQggASgNEhEKCHNraWxsX2lkGIIIIAEoDSKnAgoIUGlja2FibGUS",
-            "CgoCaWQYASABKA0SCQoBeBgCIAEoAhIJCgF5GAMgASgCEjwKEWNvbmZpZ19m",
-            "cm9tX3RpbGVkGAQgASgLMiEuanRzaGFyZWQuUGlja2FibGVDb25maWdGcm9t",
-            "VGlsZWQSJAoccmVtYWluaW5nX2xpZmV0aW1lX3JkZl9jb3VudBgFIAEoBRId",
-            "ChVyZW1haW5pbmdfcmVjdXJfcXVvdGEYBiABKAUSDQoFdmVsX3gYByABKAIS",
-            "DQoFdmVsX3kYCCABKAISKQoIcGtfc3RhdGUYCSABKA4yFy5qdHNoYXJlZC5Q",
-            "aWNrYWJsZVN0YXRlEhoKEmZyYW1lc19pbl9wa19zdGF0ZRgKIAEoBRIRCglw",
-            "aWNrZXJfdWQYCyABKAQiNgoRSW5qZWN0ZWRDbWRDb25maWcSFQoNY3V0b2Zm",
-            "X3JkZl9pZBgBIAEoBRIKCgJvcBgCIAEoBCJeChZDaGFyYWN0ZXJTcGF3bmVy",
-            "Q29uZmlnEhUKDWN1dG9mZl9yZGZfaWQYASABKAUSFwoPc3BlY2llc19pZF9s",
-            "aXN0GAIgAygNEhQKDGluaXRfb3BfbGlzdBgDIAMoBCKNAQoVUGlja2FibGVT",
-            "cGF3bmVyQ29uZmlnEhUKDWN1dG9mZl9yZGZfaWQYASABKAUSFwoPc3BlY2ll",
-            "c19pZF9saXN0GAIgAygNEhQKDGluaXRfb3BfbGlzdBgDIAMoBBIuChBwaWNr",
-            "dXBfdHlwZV9saXN0GAQgAygOMhQuanRzaGFyZWQuUGlja3VwVHlwZSI1ChNU",
-            "cmlnZ2VyQ29sbGlkZXJBdHRyEgoKAmlkGAEgASgFEhIKCnNwZWNpZXNfaWQY",
-            "AiABKAUi1QYKFlRyaWdnZXJDb25maWdGcm9tVGlsZWQSEQoJZWRpdG9yX2lk",
-            "GAEgASgNEhIKCnNwZWNpZXNfaWQYAiABKA0SFgoOZGVsYXllZF9mcmFtZXMY",
-            "AyABKAUSFwoPcmVjb3ZlcnlfZnJhbWVzGAQgASgFEhYKDmJ1bGxldF90ZWFt",
-            "X2lkGAUgASgFEiAKGHN1Yl9jeWNsZV90cmlnZ2VyX2ZyYW1lcxgGIAEoBRIX",
-            "Cg9zdWJfY3ljbGVfcXVvdGEYByABKAUSEQoJcXVvdGFfY2FwGAggASgFEh0K",
-            "FXN1YnNjcmliZXNfdG9faWRfbGlzdBgJIAMoBRInCh9zdWJzY3JpYmVzX3Rv",
-            "X2V4aGF1c3RlZF9pZF9saXN0GAogAygFEhUKDW5ld19yZXZpdmFsX3gYCyAB",
-            "KAISFQoNbmV3X3Jldml2YWxfeRgMIAEoAhISCgppbml0X2Rpcl94GA0gASgF",
-            "EhIKCmluaXRfZGlyX3kYDiABKAUSKgoicHVibGlzaGluZ19ldnRfbWFza191",
-            "cG9uX2V4aGF1c3RlZBgPIAEoBBJEChpjaGFyYWN0ZXJfc3Bhd25lcl90aW1l",
-            "X3NlcRgQIAMoCzIgLmp0c2hhcmVkLkNoYXJhY3RlclNwYXduZXJDb25maWcS",
-            "QgoZcGlja2FibGVfc3Bhd25lcl90aW1lX3NlcRgRIAMoCzIfLmp0c2hhcmVk",
-            "LlBpY2thYmxlU3Bhd25lckNvbmZpZxIcChRmb3JjZV9jdHJsX3JkZl9jb3Vu",
-            "dBgSIAEoBRIWCg5mb3JjZV9jdHJsX2NtZBgTIAEoBBIlCh1yZWxvYWRfY29s",
-            "bGlkZXJzX2luX25ld19waGFzZRgUIAEoCBIXCg5zdG9yeV9wb2ludF9pZBiA",
-            "CCABKAUSDwoGYmdtX2lkGIEIIAEoBRJPChBib3NzX3NwZWNpZXNfc2V0GIII",
-            "IAMoCzI0Lmp0c2hhcmVkLlRyaWdnZXJDb25maWdGcm9tVGlsZWQuQm9zc1Nw",
-            "ZWNpZXNTZXRFbnRyeRIaChFpc19ib3NzX3NhdmVwb2ludBiDCCABKAgaNQoT",
-            "Qm9zc1NwZWNpZXNTZXRFbnRyeRILCgNrZXkYASABKA0SDQoFdmFsdWUYAiAB",
-            "KAg6AjgBIt4DCgdUcmlnZ2VyEgoKAmlkGAEgASgNEhEKCWVkaXRvcl9pZBgC",
-            "IAEoDRIWCg5mcmFtZXNfdG9fZmlyZRgDIAEoBRIZChFmcmFtZXNfdG9fcmVj",
-            "b3ZlchgEIAEoBRINCgVxdW90YRgFIAEoBRIWCg5idWxsZXRfdGVhbV9pZBgG",
-            "IAEoBRINCgVkaXJfeBgHIAEoBRIcChRzdWJfY3ljbGVfcXVvdGFfbGVmdBgJ",
-            "IAEoBRIlCgVzdGF0ZRgKIAEoDjIWLmp0c2hhcmVkLlRyaWdnZXJTdGF0ZRIX",
-            "Cg9mcmFtZXNfaW5fc3RhdGUYCyABKAUSCQoBeBgMIAEoAhIJCgF5GA0gASgC",
-            "EhkKEWRlbWFuZGVkX2V2dF9tYXNrGA4gASgEEhoKEmZ1bGZpbGxlZF9ldnRf",
-            "bWFzaxgPIAEoBBIoCiB3YXZlX25wY19raWxsZWRfZXZ0X21hc2tfY291bnRl",
-            "chgQIAEoBBIbChNzdWJzY3JpYmVyX2lkc19tYXNrGBEgASgEEiMKG2V4aGF1",
-            "c3Rfc3Vic2NyaWJlcl9pZHNfbWFzaxgSIAEoBBITCgtvZmZlbmRlcl91ZBgT",
-            "IAEoBBIfChdvZmZlbmRlcl9idWxsZXRfdGVhbV9pZBgUIAEoBSJ0Cg5QbGF5",
-            "ZXJNZXRhSW5mbxIRCglwbGF5ZXJfaWQYASABKAkSEgoKam9pbl9pbmRleBgC",
-            "IAEoDRIWCg5idWxsZXRfdGVhbV9pZBgDIAEoBRISCgpzcGVjaWVzX2lkGAQg",
-            "ASgNEg8KB3Jvb21faWQYBSABKAUicwoRUnBjRW5kcG9pbnRIb2xkZXISCgoC",
-            "aWQYASABKA0SGgoSZXh0ZXJuYWxfYWRkcl9ob3N0GAIgASgJEhoKEmV4dGVy",
-            "bmFsX2FkZHJfcG9ydBgDIAEoDRIaChJpbnRlcm5hbF9hZGRyX2hvc3QYBCAB",
-            "KAki+CsKD1ByaW1pdGl2ZUNvbnN0cxIbChNiYXR0bGVfZHluYW1pY3NfZnBz",
-            "GAEgASgFEjIKKmRlZmF1bHRfdGltZW91dF9mb3JfbGFzdF9hbGxfY29uZmly",
-            "bWVkX2lmZBgCIAEoBRIUCgxyb29tX2lkX25vbmUYAyABKAUSHQoVcm9vbV9z",
-            "dGF0ZV9pbXBvc3NpYmxlGAQgASgFEhcKD3Jvb21fc3RhdGVfaWRsZRgFIAEo",
-            "BRIaChJyb29tX3N0YXRlX3dhaXRpbmcYBiABKAUSGgoScm9vbV9zdGF0ZV9w",
-            "cmVwYXJlGAcgASgFEhwKFHJvb21fc3RhdGVfaW5fYmF0dGxlGAggASgFEiAK",
-            "GHJvb21fc3RhdGVfaW5fc2V0dGxlbWVudBgJIAEoBRIaChJyb29tX3N0YXRl",
-            "X3N0b3BwZWQYCiABKAUSMAoocm9vbV9zdGF0ZV9mcm9udGVuZF9hd2FpdGlu",
-            "Z19hdXRvX3Jlam9pbhgLIAEoBRIyCipyb29tX3N0YXRlX2Zyb250ZW5kX2F3",
-            "YWl0aW5nX21hbnVhbF9yZWpvaW4YDCABKAUSJQodcm9vbV9zdGF0ZV9mcm9u",
-            "dGVuZF9yZWpvaW5pbmcYDSABKAUSJgoecGxheWVyX2JhdHRsZV9zdGF0ZV9p",
-            "bXBvc3NpYmxlGA4gASgFEj0KNXBsYXllcl9iYXR0bGVfc3RhdGVfYWRkZWRf",
-            "cGVuZGluZ19iYXR0bGVfY29sbGlkZXJfYWNrGA8gASgFEjgKMHBsYXllcl9i",
-            "YXR0bGVfc3RhdGVfcmVhZGRlZF9wZW5kaW5nX2ZvcmNlX3Jlc3luYxgQIAEo",
-            "BRIiChpwbGF5ZXJfYmF0dGxlX3N0YXRlX2FjdGl2ZRgRIAEoBRIoCiBwbGF5",
-            "ZXJfYmF0dGxlX3N0YXRlX2Rpc2Nvbm5lY3RlZBgSIAEoBRIgChhwbGF5ZXJf",
-            "YmF0dGxlX3N0YXRlX2xvc3QYEyABKAUSMAoocGxheWVyX2JhdHRsZV9zdGF0",
-            "ZV9leHBlbGxlZF9kdXJpbmdfZ2FtZRgUIAEoBRIxCilwbGF5ZXJfYmF0dGxl",
-            "X3N0YXRlX2V4cGVsbGVkX2luX2Rpc21pc3NhbBgVIAEoBRIqCiJ1cHN5bmNf",
-            "bXNnX2FjdF9wbGF5ZXJfY29sbGlkZXJfYWNrGBYgASgFEiEKGXVwc3luY19t",
-            "c2dfYWN0X3BsYXllcl9jbWQYFyABKAUSMwordXBzeW5jX21zZ19hY3RfaG9s",
-            "ZXB1bmNoX2JhY2tlbmRfdWRwX3R1bm5lbBgYIAEoBRIuCiZ1cHN5bmNfbXNn",
-            "X2FjdF9ob2xlcHVuY2hfcGVlcl91ZHBfYWRkchgZIAEoBRItCiVkb3duc3lu",
-            "Y19tc2dfYWN0X2JhdHRsZV9jb2xsaWRlcl9pbmZvGBogASgFEiQKHGRvd25z",
-            "eW5jX21zZ19hY3RfaW5wdXRfYmF0Y2gYGyABKAUSJwofZG93bnN5bmNfbXNn",
-            "X2FjdF9iYXR0bGVfc3RvcHBlZBgcIAEoBRImCh5kb3duc3luY19tc2dfYWN0",
-            "X2ZvcmNlZF9yZXN5bmMYHSABKAUSKQohZG93bnN5bmNfbXNnX2FjdF9wZWVy",
-            "X2lucHV0X2JhdGNoGB4gASgFEiYKHmRvd25zeW5jX21zZ19hY3RfcGVlcl91",
-            "ZHBfYWRkchgfIAEoBRIuCiZkb3duc3luY19tc2dfYWN0X2JhdHRsZV9yZWFk",
-            "eV90b19zdGFydBggIAEoBRIlCh1kb3duc3luY19tc2dfYWN0X2JhdHRsZV9z",
-            "dGFydBghIAEoBRIsCiRkb3duc3luY19tc2dfYWN0X3BsYXllcl9kaXNjb25u",
-            "ZWN0ZWQYIiABKAUSMQopZG93bnN5bmNfbXNnX2FjdF9wbGF5ZXJfcmVhZGRl",
-            "ZF9hbmRfYWNrZWQYIyABKAUSLwonZG93bnN5bmNfbXNnX2FjdF9wbGF5ZXJf",
-            "YWRkZWRfYW5kX2Fja2VkGCQgASgFEh4KFmRvd25zeW5jX21zZ193c19jbG9z",
-            "ZWQYJSABKAUSHAoUZG93bnN5bmNfbXNnX3dzX29wZW4YJiABKAUSIAoYbWFn",
-            "aWNfam9pbl9pbmRleF9pbnZhbGlkGCcgASgNEicKH21hZ2ljX2pvaW5faW5k",
-            "ZXhfc3J2X3VkcF90dW5uZWwYKCABKA0SHAoUbWFnaWNfcXVvdGFfaW5maW5p",
-            "dGUYKSABKAUSJQodbnBjX2ZsZWVfZ3JhY2VfcGVyaW9kX3JkZl9jbnQYKiAB",
-            "KAUSMworbWFnaWNfbGFzdF9zZW50X2lucHV0X2ZyYW1lX2lkX25vcm1hbF9h",
-            "ZGRlZBgrIAEoBRIuCiZtYWdpY19sYXN0X3NlbnRfaW5wdXRfZnJhbWVfaWRf",
-            "cmVhZGRlZBgsIAEoBRIVCg1iZ21fbm9fY2hhbmdlGC0gASgFEiEKGWludmFs",
-            "aWRfZGVmYXVsdF9wbGF5ZXJfaWQYLiABKAUSIQoZZXN0aW1hdGVkX3NlY29u",
-            "ZHNfcGVyX3JkZhgvIAEoAhIfChdtYXhfYnRuX2hvbGRpbmdfcmRmX2NudBgw",
-            "IAEoBRIaChJtYXhfZmx5aW5nX3JkZl9jbnQYMSABKAUSLgombWF4X3JldmVy",
-            "c2VfcHVzaGJhY2tfZnJhbWVzX3RvX3JlY292ZXIYMiABKAUSJQoddGVybWlu",
-            "YXRpbmdfdHJpZ2dlcl9lZGl0b3JfaWQYMyABKA0SIwobc3BlZWRfbm90X2hp",
-            "dF9ub3Rfc3BlY2lmaWVkGDUgASgFEiUKHWRlZmF1bHRfcHJlYWxsb2NfbnBj",
-            "X2NhcGFjaXR5GDYgASgFEigKIGRlZmF1bHRfcHJlYWxsb2NfYnVsbGV0X2Nh",
-            "cGFjaXR5GDcgASgFEiYKHmRlZmF1bHRfcHJlYWxsb2NfdHJhcF9jYXBhY2l0",
-            "eRg4IAEoBRIpCiFkZWZhdWx0X3ByZWFsbG9jX3RyaWdnZXJfY2FwYWNpdHkY",
-            "OSABKAUSKgoiZGVmYXVsdF9wcmVhbGxvY19waWNrYWJsZV9jYXBhY2l0eRg6",
-            "IAEoBRIrCiNkZWZhdWx0X3Blcl9jaGFyYWN0ZXJfYnVmZl9jYXBhY2l0eRg7",
-            "IAEoBRItCiVkZWZhdWx0X3Blcl9jaGFyYWN0ZXJfZGVidWZmX2NhcGFjaXR5",
-            "GDwgASgFEjAKKGRlZmF1bHRfcGVyX2NoYXJhY3Rlcl9pbnZlbnRvcnlfY2Fw",
-            "YWNpdHkYPSABKAUSOwozZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2ltbXVuZV9i",
-            "dWxsZXRfcmVjb3JkX2NhcGFjaXR5GD4gASgFEhEKCWdyYXZpdHlfeRg/IAEo",
-            "AhIeChZncmF2aXR5X3lfanVtcF9ob2xkaW5nGEAgASgCEikKIWRlZmF1bHRf",
-            "cGF0cm9sX2N1ZV93YWl2aW5nX2ZyYW1lcxhBIAEoBRIYChBub19wYXRyb2xf",
-            "Y3VlX2lkGEIgASgFEhEKCW5vX3ZmeF9pZBhDIAEoBRIrCiNkZWZhdWx0X3Bp",
-            "Y2thYmxlX2hpdGJveF9oYWxmX3NpemVfeBhEIAEoAhIrCiNkZWZhdWx0X3Bp",
-            "Y2thYmxlX2hpdGJveF9oYWxmX3NpemVfeRhFIAEoAhIxCilkZWZhdWx0X3Bp",
-            "Y2thYmxlX2Rpc2FwcGVhcmluZ19hbmltX2ZyYW1lcxhGIAEoBRItCiVkZWZh",
-            "dWx0X3BpY2thYmxlX2NvbnN1bWVkX2FuaW1fZnJhbWVzGEcgASgFEiUKHWRl",
-            "ZmF1bHRfcGlja2FibGVfcmlzaW5nX3ZlbF95GEggASgCEjMKK2RlZmF1bHRf",
-            "cGlja2FibGVfbm9ucGlja2FibGVfc3RhcnR1cF9mcmFtZXMYSSABKAUSJgoe",
-            "ZGVmYXVsdF9mcmFtZXNfdG9fc2hvd19kYW1hZ2VkGEogASgFEigKIGRlZmF1",
-            "bHRfZnJhbWVzX3RvX2NvbnRpbnVlX2NvbWJvGEsgASgFEiEKGWRlZmF1bHRf",
-            "YmxvY2tfc3R1bl9mcmFtZXMYTCABKAUSKQohZGVmYXVsdF9ibG93bnVwX2Zy",
-            "YW1lc19mb3JfZmx5aW5nGE0gASgFEiAKGGRlZmF1bHRfZ2F1Z2VfaW5jX2J5",
-            "X2hpdBhOIAEoBRIwCihkZWZhdWx0X2ZyYW1lc19kZWxheWVkX29mX2Jvc3Nf",
-            "c2F2ZXBvaW50GE8gASgFEhoKEmlucHV0X3NjYWxlX2ZyYW1lcxhQIAEoBRIT",
-            "CgtpbnB1dF9zY2FsZRhRIAEoBRIaChJpbnB1dF9kZWxheV9mcmFtZXMYUiAB",
-            "KAUSKQohZGVmYXVsdF9iYWNrZW5kX2lucHV0X2J1ZmZlcl9zaXplGFMgASgF",
-            "EiwKJG1heF9jaGFzaW5nX3JlbmRlcl9mcmFtZXNfcGVyX3VwZGF0ZRhUIAEo",
-            "BRIiChptYWdpY19mcmFtZXNfdG9fYmVfb25fd2FsbBhVIAEoBRIrCiNtYWdp",
-            "Y19mcmFtZXNfdG9fYmVfb25fd2FsbF9haXJfanVtcBhWIAEoBRIfChdkeWlu",
-            "Z19mcmFtZXNfdG9fcmVjb3ZlchhXIAEoBRIhChlwYXJyaWVkX2ZyYW1lc190",
-            "b19yZWNvdmVyGFggASgFEisKI3BhcnJpZWRfZnJhbWVzX3RvX3N0YXJ0X2Nh",
-            "bmNlbGxhYmxlGFkgASgFEhAKCG5vX3NraWxsGFogASgNEhQKDG5vX3NraWxs",
-            "X2hpdBhbIAEoBRIXCg9zcGVjaWVzX25vbmVfY2gYXCABKA0SIgoadXBzeW5j",
-            "X3N0X2lmZF9pZF90b2xlcmFuY2UYXSABKA0SEwoLbm9fbG9ja192ZWwYXiAB",
-            "KAISIAoYZGVidWZmX2Fycl9pZHhfZWxlbWVudGFsGF8gASgFEiMKG3Rlcm1p",
-            "bmF0aW5nX3JlbmRlcl9mcmFtZV9pZBhgIAEoBRIiChp0ZXJtaW5hdGluZ19p",
-            "bnB1dF9mcmFtZV9pZBhhIAEoBRIgChh0ZXJtaW5hdGluZ19jaGFyYWN0ZXJf",
-            "aWQYYiABKA0SGwoTdGVybWluYXRpbmdfdHJhcF9pZBhjIAEoDRIeChZ0ZXJt",
-            "aW5hdGluZ190cmlnZ2VyX2lkGGQgASgNEh8KF3Rlcm1pbmF0aW5nX3BpY2th",
-            "YmxlX2lkGGUgASgNEh0KFXRlcm1pbmF0aW5nX2J1bGxldF9pZBhmIAEoDRIi",
-            "Chp0ZXJtaW5hdGluZ19idWxsZXRfdGVhbV9pZBhnIAEoBRIjCht0ZXJtaW5h",
-            "dGluZ19idWZmX3NwZWNpZXNfaWQYaCABKA0SJQoddGVybWluYXRpbmdfZGVi",
-            "dWZmX3NwZWNpZXNfaWQYaSABKA0SKQohdGVybWluYXRpbmdfY29uc3VtYWJs",
-            "ZV9zcGVjaWVzX2lkGGogASgNEiMKG2Zyb250ZW5kX3dzX3JlY3ZfYnl0ZWxl",
-            "bmd0aBhrIAEoBRIiChpiYWNrZW5kX3dzX3JlY3ZfYnl0ZWxlbmd0aBhsIAEo",
-            "BRIiChpqYW1tZWRfYnRuX2hvbGRpbmdfcmRmX2NudBhtIAEoBRIpCiFidG5f",
-            "Yl9ob2xkaW5nX3JkZl9jbnRfdGhyZXNob2xkXzIYbiABKAUSKQohYnRuX2Jf",
-            "aG9sZGluZ19yZGZfY250X3RocmVzaG9sZF8xGG8gASgFEigKIGp1bXBfaG9s",
-            "ZGluZ19yZGZfY250X3RocmVzaG9sZF8xGHAgASgFEigKIGp1bXBfaG9sZGlu",
-            "Z19pZmRfY250X3RocmVzaG9sZF8xGHEgASgFEigKIGp1bXBfaG9sZGluZ19y",
-            "ZGZfY250X3RocmVzaG9sZF8yGHIgASgFEigKIGp1bXBfaG9sZGluZ19pZmRf",
-            "Y250X3RocmVzaG9sZF8yGHMgASgFEigKIGluX2Fpcl9kYXNoX2dyYWNlX3Bl",
-            "cmlvZF9yZGZfY250GHQgASgFEigKIGluX2Fpcl9qdW1wX2dyYWNlX3Blcmlv",
-            "ZF9yZGZfY250GHUgASgFEikKIWJ0bl9lX2hvbGRpbmdfcmRmX2NudF90aHJl",
-            "c2hvbGRfMRh2IAEoBRIpCiFidG5fZV9ob2xkaW5nX2lmZF9jbnRfdGhyZXNo",
-            "b2xkXzEYdyABKAUSHAoUc3BfYXRrX2xvb2t1cF9mcmFtZXMYeCABKAUSHwoX",
-            "cGF0dGVybl9pZF91bmFibGVfdG9fb3AYeSABKAUSGAoQcGF0dGVybl9pZF9u",
-            "b19vcBh6IAEoBRIRCglwYXR0ZXJuX2IYeyABKAUSFAoMcGF0dGVybl91cF9i",
-            "GHwgASgFEhYKDnBhdHRlcm5fZG93bl9iGH0gASgFEhYKDnBhdHRlcm5faG9s",
-            "ZF9iGH4gASgFEhYKDnBhdHRlcm5fZG93bl9hGH8gASgFEhsKEnBhdHRlcm5f",
-            "cmVsZWFzZWRfYhiAASABKAUSEgoJcGF0dGVybl9lGIEBIAEoBRIYCg9wYXR0",
-            "ZXJuX2Zyb250X2UYggEgASgFEhcKDnBhdHRlcm5fYmFja19lGIMBIAEoBRIV",
-            "CgxwYXR0ZXJuX3VwX2UYhAEgASgFEhcKDnBhdHRlcm5fZG93bl9lGIUBIAEo",
-            "BRIXCg5wYXR0ZXJuX2hvbGRfZRiGASABKAUSGQoQcGF0dGVybl9lX2hvbGRf",
-            "YhiHASABKAUSHwoWcGF0dGVybl9mcm9udF9lX2hvbGRfYhiIASABKAUSHgoV",
-            "cGF0dGVybl9iYWNrX2VfaG9sZF9iGIkBIAEoBRIcChNwYXR0ZXJuX3VwX2Vf",
-            "aG9sZF9iGIoBIAEoBRIeChVwYXR0ZXJuX2Rvd25fZV9ob2xkX2IYiwEgASgF",
-            "Eh4KFXBhdHRlcm5faG9sZF9lX2hvbGRfYhiMASABKAUSIQoYcGF0dGVybl9p",
-            "bnZlbnRvcnlfc2xvdF9jGI0BIAEoBRIhChhwYXR0ZXJuX2ludmVudG9yeV9z",
-            "bG90X2QYjgEgASgFEiIKGXBhdHRlcm5faW52ZW50b3J5X3Nsb3RfYmMYjwEg",
-            "ASgFEiYKHXBhdHRlcm5faG9sZF9pbnZlbnRvcnlfc2xvdF9jGJABIAEoBRIm",
-            "Ch1wYXR0ZXJuX2hvbGRfaW52ZW50b3J5X3Nsb3RfZBiRASABKAUSEQoIZWxl",
-            "X25vbmUYkgEgASgNEhEKCGVsZV9maXJlGJMBIAEoDRISCgllbGVfd2F0ZXIY",
-            "lAEgASgNEhQKC2VsZV90aHVuZGVyGJUBIAEoDRIRCghlbGVfcm9jaxiWASAB",
-            "KA0SEQoIZWxlX3dpbmQYlwEgASgNEhAKB2VsZV9pY2UYmAEgASgNEiMKGmVs",
-            "ZV93ZWFrbmVzc19kZWZhdWx0X3lpZWxkGJkBIAEoAhIlChxlbGVfcmVzaXN0",
-            "YW5jZV9kZWZhdWx0X3lpZWxkGJoBIAEoAhIhChhzdGFydGluZ19yZW5kZXJf",
-            "ZnJhbWVfaWQYmwEgASgFEiAKF3N0YXJ0aW5nX2lucHV0X2ZyYW1lX2lkGJwB",
-            "IAEoBSLDAwoMQ29uZmlnQ29uc3RzEkcKEWNoYXJhY3Rlcl9jb25maWdzGAEg",
-            "AygLMiwuanRzaGFyZWQuQ29uZmlnQ29uc3RzLkNoYXJhY3RlckNvbmZpZ3NF",
-            "bnRyeRI/Cg1za2lsbF9jb25maWdzGAIgAygLMiguanRzaGFyZWQuQ29uZmln",
-            "Q29uc3RzLlNraWxsQ29uZmlnc0VudHJ5EkEKDmRlYnVmZl9jb25maWdzGAMg",
-            "AygLMikuanRzaGFyZWQuQ29uZmlnQ29uc3RzLkRlYnVmZkNvbmZpZ3NFbnRy",
-            "eRpSChVDaGFyYWN0ZXJDb25maWdzRW50cnkSCwoDa2V5GAEgASgNEigKBXZh",
-            "bHVlGAIgASgLMhkuanRzaGFyZWQuQ2hhcmFjdGVyQ29uZmlnOgI4ARpEChFT",
-            "a2lsbENvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SHgoFdmFsdWUYAiABKAsy",
-            "Dy5qdHNoYXJlZC5Ta2lsbDoCOAEaTAoSRGVidWZmQ29uZmlnc0VudHJ5EgsK",
-            "A2tleRgBIAEoDRIlCgV2YWx1ZRgCIAEoCzIWLmp0c2hhcmVkLkRlYnVmZkNv",
-            "bmZpZzoCOAEiXQoKU3RlcFJlc3VsdBIvChR1cGRhdGVkX3RyaWdnZXJzX2Fy",
-            "chgBIAMoCzIRLmp0c2hhcmVkLlRyaWdnZXISHgoWdXBkYXRlZF90cmlnZ2Vy",
-            "c19jb3VudBgCIAEoDSo0ChRCb3hJbnRlcnBvbGF0aW9uVHlwZRILCgdVc2VQ",
-            "cmV2EAASDwoLSW50ZXJwb2xhdGUQASpVCghJZmFjZUNhdBIJCgVFTVBUWRAA",
-            "EgkKBUZMRVNIEAESCQoFTUVUQUwQAhIJCgVGTFVJRBADEggKBFJPQ0sQBBIJ",
-            "CgVHUkFTUxAFEggKBFdPT0QQBipECgtCdWxsZXRTdGF0ZRILCgdTdGFydFVw",
-            "EAASCgoGQWN0aXZlEAESDQoJRXhwbG9kaW5nEAISDQoJVmFuaXNoaW5nEAMq",
-            "iQgKDkNoYXJhY3RlclN0YXRlEhIKDkludmFsaWRDaFN0YXRlEAASCQoFSWRs",
-            "ZTEQARILCgdXYWxraW5nEAISDgoKVHVybkFyb3VuZBADEgoKBkF0a2VkMRAE",
-            "EhQKEEluQWlySWRsZTFOb0p1bXAQBRIUChBJbkFpcklkbGUxQnlKdW1wEAYS",
-            "FAoQSW5BaXJJZGxlMkJ5SnVtcBAHEhgKFEluQWlySWRsZTFCeVdhbGxKdW1w",
-            "EAgSDwoLSW5BaXJBdGtlZDEQCRIMCghCbG93blVwMRAKEgwKCExheURvd24x",
-            "EAsSCgoGR2V0VXAxEAwSCQoFRHlpbmcQDRILCgdEYXNoaW5nEA4SCwoHU2xp",
-            "ZGluZxAPEgoKBkRpbW1lZBAQEhQKEFRyYW5zZm9ybWluZ0ludG8QERIPCgtC",
-            "YWNrRGFzaGluZxASEhAKDEluQWlyV2Fsa2luZxATEh0KGVRyYW5zZm9ybWlu",
-            "Z0ludG9Gcm9tRGVhdGgQFBIQCgxXYWxrU3RvcHBpbmcQFRIVChFJbkFpcldh",
-            "bGtTdG9wcGluZxAWEgsKB1BhcnJpZWQQFxILCgdBd2FraW5nEBgSEAoMR3Jv",
-            "dW5kRG9kZ2VkEBkSDwoLQmFja1dhbGtpbmcQGhIQCgxJbkFpckRhc2hpbmcQ",
-            "GxIUChBJbkFpckJhY2tEYXNoaW5nEBwSEwoPSW5BaXJUdXJuQXJvdW5kEB0S",
-            "EAoLT25XYWxsSWRsZTEQgAESEAoLQ3JvdWNoSWRsZTEQgAISDwoKQ3JvdWNo",
-            "QXRrMRCBAhISCg1Dcm91Y2hXYWxraW5nEIICEhEKDENyb3VjaEF0a2VkMRCD",
-            "AhIJCgREZWYxEIQCEg8KCkRlZjFBdGtlZDEQhQISDwoKRGVmMUJyb2tlbhCG",
-            "AhIJCgRBdGsxEIAIEgkKBEF0azIQgQgSCQoEQXRrMxCCCBIJCgRBdGs0EIMI",
-            "EgkKBEF0azUQhAgSCQoEQXRrNhCFCBIJCgRBdGs3EIYIEhIKDUF0azdfQ2hh",
-            "cmdpbmcQhwgSFwoSQXRrN19DaGFyZ2VSZWxlYXNlEIgIEgkKBEF0azgQiQgS",
-            "DgoJSW5BaXJBdGsxEIAQEg4KCUluQWlyQXRrMhCBEBIQCgtXYWxraW5nQXRr",
-            "MRCCEBIQCgtXYWxraW5nQXRrNBCDEBIOCglJbkFpckF0azYQhBASDwoKT25X",
-            "YWxsQXRrMRCAGBITCg5JZGxlMV9DaGFyZ2luZxCBGBIZChRXYWxraW5nQXRr",
-            "MV9DaGFyZ2luZxCCGBIXChJJbkFpckF0azFfQ2hhcmdpbmcQgxgSGAoTT25X",
-            "YWxsQXRrMV9DaGFyZ2luZxCEGBIYChNDcm91Y2hBdGsxX0NoYXJnaW5nEIUY",
-            "KpMBCgdOcGNHb2FsEgkKBU5JZGxlEAASDwoLTkZvbGxvd0FsbHkQARILCgdO",
-            "UGF0cm9sEAISEQoNTkh1bnRUaGVuSWRsZRADEhMKD05IdW50VGhlblBhdHJv",
-            "bBAEEhcKE05IdW50VGhlbkZvbGxvd0FsbHkQBRIeChpOSWRsZUlmR29IdW50",
-            "aW5nVGhlblBhdHJvbBAGKk4KCVRyYXBTdGF0ZRIJCgVUSWRsZRAAEgwKCFRX",
-            "YWxraW5nEAESCQoFVEF0azEQAhILCgdUQXRrZWQxEAMSEAoMVERlYWN0aXZh",
-            "dGVkEAQqLAoMVHJpZ2dlclN0YXRlEgoKBlRSZWFkeRAAEhAKDFRDb29saW5n",
-            "RG93bhABKjwKDVBpY2thYmxlU3RhdGUSCQoFUElkbGUQABIRCg1QRGlzYXBw",
-            "ZWFyaW5nEAESDQoJUENvbnN1bWVkEAIqZwoKQnVsbGV0VHlwZRIQCgxVbmRl",
-            "dGVybWluZWQQABIJCgVNZWxlZRABEhcKE01lY2hhbmljYWxDYXJ0cmlkZ2UQ",
-            "AhITCg9NYWdpY2FsRmlyZWJhbGwQAxIOCgpHcm91bmRXYXZlEAQq5gEKDE11",
-            "bHRpSGl0VHlwZRIICgROb25lEAASEAoMRnJvbUVtaXNzaW9uEAESFgoSRnJv",
-            "bUZpcnN0SGl0QWN0dWFsEAISFgoSRnJvbUZpcnN0SGl0QW55d2F5EAMSFQoR",
-            "RnJvbVByZXZIaXRBY3R1YWwQBBIVChFGcm9tUHJldkhpdEFueXdheRAFEhsK",
-            "F0Zyb21WaXNpb25TZWVrT3JEZWZhdWx0EAYSIwofRnJvbVByZXZIaXRBY3R1",
-            "YWxPckFjdGl2ZVRpbWVVcBAHEhoKFkZyb21FbWlzc2lvbkp1c3RBY3RpdmUQ",
-            "CCozChBTa2lsbFRyaWdnZXJUeXBlEg4KClJpc2luZ0VkZ2UQABIPCgtGYWxs",
-            "aW5nRWRnZRABKiwKD1ZmeER1cmF0aW9uVHlwZRIKCgZPbmVPZmYQABINCglS",
-            "ZXBlYXRpbmcQASo3Cg1WZnhNb3Rpb25UeXBlEgwKCE5vTW90aW9uEAASCwoH",
-            "RHJvcHBlZBABEgsKB1RyYWNpbmcQAip5CgtUcmlnZ2VyVHlwZRIKCgZUdE5v",
-            "bmUQABINCglUdFRyaXZpYWwQARIRCg1UdEN5Y2xpY1RpbWVkEAISDgoKVHRJ",
-            "bmRpV2F2ZRADEg4KClR0U3luY1dhdmUQBBIOCgpUdE1vdmVtZW50EAUSDAoI",
-            "VHRBdHRhY2sQBiqBAQoJVXBzeW5jQWN0EgsKB1VBX05PTkUQABIKCgZVQV9D",
-            "TUQQARIWChJVQV9TRUxGX1BBUlNFRF9SREYQAhIjCh9VQV9IT0xFUFVOQ0hf",
-            "QkFDS0VORF9VRFBfVFVOTkVMEAMSHgoaVUFfSE9MRVBVTkNIX1BFRVJfVURQ",
-            "X0FERFIQBCr/AwoLRG93bnN5bmNBY3QSCwoHREFfTk9ORRAAEg4KCkRBX1JF",
-            "R1VMQVIQARIVChFEQV9CQVRUTEVfUFJFUEFSRRACEhwKGERBX0JBVFRMRV9S",
-            "RUFEWV9UT19TVEFSVBADEhUKEURBX0JBVFRMRV9TVEFSVEVEEAQSFQoRREFf",
-            "QkFUVExFX1NUT1BQRUQQBRIbChdEQV9CQVRUTEVfUEVFUl9VRFBfQUREUhAG",
-            "Eh8KG0RBX0JBVFRMRV9QRUVSX0RJU0NPTk5FQ1RFRBAHEhkKFURBX0JBVFRM",
-            "RV9QRUVSX0pPSU5FRBAIEhsKF0RBX0JBVFRMRV9QRUVSX1JFSk9JTkVEEAkS",
-            "KQolREFfRkFJTEVEX1RPX0pPSU5fQkFUVExFX05PVF9KT0lOQUJMRRAKEiUK",
-            "IURBX0ZBSUxFRF9UT19KT0lOX0FMUkVBRFlfSU5fUk9PTRALEi0KKURBX0ZB",
-            "SUxFRF9UT19SRUpPSU5fQkFUVExFX05PVF9SRUpPSU5BQkxFEAwSKQolREFf",
-            "RkFJTEVEX1RPX1JFSk9JTl9OT1RfRk9VTkRfSU5fUk9PTRANEiwKKERBX0ZB",
-            "SUxFRF9UT19SRUpPSU5fUExBWUVSX1NUQVRFX0lOVkFMSUQQDhIOCgpEQV9X",
-            "U19PUEVOEEASEAoMREFfV1NfQ0xPU0VEEEEqMQoNQnVmZlN0b2NrVHlwZRIK",
-            "CgZOb25lQmYQABIJCgVUaW1lZBABEgkKBVF1b3RhEAIqcQoKRGVidWZmVHlw",
-            "ZRILCgdOb25lRGJmEAASEQoNU3BlZWREb3duT25seRABEhEKDUNvbGRTcGVl",
-            "ZERvd24QAhIWChJQb3NpdGlvbkxvY2tlZE9ubHkQAxIYChRGcm96ZW5Qb3Np",
-            "dGlvbkxvY2tlZBAEKjYKDkNvbnN1bWFibGVUeXBlEgwKCE5vbmVDc21iEAAS",
-            "CgoGUmVmaWxsEAESCgoGRGJmUmN2EAIqnwEKFkludmVudG9yeVNsb3RTdG9j",
-            "a1R5cGUSCgoGTm9uZUl2EAASCwoHRHVtbXlJdhABEgwKCFBvY2tldEl2EAIS",
-            "CwoHVGltZWRJdhADEgsKB1F1b3RhSXYQBBITCg9UaW1lZE1hZ2F6aW5lSXYQ",
-            "BRIUChBHYXVnZWRNYWdhemluZUl2EAYSGQoVR2F1Z2VkVGltZWRNYWdhemlu",
-            "ZUl2EAcqPAoZUGxheWVyU3RvcnlNb2RlU2VsZWN0VmlldxIICgROT05FEAAS",
-            "CgoGUkVHSU9OEAESCQoFTEVWRUwQAio1ChBGaW5pc2hlZEx2T3B0aW9uEg0K",
-            "CUJPU1NfT05MWRAAEhIKDlNUT1JZX0FORF9CT1NTEAEqMQoKUGlja3VwVHlw",
-            "ZRINCglJbW1lZGlhdGUQABIUChBQdXRJbnRvSW52ZW50b3J5EAFCC6oCCGp0",
-            "c2hhcmVkYgZwcm90bzM="));
+            "X3NhbWVfdGVhbV9zb2Z0X3B1c2hiYWNrGFYgASgIEiAKGGdhdWdlX2luY193",
+            "aGVuX2V4aGF1c3RlZBhXIAEoBRIiChpqdW1waW5nX2luc3RlYWRfb2Zfd2Fs",
+            "a2luZxhYIAEoCBIqCiJ2aXNpb25fc2VhcmNoX2ludGVydmFsX3BvdzJNaW51",
+            "czFVGFkgASgNEikKIXZpc2lvbl9zZWFyY2hfaW50ZXJ2YWxfcG93Mk1pbnVz",
+            "MRhaIAEoBRIiChpucGNfbm9fZGVmYXVsdF9haXJfd2Fsa2luZxhbIAEoCBIm",
+            "Ch5ucGNfcHJpb3JpdGl6ZV9idWxsZXRfaGFuZGxpbmcYXCABKAgSIwobbnBj",
+            "X3ByaW9yaXRpemVfYWxseV9oZWFsaW5nGF0gASgIEiYKHm5wY19ub3RfaHVu",
+            "dGluZ19pbl9haXJfb3Bwb19jaBheIAEoCBIoCiB0cmFuc2Zvcm1faW50b19m",
+            "cmFtZXNfdG9fcmVjb3ZlchhfIAEoBRIoCiB0cmFuc2Zvcm1faW50b19mcmFt",
+            "ZXNfaW52aW5zaWJsZRhgIAEoBRIhChlhd2FraW5nX2ZyYW1lc190b19yZWNv",
+            "dmVyGGEgASgFEiEKGWF3YWtpbmdfZnJhbWVzX2ludmluc2libGUYYiABKAUS",
+            "IAoYdXNlX2lkbGUxX2FzX2ZseWluZ19pZGxlGGMgASgIEg8KB25vX2ZsZWUY",
+            "ZCABKAgSDwoHYWNjX21hZxhlIAEoAhI0Cg1hdGsxX21hZ2F6aW5lGGYgASgL",
+            "Mh0uanRzaGFyZWQuSW52ZW50b3J5U2xvdENvbmZpZxI2Cg9zdXBlcl9hdGtf",
+            "Z3VhZ2UYZyABKAsyHS5qdHNoYXJlZC5JbnZlbnRvcnlTbG90Q29uZmlnEjsK",
+            "FGluaXRfaW52ZW50b3J5X3Nsb3RzGGggAygLMh0uanRzaGFyZWQuSW52ZW50",
+            "b3J5U2xvdENvbmZpZxJaChtidG5fYl9hdXRvX3VuaG9sZF9jaF9zdGF0ZXMY",
+            "aSADKAsyNS5qdHNoYXJlZC5DaGFyYWN0ZXJDb25maWcuQnRuQkF1dG9Vbmhv",
+            "bGRDaFN0YXRlc0VudHJ5EkkKEWxvb3BpbmdfY2hfc3RhdGVzGGogAygLMi4u",
+            "anRzaGFyZWQuQ2hhcmFjdGVyQ29uZmlnLkxvb3BpbmdDaFN0YXRlc0VudHJ5",
+            "EksKEmluaXRfc2tpbGxfdHJhbnNpdBhrIAMoCzIvLmp0c2hhcmVkLkNoYXJh",
+            "Y3RlckNvbmZpZy5Jbml0U2tpbGxUcmFuc2l0RW50cnkSIAoXaGFzX2luX2Fp",
+            "cl93YWxraW5nX2FuaW0YgAQgASgIEh0KFGhhc190dXJuX2Fyb3VuZF9hbmlt",
+            "GIEEIAEoCBIkChtoYXNfaW5fYWlyX3R1cm5fYXJvdW5kX2FuaW0YggQgASgI",
+            "Eh8KFmhhc193YWxrX3N0b3BwaW5nX2FuaW0YgwQgASgIEiYKHWhhc19pbl9h",
+            "aXJfd2Fsa19zdG9wcGluZ19hbmltGIQEIAEoCBIYCg9oYXNfZGltbWVkX2Fu",
+            "aW0YhQQgASgIEhkKEGhhc19hd2FraW5nX2FuaW0YhgQgASgIGj0KG0J0bkJB",
+            "dXRvVW5ob2xkQ2hTdGF0ZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUY",
+            "AiABKAU6AjgBGjYKFExvb3BpbmdDaFN0YXRlc0VudHJ5EgsKA2tleRgBIAEo",
+            "BRINCgV2YWx1ZRgCIAEoBToCOAEaNwoVSW5pdFNraWxsVHJhbnNpdEVudHJ5",
+            "EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoDToCOAEiywwKEUNoYXJhY3Rl",
+            "ckRvd25zeW5jEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6GAMgASgCEgsK",
+            "A3FfeBgEIAEoAhILCgNxX3kYBSABKAISCwoDcV96GAYgASgCEgsKA3FfdxgH",
+            "IAEoAhINCgV2ZWxfeBgIIAEoAhINCgV2ZWxfeRgJIAEoAhINCgV2ZWxfehgK",
+            "IAEoAhISCgphaW1pbmdfcV94GAsgASgCEhIKCmFpbWluZ19xX3kYDCABKAIS",
+            "EgoKYWltaW5nX3FfehgNIAEoAhISCgphaW1pbmdfcV93GA4gASgCEgoKAmhw",
+            "GA8gASgFEgoKAm1wGBAgASgFEioKCGNoX3N0YXRlGBEgASgOMhguanRzaGFy",
+            "ZWQuQ2hhcmFjdGVyU3RhdGUSGgoSZnJhbWVzX2luX2NoX3N0YXRlGBIgASgF",
+            "EhYKDmp1bXBfdHJpZ2dlcmVkGBMgASgIEhQKDG9taXRfZ3Jhdml0eRgUIAEo",
+            "CBISCgpzcGVjaWVzX2lkGBUgASgNEg0KBXNwZWVkGBYgASgCEhgKEGZvcmNl",
+            "ZF9jcm91Y2hpbmcYFyABKAgSGwoTc2xpcF9qdW1wX3RyaWdnZXJlZBgYIAEo",
+            "CBIsCiRwcmltYXJpbHlfb25fc2xpcHBhYmxlX2hhcmRfcHVzaGJhY2sYGSAB",
+            "KAgSGQoRZnJhbWVzX3RvX3JlY292ZXIYGiABKAUSHwoXbmV3X2JpcnRoX3Jk",
+            "Zl9jb3VudGRvd24YGyABKAUSGQoRZnJhbWVzX2ludmluc2libGUYHCABKAUS",
+            "FAoManVtcF9zdGFydGVkGB0gASgIEhwKFGZyYW1lc190b19zdGFydF9qdW1w",
+            "GB4gASgFEhYKDmJ1bGxldF90ZWFtX2lkGB8gASgFEiAKGHJlbWFpbmluZ19h",
+            "aXJfanVtcF9xdW90YRggIAEoDRIgChhyZW1haW5pbmdfYWlyX2Rhc2hfcXVv",
+            "dGEYISABKA0SIgoaZGFtYWdlZF9oaW50X3JkZl9jb3VudGRvd24YIiABKAUS",
+            "HwoXZGFtYWdlZF9lbGVtZW50YWxfYXR0cnMYIyABKA0SHAoUcmVtYWluaW5n",
+            "X2RlZjFfcXVvdGEYJCABKA0SFQoNY29tYm9faGl0X2NudBglIAEoDRIdChVj",
+            "b21ib19mcmFtZXNfcmVtYWluZWQYJiABKAUSGgoSbGFzdF9kYW1hZ2VkX2J5",
+            "X3VkGCcgASgEEiYKHmxhc3RfZGFtYWdlZF9ieV9idWxsZXRfdGVhbV9pZBgo",
+            "IAEoBRIXCg9hY3RpdmVfc2tpbGxfaWQYKSABKA0SGAoQYWN0aXZlX3NraWxs",
+            "X2hpdBgqIAEoBRIdChVidG5fYV9ob2xkaW5nX3JkZl9jbnQYKyABKAUSHQoV",
+            "YnRuX2JfaG9sZGluZ19yZGZfY250GCwgASgFEh0KFWJ0bl9jX2hvbGRpbmdf",
+            "cmRmX2NudBgtIAEoBRIdChVidG5fZF9ob2xkaW5nX3JkZl9jbnQYLiABKAUS",
+            "HQoVYnRuX2VfaG9sZGluZ19yZGZfY250GC8gASgFEh8KF3BhcnJ5X3ByZXBf",
+            "cmRmX2NudF9kb3duGDAgASgFEh4KFm1wX3JlZ2VuX3JkZl9jb3VudGRvd24Y",
+            "MSABKAUSHAoUZmx5aW5nX3JkZl9jb3VudGRvd24YMiABKAUSFQoNbG9ja2lu",
+            "Z19vbl91ZBgzIAEoBBIcChRjaF9jb2xsaXNpb25fdGVhbV9pZBg0IAEoBRIh",
+            "CglidWZmX2xpc3QYNSADKAsyDi5qdHNoYXJlZC5CdWZmEiUKC2RlYnVmZl9s",
+            "aXN0GDYgAygLMhAuanRzaGFyZWQuRGVidWZmEi4KDWF0azFfbWFnYXppbmUY",
+            "NyABKAsyFy5qdHNoYXJlZC5JbnZlbnRvcnlTbG90EjAKD3N1cGVyX2F0a19n",
+            "YXVnZRg4IAEoCzIXLmp0c2hhcmVkLkludmVudG9yeVNsb3QSJgoJaW52ZW50",
+            "b3J5GDkgASgLMhMuanRzaGFyZWQuSW52ZW50b3J5EjsKFWJ1bGxldF9pbW11",
+            "bmVfcmVjb3Jkcxg6IAMoCzIcLmp0c2hhcmVkLkJ1bGxldEltbXVuZVJlY29y",
+            "ZBIXCg9raW5lbWF0aWNfa25vYnMYOyADKAIitQIKF1BsYXllckNoYXJhY3Rl",
+            "ckRvd25zeW5jEigKA2NoZBgBIAEoCzIbLmp0c2hhcmVkLkNoYXJhY3RlckRv",
+            "d25zeW5jEhIKCmpvaW5faW5kZXgYAiABKA0SEQoJYmVhdHNfY250GAMgASgN",
+            "EhIKCmJlYXRlbl9jbnQYBCABKA0SEQoJcmV2aXZhbF94GAUgASgCEhEKCXJl",
+            "dml2YWxfeRgGIAEoAhIRCglyZXZpdmFsX3oYByABKAISEwoLcmV2aXZhbF9x",
+            "X3gYCCABKAUSEwoLcmV2aXZhbF9xX3kYCSABKAUSEwoLcmV2aXZhbF9xX3oY",
+            "CiABKAUSEwoLcmV2aXZhbF9xX3cYCyABKAUSKAogbm90X2Vub3VnaF9tcF9o",
+            "aW50X3JkZl9jb3VudGRvd24YDCABKAUiqAQKFE5wY0NoYXJhY3RlckRvd25z",
+            "eW5jEigKA2NoZBgBIAEoCzIbLmp0c2hhcmVkLkNoYXJhY3RlckRvd25zeW5j",
+            "EgoKAmlkGAIgASgNEhgKEGFjdGl2YXRlZF9yZGZfaWQYAyABKAUSFgoOY2Fj",
+            "aGVkX2N1ZV9jbWQYBCABKAQSHQoVd2FpdmluZ19wYXRyb2xfY3VlX2lkGAUg",
+            "ASgFEiYKC2dvYWxfYXNfbnBjGAYgASgOMhEuanRzaGFyZWQuTnBjR29hbBIq",
+            "CiJwdWJsaXNoaW5nX2V2dF9tYXNrX3Vwb25fZXhoYXVzdGVkGAcgASgEEi8K",
+            "J3B1Ymxpc2hpbmdfdG9fdHJpZ2dlcl9pZF91cG9uX2V4aGF1c3RlZBgIIAEo",
+            "DRIgChhzdWJzY3JpYmVzX3RvX3RyaWdnZXJfaWQYCSABKA0SHgoWY2FwdHVy",
+            "ZWRfYnlfcGF0cm9sX2N1ZRgKIAEoCBIcChRmcmFtZXNfaW5fcGF0cm9sX2N1",
+            "ZRgLIAEoBRIvCidleGhhdXN0ZWRfdG9fZHJvcF9jb25zdW1hYmxlX3NwZWNp",
+            "ZXNfaWQYDCABKA0SKQohZXhoYXVzdGVkX3RvX2Ryb3BfYnVmZl9zcGVjaWVz",
+            "X2lkGA0gASgNEikKIWV4aGF1c3RlZF90b19kcm9wX3BpY2t1cF9za2lsbF9p",
+            "ZBgOIAEoDRIdChVpc19tYWluX3Rvd2VyX29mX3RlYW0YDyABKAgilAEKEUlu",
+            "cHV0RnJhbWVEZWNvZGVkEgoKAmR4GAEgASgFEgoKAmR5GAIgASgFEhMKC2J0",
+            "bl9hX2xldmVsGAMgASgFEhMKC2J0bl9iX2xldmVsGAQgASgFEhMKC2J0bl9j",
+            "X2xldmVsGAUgASgFEhMKC2J0bl9kX2xldmVsGAYgASgFEhMKC2J0bl9lX2xl",
+            "dmVsGAcgASgFIjUKDlVwc3luY1NuYXBzaG90EhEKCXN0X2lmZF9pZBgBIAEo",
+            "BRIQCghjbWRfbGlzdBgCIAMoBCKjBAoFV3NSZXESDgoGc2VxX25vGAEgASgN",
+            "EhIKCmpvaW5faW5kZXgYAiABKA0SIAoDYWN0GAMgASgOMhMuanRzaGFyZWQu",
+            "VXBzeW5jQWN0EhAKCGF1dGhfa2V5GAQgASgFEjEKD3Vwc3luY19zbmFwc2hv",
+            "dBgFIAEoCzIYLmp0c2hhcmVkLlVwc3luY1NuYXBzaG90Ei4KD3NlbGZfcGFy",
+            "c2VkX3JkZhgGIAEoCzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEh8KF2JhdHRs",
+            "ZV9kdXJhdGlvbl9zZWNvbmRzGAcgASgFEkAKE3NlcmlhbGl6ZWRfYmFycmll",
+            "cnMYCCADKAsyIy5qdHNoYXJlZC5TZXJpYWxpemVkQmFycmllckNvbGxpZGVy",
+            "EkcKF3NlcmlhbGl6ZWRfc3RhdGljX3RyYXBzGAogAygLMiYuanRzaGFyZWQu",
+            "U2VyaWFsaXplZFN0YXRpY1RyYXBDb2xsaWRlchJUChxwcmVhbGxvY2F0ZV9u",
+            "cGNfc3BlY2llc19kaWN0GA0gAygLMi4uanRzaGFyZWQuV3NSZXEuUHJlYWxs",
+            "b2NhdGVOcGNTcGVjaWVzRGljdEVudHJ5EhsKE2ZhbGxlbl9kZWF0aF9oZWln",
+            "aHQYDiABKAIaQAoeUHJlYWxsb2NhdGVOcGNTcGVjaWVzRGljdEVudHJ5EgsK",
+            "A2tleRgBIAEoDRINCgV2YWx1ZRgCIAEoDToCOAEi4QEKCVBhdHJvbEN1ZRIK",
+            "CgJpZBgBIAEoBRIOCgZmbF9hY3QYAiABKAQSDgoGZnJfYWN0GAMgASgEEhkK",
+            "EWZsX2NhcHR1cmVfZnJhbWVzGAQgASgFEhkKEWZyX2NhcHR1cmVfZnJhbWVz",
+            "GAUgASgFEg4KBmZkX2FjdBgGIAEoBBIOCgZmdV9hY3QYByABKAQSGQoRZmRf",
+            "Y2FwdHVyZV9mcmFtZXMYCCABKAUSGQoRZnVfY2FwdHVyZV9mcmFtZXMYCSAB",
+            "KAUSHAoTY29sbGlzaW9uX3R5cGVfbWFzaxiFCCABKAQi4wEKCVZmeENvbmZp",
+            "ZxISCgpzcGVjaWVzX2lkGAEgASgNEiwKC21vdGlvbl90eXBlGAIgASgOMhcu",
+            "anRzaGFyZWQuVmZ4TW90aW9uVHlwZRIwCg1kdXJhdGlvbl90eXBlGAMgASgO",
+            "MhkuanRzaGFyZWQuVmZ4RHVyYXRpb25UeXBlEhQKDG9uX2NoYXJhY3RlchgE",
+            "IAEoCBIRCglvbl9idWxsZXQYBSABKAgSDwoHb25fdHJhcBgGIAEoCBIZChF1",
+            "c2VfcGl4ZWxhdGVkX3ZlchgHIAEoCBINCgRuYW1lGIAIIAEoCSKnGgoMQnVs",
+            "bGV0Q29uZmlnEhYKDnN0YXJ0dXBfZnJhbWVzGAEgASgFEhwKFGNhbmNlbGxh",
+            "YmxlX3N0X2ZyYW1lGAIgASgFEhwKFGNhbmNlbGxhYmxlX2VkX2ZyYW1lGAMg",
+            "ASgFEhUKDWFjdGl2ZV9mcmFtZXMYBCABKAUSFwoPY29vbGRvd25fZnJhbWVz",
+            "GAUgASgFEhcKD2hpdF9zdHVuX2ZyYW1lcxgGIAEoBRIZChFibG9ja19zdHVu",
+            "X2ZyYW1lcxgHIAEoBRIWCg5wdXNoYmFja192ZWxfeBgIIAEoAhIWCg5wdXNo",
+            "YmFja192ZWxfeRgJIAEoAhIOCgZkYW1hZ2UYCiABKAUSFwoPc2VsZl9sb2Nr",
+            "X3ZlbF94GAsgASgCEhcKD3NlbGZfbG9ja192ZWxfeRgMIAEoAhIjChtzZWxm",
+            "X2xvY2tfdmVsX3lfd2hlbl9mbHlpbmcYDSABKAISFwoPaGl0Ym94X29mZnNl",
+            "dF94GA4gASgCEhcKD2hpdGJveF9vZmZzZXRfeRgPIAEoAhIaChJoaXRib3hf",
+            "aGFsZl9zaXplX3gYECABKAISGgoSaGl0Ym94X2hhbGZfc2l6ZV95GBEgASgC",
+            "Eg8KB2Jsb3dfdXAYEiABKAgSEgoKc3BlY2llc19pZBgTIAEoDRIYChBleHBs",
+            "b3Npb25fZnJhbWVzGBQgASgFEiQKBmJfdHlwZRgVIAEoDjIULmp0c2hhcmVk",
+            "LkJ1bGxldFR5cGUSJwoHbWhfdHlwZRgWIAEoDjIWLmp0c2hhcmVkLk11bHRp",
+            "SGl0VHlwZRIiChpzaW11bHRhbmVvdXNfbXVsdGlfaGl0X2NudBgXIAEoDRIN",
+            "CgVzcGVlZBgYIAEoAhJBCg5jYW5jZWxfdHJhbnNpdBgZIAMoCzIpLmp0c2hh",
+            "cmVkLkJ1bGxldENvbmZpZy5DYW5jZWxUcmFuc2l0RW50cnkSFAoMcmVwZWF0",
+            "X3F1b3RhGBogASgFEh0KFWFjdGl2ZV92Znhfc3BlY2llc19pZBgbIAEoDRIg",
+            "ChhleHBsb3Npb25fdmZ4X3NwZWNpZXNfaWQYHCABKA0SFgoOYWxsb3dzX3dh",
+            "bGtpbmcYHSABKAgSGAoQYWxsb3dzX2Nyb3VjaGluZxgeIAEoCBIQCghoYXJk",
+            "bmVzcxgfIAEoBRIhChlzdGFydHVwX2ludmluc2libGVfZnJhbWVzGCAgASgF",
+            "Eh0KFWhpdF9pbnZpbnNpYmxlX2ZyYW1lcxghIAEoBRIcChRleHBsb3Npb25f",
+            "c3BlY2llc19pZBgiIAEoDRIUCgxwZXJwX2FjY19tYWcYIyABKAUSIAoYZGVs",
+            "YXlfc2VsZl92ZWxfdG9fYWN0aXZlGCQgASgIEhgKEHNwZWVkX2lmX25vdF9o",
+            "aXQYJSABKAISGgoSb21pdF9zb2Z0X3B1c2hiYWNrGCYgASgIEhkKEWhpdGJv",
+            "eF9zaXplX2luY194GCcgASgCEhkKEWhpdGJveF9zaXplX2luY195GCggASgC",
+            "EhgKEHJlbWFpbnNfdXBvbl9oaXQYKSABKAgSHgoWcm90YXRlc19hbG9uZ192",
+            "ZWxvY2l0eRgqIAEoCBIqCiJkZWZhdWx0X2hhcmRfcHVzaGJhY2tfYm91bmNl",
+            "X3F1b3RhGCsgASgFEigKIGhhcmRfcHVzaGJhY2tfYm91bmNlX25vcm1fZmFj",
+            "dG9yGCwgASgCEikKIWhhcmRfcHVzaGJhY2tfYm91bmNlX3NoZWVyX2ZhY3Rv",
+            "chgtIAEoAhIfChdpc19waXhlbGF0ZWRfYWN0aXZlX3ZmeBguIAEoCBIjChtp",
+            "c19waXhlbGF0ZWRfZXhwbG9zdGlvbl92ZngYLyABKAgSHgoWbWhfdmFuaXNo",
+            "X29uX21lbGVlX2hpdBgwIAEoCBIdChVtaF91cGRhdGVzX29yaWdpbl9wb3MY",
+            "MiABKAgSFgoOYmVhbV9jb2xsaXNpb24YMyABKAgSHQoVYW5ndWxhcl9mcmFt",
+            "ZV92ZWxfY29zGDQgASgCEh0KFWFuZ3VsYXJfZnJhbWVfdmVsX3Npbhg1IAEo",
+            "AhIXCg92aXNpb25fb2Zmc2V0X3gYNiABKAISFwoPdmlzaW9uX29mZnNldF95",
+            "GDcgASgCEhUKDXZpc2lvbl9zaXplX3gYOCABKAISFQoNdmlzaW9uX3NpemVf",
+            "eRg5IAEoAhIXCg9lbGVtZW50YWxfYXR0cnMYOyABKA0SJwofY2FuY2VsbGFi",
+            "bGVfYnlfaW52ZW50b3J5X3Nsb3RfYxg8IAEoCBInCh9jYW5jZWxsYWJsZV9i",
+            "eV9pbnZlbnRvcnlfc2xvdF9kGD0gASgIEhoKEmJlYW1fdmlzdWFsX3NpemVf",
+            "eRhAIAEoAhImCh50b3VjaF9leHBsb3Npb25fYm9tYl9jb2xsaXNpb24YQSAB",
+            "KAgSHgoWYWlyX3JpZGluZ19ncm91bmRfd2F2ZRhCIAEoCBIlCh1ncm91bmRf",
+            "aW1wYWN0X21lbGVlX2NvbGxpc2lvbhhDIAEoCBIjCht3YWxsX2ltcGFjdF9t",
+            "ZWxlZV9jb2xsaXNpb24YRCABKAgSGAoQbWhfaW5oZXJpdHNfc3BpbhhFIAEo",
+            "CBIgCgZpbml0X3EYRiABKAsyEC5qdHNoYXJlZC5QYlF1YXQSHgoWc3RhcnR1",
+            "cF92Znhfc3BlY2llc19pZBhKIAEoDRIfCgNpZmMYSyABKA4yEi5qdHNoYXJl",
+            "ZC5JZmFjZUNhdBIoCiByZWZsZWN0X2ZpcmViYWxsX3hfaWZfbm90X2hhcmRl",
+            "chhMIAEoCBItCiVyZWplY3RfcmVmbGVjdGlvbl9mcm9tX2Fub3RoZXJfYnVs",
+            "bGV0GE0gASgIEh8KF3Byb3ZpZGVzX3hIYXJkX3B1c2hiYWNrGE4gASgIEiMK",
+            "G3Byb3ZpZGVzX3lIYXJkX3B1c2hiYWNrX3RvcBhPIAEoCBImCh5wcm92aWRl",
+            "c195SGFyZF9wdXNoYmFja19ib3R0b20YUCABKAgSIQoZaWdub3JlX3Nsb3Bl",
+            "X2RlY2VsZXJhdGlvbhhRIAEoCBIhChlyb3RhdGVfb2ZmZW5kZXJfd2l0aF9z",
+            "cGluGFIgASgIEiAKGG1oX25vdF90cmlnZ2VyX29uX2NoX2hpdBhTIAEoCBIr",
+            "CiNtaF9ub3RfdHJpZ2dlcl9vbl9oYXJkZXJfYnVsbGV0X2hpdBhUIAEoCBIr",
+            "CiNtaF9ub3RfdHJpZ2dlcl9vbl9oYXJkX3B1c2hiYWNrX2hpdBhVIAEoCBIW",
+            "Cg5ob3BwZXJfbWlzc2lsZRhWIAEoCBIWCg5iZWFtX3JlbmRlcmluZxhXIAEo",
+            "CBIqCiJtaXNzaWxlX3NlYXJjaF9pbnRlcnZhbF9wb3cyTWludXMxGFggASgN",
+            "Ei8KJ3VzZV9jaF9vZmZzZXRfcmVnYXJkbGVzc19vZl9lbWlzc2lvbl9taBhZ",
+            "IAEoCBIrCiNpbnBsYWNlX3ZhbmlzaF9leHBsb3Npb25fc3BlY2llc19pZBha",
+            "IAEoDRIfChdhbmltX2xvb3BpbmdfcmRmX29mZnNldBhbIAEoBRIpCiFleHBs",
+            "b3Npb25fYW5pbV9sb29waW5nX3JkZl9vZmZzZXQYXCABKAUSIQoZZ2F1Z2Vf",
+            "aW5jX3JlZHVjdGlvbl9yYXRpbxhdIAEoAhImCh5taF9pbmhlcml0c19mcmFt",
+            "ZXNfaW5fYmxfc3RhdGUYXiABKAgSIwobZ3VhcmRfYnJlYWtlcl9leHRyYV9o",
+            "aXRfY250GF8gASgNEiMKG3Rha2VzX2RlZjFfYXNfaGFyZF9wdXNoYmFjaxhg",
+            "IAEoCBIYChBmaW5pc2hpbmdfZnJhbWVzGGEgASgFEiUKHW5vX2V4cGxvc2lv",
+            "bl9vbl9oYXJkX3B1c2hiYWNrGGIgASgIEiAKGGV4cGxvZGVfb25fbXVsdGlf",
+            "Y29udGFjdBhjIAEoCBIcChNjb2xsaXNpb25fdHlwZV9tYXNrGIUIIAEoBBIW",
+            "Cg10YWtlc19ncmF2aXR5GIYIIAEoCBIqCgtidWZmX2NvbmZpZxiHCCABKAsy",
+            "FC5qdHNoYXJlZC5CdWZmQ29uZmlnEiAKF2NoYXJhY3Rlcl9lbWl0X3NmeF9u",
+            "YW1lGIAQIAEoCRIfChZmaXJlYmFsbF9lbWl0X3NmeF9uYW1lGIEQIAEoCRIb",
+            "ChJleHBsb3Npb25fc2Z4X25hbWUYghAgASgJEhgKD2FjdGl2ZV9zZnhfbmFt",
+            "ZRiDECABKAkSJAobZXhwbG9zaW9uX29uX2ZsZXNoX3NmeF9uYW1lGIQQIAEo",
+            "CRIjChpleHBsb3Npb25fb25fcm9ja19zZnhfbmFtZRiFECABKAkSJAobZXhw",
+            "bG9zaW9uX29uX21ldGFsX3NmeF9uYW1lGIYQIAEoCRIjChpleHBsb3Npb25f",
+            "b25fd29vZF9zZnhfbmFtZRiHECABKAkaNAoSQ2FuY2VsVHJhbnNpdEVudHJ5",
+            "EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoDToCOAEivwQKBkJ1bGxldBIn",
+            "CghibF9zdGF0ZRgBIAEoDjIVLmp0c2hhcmVkLkJ1bGxldFN0YXRlEhoKEmZy",
+            "YW1lc19pbl9ibF9zdGF0ZRgCIAEoBRIKCgJ1ZBgDIAEoBBIiChpvcmlnaW5h",
+            "dGVkX3JlbmRlcl9mcmFtZV9pZBgEIAEoBRITCgtvZmZlbmRlcl91ZBgFIAEo",
+            "BBIJCgF4GAYgASgCEgkKAXkYByABKAISCQoBehgIIAEoAhILCgNxX3gYCSAB",
+            "KAISCwoDcV95GAogASgCEgsKA3FfehgLIAEoAhILCgNxX3cYDCABKAISDQoF",
+            "dmVsX3gYDSABKAISDQoFdmVsX3kYDiABKAISDQoFdmVsX3oYDyABKAISFAoM",
+            "b3JpZ2luYXRlZF94GBAgASgCEhQKDG9yaWdpbmF0ZWRfeRgRIAEoAhIUCgxv",
+            "cmlnaW5hdGVkX3oYEiABKAISGQoRcmVwZWF0X3F1b3RhX2xlZnQYEyABKAUS",
+            "LAokcmVtYWluaW5nX2hhcmRfcHVzaGJhY2tfYm91bmNlX3F1b3RhGBQgASgF",
+            "EhEKCXRhcmdldF91ZBgVIAEoBBIVCg1kYW1hZ2VfZGVhbGVkGBYgASgFEisK",
+            "D2V4cGxvZGVkX29uX2lmYxgXIAEoDjISLmp0c2hhcmVkLklmYWNlQ2F0EhgK",
+            "EGFjdGl2ZV9za2lsbF9oaXQYGSABKAUSEAoIc2tpbGxfaWQYGiABKA0SCgoC",
+            "aWQYGyABKA0SDwoHdGVhbV9pZBgcIAEoBSK8AwoKVHJhcENvbmZpZxISCgpz",
+            "cGVjaWVzX2lkGAEgASgNEhwKFGV4cGxvc2lvbl9zcGVjaWVzX2lkGAIgASgN",
+            "EhgKEGV4cGxvc2lvbl9mcmFtZXMYAyABKAUSDwoHYmxvd191cBgEIAEoCBIO",
+            "CgZkYW1hZ2UYBSABKAUSFwoPaGl0X3N0dW5fZnJhbWVzGAYgASgFEh0KFWhp",
+            "dF9pbnZpbnNpYmxlX2ZyYW1lcxgHIAEoBRIVCg1kZWFjdGl2YXRhYmxlGAgg",
+            "ASgIEhAKCGhhcmRuZXNzGAkgASgFEiEKGWRlYWN0aXZhdGVfdXBvbl90cmln",
+            "Z2VyZWQYCiABKAgSGAoQc3VyZmFjZV9mcmljdGlvbhgLIAEoAhIoCiBwYXRy",
+            "b2xfY3VlX3JlcXVpcmVzX2Z1bGxfY29udGFpbhgPIAEoCBIbChNhdGsxX3Vw",
+            "b25fdHJpZ2dlcmVkGBYgASgIEhUKDWF0azFfc2tpbGxfaWQYFyABKA0SEQoJ",
+            "aXNfcm90YXJ5GBggASgIEhsKE25vX3hfZmxpcF9yZW5kZXJpbmcYGSABKAgS",
+            "FQoMc3BlY2llc19uYW1lGIAIIAEoCSKiAQoTVHJhcENvbmZpZ0Zyb21UaWxl",
+            "ZBISCgpzcGVjaWVzX2lkGAEgASgNEg0KBXF1b3RhGAIgASgFEg0KBXNwZWVk",
+            "GAMgASgCEg0KBWRpcl94GAQgASgFEg0KBWRpcl95GAUgASgFEg4KBmJveF9j",
+            "dxgKIAEoAhIOCgZib3hfY2gYCyABKAISGwoTaW5pdF9ub19hbmd1bGFyX3Zl",
+            "bBgMIAEoAiLSAQoTQmFycmllckNvbGxpZGVyQXR0chIeChZwcm92aWRlc19o",
+            "YXJkX3B1c2hiYWNrGAEgASgIEhoKEnByb3ZpZGVzX3NsaXBfanVtcBgCIAEo",
+            "CBIfChdwcm9oaWJpdHNfd2FsbF9ncmFiYmluZxgDIAEoCBIYChBmb3JjZXNf",
+            "Y3JvdWNoaW5nGAQgASgIEiEKGW9ubHlfYWxsb3dzX2FsaWduZWRfdmVsX3gY",
+            "BSABKAUSIQoZb25seV9hbGxvd3NfYWxpZ25lZF92ZWxfeRgGIAEoBSJmChBU",
+            "cmFwQ29sbGlkZXJBdHRyEhcKD3Byb3ZpZGVzX2RhbWFnZRgBIAEoCBIVCg1h",
+            "c19wYXRyb2xfY3VlGAIgASgIEiIKBXRjX3BjGAMgASgLMhMuanRzaGFyZWQu",
+            "UGF0cm9sQ3VlIpoECgRUcmFwEgoKAmlkGAEgASgNEigKIHBhdHJvbF9jdWVf",
+            "YW5ndWxhcl92ZWxfZmxpcF9tYXJrGAIgASgFEicKCnRyYXBfc3RhdGUYBCAB",
+            "KA4yEy5qdHNoYXJlZC5UcmFwU3RhdGUSHAoUZnJhbWVzX2luX3RyYXBfc3Rh",
+            "dGUYBSABKAUSEQoJaXNfc3RhdGljGAYgASgIEh4KFmNhcHR1cmVkX2J5X3Bh",
+            "dHJvbF9jdWUYByABKAgSHAoUZnJhbWVzX2luX3BhdHJvbF9jdWUYCCABKAUS",
+            "HQoVd2FpdmluZ19wYXRyb2xfY3VlX2lkGAkgASgFEiIKGndhaXZpbmdfc3Bv",
+            "bnRhbmVvdXNfcGF0cm9sGAogASgIEiAKGHN1YnNjcmliZXNfdG9fdHJpZ2dl",
+            "cl9pZBgLIAEoDRIkChxzdWJzY3JpYmVzX3RvX3RyaWdnZXJfaWRfYWx0GAwg",
+            "ASgNEgkKAXgYDSABKAISCQoBeRgOIAEoAhIJCgF6GA8gASgCEgsKA3FfeBgQ",
+            "IAEoAhILCgNxX3kYESABKAISCwoDcV96GBIgASgCEgsKA3FfdxgTIAEoAhIN",
+            "CgV2ZWxfeBgUIAEoAhINCgV2ZWxfeRgVIAEoAhINCgV2ZWxfehgWIAEoAhIR",
+            "CglhbmdfdmVsX3gYFyABKAISEQoJYW5nX3ZlbF95GBggASgCEhEKCWFuZ192",
+            "ZWxfehgZIAEoAiJJCgtQZWVyVWRwQWRkchIKCgJpcBgBIAEoCRIMCgRwb3J0",
+            "GAIgASgFEhAKCGF1dGhfa2V5GAMgASgFEg4KBnNlcV9ubxgEIAEoDSI7CgpT",
+            "dGVwUmVzdWx0Ei0KEmZ1bGZpbGxlZF90cmlnZ2VycxgBIAMoCzIRLmp0c2hh",
+            "cmVkLlRyaWdnZXIivQQKC1JlbmRlckZyYW1lEgoKAmlkGAEgASgFEjYKC3Bs",
+            "YXllcnNfYXJyGAIgAygLMiEuanRzaGFyZWQuUGxheWVyQ2hhcmFjdGVyRG93",
+            "bnN5bmMSFwoPY291bnRkb3duX25hbm9zGAMgASgDEiEKB2J1bGxldHMYBCAD",
+            "KAsyEC5qdHNoYXJlZC5CdWxsZXQSMAoIbnBjc19hcnIYBSADKAsyHi5qdHNo",
+            "YXJlZC5OcGNDaGFyYWN0ZXJEb3duc3luYxIpChFkeW5hbWljX3RyYXBzX2Fy",
+            "chgGIAMoCzIOLmp0c2hhcmVkLlRyYXASJwoMdHJpZ2dlcnNfYXJyGAcgAygL",
+            "MhEuanRzaGFyZWQuVHJpZ2dlchIlCglwaWNrYWJsZXMYCCADKAsyEi5qdHNo",
+            "YXJlZC5QaWNrYWJsZRIZChFidWxsZXRfaWRfY291bnRlchgJIAEoDRIWCg5u",
+            "cGNfaWRfY291bnRlchgKIAEoDRIfChdkeW5hbWljX3RyYXBfaWRfY291bnRl",
+            "chgLIAEoDRIbChNwaWNrYWJsZV9pZF9jb3VudGVyGAwgASgNEhQKDGJ1bGxl",
+            "dF9jb3VudBgNIAEoDRIRCglucGNfY291bnQYDiABKA0SGgoSZHluYW1pY190",
+            "cmFwX2NvdW50GA8gASgNEhYKDnBpY2thYmxlX2NvdW50GBAgASgNEjMKFHBy",
+            "ZXZfcmRmX3N0ZXBfcmVzdWx0GIAEIAEoCzIULmp0c2hhcmVkLlN0ZXBSZXN1",
+            "bHQilwEKEUJhdHRsZVByZXBhcmVJbmZvEhIKCnN0YWdlX25hbWUYASABKAkS",
+            "FQoNYm91bmRfcm9vbV9pZBgCIAEoBRIeChZiYXR0bGVfZHVyYXRpb25fZnJh",
+            "bWVzGAMgASgDEhsKE2JvdW5kX3Jvb21fY2FwYWNpdHkYBCABKAUSGgoRZnJh",
+            "bWVfbG9nX2VuYWJsZWQYgQggASgIIlwKEklucHV0RnJhbWVEb3duc3luYxIS",
+            "CgppbnB1dF9saXN0GAEgAygEEhYKDmNvbmZpcm1lZF9saXN0GAIgASgEEhoK",
+            "EnVkcF9jb25maXJtZWRfbGlzdBgDIAEoBCLtAwoQRG93bnN5bmNTbmFwc2hv",
+            "dBISCgpyZWZfcmRmX2lkGAEgASgFEiYKB3JlZl9yZGYYAiABKAsyFS5qdHNo",
+            "YXJlZC5SZW5kZXJGcmFtZRIYChB1bmNvbmZpcm1lZF9tYXNrGAMgASgEEhEK",
+            "CXN0X2lmZF9pZBgEIAEoBRIvCglpZmRfYmF0Y2gYBSADKAsyHC5qdHNoYXJl",
+            "ZC5JbnB1dEZyYW1lRG93bnN5bmMSIgoDYWN0GAcgASgOMhUuanRzaGFyZWQu",
+            "RG93bnN5bmNBY3QSMQoMcHJlcGFyZV9pbmZvGAggASgLMhsuanRzaGFyZWQu",
+            "QmF0dGxlUHJlcGFyZUluZm8SMgoTYXNzaWduZWRfdWRwX3R1bm5lbBgJIAEo",
+            "CzIVLmp0c2hhcmVkLlBlZXJVZHBBZGRyEjEKEnBlZXJfdWRwX2FkZHJfbGlz",
+            "dBgKIAMoCzIVLmp0c2hhcmVkLlBlZXJVZHBBZGRyEh0KFXBhcnRpY2lwYW50",
+            "X2NoYW5nZV9pZBgLIAEoBRIaChJpbmFjdGl2ZV9qb2luX21hc2sYDCABKAQS",
+            "FwoPcGVlcl9qb2luX2luZGV4GA0gASgNEhsKE3BlZXJfYnVsbGV0X3RlYW1f",
+            "aWQYDiABKAUSEAoHZXJyX21zZxiABCABKAki+AIKBVNraWxsEhcKD3JlY292",
+            "ZXJ5X2ZyYW1lcxgCIAEoBRIgChhyZWNvdmVyeV9mcmFtZXNfb25fYmxvY2sY",
+            "AyABKAUSHgoWcmVjb3ZlcnlfZnJhbWVzX29uX2hpdBgEIAEoBRIwCgx0cmln",
+            "Z2VyX3R5cGUYBSABKA4yGi5qdHNoYXJlZC5Ta2lsbFRyaWdnZXJUeXBlEjAK",
+            "DmJvdW5kX2NoX3N0YXRlGAYgASgOMhguanRzaGFyZWQuQ2hhcmFjdGVyU3Rh",
+            "dGUSNwoVYm91bmRfY2hfc3RhdGVfb25faGl0GAcgASgOMhguanRzaGFyZWQu",
+            "Q2hhcmFjdGVyU3RhdGUSEAoIbXBfZGVsdGEYCCABKAUSCgoCaWQYCSABKA0S",
+            "JQoEaGl0cxiACCADKAsyFi5qdHNoYXJlZC5CdWxsZXRDb25maWcSMgoTc2Vs",
+            "Zl9ub25fc3RvY2tfYnVmZhiBCCABKAsyFC5qdHNoYXJlZC5CdWZmQ29uZmln",
+            "IvQCCghGcmFtZUxvZxIiCgNyZGYYASABKAsyFS5qdHNoYXJlZC5SZW5kZXJG",
+            "cmFtZRIcChRhY3R1YWxseV91c2VkX2lmZF9pZBgCIAEoBRIbChN1c2VkX2lm",
+            "ZF9pbnB1dF9saXN0GAMgAygEEh8KF3VzZWRfaWZkX2NvbmZpcm1lZF9saXN0",
+            "GAQgASgEEiMKG3VzZWRfaWZkX3VkcF9jb25maXJtZWRfbGlzdBgFIAEoBBIU",
+            "Cgx0aW1lcl9yZGZfaWQYBiABKAUSEwoLbGNhY19pZmRfaWQYByABKAUSFQoN",
+            "Y2hhc2VyX3JkZl9pZBgIIAEoBRIhChljaGFzZXJfcmRmX2lkX2xvd2VyX2Jv",
+            "dW5kGAkgASgFEhgKEGNoYXNlcl9zdF9yZGZfaWQYCiABKAUSGAoQY2hhc2Vy",
+            "X2VkX3JkZl9pZBgLIAEoBRIqCiJjaGFzZXJfcmRmX2lkX2xvd2VyX2JvdW5k",
+            "X3NuYXRjaGVkGAwgASgIIkgKDEJhdHRsZVJlc3VsdBIZChF3aW5uZXJfam9p",
+            "bl9pbmRleBgBIAEoDRIdChV3aW5uZXJfYnVsbGV0X3RlYW1faWQYAiABKAUi",
+            "yQEKDERlYnVmZkNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgNEisKCnN0b2Nr",
+            "X3R5cGUYAiABKA4yFy5qdHNoYXJlZC5CdWZmU3RvY2tUeXBlEg0KBXN0b2Nr",
+            "GAMgASgFEiIKBHR5cGUYBCABKA4yFC5qdHNoYXJlZC5EZWJ1ZmZUeXBlEg8K",
+            "B2Fycl9pZHgYBSABKAUSGwoTaW1wYWN0X3Blcl9pbnRlcnZhbBgGIAEoBRIX",
+            "Cg9pbXBhY3RfaW50ZXJ2YWwYByABKAUirAQKCkJ1ZmZDb25maWcSEgoKc3Bl",
+            "Y2llc19pZBgBIAEoDRIrCgpzdG9ja190eXBlGAIgASgOMhcuanRzaGFyZWQu",
+            "QnVmZlN0b2NrVHlwZRINCgVzdG9jaxgDIAEoBRITCgtzcGVlZF9kZWx0YRgE",
+            "IAEoAhIgChhoaXRib3hfaGFsZl9zaXplX3hfZGVsdGEYBSABKAISIAoYaGl0",
+            "Ym94X2hhbGZfc2l6ZV95X2RlbHRhGAYgASgCEhQKDGRhbWFnZV9kZWx0YRgH",
+            "IAEoBRIiChpkYW1hZ2VfZGVsdGFfYnlfcGVyY2VudGFnZRgIIAEoBRIgChhj",
+            "aGFyYWN0ZXJfaGFyZG5lc3NfZGVsdGEYCSABKAUSHAoUbWVsZWVfaGFyZG5l",
+            "c3NfZGVsdGEYCiABKAUSHwoXZmlyZWJhbGxfaGFyZG5lc3NfZGVsdGEYCyAB",
+            "KAUSEgoKaW52aW5zaWJsZRgMIAEoCBIbChN4Zm9ybV9jaF9zcGVjaWVzX2lk",
+            "GA0gASgNEhsKE3JlcGVsX3NvZnRfcHVzaGJhY2sYDiABKAgSFAoMb21pdF9n",
+            "cmF2aXR5GA8gASgIEhEKCWF1dG9fZGVmMRgQIAEoCBIaChJhc3NvY2lhdGVk",
+            "X2RlYnVmZnMYESADKA0SIAoYY2hhcmFjdGVyX3ZmeF9zcGVjaWVzX2lkGBIg",
+            "ASgNEiUKHWlzX3BpeGVsYXRlZF92Znhfb25fY2hhcmFjdGVyGBMgASgIIqYB",
+            "CgRCdWZmEhIKCnNwZWNpZXNfaWQYASABKA0SDQoFc3RvY2sYAiABKAUSIgoa",
+            "b3JpZ2luYXRlZF9yZW5kZXJfZnJhbWVfaWQYAyABKAUSGgoSb3JpZ19jaF9z",
+            "cGVjaWVzX2lkGAQgASgNEiAKGG9yaWdfcmVwZWxfc29mdF9wdXNoYmFjaxgF",
+            "IAEoCBIZChFvcmlnX29taXRfZ3Jhdml0eRgGIAEoCCIrCgZEZWJ1ZmYSEgoK",
+            "c3BlY2llc19pZBgBIAEoDRINCgVzdG9jaxgCIAEoBSJNChJCdWxsZXRJbW11",
+            "bmVSZWNvcmQSEQoJYnVsbGV0X2lkGAEgASgNEiQKHHJlbWFpbmluZ19saWZl",
+            "dGltZV9yZGZfY291bnQYAiABKAUiegoQQ29uc3VtYWJsZUNvbmZpZxISCgpz",
+            "cGVjaWVzX2lkGAEgASgNEhQKDHJlZmlsbF9kZWx0YRgCIAEoBRIYChB2Znhf",
+            "aWRfb25fcGlja2VyGAMgASgFEiIKGmlzX3BpeGVsYXRlZF92Znhfb25fcGlj",
+            "a2VyGAQgASgIImUKE1BpY2thYmxlU2tpbGxDb25maWcSEAoIc2tpbGxfaWQY",
+            "ASABKA0SGAoQdmZ4X2lkX29uX3BpY2tlchgCIAEoBRIiChppc19waXhlbGF0",
+            "ZWRfdmZ4X29uX3BpY2tlchgDIAEoCCKRAgoTSW52ZW50b3J5U2xvdENvbmZp",
+            "ZxI0CgpzdG9ja190eXBlGAEgASgOMiAuanRzaGFyZWQuSW52ZW50b3J5U2xv",
+            "dFN0b2NrVHlwZRINCgVxdW90YRgCIAEoDRIZChFmcmFtZXNfdG9fcmVjb3Zl",
+            "chgDIAEoBRIXCg9idWZmX3NwZWNpZXNfaWQYBCABKA0SEAoIc2tpbGxfaWQY",
+            "BSABKA0SFAoMc2tpbGxfaWRfYWlyGAYgASgNEhYKDmdhdWdlX3JlcXVpcmVk",
+            "GAcgASgFEiMKG2Z1bGxfY2hhcmdlX2J1ZmZfc3BlY2llc19pZBgIIAEoDRIc",
+            "ChRmdWxsX2NoYXJnZV9za2lsbF9pZBgJIAEoDSKGAQoNSW52ZW50b3J5U2xv",
+            "dBI0CgpzdG9ja190eXBlGAEgASgOMiAuanRzaGFyZWQuSW52ZW50b3J5U2xv",
+            "dFN0b2NrVHlwZRINCgVxdW90YRgCIAEoDRIZChFmcmFtZXNfdG9fcmVjb3Zl",
+            "chgDIAEoBRIVCg1nYXVnZV9jaGFyZ2VkGAQgASgFIjMKCUludmVudG9yeRIm",
+            "CgVzbG90cxgBIAMoCzIXLmp0c2hhcmVkLkludmVudG9yeVNsb3QiJQoPQmF0",
+            "dGxlRXF1aXBtZW50EhIKCnNwZWNpZXNfaWQYASABKA0iJgoOUGxheWVyU2V0",
+            "dGluZ3MSFAoMc291bmRfdm9sdW1lGAEgASgFIvQCChRQbGF5ZXJSZWdpb25Q",
+            "cm9ncmVzcxIRCglyZWdpb25faWQYASABKAUSHQoVY29tcGxldGVkX2xldmVs",
+            "X2NvdW50GAIgASgFElkKFnJlbWFpbmluZ19kZXBlbmRlbmNpZXMYAyADKAsy",
+            "OS5qdHNoYXJlZC5QbGF5ZXJSZWdpb25Qcm9ncmVzcy5SZW1haW5pbmdEZXBl",
+            "bmRlbmNpZXNFbnRyeRJVChRyZW1vdmVkX2RlcGVuZGVuY2llcxgEIAMoCzI3",
+            "Lmp0c2hhcmVkLlBsYXllclJlZ2lvblByb2dyZXNzLlJlbW92ZWREZXBlbmRl",
+            "bmNpZXNFbnRyeRo8ChpSZW1haW5pbmdEZXBlbmRlbmNpZXNFbnRyeRILCgNr",
+            "ZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjoKGFJlbW92ZWREZXBlbmRl",
+            "bmNpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBItQE",
+            "ChNQbGF5ZXJMZXZlbFByb2dyZXNzEhEKCXJlZ2lvbl9pZBgBIAEoBRIQCghs",
+            "ZXZlbF9pZBgCIAEoBRIVCg1oaWdoZXN0X3Njb3JlGAMgASgFEi0KJXNob3J0",
+            "ZXN0X2ZpbmlzaF90aW1lX2F0X2hpZ2hlc3Rfc2NvcmUYBCABKAUSLQolY2hh",
+            "cmFjdGVyX3NwZWNpZXNfaWRfYXRfaGlnaGVzdF9zY29yZRgFIAEoDRIcChRz",
+            "aG9ydGVzdF9maW5pc2hfdGltZRgGIAEoBRIlCh1zY29yZV9hdF9zaG9ydGVz",
+            "dF9maW5pc2hfdGltZRgHIAEoBRI0CixjaGFyYWN0ZXJfc3BlY2llc19pZF9h",
+            "dF9zaG9ydGVzdF9maW5pc2hfdGltZRgIIAEoDRJYChZyZW1haW5pbmdfZGVw",
+            "ZW5kZW5jaWVzGAkgAygLMjguanRzaGFyZWQuUGxheWVyTGV2ZWxQcm9ncmVz",
+            "cy5SZW1haW5pbmdEZXBlbmRlbmNpZXNFbnRyeRJUChRyZW1vdmVkX2RlcGVu",
+            "ZGVuY2llcxgKIAMoCzI2Lmp0c2hhcmVkLlBsYXllckxldmVsUHJvZ3Jlc3Mu",
+            "UmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5GjwKGlJlbWFpbmluZ0RlcGVuZGVu",
+            "Y2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEaOgoY",
+            "UmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1",
+            "ZRgCIAEoCDoCOAEi3AIKFlBsYXllckNoVW5sb2NrUHJvZ3Jlc3MSEgoKc3Bl",
+            "Y2llc19pZBgBIAEoDRJbChZyZW1haW5pbmdfZGVwZW5kZW5jaWVzGAIgAygL",
+            "MjsuanRzaGFyZWQuUGxheWVyQ2hVbmxvY2tQcm9ncmVzcy5SZW1haW5pbmdE",
+            "ZXBlbmRlbmNpZXNFbnRyeRJXChRyZW1vdmVkX2RlcGVuZGVuY2llcxgDIAMo",
+            "CzI5Lmp0c2hhcmVkLlBsYXllckNoVW5sb2NrUHJvZ3Jlc3MuUmVtb3ZlZERl",
+            "cGVuZGVuY2llc0VudHJ5GjwKGlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5",
+            "EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEaOgoYUmVtb3ZlZERl",
+            "cGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoC",
+            "OAEirQUKE1BsYXllclN0b3J5UHJvZ3Jlc3MSUwoUcmVnaW9uX3Byb2dyZXNz",
+            "X2RpY3QYASADKAsyNS5qdHNoYXJlZC5QbGF5ZXJTdG9yeVByb2dyZXNzLlJl",
+            "Z2lvblByb2dyZXNzRGljdEVudHJ5ElEKE2xldmVsX3Byb2dyZXNzX2RpY3QY",
+            "AiADKAsyNC5qdHNoYXJlZC5QbGF5ZXJTdG9yeVByb2dyZXNzLkxldmVsUHJv",
+            "Z3Jlc3NEaWN0RW50cnkSGAoQY3Vyc29yX3JlZ2lvbl9pZBgDIAEoBRIXCg9j",
+            "dXJzb3JfbGV2ZWxfaWQYBCABKAUSMQoEdmlldxgFIAEoDjIjLmp0c2hhcmVk",
+            "LlBsYXllclN0b3J5TW9kZVNlbGVjdFZpZXcSGwoTc2F2ZWRfYXRfZ210X21p",
+            "bGxpcxgGIAEoBBJYChdjaF91bmxvY2tfcHJvZ3Jlc3NfZGljdBgHIAMoCzI3",
+            "Lmp0c2hhcmVkLlBsYXllclN0b3J5UHJvZ3Jlc3MuQ2hVbmxvY2tQcm9ncmVz",
+            "c0RpY3RFbnRyeRpZChdSZWdpb25Qcm9ncmVzc0RpY3RFbnRyeRILCgNrZXkY",
+            "ASABKAUSLQoFdmFsdWUYAiABKAsyHi5qdHNoYXJlZC5QbGF5ZXJSZWdpb25Q",
+            "cm9ncmVzczoCOAEaVwoWTGV2ZWxQcm9ncmVzc0RpY3RFbnRyeRILCgNrZXkY",
+            "ASABKAUSLAoFdmFsdWUYAiABKAsyHS5qdHNoYXJlZC5QbGF5ZXJMZXZlbFBy",
+            "b2dyZXNzOgI4ARpdChlDaFVubG9ja1Byb2dyZXNzRGljdEVudHJ5EgsKA2tl",
+            "eRgBIAEoDRIvCgV2YWx1ZRgCIAEoCzIgLmp0c2hhcmVkLlBsYXllckNoVW5s",
+            "b2NrUHJvZ3Jlc3M6AjgBIooCChlQbGF5ZXJPbmxpbmVBcmVuYVByb2dyZXNz",
+            "EhsKE3NhdmVkX2F0X2dtdF9taWxsaXMYASABKAQSEQoJcGxheWVyX2lkGAIg",
+            "ASgJEl4KF2NoX3VubG9ja19wcm9ncmVzc19kaWN0GAMgAygLMj0uanRzaGFy",
+            "ZWQuUGxheWVyT25saW5lQXJlbmFQcm9ncmVzcy5DaFVubG9ja1Byb2dyZXNz",
+            "RGljdEVudHJ5Gl0KGUNoVW5sb2NrUHJvZ3Jlc3NEaWN0RW50cnkSCwoDa2V5",
+            "GAEgASgNEi8KBXZhbHVlGAIgASgLMiAuanRzaGFyZWQuUGxheWVyQ2hVbmxv",
+            "Y2tQcm9ncmVzczoCOAEibgoUU3RvcnlQb2ludERpYWxvZ0xpbmUSEwoLbmFy",
+            "cmF0b3JfdWQYASABKAQSGwoTbmFycmF0b3Jfc3BlY2llc19pZBgCIAEoDRIP",
+            "Cgdjb250ZW50GAMgASgJEhMKC2Rvd25fb3Jfbm90GAQgASgIImAKDlN0b3J5",
+            "UG9pbnRTdGVwEi0KBWxpbmVzGAEgAygLMh4uanRzaGFyZWQuU3RvcnlQb2lu",
+            "dERpYWxvZ0xpbmUSHwoXbm9uY3RybF9hbGl2ZV9yZGZfY291bnQYAiABKAUi",
+            "XQoKU3RvcnlQb2ludBInCgVzdGVwcxgBIAMoCzIYLmp0c2hhcmVkLlN0b3J5",
+            "UG9pbnRTdGVwEg8KB25vbmN0cmwYAiABKAgSFQoNY3V0c2NlbmVfbmFtZRgD",
+            "IAEoCSKDAQoKTGV2ZWxTdG9yeRIwCgZwb2ludHMYASADKAsyIC5qdHNoYXJl",
+            "ZC5MZXZlbFN0b3J5LlBvaW50c0VudHJ5GkMKC1BvaW50c0VudHJ5EgsKA2tl",
+            "eRgBIAEoBRIjCgV2YWx1ZRgCIAEoCzIULmp0c2hhcmVkLlN0b3J5UG9pbnQ6",
+            "AjgBIk8KGVNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24SEAoIYW5jaG9yX3gY",
+            "ASABKAISEAoIYW5jaG9yX3kYAiABKAISDgoGcG9pbnRzGAMgAygCIn4KGVNl",
+            "cmlhbGl6ZWRCYXJyaWVyQ29sbGlkZXISKwoEYXR0chgBIAEoCzIdLmp0c2hh",
+            "cmVkLkJhcnJpZXJDb2xsaWRlckF0dHISNAoHcG9seWdvbhgCIAEoCzIjLmp0",
+            "c2hhcmVkLlNlcmlhbGl6YWJsZUNvbnZleFBvbHlnb24iswEKHFNlcmlhbGl6",
+            "ZWRTdGF0aWNUcmFwQ29sbGlkZXISKAoEYXR0chgBIAEoCzIaLmp0c2hhcmVk",
+            "LlRyYXBDb2xsaWRlckF0dHISMwoMYmFycmllcl9hdHRyGAIgASgLMh0uanRz",
+            "aGFyZWQuQmFycmllckNvbGxpZGVyQXR0chI0Cgdwb2x5Z29uGAMgASgLMiMu",
+            "anRzaGFyZWQuU2VyaWFsaXphYmxlQ29udmV4UG9seWdvbiJqCg5QaWNrYWJs",
+            "ZUNvbmZpZxIpCgtwaWNrdXBfdHlwZRgBIAEoDjIULmp0c2hhcmVkLlBpY2t1",
+            "cFR5cGUSFQoNdGFrZXNfZ3Jhdml0eRgCIAEoCBIWCg52Znhfc3BlY2llc19p",
+            "ZBgDIAEoDSKoAQoXUGlja2FibGVDb25maWdGcm9tVGlsZWQSKQoLcGlja3Vw",
+            "X3R5cGUYASABKA4yFC5qdHNoYXJlZC5QaWNrdXBUeXBlEhMKC3JlY3VyX3F1",
+            "b3RhGAIgASgFEikKIWxpZmV0aW1lX3JkZl9jb3VudF9wZXJfb2NjdXJyZW5j",
+            "ZRgDIAEoDRIiChpzdG9ja19xdW90YV9wZXJfb2NjdXJyZW5jZRgEIAEoDSKv",
+            "AgoIUGlja2FibGUSCgoCaWQYASABKA0SKQoLcGlja3VwX3R5cGUYAiABKA4y",
+            "FC5qdHNoYXJlZC5QaWNrdXBUeXBlEikKCHBrX3N0YXRlGAMgASgOMhcuanRz",
+            "aGFyZWQuUGlja2FibGVTdGF0ZRIaChJmcmFtZXNfaW5fcGtfc3RhdGUYBCAB",
+            "KAUSCQoBeBgFIAEoAhIJCgF5GAYgASgCEgkKAXoYByABKAISDQoFdmVsX3gY",
+            "CCABKAISDQoFdmVsX3kYCSABKAISDQoFdmVsX3oYCiABKAISJAoccmVtYWlu",
+            "aW5nX2xpZmV0aW1lX3JkZl9jb3VudBgLIAEoBRIdChVyZW1haW5pbmdfcmVj",
+            "dXJfcXVvdGEYDCABKAUSEgoJcGlja2VyX3VkGIAEIAEoBCI2ChFJbmplY3Rl",
+            "ZENtZENvbmZpZxIVCg1jdXRvZmZfcmRmX2lkGAEgASgFEgoKAm9wGAIgASgE",
+            "Il4KFkNoYXJhY3RlclNwYXduZXJDb25maWcSFQoNY3V0b2ZmX3JkZl9pZBgB",
+            "IAEoBRIXCg9zcGVjaWVzX2lkX2xpc3QYAiADKA0SFAoMaW5pdF9vcF9saXN0",
+            "GAMgAygEIo0BChVQaWNrYWJsZVNwYXduZXJDb25maWcSFQoNY3V0b2ZmX3Jk",
+            "Zl9pZBgBIAEoBRIXCg9zcGVjaWVzX2lkX2xpc3QYAiADKA0SFAoMaW5pdF9v",
+            "cF9saXN0GAMgAygEEi4KEHBpY2t1cF90eXBlX2xpc3QYBCADKA4yFC5qdHNo",
+            "YXJlZC5QaWNrdXBUeXBlIjIKDVRyaWdnZXJDb25maWcSIQoCdHQYASABKA4y",
+            "FS5qdHNoYXJlZC5UcmlnZ2VyVHlwZSKTBgoWVHJpZ2dlckNvbmZpZ0Zyb21U",
+            "aWxlZBIhCgJ0dBgBIAEoDjIVLmp0c2hhcmVkLlRyaWdnZXJUeXBlEhYKDmRl",
+            "bGF5ZWRfZnJhbWVzGAMgASgFEhcKD3JlY292ZXJ5X2ZyYW1lcxgEIAEoBRIW",
+            "Cg5idWxsZXRfdGVhbV9pZBgFIAEoBRIgChhzdWJfY3ljbGVfdHJpZ2dlcl9m",
+            "cmFtZXMYBiABKAUSFwoPc3ViX2N5Y2xlX3F1b3RhGAcgASgFEhEKCXF1b3Rh",
+            "X2NhcBgIIAEoBRIVCg1uZXdfcmV2aXZhbF94GAsgASgCEhUKDW5ld19yZXZp",
+            "dmFsX3kYDCABKAISEgoKaW5pdF9kaXJfeBgNIAEoBRISCgppbml0X2Rpcl95",
+            "GA4gASgFEioKInB1Ymxpc2hpbmdfZXZ0X21hc2tfdXBvbl9leGhhdXN0ZWQY",
+            "DyABKAQSLwoncHVibGlzaGluZ190b190cmlnZ2VyX2lkX3Vwb25fZXhoYXVz",
+            "dGVkGBAgASgNEhwKFGZvcmNlX2N0cmxfcmRmX2NvdW50GBIgASgFEhYKDmZv",
+            "cmNlX2N0cmxfY21kGBMgASgEEkQKGmNoYXJhY3Rlcl9zcGF3bmVyX3RpbWVf",
+            "c2VxGBQgAygLMiAuanRzaGFyZWQuQ2hhcmFjdGVyU3Bhd25lckNvbmZpZxJC",
+            "ChlwaWNrYWJsZV9zcGF3bmVyX3RpbWVfc2VxGBUgAygLMh8uanRzaGFyZWQu",
+            "UGlja2FibGVTcGF3bmVyQ29uZmlnEhcKDnN0b3J5X3BvaW50X2lkGIAIIAEo",
+            "BRIPCgZiZ21faWQYgQggASgFEk8KEGJvc3Nfc3BlY2llc19zZXQYggggAygL",
+            "MjQuanRzaGFyZWQuVHJpZ2dlckNvbmZpZ0Zyb21UaWxlZC5Cb3NzU3BlY2ll",
+            "c1NldEVudHJ5EhoKEWlzX2Jvc3Nfc2F2ZXBvaW50GIMIIAEoCBo1ChNCb3Nz",
+            "U3BlY2llc1NldEVudHJ5EgsKA2tleRgBIAEoDRINCgV2YWx1ZRgCIAEoCDoC",
+            "OAEijQQKB1RyaWdnZXISCgoCaWQYASABKA0SFgoOZnJhbWVzX3RvX2ZpcmUY",
+            "AyABKAUSGQoRZnJhbWVzX3RvX3JlY292ZXIYBCABKAUSDQoFcXVvdGEYBSAB",
+            "KAUSFgoOYnVsbGV0X3RlYW1faWQYBiABKAUSFwoPc3ViX2N5Y2xlX3F1b3Rh",
+            "GAkgASgFEiUKBXN0YXRlGAogASgOMhYuanRzaGFyZWQuVHJpZ2dlclN0YXRl",
+            "EhcKD2ZyYW1lc19pbl9zdGF0ZRgLIAEoBRIJCgF4GAwgASgCEgkKAXkYDSAB",
+            "KAISCQoBehgOIAEoAhIZChFkZW1hbmRlZF9ldnRfbWFzaxgPIAEoBBIaChJm",
+            "dWxmaWxsZWRfZXZ0X21hc2sYECABKAQSKwojd2F2ZV9ucGNfZXhoYXVzdGVk",
+            "X2V2dF9tYXNrX2NvdW50ZXIYESABKAQSKgoicHVibGlzaGluZ19ldnRfbWFz",
+            "a191cG9uX2V4aGF1c3RlZBgSIAEoBBIvCidwdWJsaXNoaW5nX3RvX3RyaWdn",
+            "ZXJfaWRfdXBvbl9leGhhdXN0ZWQYEyABKA0SEwoLb2ZmZW5kZXJfdWQYFCAB",
+            "KAQSHwoXb2ZmZW5kZXJfYnVsbGV0X3RlYW1faWQYFSABKAUSKwoMdHJpZ2dl",
+            "cl90eXBlGBYgASgOMhUuanRzaGFyZWQuVHJpZ2dlclR5cGUidAoOUGxheWVy",
+            "TWV0YUluZm8SEQoJcGxheWVyX2lkGAEgASgJEhIKCmpvaW5faW5kZXgYAiAB",
+            "KA0SFgoOYnVsbGV0X3RlYW1faWQYAyABKAUSEgoKc3BlY2llc19pZBgEIAEo",
+            "DRIPCgdyb29tX2lkGAUgASgFInMKEVJwY0VuZHBvaW50SG9sZGVyEgoKAmlk",
+            "GAEgASgNEhoKEmV4dGVybmFsX2FkZHJfaG9zdBgCIAEoCRIaChJleHRlcm5h",
+            "bF9hZGRyX3BvcnQYAyABKA0SGgoSaW50ZXJuYWxfYWRkcl9ob3N0GAQgASgJ",
+            "ItErCg9QcmltaXRpdmVDb25zdHMSGwoTYmF0dGxlX2R5bmFtaWNzX2ZwcxgB",
+            "IAEoBRIyCipkZWZhdWx0X3RpbWVvdXRfZm9yX2xhc3RfYWxsX2NvbmZpcm1l",
+            "ZF9pZmQYAiABKAUSFAoMcm9vbV9pZF9ub25lGAMgASgFEh0KFXJvb21fc3Rh",
+            "dGVfaW1wb3NzaWJsZRgEIAEoBRIXCg9yb29tX3N0YXRlX2lkbGUYBSABKAUS",
+            "GgoScm9vbV9zdGF0ZV93YWl0aW5nGAYgASgFEhoKEnJvb21fc3RhdGVfcHJl",
+            "cGFyZRgHIAEoBRIcChRyb29tX3N0YXRlX2luX2JhdHRsZRgIIAEoBRIgChhy",
+            "b29tX3N0YXRlX2luX3NldHRsZW1lbnQYCSABKAUSGgoScm9vbV9zdGF0ZV9z",
+            "dG9wcGVkGAogASgFEjAKKHJvb21fc3RhdGVfZnJvbnRlbmRfYXdhaXRpbmdf",
+            "YXV0b19yZWpvaW4YCyABKAUSMgoqcm9vbV9zdGF0ZV9mcm9udGVuZF9hd2Fp",
+            "dGluZ19tYW51YWxfcmVqb2luGAwgASgFEiUKHXJvb21fc3RhdGVfZnJvbnRl",
+            "bmRfcmVqb2luaW5nGA0gASgFEiYKHnBsYXllcl9iYXR0bGVfc3RhdGVfaW1w",
+            "b3NzaWJsZRgOIAEoBRI9CjVwbGF5ZXJfYmF0dGxlX3N0YXRlX2FkZGVkX3Bl",
+            "bmRpbmdfYmF0dGxlX2NvbGxpZGVyX2FjaxgPIAEoBRI4CjBwbGF5ZXJfYmF0",
+            "dGxlX3N0YXRlX3JlYWRkZWRfcGVuZGluZ19mb3JjZV9yZXN5bmMYECABKAUS",
+            "IgoacGxheWVyX2JhdHRsZV9zdGF0ZV9hY3RpdmUYESABKAUSKAogcGxheWVy",
+            "X2JhdHRsZV9zdGF0ZV9kaXNjb25uZWN0ZWQYEiABKAUSIAoYcGxheWVyX2Jh",
+            "dHRsZV9zdGF0ZV9sb3N0GBMgASgFEjAKKHBsYXllcl9iYXR0bGVfc3RhdGVf",
+            "ZXhwZWxsZWRfZHVyaW5nX2dhbWUYFCABKAUSMQopcGxheWVyX2JhdHRsZV9z",
+            "dGF0ZV9leHBlbGxlZF9pbl9kaXNtaXNzYWwYFSABKAUSKgoidXBzeW5jX21z",
+            "Z19hY3RfcGxheWVyX2NvbGxpZGVyX2FjaxgWIAEoBRIhChl1cHN5bmNfbXNn",
+            "X2FjdF9wbGF5ZXJfY21kGBcgASgFEjMKK3Vwc3luY19tc2dfYWN0X2hvbGVw",
+            "dW5jaF9iYWNrZW5kX3VkcF90dW5uZWwYGCABKAUSLgomdXBzeW5jX21zZ19h",
+            "Y3RfaG9sZXB1bmNoX3BlZXJfdWRwX2FkZHIYGSABKAUSLQolZG93bnN5bmNf",
+            "bXNnX2FjdF9iYXR0bGVfY29sbGlkZXJfaW5mbxgaIAEoBRIkChxkb3duc3lu",
+            "Y19tc2dfYWN0X2lucHV0X2JhdGNoGBsgASgFEicKH2Rvd25zeW5jX21zZ19h",
+            "Y3RfYmF0dGxlX3N0b3BwZWQYHCABKAUSJgoeZG93bnN5bmNfbXNnX2FjdF9m",
+            "b3JjZWRfcmVzeW5jGB0gASgFEikKIWRvd25zeW5jX21zZ19hY3RfcGVlcl9p",
+            "bnB1dF9iYXRjaBgeIAEoBRImCh5kb3duc3luY19tc2dfYWN0X3BlZXJfdWRw",
+            "X2FkZHIYHyABKAUSLgomZG93bnN5bmNfbXNnX2FjdF9iYXR0bGVfcmVhZHlf",
+            "dG9fc3RhcnQYICABKAUSJQodZG93bnN5bmNfbXNnX2FjdF9iYXR0bGVfc3Rh",
+            "cnQYISABKAUSLAokZG93bnN5bmNfbXNnX2FjdF9wbGF5ZXJfZGlzY29ubmVj",
+            "dGVkGCIgASgFEjEKKWRvd25zeW5jX21zZ19hY3RfcGxheWVyX3JlYWRkZWRf",
+            "YW5kX2Fja2VkGCMgASgFEi8KJ2Rvd25zeW5jX21zZ19hY3RfcGxheWVyX2Fk",
+            "ZGVkX2FuZF9hY2tlZBgkIAEoBRIeChZkb3duc3luY19tc2dfd3NfY2xvc2Vk",
+            "GCUgASgFEhwKFGRvd25zeW5jX21zZ193c19vcGVuGCYgASgFEiAKGG1hZ2lj",
+            "X2pvaW5faW5kZXhfaW52YWxpZBgnIAEoDRInCh9tYWdpY19qb2luX2luZGV4",
+            "X3Nydl91ZHBfdHVubmVsGCggASgNEhwKFG1hZ2ljX3F1b3RhX2luZmluaXRl",
+            "GCkgASgFEiUKHW5wY19mbGVlX2dyYWNlX3BlcmlvZF9yZGZfY250GCogASgF",
+            "EjMKK21hZ2ljX2xhc3Rfc2VudF9pbnB1dF9mcmFtZV9pZF9ub3JtYWxfYWRk",
+            "ZWQYKyABKAUSLgombWFnaWNfbGFzdF9zZW50X2lucHV0X2ZyYW1lX2lkX3Jl",
+            "YWRkZWQYLCABKAUSFQoNYmdtX25vX2NoYW5nZRgtIAEoBRIhChlpbnZhbGlk",
+            "X2RlZmF1bHRfcGxheWVyX2lkGC4gASgFEiEKGWVzdGltYXRlZF9zZWNvbmRz",
+            "X3Blcl9yZGYYLyABKAISHwoXbWF4X2J0bl9ob2xkaW5nX3JkZl9jbnQYMCAB",
+            "KAUSGgoSbWF4X2ZseWluZ19yZGZfY250GDEgASgFEi4KJm1heF9yZXZlcnNl",
+            "X3B1c2hiYWNrX2ZyYW1lc190b19yZWNvdmVyGDIgASgFEiMKG3NwZWVkX25v",
+            "dF9oaXRfbm90X3NwZWNpZmllZBg1IAEoBRIlCh1kZWZhdWx0X3ByZWFsbG9j",
+            "X25wY19jYXBhY2l0eRg2IAEoBRIoCiBkZWZhdWx0X3ByZWFsbG9jX2J1bGxl",
+            "dF9jYXBhY2l0eRg3IAEoBRImCh5kZWZhdWx0X3ByZWFsbG9jX3RyYXBfY2Fw",
+            "YWNpdHkYOCABKAUSKQohZGVmYXVsdF9wcmVhbGxvY190cmlnZ2VyX2NhcGFj",
+            "aXR5GDkgASgFEioKImRlZmF1bHRfcHJlYWxsb2NfcGlja2FibGVfY2FwYWNp",
+            "dHkYOiABKAUSKwojZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2J1ZmZfY2FwYWNp",
+            "dHkYOyABKAUSLQolZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2RlYnVmZl9jYXBh",
+            "Y2l0eRg8IAEoBRIwCihkZWZhdWx0X3Blcl9jaGFyYWN0ZXJfaW52ZW50b3J5",
+            "X2NhcGFjaXR5GD0gASgFEjsKM2RlZmF1bHRfcGVyX2NoYXJhY3Rlcl9pbW11",
+            "bmVfYnVsbGV0X3JlY29yZF9jYXBhY2l0eRg+IAEoBRIRCglncmF2aXR5X3kY",
+            "PyABKAISHgoWZ3Jhdml0eV95X2p1bXBfaG9sZGluZxhAIAEoAhIpCiFkZWZh",
+            "dWx0X3BhdHJvbF9jdWVfd2FpdmluZ19mcmFtZXMYQSABKAUSGAoQbm9fcGF0",
+            "cm9sX2N1ZV9pZBhCIAEoBRIRCglub192ZnhfaWQYQyABKAUSKwojZGVmYXVs",
+            "dF9waWNrYWJsZV9oaXRib3hfaGFsZl9zaXplX3gYRCABKAISKwojZGVmYXVs",
+            "dF9waWNrYWJsZV9oaXRib3hfaGFsZl9zaXplX3kYRSABKAISMQopZGVmYXVs",
+            "dF9waWNrYWJsZV9kaXNhcHBlYXJpbmdfYW5pbV9mcmFtZXMYRiABKAUSLQol",
+            "ZGVmYXVsdF9waWNrYWJsZV9jb25zdW1lZF9hbmltX2ZyYW1lcxhHIAEoBRIl",
+            "Ch1kZWZhdWx0X3BpY2thYmxlX3Jpc2luZ192ZWxfeRhIIAEoAhIzCitkZWZh",
+            "dWx0X3BpY2thYmxlX25vbnBpY2thYmxlX3N0YXJ0dXBfZnJhbWVzGEkgASgF",
+            "EiYKHmRlZmF1bHRfZnJhbWVzX3RvX3Nob3dfZGFtYWdlZBhKIAEoBRIoCiBk",
+            "ZWZhdWx0X2ZyYW1lc190b19jb250aW51ZV9jb21ibxhLIAEoBRIhChlkZWZh",
+            "dWx0X2Jsb2NrX3N0dW5fZnJhbWVzGEwgASgFEikKIWRlZmF1bHRfYmxvd251",
+            "cF9mcmFtZXNfZm9yX2ZseWluZxhNIAEoBRIgChhkZWZhdWx0X2dhdWdlX2lu",
+            "Y19ieV9oaXQYTiABKAUSMAooZGVmYXVsdF9mcmFtZXNfZGVsYXllZF9vZl9i",
+            "b3NzX3NhdmVwb2ludBhPIAEoBRIaChJpbnB1dF9zY2FsZV9mcmFtZXMYUCAB",
+            "KAUSEwoLaW5wdXRfc2NhbGUYUSABKAUSGgoSaW5wdXRfZGVsYXlfZnJhbWVz",
+            "GFIgASgFEikKIWRlZmF1bHRfYmFja2VuZF9pbnB1dF9idWZmZXJfc2l6ZRhT",
+            "IAEoBRIsCiRtYXhfY2hhc2luZ19yZW5kZXJfZnJhbWVzX3Blcl91cGRhdGUY",
+            "VCABKAUSIgoabWFnaWNfZnJhbWVzX3RvX2JlX29uX3dhbGwYVSABKAUSKwoj",
+            "bWFnaWNfZnJhbWVzX3RvX2JlX29uX3dhbGxfYWlyX2p1bXAYViABKAUSHwoX",
+            "ZHlpbmdfZnJhbWVzX3RvX3JlY292ZXIYVyABKAUSIQoZcGFycmllZF9mcmFt",
+            "ZXNfdG9fcmVjb3ZlchhYIAEoBRIrCiNwYXJyaWVkX2ZyYW1lc190b19zdGFy",
+            "dF9jYW5jZWxsYWJsZRhZIAEoBRIQCghub19za2lsbBhaIAEoDRIUCgxub19z",
+            "a2lsbF9oaXQYWyABKAUSFwoPc3BlY2llc19ub25lX2NoGFwgASgNEiIKGnVw",
+            "c3luY19zdF9pZmRfaWRfdG9sZXJhbmNlGF0gASgNEhMKC25vX2xvY2tfdmVs",
+            "GF4gASgCEiAKGGRlYnVmZl9hcnJfaWR4X2VsZW1lbnRhbBhfIAEoBRIjCht0",
+            "ZXJtaW5hdGluZ19yZW5kZXJfZnJhbWVfaWQYYCABKAUSIgoadGVybWluYXRp",
+            "bmdfaW5wdXRfZnJhbWVfaWQYYSABKAUSIAoYdGVybWluYXRpbmdfY2hhcmFj",
+            "dGVyX2lkGGIgASgNEhsKE3Rlcm1pbmF0aW5nX3RyYXBfaWQYYyABKA0SHgoW",
+            "dGVybWluYXRpbmdfdHJpZ2dlcl9pZBhkIAEoDRIfChd0ZXJtaW5hdGluZ19w",
+            "aWNrYWJsZV9pZBhlIAEoDRIdChV0ZXJtaW5hdGluZ19idWxsZXRfaWQYZiAB",
+            "KA0SIgoadGVybWluYXRpbmdfYnVsbGV0X3RlYW1faWQYZyABKAUSIwobdGVy",
+            "bWluYXRpbmdfYnVmZl9zcGVjaWVzX2lkGGggASgNEiUKHXRlcm1pbmF0aW5n",
+            "X2RlYnVmZl9zcGVjaWVzX2lkGGkgASgNEikKIXRlcm1pbmF0aW5nX2NvbnN1",
+            "bWFibGVfc3BlY2llc19pZBhqIAEoDRIjChtmcm9udGVuZF93c19yZWN2X2J5",
+            "dGVsZW5ndGgYayABKAUSIgoaYmFja2VuZF93c19yZWN2X2J5dGVsZW5ndGgY",
+            "bCABKAUSIgoaamFtbWVkX2J0bl9ob2xkaW5nX3JkZl9jbnQYbSABKAUSKQoh",
+            "YnRuX2JfaG9sZGluZ19yZGZfY250X3RocmVzaG9sZF8yGG4gASgFEikKIWJ0",
+            "bl9iX2hvbGRpbmdfcmRmX2NudF90aHJlc2hvbGRfMRhvIAEoBRIoCiBqdW1w",
+            "X2hvbGRpbmdfcmRmX2NudF90aHJlc2hvbGRfMRhwIAEoBRIoCiBqdW1wX2hv",
+            "bGRpbmdfaWZkX2NudF90aHJlc2hvbGRfMRhxIAEoBRIoCiBqdW1wX2hvbGRp",
+            "bmdfcmRmX2NudF90aHJlc2hvbGRfMhhyIAEoBRIoCiBqdW1wX2hvbGRpbmdf",
+            "aWZkX2NudF90aHJlc2hvbGRfMhhzIAEoBRIoCiBpbl9haXJfZGFzaF9ncmFj",
+            "ZV9wZXJpb2RfcmRmX2NudBh0IAEoBRIoCiBpbl9haXJfanVtcF9ncmFjZV9w",
+            "ZXJpb2RfcmRmX2NudBh1IAEoBRIpCiFidG5fZV9ob2xkaW5nX3JkZl9jbnRf",
+            "dGhyZXNob2xkXzEYdiABKAUSKQohYnRuX2VfaG9sZGluZ19pZmRfY250X3Ro",
+            "cmVzaG9sZF8xGHcgASgFEhwKFHNwX2F0a19sb29rdXBfZnJhbWVzGHggASgF",
+            "Eh8KF3BhdHRlcm5faWRfdW5hYmxlX3RvX29wGHkgASgFEhgKEHBhdHRlcm5f",
+            "aWRfbm9fb3AYeiABKAUSEQoJcGF0dGVybl9iGHsgASgFEhQKDHBhdHRlcm5f",
+            "dXBfYhh8IAEoBRIWCg5wYXR0ZXJuX2Rvd25fYhh9IAEoBRIWCg5wYXR0ZXJu",
+            "X2hvbGRfYhh+IAEoBRIWCg5wYXR0ZXJuX2Rvd25fYRh/IAEoBRIbChJwYXR0",
+            "ZXJuX3JlbGVhc2VkX2IYgAEgASgFEhIKCXBhdHRlcm5fZRiBASABKAUSGAoP",
+            "cGF0dGVybl9mcm9udF9lGIIBIAEoBRIXCg5wYXR0ZXJuX2JhY2tfZRiDASAB",
+            "KAUSFQoMcGF0dGVybl91cF9lGIQBIAEoBRIXCg5wYXR0ZXJuX2Rvd25fZRiF",
+            "ASABKAUSFwoOcGF0dGVybl9ob2xkX2UYhgEgASgFEhkKEHBhdHRlcm5fZV9o",
+            "b2xkX2IYhwEgASgFEh8KFnBhdHRlcm5fZnJvbnRfZV9ob2xkX2IYiAEgASgF",
+            "Eh4KFXBhdHRlcm5fYmFja19lX2hvbGRfYhiJASABKAUSHAoTcGF0dGVybl91",
+            "cF9lX2hvbGRfYhiKASABKAUSHgoVcGF0dGVybl9kb3duX2VfaG9sZF9iGIsB",
+            "IAEoBRIeChVwYXR0ZXJuX2hvbGRfZV9ob2xkX2IYjAEgASgFEiEKGHBhdHRl",
+            "cm5faW52ZW50b3J5X3Nsb3RfYxiNASABKAUSIQoYcGF0dGVybl9pbnZlbnRv",
+            "cnlfc2xvdF9kGI4BIAEoBRIiChlwYXR0ZXJuX2ludmVudG9yeV9zbG90X2Jj",
+            "GI8BIAEoBRImCh1wYXR0ZXJuX2hvbGRfaW52ZW50b3J5X3Nsb3RfYxiQASAB",
+            "KAUSJgodcGF0dGVybl9ob2xkX2ludmVudG9yeV9zbG90X2QYkQEgASgFEhEK",
+            "CGVsZV9ub25lGJIBIAEoDRIRCghlbGVfZmlyZRiTASABKA0SEgoJZWxlX3dh",
+            "dGVyGJQBIAEoDRIUCgtlbGVfdGh1bmRlchiVASABKA0SEQoIZWxlX3JvY2sY",
+            "lgEgASgNEhEKCGVsZV93aW5kGJcBIAEoDRIQCgdlbGVfaWNlGJgBIAEoDRIj",
+            "ChplbGVfd2Vha25lc3NfZGVmYXVsdF95aWVsZBiZASABKAISJQocZWxlX3Jl",
+            "c2lzdGFuY2VfZGVmYXVsdF95aWVsZBiaASABKAISIQoYc3RhcnRpbmdfcmVu",
+            "ZGVyX2ZyYW1lX2lkGJsBIAEoBRIgChdzdGFydGluZ19pbnB1dF9mcmFtZV9p",
+            "ZBicASABKAUiwwMKDENvbmZpZ0NvbnN0cxJHChFjaGFyYWN0ZXJfY29uZmln",
+            "cxgBIAMoCzIsLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5DaGFyYWN0ZXJDb25m",
+            "aWdzRW50cnkSPwoNc2tpbGxfY29uZmlncxgCIAMoCzIoLmp0c2hhcmVkLkNv",
+            "bmZpZ0NvbnN0cy5Ta2lsbENvbmZpZ3NFbnRyeRJBCg5kZWJ1ZmZfY29uZmln",
+            "cxgDIAMoCzIpLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5EZWJ1ZmZDb25maWdz",
+            "RW50cnkaUgoVQ2hhcmFjdGVyQ29uZmlnc0VudHJ5EgsKA2tleRgBIAEoDRIo",
+            "CgV2YWx1ZRgCIAEoCzIZLmp0c2hhcmVkLkNoYXJhY3RlckNvbmZpZzoCOAEa",
+            "RAoRU2tpbGxDb25maWdzRW50cnkSCwoDa2V5GAEgASgNEh4KBXZhbHVlGAIg",
+            "ASgLMg8uanRzaGFyZWQuU2tpbGw6AjgBGkwKEkRlYnVmZkNvbmZpZ3NFbnRy",
+            "eRILCgNrZXkYASABKA0SJQoFdmFsdWUYAiABKAsyFi5qdHNoYXJlZC5EZWJ1",
+            "ZmZDb25maWc6AjgBKjQKFEJveEludGVycG9sYXRpb25UeXBlEgsKB1VzZVBy",
+            "ZXYQABIPCgtJbnRlcnBvbGF0ZRABKlUKCElmYWNlQ2F0EgkKBUVNUFRZEAAS",
+            "CQoFRkxFU0gQARIJCgVNRVRBTBACEgkKBUZMVUlEEAMSCAoEUk9DSxAEEgkK",
+            "BUdSQVNTEAUSCAoEV09PRBAGKkQKC0J1bGxldFN0YXRlEgsKB1N0YXJ0VXAQ",
+            "ABIKCgZBY3RpdmUQARINCglFeHBsb2RpbmcQAhINCglWYW5pc2hpbmcQAyqJ",
+            "CAoOQ2hhcmFjdGVyU3RhdGUSEgoOSW52YWxpZENoU3RhdGUQABIJCgVJZGxl",
+            "MRABEgsKB1dhbGtpbmcQAhIOCgpUdXJuQXJvdW5kEAMSCgoGQXRrZWQxEAQS",
+            "FAoQSW5BaXJJZGxlMU5vSnVtcBAFEhQKEEluQWlySWRsZTFCeUp1bXAQBhIU",
+            "ChBJbkFpcklkbGUyQnlKdW1wEAcSGAoUSW5BaXJJZGxlMUJ5V2FsbEp1bXAQ",
+            "CBIPCgtJbkFpckF0a2VkMRAJEgwKCEJsb3duVXAxEAoSDAoITGF5RG93bjEQ",
+            "CxIKCgZHZXRVcDEQDBIJCgVEeWluZxANEgsKB0Rhc2hpbmcQDhILCgdTbGlk",
+            "aW5nEA8SCgoGRGltbWVkEBASFAoQVHJhbnNmb3JtaW5nSW50bxAREg8KC0Jh",
+            "Y2tEYXNoaW5nEBISEAoMSW5BaXJXYWxraW5nEBMSHQoZVHJhbnNmb3JtaW5n",
+            "SW50b0Zyb21EZWF0aBAUEhAKDFdhbGtTdG9wcGluZxAVEhUKEUluQWlyV2Fs",
+            "a1N0b3BwaW5nEBYSCwoHUGFycmllZBAXEgsKB0F3YWtpbmcQGBIQCgxHcm91",
+            "bmREb2RnZWQQGRIPCgtCYWNrV2Fsa2luZxAaEhAKDEluQWlyRGFzaGluZxAb",
+            "EhQKEEluQWlyQmFja0Rhc2hpbmcQHBITCg9JbkFpclR1cm5Bcm91bmQQHRIQ",
+            "CgtPbldhbGxJZGxlMRCAARIQCgtDcm91Y2hJZGxlMRCAAhIPCgpDcm91Y2hB",
+            "dGsxEIECEhIKDUNyb3VjaFdhbGtpbmcQggISEQoMQ3JvdWNoQXRrZWQxEIMC",
+            "EgkKBERlZjEQhAISDwoKRGVmMUF0a2VkMRCFAhIPCgpEZWYxQnJva2VuEIYC",
+            "EgkKBEF0azEQgAgSCQoEQXRrMhCBCBIJCgRBdGszEIIIEgkKBEF0azQQgwgS",
+            "CQoEQXRrNRCECBIJCgRBdGs2EIUIEgkKBEF0azcQhggSEgoNQXRrN19DaGFy",
+            "Z2luZxCHCBIXChJBdGs3X0NoYXJnZVJlbGVhc2UQiAgSCQoEQXRrOBCJCBIO",
+            "CglJbkFpckF0azEQgBASDgoJSW5BaXJBdGsyEIEQEhAKC1dhbGtpbmdBdGsx",
+            "EIIQEhAKC1dhbGtpbmdBdGs0EIMQEg4KCUluQWlyQXRrNhCEEBIPCgpPbldh",
+            "bGxBdGsxEIAYEhMKDklkbGUxX0NoYXJnaW5nEIEYEhkKFFdhbGtpbmdBdGsx",
+            "X0NoYXJnaW5nEIIYEhcKEkluQWlyQXRrMV9DaGFyZ2luZxCDGBIYChNPbldh",
+            "bGxBdGsxX0NoYXJnaW5nEIQYEhgKE0Nyb3VjaEF0azFfQ2hhcmdpbmcQhRgq",
+            "kwEKB05wY0dvYWwSCQoFTklkbGUQABIPCgtORm9sbG93QWxseRABEgsKB05Q",
+            "YXRyb2wQAhIRCg1OSHVudFRoZW5JZGxlEAMSEwoPTkh1bnRUaGVuUGF0cm9s",
+            "EAQSFwoTTkh1bnRUaGVuRm9sbG93QWxseRAFEh4KGk5JZGxlSWZHb0h1bnRp",
+            "bmdUaGVuUGF0cm9sEAYqTgoJVHJhcFN0YXRlEgkKBVRJZGxlEAASDAoIVFdh",
+            "bGtpbmcQARIJCgVUQXRrMRACEgsKB1RBdGtlZDEQAxIQCgxURGVhY3RpdmF0",
+            "ZWQQBCosCgxUcmlnZ2VyU3RhdGUSCgoGVFJlYWR5EAASEAoMVENvb2xpbmdE",
+            "b3duEAEqPAoNUGlja2FibGVTdGF0ZRIJCgVQSWRsZRAAEhEKDVBEaXNhcHBl",
+            "YXJpbmcQARINCglQQ29uc3VtZWQQAipnCgpCdWxsZXRUeXBlEhAKDFVuZGV0",
+            "ZXJtaW5lZBAAEgkKBU1lbGVlEAESFwoTTWVjaGFuaWNhbENhcnRyaWRnZRAC",
+            "EhMKD01hZ2ljYWxGaXJlYmFsbBADEg4KCkdyb3VuZFdhdmUQBCrmAQoMTXVs",
+            "dGlIaXRUeXBlEggKBE5vbmUQABIQCgxGcm9tRW1pc3Npb24QARIWChJGcm9t",
+            "Rmlyc3RIaXRBY3R1YWwQAhIWChJGcm9tRmlyc3RIaXRBbnl3YXkQAxIVChFG",
+            "cm9tUHJldkhpdEFjdHVhbBAEEhUKEUZyb21QcmV2SGl0QW55d2F5EAUSGwoX",
+            "RnJvbVZpc2lvblNlZWtPckRlZmF1bHQQBhIjCh9Gcm9tUHJldkhpdEFjdHVh",
+            "bE9yQWN0aXZlVGltZVVwEAcSGgoWRnJvbUVtaXNzaW9uSnVzdEFjdGl2ZRAI",
+            "KjMKEFNraWxsVHJpZ2dlclR5cGUSDgoKUmlzaW5nRWRnZRAAEg8KC0ZhbGxp",
+            "bmdFZGdlEAEqLAoPVmZ4RHVyYXRpb25UeXBlEgoKBk9uZU9mZhAAEg0KCVJl",
+            "cGVhdGluZxABKjcKDVZmeE1vdGlvblR5cGUSDAoITm9Nb3Rpb24QABILCgdE",
+            "cm9wcGVkEAESCwoHVHJhY2luZxACKtUBCgtUcmlnZ2VyVHlwZRIKCgZUdE5v",
+            "bmUQABINCglUdFZpY3RvcnkQARIRCg1UdEN5Y2xpY1RpbWVkEAISEAoMVHRC",
+            "eU1vdmVtZW50EAMSDgoKVHRCeUF0dGFjaxAEEhgKFFR0SW5kaVdhdmVOcGNT",
+            "cGF3bmVyEAUSGAoUVHRTeW5jV2F2ZU5wY1NwYXduZXIQBhITCg9UdFNhdmVQ",
+            "b2ludE9ubHkQBxIUChBUdFN0b3J5UG9pbnRPbmx5EAgSFwoTVHRTYXZlQW5k",
+            "U3RvcnlQb2ludBAJKoEBCglVcHN5bmNBY3QSCwoHVUFfTk9ORRAAEgoKBlVB",
+            "X0NNRBABEhYKElVBX1NFTEZfUEFSU0VEX1JERhACEiMKH1VBX0hPTEVQVU5D",
+            "SF9CQUNLRU5EX1VEUF9UVU5ORUwQAxIeChpVQV9IT0xFUFVOQ0hfUEVFUl9V",
+            "RFBfQUREUhAEKv8DCgtEb3duc3luY0FjdBILCgdEQV9OT05FEAASDgoKREFf",
+            "UkVHVUxBUhABEhUKEURBX0JBVFRMRV9QUkVQQVJFEAISHAoYREFfQkFUVExF",
+            "X1JFQURZX1RPX1NUQVJUEAMSFQoRREFfQkFUVExFX1NUQVJURUQQBBIVChFE",
+            "QV9CQVRUTEVfU1RPUFBFRBAFEhsKF0RBX0JBVFRMRV9QRUVSX1VEUF9BRERS",
+            "EAYSHwobREFfQkFUVExFX1BFRVJfRElTQ09OTkVDVEVEEAcSGQoVREFfQkFU",
+            "VExFX1BFRVJfSk9JTkVEEAgSGwoXREFfQkFUVExFX1BFRVJfUkVKT0lORUQQ",
+            "CRIpCiVEQV9GQUlMRURfVE9fSk9JTl9CQVRUTEVfTk9UX0pPSU5BQkxFEAoS",
+            "JQohREFfRkFJTEVEX1RPX0pPSU5fQUxSRUFEWV9JTl9ST09NEAsSLQopREFf",
+            "RkFJTEVEX1RPX1JFSk9JTl9CQVRUTEVfTk9UX1JFSk9JTkFCTEUQDBIpCiVE",
+            "QV9GQUlMRURfVE9fUkVKT0lOX05PVF9GT1VORF9JTl9ST09NEA0SLAooREFf",
+            "RkFJTEVEX1RPX1JFSk9JTl9QTEFZRVJfU1RBVEVfSU5WQUxJRBAOEg4KCkRB",
+            "X1dTX09QRU4QQBIQCgxEQV9XU19DTE9TRUQQQSoxCg1CdWZmU3RvY2tUeXBl",
+            "EgoKBk5vbmVCZhAAEgkKBVRpbWVkEAESCQoFUXVvdGEQAipxCgpEZWJ1ZmZU",
+            "eXBlEgsKB05vbmVEYmYQABIRCg1TcGVlZERvd25Pbmx5EAESEQoNQ29sZFNw",
+            "ZWVkRG93bhACEhYKElBvc2l0aW9uTG9ja2VkT25seRADEhgKFEZyb3plblBv",
+            "c2l0aW9uTG9ja2VkEAQqNgoOQ29uc3VtYWJsZVR5cGUSDAoITm9uZUNzbWIQ",
+            "ABIKCgZSZWZpbGwQARIKCgZEYmZSY3YQAiqfAQoWSW52ZW50b3J5U2xvdFN0",
+            "b2NrVHlwZRIKCgZOb25lSXYQABILCgdEdW1teUl2EAESDAoIUG9ja2V0SXYQ",
+            "AhILCgdUaW1lZEl2EAMSCwoHUXVvdGFJdhAEEhMKD1RpbWVkTWFnYXppbmVJ",
+            "dhAFEhQKEEdhdWdlZE1hZ2F6aW5lSXYQBhIZChVHYXVnZWRUaW1lZE1hZ2F6",
+            "aW5lSXYQByo8ChlQbGF5ZXJTdG9yeU1vZGVTZWxlY3RWaWV3EggKBE5PTkUQ",
+            "ABIKCgZSRUdJT04QARIJCgVMRVZFTBACKjUKEEZpbmlzaGVkTHZPcHRpb24S",
+            "DQoJQk9TU19PTkxZEAASEgoOU1RPUllfQU5EX0JPU1MQASrNAQoKUGlja3Vw",
+            "VHlwZRIKCgZQa05vbmUQABIUChBIcFNtYWxsSW1tZWRpYXRlEAESFQoRSHBN",
+            "ZWRpdW1JbW1lZGlhdGUQAhISCg5IcEJpZ0ltbWVkaWF0ZRADEhQKEE1wU21h",
+            "bGxJbW1lZGlhdGUQBBIVChFNcE1lZGl1bUltbWVkaWF0ZRAFEhIKDk1wQmln",
+            "SW1tZWRpYXRlEAYSGAoTU2tpbGwxSW50b0ludmVudG9yeRCABBIXChJCdWZm",
+            "MUludG9JbnZlbnRvcnkQgAhCC6oCCGp0c2hhcmVkYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::jtshared.BoxInterpolationType), typeof(global::jtshared.IfaceCat), typeof(global::jtshared.BulletState), typeof(global::jtshared.CharacterState), typeof(global::jtshared.NpcGoal), typeof(global::jtshared.TrapState), typeof(global::jtshared.TriggerState), typeof(global::jtshared.PickableState), typeof(global::jtshared.BulletType), typeof(global::jtshared.MultiHitType), typeof(global::jtshared.SkillTriggerType), typeof(global::jtshared.VfxDurationType), typeof(global::jtshared.VfxMotionType), typeof(global::jtshared.TriggerType), typeof(global::jtshared.UpsyncAct), typeof(global::jtshared.DownsyncAct), typeof(global::jtshared.BuffStockType), typeof(global::jtshared.DebuffType), typeof(global::jtshared.ConsumableType), typeof(global::jtshared.InventorySlotStockType), typeof(global::jtshared.PlayerStoryModeSelectView), typeof(global::jtshared.FinishedLvOption), typeof(global::jtshared.PickupType), }, new pbr::GeneratedClrTypeInfo[] {
@@ -804,24 +775,25 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketPayloadResp), global::jtshared.SteamAuthenticateUserTicketPayloadResp.Parser, new[]{ "Params" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketResult), global::jtshared.SteamAuthenticateUserTicketResult.Parser, new[]{ "Response" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleInvitation), global::jtshared.BattleInvitation.Parser, new[]{ "FromPlayerId", "ToBattlesrvId", "BoundRoomId", "ExpiresAt", "Passcode" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "Atk1UsesMagazine", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedCapsuleRadius", "ShrinkedCapsuleHalfHeight", "LayDownCapsuleRadius", "LayDownCapsuleHalfHeight", "DyingCapsuleRadius", "DyingCapsuleHalfHeight", "DimmedCapsuleRadius", "DimmedCapsuleHalfHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenKilled", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "AccMag", "Atk1Magazine", "SuperAtkGuage", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates", "InitSkillTransit", "HasInAirWalkingAnim", "HasTurnAroundAnim", "HasInAirTurnAroundAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "HasDimmedAnim", "HasAwakingAnim" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "Atk1UsesMagazine", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedCapsuleRadius", "ShrinkedCapsuleHalfHeight", "LayDownCapsuleRadius", "LayDownCapsuleHalfHeight", "DyingCapsuleRadius", "DyingCapsuleHalfHeight", "DimmedCapsuleRadius", "DimmedCapsuleHalfHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenExhausted", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "AccMag", "Atk1Magazine", "SuperAtkGuage", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates", "InitSkillTransit", "HasInAirWalkingAnim", "HasTurnAroundAnim", "HasInAirTurnAroundAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "HasDimmedAnim", "HasAwakingAnim" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterDownsync), global::jtshared.CharacterDownsync.Parser, new[]{ "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "AimingQX", "AimingQY", "AimingQZ", "AimingQW", "Hp", "Mp", "ChState", "FramesInChState", "JumpTriggered", "OmitGravity", "SpeciesId", "Speed", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "FramesToRecover", "NewBirthRdfCountdown", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "BulletTeamId", "RemainingAirJumpQuota", "RemainingAirDashQuota", "DamagedHintRdfCountdown", "DamagedElementalAttrs", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "LastDamagedByUd", "LastDamagedByBulletTeamId", "ActiveSkillId", "ActiveSkillHit", "BtnAHoldingRdfCnt", "BtnBHoldingRdfCnt", "BtnCHoldingRdfCnt", "BtnDHoldingRdfCnt", "BtnEHoldingRdfCnt", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnUd", "ChCollisionTeamId", "BuffList", "DebuffList", "Atk1Magazine", "SuperAtkGauge", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerCharacterDownsync), global::jtshared.PlayerCharacterDownsync.Parser, new[]{ "Chd", "JoinIndex", "BeatsCnt", "BeatenCnt", "RevivalX", "RevivalY", "RevivalZ", "RevivalQX", "RevivalQY", "RevivalQZ", "RevivalQW", "NotEnoughMpHintRdfCountdown" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.NpcCharacterDownsync), global::jtshared.NpcCharacterDownsync.Parser, new[]{ "Chd", "Id", "ActivatedRdfId", "CachedCueCmd", "WaivingPatrolCueId", "GoalAsNpc", "PublishingEvtMaskUponKilled", "PublishingToTriggerIdUponKilled", "SubscribesToTriggerId", "CapturedByPatrolCue", "FramesInPatrolCue", "KilledToDropConsumableSpeciesId", "KilledToDropBuffSpeciesId", "KilledToDropPickupSkillId", "IsMainTowerOfTeam" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.NpcCharacterDownsync), global::jtshared.NpcCharacterDownsync.Parser, new[]{ "Chd", "Id", "ActivatedRdfId", "CachedCueCmd", "WaivingPatrolCueId", "GoalAsNpc", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "SubscribesToTriggerId", "CapturedByPatrolCue", "FramesInPatrolCue", "ExhaustedToDropConsumableSpeciesId", "ExhaustedToDropBuffSpeciesId", "ExhaustedToDropPickupSkillId", "IsMainTowerOfTeam" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDecoded), global::jtshared.InputFrameDecoded.Parser, new[]{ "Dx", "Dy", "BtnALevel", "BtnBLevel", "BtnCLevel", "BtnDLevel", "BtnELevel" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.UpsyncSnapshot), global::jtshared.UpsyncSnapshot.Parser, new[]{ "StIfdId", "CmdList" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsReq), global::jtshared.WsReq.Parser, new[]{ "SeqNo", "JoinIndex", "Act", "AuthKey", "UpsyncSnapshot", "SelfParsedRdf", "BattleDurationSeconds", "SerializedBarrierPolygons", "SerializedStaticPatrolCues", "SerializedStaticTraps", "SerializedTrapIdToColliderAttrs", "SerializedTriggerEditorIdDict", "PreallocateNpcSpeciesDict", "FallenDeathHeight" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsReq), global::jtshared.WsReq.Parser, new[]{ "SeqNo", "JoinIndex", "Act", "AuthKey", "UpsyncSnapshot", "SelfParsedRdf", "BattleDurationSeconds", "SerializedBarriers", "SerializedStaticTraps", "PreallocateNpcSpeciesDict", "FallenDeathHeight" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PatrolCue), global::jtshared.PatrolCue.Parser, new[]{ "Id", "FlAct", "FrAct", "FlCaptureFrames", "FrCaptureFrames", "FdAct", "FuAct", "FdCaptureFrames", "FuCaptureFrames", "CollisionTypeMask" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.VfxConfig), global::jtshared.VfxConfig.Parser, new[]{ "SpeciesId", "MotionType", "DurationType", "OnCharacter", "OnBullet", "OnTrap", "UsePixelatedVer", "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletConfig), global::jtshared.BulletConfig.Parser, new[]{ "StartupFrames", "CancellableStFrame", "CancellableEdFrame", "ActiveFrames", "CooldownFrames", "HitStunFrames", "BlockStunFrames", "PushbackVelX", "PushbackVelY", "Damage", "SelfLockVelX", "SelfLockVelY", "SelfLockVelYWhenFlying", "HitboxOffsetX", "HitboxOffsetY", "HitboxHalfSizeX", "HitboxHalfSizeY", "BlowUp", "SpeciesId", "ExplosionFrames", "BType", "MhType", "SimultaneousMultiHitCnt", "Speed", "CancelTransit", "RepeatQuota", "ActiveVfxSpeciesId", "ExplosionVfxSpeciesId", "AllowsWalking", "AllowsCrouching", "Hardness", "StartupInvinsibleFrames", "HitInvinsibleFrames", "ExplosionSpeciesId", "PerpAccMag", "DelaySelfVelToActive", "SpeedIfNotHit", "OmitSoftPushback", "HitboxSizeIncX", "HitboxSizeIncY", "RemainsUponHit", "RotatesAlongVelocity", "DefaultHardPushbackBounceQuota", "HardPushbackBounceNormFactor", "HardPushbackBounceSheerFactor", "IsPixelatedActiveVfx", "IsPixelatedExplostionVfx", "MhVanishOnMeleeHit", "MhUpdatesOriginPos", "BeamCollision", "AngularFrameVelCos", "AngularFrameVelSin", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "ElementalAttrs", "CancellableByInventorySlotC", "CancellableByInventorySlotD", "BeamVisualSizeY", "TouchExplosionBombCollision", "AirRidingGroundWave", "GroundImpactMeleeCollision", "WallImpactMeleeCollision", "MhInheritsSpin", "InitQ", "StartupVfxSpeciesId", "Ifc", "ReflectFireballXIfNotHarder", "RejectReflectionFromAnotherBullet", "ProvidesXHardPushback", "ProvidesYHardPushbackTop", "ProvidesYHardPushbackBottom", "IgnoreSlopeDeceleration", "RotateOffenderWithSpin", "MhNotTriggerOnChHit", "MhNotTriggerOnHarderBulletHit", "MhNotTriggerOnHardPushbackHit", "HopperMissile", "BeamRendering", "MissileSearchIntervalPow2Minus1", "UseChOffsetRegardlessOfEmissionMh", "InplaceVanishExplosionSpeciesId", "AnimLoopingRdfOffset", "ExplosionAnimLoopingRdfOffset", "GaugeIncReductionRatio", "MhInheritsFramesInBlState", "GuardBreakerExtraHitCnt", "TakesDef1AsHardPushback", "FinishingFrames", "NoExplosionOnHardPushback", "ExplodeOnMultiContact", "CollisionTypeMask", "TakesGravity", "BuffConfig", "CharacterEmitSfxName", "FireballEmitSfxName", "ExplosionSfxName", "ActiveSfxName", "ExplosionOnFleshSfxName", "ExplosionOnRockSfxName", "ExplosionOnMetalSfxName", "ExplosionOnWoodSfxName" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Bullet), global::jtshared.Bullet.Parser, new[]{ "BlState", "FramesInBlState", "Ud", "OriginatedRenderFrameId", "OffenderUd", "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "OriginatedX", "OriginatedY", "OriginatedZ", "RepeatQuotaLeft", "RemainingHardPushbackBounceQuota", "TargetUd", "DamageDealed", "ExplodedOnIfc", "ActiveSkillHit", "SkillId", "Id", "TeamId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfig), global::jtshared.TrapConfig.Parser, new[]{ "SpeciesId", "ExplosionSpeciesId", "ExplosionFrames", "BlowUp", "Damage", "HitStunFrames", "HitInvinsibleFrames", "Deactivatable", "Hardness", "DeactivateUponTriggered", "SurfaceFriction", "PatrolCueRequiresFullContain", "Atk1UponTriggered", "Atk1SkillId", "IsRotary", "NoXFlipRendering", "SpeciesName" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfigFromTiled), global::jtshared.TrapConfigFromTiled.Parser, new[]{ "SpeciesId", "Quota", "Speed", "DirX", "DirY", "SubscribesToId", "SubscribesToIdAfterInitialFire", "SubscribesToIdAlt", "BoxCw", "BoxCh", "InitNoAngularVel" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapColliderAttr), global::jtshared.TrapColliderAttr.Parser, new[]{ "HitboxOffsetX", "HitboxOffsetY", "HitboxHalfSizeX", "HitboxHalfSizeY", "ProvidesHardPushback", "ProvidesDamage", "ProvidesEscape", "ProvidesSlipJump", "ProhibitsWallGrabbing", "ForcesCrouching", "SpeciesId", "OnlyAllowsAlignedVelX", "OnlyAllowsAlignedVelY", "AsPatrolCue", "TcPc", "Id", "CollisionTypeMask" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trap), global::jtshared.Trap.Parser, new[]{ "Id", "PatrolCueAngularVelFlipMark", "ConfigFromTiled", "TrapState", "FramesInTrapState", "IsStatic", "CapturedByPatrolCue", "FramesInPatrolCue", "WaivingPatrolCueId", "WaivingSpontaneousPatrol", "SubscribesToTriggerId", "SubscribesToTriggerIdAlt", "SpinCos", "SpinSin", "AngularFrameVelCos", "AngularFrameVelSin", "X", "Y", "DirX", "DirY", "VelX", "VelY" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfig), global::jtshared.TriggerConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "TriggerType", "CollisionTypeMask" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfigFromTiled), global::jtshared.TrapConfigFromTiled.Parser, new[]{ "SpeciesId", "Quota", "Speed", "DirX", "DirY", "BoxCw", "BoxCh", "InitNoAngularVel" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BarrierColliderAttr), global::jtshared.BarrierColliderAttr.Parser, new[]{ "ProvidesHardPushback", "ProvidesSlipJump", "ProhibitsWallGrabbing", "ForcesCrouching", "OnlyAllowsAlignedVelX", "OnlyAllowsAlignedVelY" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapColliderAttr), global::jtshared.TrapColliderAttr.Parser, new[]{ "ProvidesDamage", "AsPatrolCue", "TcPc" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trap), global::jtshared.Trap.Parser, new[]{ "Id", "PatrolCueAngularVelFlipMark", "TrapState", "FramesInTrapState", "IsStatic", "CapturedByPatrolCue", "FramesInPatrolCue", "WaivingPatrolCueId", "WaivingSpontaneousPatrol", "SubscribesToTriggerId", "SubscribesToTriggerIdAlt", "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "AngVelX", "AngVelY", "AngVelZ" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PeerUdpAddr), global::jtshared.PeerUdpAddr.Parser, new[]{ "Ip", "Port", "AuthKey", "SeqNo" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "DynamicTrapsArr", "TriggersArr", "Pickables", "BulletIdCounter", "NpcIdCounter", "DynamicTrapIdCounter", "PickableIdCounter", "BulletCount", "NpcCount", "DynamicTrapCount", "PickableCount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StepResult), global::jtshared.StepResult.Parser, new[]{ "FulfilledTriggers" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "PlayersArr", "CountdownNanos", "Bullets", "NpcsArr", "DynamicTrapsArr", "TriggersArr", "Pickables", "BulletIdCounter", "NpcIdCounter", "DynamicTrapIdCounter", "PickableIdCounter", "BulletCount", "NpcCount", "DynamicTrapCount", "PickableCount", "PrevRdfStepResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattlePrepareInfo), global::jtshared.BattlePrepareInfo.Parser, new[]{ "StageName", "BoundRoomId", "BattleDurationFrames", "BoundRoomCapacity", "FrameLogEnabled" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDownsync), global::jtshared.InputFrameDownsync.Parser, new[]{ "InputList", "ConfirmedList", "UdpConfirmedList" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.DownsyncSnapshot), global::jtshared.DownsyncSnapshot.Parser, new[]{ "RefRdfId", "RefRdf", "UnconfirmedMask", "StIfdId", "IfdBatch", "Act", "PrepareInfo", "AssignedUdpTunnel", "PeerUdpAddrList", "ParticipantChangeId", "InactiveJoinMask", "PeerJoinIndex", "PeerBulletTeamId", "ErrMsg" }, null, null, null),
@@ -850,25 +822,21 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPoint), global::jtshared.StoryPoint.Parser, new[]{ "Steps", "Nonctrl", "CutsceneName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.LevelStory), global::jtshared.LevelStory.Parser, new[]{ "Points" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializableConvexPolygon), global::jtshared.SerializableConvexPolygon.Parser, new[]{ "AnchorX", "AnchorY", "Points" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedStaticPatrolCueCollider), global::jtshared.SerializedStaticPatrolCueCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedStaticTrapCollider), global::jtshared.SerializedStaticTrapCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedStaticTriggerCollider), global::jtshared.SerializedStaticTriggerCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapColliderAttrArray), global::jtshared.TrapColliderAttrArray.Parser, new[]{ "List" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedTrapLocalIdToColliderAttrs), global::jtshared.SerializedTrapLocalIdToColliderAttrs.Parser, new[]{ "Dict" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedTriggerEditorIdDict), global::jtshared.SerializedTriggerEditorIdDict.Parser, new[]{ "Dict", "Dict2" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfigFromTiled), global::jtshared.PickableConfigFromTiled.Parser, new[]{ "InitVirtualGridX", "InitVirtualGridY", "TakesGravity", "FirstShowRdfId", "RecurQuota", "RecurIntervalRdfCount", "LifetimeRdfCountPerOccurrence", "PickupType", "StockQuotaPerOccurrence", "SubscriptionId", "VfxSpeciesId", "ConsumableSpeciesId", "BuffSpeciesId", "SkillId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Pickable), global::jtshared.Pickable.Parser, new[]{ "Id", "X", "Y", "ConfigFromTiled", "RemainingLifetimeRdfCount", "RemainingRecurQuota", "VelX", "VelY", "PkState", "FramesInPkState", "PickerUd" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedBarrierCollider), global::jtshared.SerializedBarrierCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedStaticTrapCollider), global::jtshared.SerializedStaticTrapCollider.Parser, new[]{ "Attr", "BarrierAttr", "Polygon" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfig), global::jtshared.PickableConfig.Parser, new[]{ "PickupType", "TakesGravity", "VfxSpeciesId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfigFromTiled), global::jtshared.PickableConfigFromTiled.Parser, new[]{ "PickupType", "RecurQuota", "LifetimeRdfCountPerOccurrence", "StockQuotaPerOccurrence" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Pickable), global::jtshared.Pickable.Parser, new[]{ "Id", "PickupType", "PkState", "FramesInPkState", "X", "Y", "Z", "VelX", "VelY", "VelZ", "RemainingLifetimeRdfCount", "RemainingRecurQuota", "PickerUd" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InjectedCmdConfig), global::jtshared.InjectedCmdConfig.Parser, new[]{ "CutoffRdfId", "Op" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterSpawnerConfig), global::jtshared.CharacterSpawnerConfig.Parser, new[]{ "CutoffRdfId", "SpeciesIdList", "InitOpList" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSpawnerConfig), global::jtshared.PickableSpawnerConfig.Parser, new[]{ "CutoffRdfId", "SpeciesIdList", "InitOpList", "PickupTypeList" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerColliderAttr), global::jtshared.TriggerColliderAttr.Parser, new[]{ "Id", "SpeciesId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfigFromTiled), global::jtshared.TriggerConfigFromTiled.Parser, new[]{ "EditorId", "SpeciesId", "DelayedFrames", "RecoveryFrames", "BulletTeamId", "SubCycleTriggerFrames", "SubCycleQuota", "QuotaCap", "SubscribesToIdList", "SubscribesToExhaustedIdList", "NewRevivalX", "NewRevivalY", "InitDirX", "InitDirY", "PublishingEvtMaskUponExhausted", "CharacterSpawnerTimeSeq", "PickableSpawnerTimeSeq", "ForceCtrlRdfCount", "ForceCtrlCmd", "ReloadCollidersInNewPhase", "StoryPointId", "BgmId", "BossSpeciesSet", "IsBossSavepoint" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "Id", "EditorId", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "DirX", "SubCycleQuotaLeft", "State", "FramesInState", "X", "Y", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcKilledEvtMaskCounter", "SubscriberIdsMask", "ExhaustSubscriberIdsMask", "OffenderUd", "OffenderBulletTeamId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfig), global::jtshared.TriggerConfig.Parser, new[]{ "Tt" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfigFromTiled), global::jtshared.TriggerConfigFromTiled.Parser, new[]{ "Tt", "DelayedFrames", "RecoveryFrames", "BulletTeamId", "SubCycleTriggerFrames", "SubCycleQuota", "QuotaCap", "NewRevivalX", "NewRevivalY", "InitDirX", "InitDirY", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "ForceCtrlRdfCount", "ForceCtrlCmd", "CharacterSpawnerTimeSeq", "PickableSpawnerTimeSeq", "StoryPointId", "BgmId", "BossSpeciesSet", "IsBossSavepoint" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "Id", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "SubCycleQuota", "State", "FramesInState", "X", "Y", "Z", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcExhaustedEvtMaskCounter", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "OffenderUd", "OffenderBulletTeamId", "TriggerType" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerMetaInfo), global::jtshared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RpcEndpointHolder), global::jtshared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "DefaultTimeoutForLastAllConfirmedIfd", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "NpcFleeGracePeriodRdfCnt", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "TerminatingTriggerEditorId", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "NoVfxId", "DefaultPickableHitboxHalfSizeX", "DefaultPickableHitboxHalfSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableNonpickableStartupFrames", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "SpeciesNoneCh", "UpsyncStIfdIdTolerance", "NoLockVel", "DebuffArrIdxElemental", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "SpAtkLookupFrames", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "EleNone", "EleFire", "EleWater", "EleThunder", "EleRock", "EleWind", "EleIce", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConfigConsts), global::jtshared.ConfigConsts.Parser, new[]{ "CharacterConfigs", "SkillConfigs", "DebuffConfigs" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StepResult), global::jtshared.StepResult.Parser, new[]{ "UpdatedTriggersArr", "UpdatedTriggersCount" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "DefaultTimeoutForLastAllConfirmedIfd", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "NpcFleeGracePeriodRdfCnt", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "NoVfxId", "DefaultPickableHitboxHalfSizeX", "DefaultPickableHitboxHalfSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableNonpickableStartupFrames", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "SpeciesNoneCh", "UpsyncStIfdIdTolerance", "NoLockVel", "DebuffArrIdxElemental", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "SpAtkLookupFrames", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "EleNone", "EleFire", "EleWater", "EleThunder", "EleRock", "EleWind", "EleIce", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConfigConsts), global::jtshared.ConfigConsts.Parser, new[]{ "CharacterConfigs", "SkillConfigs", "DebuffConfigs" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, })
           }));
     }
     #endregion
@@ -1058,14 +1026,17 @@ namespace jtshared {
   public enum TriggerType {
     [pbr::OriginalName("TtNone")] TtNone = 0,
     /// <summary>
-    /// Just by "demandedEvtMask == fulfilledEvtMask" without any other timer or collision requirement 
+    /// Will collect all of ["prescribed NPCs/Traps whose &lt;publishing_to_trigger_id_upon_exhausted> == &lt;its_own_id>", "prescribed Triggers whose &lt;publishing_to_trigger_id_upon_exhausted> == &lt;its_own_id>"] 
     /// </summary>
-    [pbr::OriginalName("TtTrivial")] TtTrivial = 1,
+    [pbr::OriginalName("TtVictory")] TtVictory = 1,
     [pbr::OriginalName("TtCyclicTimed")] TtCyclicTimed = 2,
-    [pbr::OriginalName("TtIndiWave")] TtIndiWave = 3,
-    [pbr::OriginalName("TtSyncWave")] TtSyncWave = 4,
-    [pbr::OriginalName("TtMovement")] TtMovement = 5,
-    [pbr::OriginalName("TtAttack")] TtAttack = 6,
+    [pbr::OriginalName("TtByMovement")] TtByMovement = 3,
+    [pbr::OriginalName("TtByAttack")] TtByAttack = 4,
+    [pbr::OriginalName("TtIndiWaveNpcSpawner")] TtIndiWaveNpcSpawner = 5,
+    [pbr::OriginalName("TtSyncWaveNpcSpawner")] TtSyncWaveNpcSpawner = 6,
+    [pbr::OriginalName("TtSavePointOnly")] TtSavePointOnly = 7,
+    [pbr::OriginalName("TtStoryPointOnly")] TtStoryPointOnly = 8,
+    [pbr::OriginalName("TtSaveAndStoryPoint")] TtSaveAndStoryPoint = 9,
   }
 
   public enum UpsyncAct {
@@ -1160,8 +1131,15 @@ namespace jtshared {
   }
 
   public enum PickupType {
-    [pbr::OriginalName("Immediate")] Immediate = 0,
-    [pbr::OriginalName("PutIntoInventory")] PutIntoInventory = 1,
+    [pbr::OriginalName("PkNone")] PkNone = 0,
+    [pbr::OriginalName("HpSmallImmediate")] HpSmallImmediate = 1,
+    [pbr::OriginalName("HpMediumImmediate")] HpMediumImmediate = 2,
+    [pbr::OriginalName("HpBigImmediate")] HpBigImmediate = 3,
+    [pbr::OriginalName("MpSmallImmediate")] MpSmallImmediate = 4,
+    [pbr::OriginalName("MpMediumImmediate")] MpMediumImmediate = 5,
+    [pbr::OriginalName("MpBigImmediate")] MpBigImmediate = 6,
+    [pbr::OriginalName("Skill1IntoInventory")] Skill1IntoInventory = 512,
+    [pbr::OriginalName("Buff1IntoInventory")] Buff1IntoInventory = 1024,
   }
 
   #endregion
@@ -2878,7 +2856,7 @@ namespace jtshared {
       btnBChargedVfxSpeciesId_ = other.btnBChargedVfxSpeciesId_;
       isKeyCh_ = other.isKeyCh_;
       allowsSameTeamSoftPushback_ = other.allowsSameTeamSoftPushback_;
-      gaugeIncWhenKilled_ = other.gaugeIncWhenKilled_;
+      gaugeIncWhenExhausted_ = other.gaugeIncWhenExhausted_;
       jumpingInsteadOfWalking_ = other.jumpingInsteadOfWalking_;
       visionSearchIntervalPow2Minus1U_ = other.visionSearchIntervalPow2Minus1U_;
       visionSearchIntervalPow2Minus1_ = other.visionSearchIntervalPow2Minus1_;
@@ -3809,14 +3787,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "gauge_inc_when_killed" field.</summary>
-    public const int GaugeIncWhenKilledFieldNumber = 87;
-    private int gaugeIncWhenKilled_;
+    /// <summary>Field number for the "gauge_inc_when_exhausted" field.</summary>
+    public const int GaugeIncWhenExhaustedFieldNumber = 87;
+    private int gaugeIncWhenExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int GaugeIncWhenKilled {
-      get { return gaugeIncWhenKilled_; }
+    public int GaugeIncWhenExhausted {
+      get { return gaugeIncWhenExhausted_; }
       set {
-        gaugeIncWhenKilled_ = value;
+        gaugeIncWhenExhausted_ = value;
       }
     }
 
@@ -4212,7 +4190,7 @@ namespace jtshared {
       if (BtnBChargedVfxSpeciesId != other.BtnBChargedVfxSpeciesId) return false;
       if (IsKeyCh != other.IsKeyCh) return false;
       if (AllowsSameTeamSoftPushback != other.AllowsSameTeamSoftPushback) return false;
-      if (GaugeIncWhenKilled != other.GaugeIncWhenKilled) return false;
+      if (GaugeIncWhenExhausted != other.GaugeIncWhenExhausted) return false;
       if (JumpingInsteadOfWalking != other.JumpingInsteadOfWalking) return false;
       if (VisionSearchIntervalPow2Minus1U != other.VisionSearchIntervalPow2Minus1U) return false;
       if (VisionSearchIntervalPow2Minus1 != other.VisionSearchIntervalPow2Minus1) return false;
@@ -4326,7 +4304,7 @@ namespace jtshared {
       if (BtnBChargedVfxSpeciesId != 0) hash ^= BtnBChargedVfxSpeciesId.GetHashCode();
       if (IsKeyCh != false) hash ^= IsKeyCh.GetHashCode();
       if (AllowsSameTeamSoftPushback != false) hash ^= AllowsSameTeamSoftPushback.GetHashCode();
-      if (GaugeIncWhenKilled != 0) hash ^= GaugeIncWhenKilled.GetHashCode();
+      if (GaugeIncWhenExhausted != 0) hash ^= GaugeIncWhenExhausted.GetHashCode();
       if (JumpingInsteadOfWalking != false) hash ^= JumpingInsteadOfWalking.GetHashCode();
       if (VisionSearchIntervalPow2Minus1U != 0) hash ^= VisionSearchIntervalPow2Minus1U.GetHashCode();
       if (VisionSearchIntervalPow2Minus1 != 0) hash ^= VisionSearchIntervalPow2Minus1.GetHashCode();
@@ -4687,9 +4665,9 @@ namespace jtshared {
         output.WriteRawTag(176, 5);
         output.WriteBool(AllowsSameTeamSoftPushback);
       }
-      if (GaugeIncWhenKilled != 0) {
+      if (GaugeIncWhenExhausted != 0) {
         output.WriteRawTag(184, 5);
-        output.WriteInt32(GaugeIncWhenKilled);
+        output.WriteInt32(GaugeIncWhenExhausted);
       }
       if (JumpingInsteadOfWalking != false) {
         output.WriteRawTag(192, 5);
@@ -5035,8 +5013,8 @@ namespace jtshared {
       if (AllowsSameTeamSoftPushback != false) {
         size += 2 + 1;
       }
-      if (GaugeIncWhenKilled != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(GaugeIncWhenKilled);
+      if (GaugeIncWhenExhausted != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(GaugeIncWhenExhausted);
       }
       if (JumpingInsteadOfWalking != false) {
         size += 2 + 1;
@@ -5362,8 +5340,8 @@ namespace jtshared {
       if (other.AllowsSameTeamSoftPushback != false) {
         AllowsSameTeamSoftPushback = other.AllowsSameTeamSoftPushback;
       }
-      if (other.GaugeIncWhenKilled != 0) {
-        GaugeIncWhenKilled = other.GaugeIncWhenKilled;
+      if (other.GaugeIncWhenExhausted != 0) {
+        GaugeIncWhenExhausted = other.GaugeIncWhenExhausted;
       }
       if (other.JumpingInsteadOfWalking != false) {
         JumpingInsteadOfWalking = other.JumpingInsteadOfWalking;
@@ -5776,7 +5754,7 @@ namespace jtshared {
             break;
           }
           case 696: {
-            GaugeIncWhenKilled = input.ReadInt32();
+            GaugeIncWhenExhausted = input.ReadInt32();
             break;
           }
           case 704: {
@@ -8150,14 +8128,14 @@ namespace jtshared {
       cachedCueCmd_ = other.cachedCueCmd_;
       waivingPatrolCueId_ = other.waivingPatrolCueId_;
       goalAsNpc_ = other.goalAsNpc_;
-      publishingEvtMaskUponKilled_ = other.publishingEvtMaskUponKilled_;
-      publishingToTriggerIdUponKilled_ = other.publishingToTriggerIdUponKilled_;
+      publishingEvtMaskUponExhausted_ = other.publishingEvtMaskUponExhausted_;
+      publishingToTriggerIdUponExhausted_ = other.publishingToTriggerIdUponExhausted_;
       subscribesToTriggerId_ = other.subscribesToTriggerId_;
       capturedByPatrolCue_ = other.capturedByPatrolCue_;
       framesInPatrolCue_ = other.framesInPatrolCue_;
-      killedToDropConsumableSpeciesId_ = other.killedToDropConsumableSpeciesId_;
-      killedToDropBuffSpeciesId_ = other.killedToDropBuffSpeciesId_;
-      killedToDropPickupSkillId_ = other.killedToDropPickupSkillId_;
+      exhaustedToDropConsumableSpeciesId_ = other.exhaustedToDropConsumableSpeciesId_;
+      exhaustedToDropBuffSpeciesId_ = other.exhaustedToDropBuffSpeciesId_;
+      exhaustedToDropPickupSkillId_ = other.exhaustedToDropPickupSkillId_;
       isMainTowerOfTeam_ = other.isMainTowerOfTeam_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -8233,25 +8211,25 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "publishing_evt_mask_upon_killed" field.</summary>
-    public const int PublishingEvtMaskUponKilledFieldNumber = 7;
-    private ulong publishingEvtMaskUponKilled_;
+    /// <summary>Field number for the "publishing_evt_mask_upon_exhausted" field.</summary>
+    public const int PublishingEvtMaskUponExhaustedFieldNumber = 7;
+    private ulong publishingEvtMaskUponExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong PublishingEvtMaskUponKilled {
-      get { return publishingEvtMaskUponKilled_; }
+    public ulong PublishingEvtMaskUponExhausted {
+      get { return publishingEvtMaskUponExhausted_; }
       set {
-        publishingEvtMaskUponKilled_ = value;
+        publishingEvtMaskUponExhausted_ = value;
       }
     }
 
-    /// <summary>Field number for the "publishing_to_trigger_id_upon_killed" field.</summary>
-    public const int PublishingToTriggerIdUponKilledFieldNumber = 8;
-    private uint publishingToTriggerIdUponKilled_;
+    /// <summary>Field number for the "publishing_to_trigger_id_upon_exhausted" field.</summary>
+    public const int PublishingToTriggerIdUponExhaustedFieldNumber = 8;
+    private uint publishingToTriggerIdUponExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint PublishingToTriggerIdUponKilled {
-      get { return publishingToTriggerIdUponKilled_; }
+    public uint PublishingToTriggerIdUponExhausted {
+      get { return publishingToTriggerIdUponExhausted_; }
       set {
-        publishingToTriggerIdUponKilled_ = value;
+        publishingToTriggerIdUponExhausted_ = value;
       }
     }
 
@@ -8288,36 +8266,36 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "killed_to_drop_consumable_species_id" field.</summary>
-    public const int KilledToDropConsumableSpeciesIdFieldNumber = 12;
-    private uint killedToDropConsumableSpeciesId_;
+    /// <summary>Field number for the "exhausted_to_drop_consumable_species_id" field.</summary>
+    public const int ExhaustedToDropConsumableSpeciesIdFieldNumber = 12;
+    private uint exhaustedToDropConsumableSpeciesId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint KilledToDropConsumableSpeciesId {
-      get { return killedToDropConsumableSpeciesId_; }
+    public uint ExhaustedToDropConsumableSpeciesId {
+      get { return exhaustedToDropConsumableSpeciesId_; }
       set {
-        killedToDropConsumableSpeciesId_ = value;
+        exhaustedToDropConsumableSpeciesId_ = value;
       }
     }
 
-    /// <summary>Field number for the "killed_to_drop_buff_species_id" field.</summary>
-    public const int KilledToDropBuffSpeciesIdFieldNumber = 13;
-    private uint killedToDropBuffSpeciesId_;
+    /// <summary>Field number for the "exhausted_to_drop_buff_species_id" field.</summary>
+    public const int ExhaustedToDropBuffSpeciesIdFieldNumber = 13;
+    private uint exhaustedToDropBuffSpeciesId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint KilledToDropBuffSpeciesId {
-      get { return killedToDropBuffSpeciesId_; }
+    public uint ExhaustedToDropBuffSpeciesId {
+      get { return exhaustedToDropBuffSpeciesId_; }
       set {
-        killedToDropBuffSpeciesId_ = value;
+        exhaustedToDropBuffSpeciesId_ = value;
       }
     }
 
-    /// <summary>Field number for the "killed_to_drop_pickup_skill_id" field.</summary>
-    public const int KilledToDropPickupSkillIdFieldNumber = 14;
-    private uint killedToDropPickupSkillId_;
+    /// <summary>Field number for the "exhausted_to_drop_pickup_skill_id" field.</summary>
+    public const int ExhaustedToDropPickupSkillIdFieldNumber = 14;
+    private uint exhaustedToDropPickupSkillId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint KilledToDropPickupSkillId {
-      get { return killedToDropPickupSkillId_; }
+    public uint ExhaustedToDropPickupSkillId {
+      get { return exhaustedToDropPickupSkillId_; }
       set {
-        killedToDropPickupSkillId_ = value;
+        exhaustedToDropPickupSkillId_ = value;
       }
     }
 
@@ -8351,14 +8329,14 @@ namespace jtshared {
       if (CachedCueCmd != other.CachedCueCmd) return false;
       if (WaivingPatrolCueId != other.WaivingPatrolCueId) return false;
       if (GoalAsNpc != other.GoalAsNpc) return false;
-      if (PublishingEvtMaskUponKilled != other.PublishingEvtMaskUponKilled) return false;
-      if (PublishingToTriggerIdUponKilled != other.PublishingToTriggerIdUponKilled) return false;
+      if (PublishingEvtMaskUponExhausted != other.PublishingEvtMaskUponExhausted) return false;
+      if (PublishingToTriggerIdUponExhausted != other.PublishingToTriggerIdUponExhausted) return false;
       if (SubscribesToTriggerId != other.SubscribesToTriggerId) return false;
       if (CapturedByPatrolCue != other.CapturedByPatrolCue) return false;
       if (FramesInPatrolCue != other.FramesInPatrolCue) return false;
-      if (KilledToDropConsumableSpeciesId != other.KilledToDropConsumableSpeciesId) return false;
-      if (KilledToDropBuffSpeciesId != other.KilledToDropBuffSpeciesId) return false;
-      if (KilledToDropPickupSkillId != other.KilledToDropPickupSkillId) return false;
+      if (ExhaustedToDropConsumableSpeciesId != other.ExhaustedToDropConsumableSpeciesId) return false;
+      if (ExhaustedToDropBuffSpeciesId != other.ExhaustedToDropBuffSpeciesId) return false;
+      if (ExhaustedToDropPickupSkillId != other.ExhaustedToDropPickupSkillId) return false;
       if (IsMainTowerOfTeam != other.IsMainTowerOfTeam) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8372,14 +8350,14 @@ namespace jtshared {
       if (CachedCueCmd != 0UL) hash ^= CachedCueCmd.GetHashCode();
       if (WaivingPatrolCueId != 0) hash ^= WaivingPatrolCueId.GetHashCode();
       if (GoalAsNpc != 0) hash ^= GoalAsNpc.GetHashCode();
-      if (PublishingEvtMaskUponKilled != 0UL) hash ^= PublishingEvtMaskUponKilled.GetHashCode();
-      if (PublishingToTriggerIdUponKilled != 0) hash ^= PublishingToTriggerIdUponKilled.GetHashCode();
+      if (PublishingEvtMaskUponExhausted != 0UL) hash ^= PublishingEvtMaskUponExhausted.GetHashCode();
+      if (PublishingToTriggerIdUponExhausted != 0) hash ^= PublishingToTriggerIdUponExhausted.GetHashCode();
       if (SubscribesToTriggerId != 0) hash ^= SubscribesToTriggerId.GetHashCode();
       if (CapturedByPatrolCue != false) hash ^= CapturedByPatrolCue.GetHashCode();
       if (FramesInPatrolCue != 0) hash ^= FramesInPatrolCue.GetHashCode();
-      if (KilledToDropConsumableSpeciesId != 0) hash ^= KilledToDropConsumableSpeciesId.GetHashCode();
-      if (KilledToDropBuffSpeciesId != 0) hash ^= KilledToDropBuffSpeciesId.GetHashCode();
-      if (KilledToDropPickupSkillId != 0) hash ^= KilledToDropPickupSkillId.GetHashCode();
+      if (ExhaustedToDropConsumableSpeciesId != 0) hash ^= ExhaustedToDropConsumableSpeciesId.GetHashCode();
+      if (ExhaustedToDropBuffSpeciesId != 0) hash ^= ExhaustedToDropBuffSpeciesId.GetHashCode();
+      if (ExhaustedToDropPickupSkillId != 0) hash ^= ExhaustedToDropPickupSkillId.GetHashCode();
       if (IsMainTowerOfTeam != false) hash ^= IsMainTowerOfTeam.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8418,13 +8396,13 @@ namespace jtshared {
         output.WriteRawTag(48);
         output.WriteEnum((int) GoalAsNpc);
       }
-      if (PublishingEvtMaskUponKilled != 0UL) {
+      if (PublishingEvtMaskUponExhausted != 0UL) {
         output.WriteRawTag(56);
-        output.WriteUInt64(PublishingEvtMaskUponKilled);
+        output.WriteUInt64(PublishingEvtMaskUponExhausted);
       }
-      if (PublishingToTriggerIdUponKilled != 0) {
+      if (PublishingToTriggerIdUponExhausted != 0) {
         output.WriteRawTag(64);
-        output.WriteUInt32(PublishingToTriggerIdUponKilled);
+        output.WriteUInt32(PublishingToTriggerIdUponExhausted);
       }
       if (SubscribesToTriggerId != 0) {
         output.WriteRawTag(72);
@@ -8438,17 +8416,17 @@ namespace jtshared {
         output.WriteRawTag(88);
         output.WriteInt32(FramesInPatrolCue);
       }
-      if (KilledToDropConsumableSpeciesId != 0) {
+      if (ExhaustedToDropConsumableSpeciesId != 0) {
         output.WriteRawTag(96);
-        output.WriteUInt32(KilledToDropConsumableSpeciesId);
+        output.WriteUInt32(ExhaustedToDropConsumableSpeciesId);
       }
-      if (KilledToDropBuffSpeciesId != 0) {
+      if (ExhaustedToDropBuffSpeciesId != 0) {
         output.WriteRawTag(104);
-        output.WriteUInt32(KilledToDropBuffSpeciesId);
+        output.WriteUInt32(ExhaustedToDropBuffSpeciesId);
       }
-      if (KilledToDropPickupSkillId != 0) {
+      if (ExhaustedToDropPickupSkillId != 0) {
         output.WriteRawTag(112);
-        output.WriteUInt32(KilledToDropPickupSkillId);
+        output.WriteUInt32(ExhaustedToDropPickupSkillId);
       }
       if (IsMainTowerOfTeam != false) {
         output.WriteRawTag(120);
@@ -8480,11 +8458,11 @@ namespace jtshared {
       if (GoalAsNpc != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) GoalAsNpc);
       }
-      if (PublishingEvtMaskUponKilled != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PublishingEvtMaskUponKilled);
+      if (PublishingEvtMaskUponExhausted != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PublishingEvtMaskUponExhausted);
       }
-      if (PublishingToTriggerIdUponKilled != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PublishingToTriggerIdUponKilled);
+      if (PublishingToTriggerIdUponExhausted != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PublishingToTriggerIdUponExhausted);
       }
       if (SubscribesToTriggerId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SubscribesToTriggerId);
@@ -8495,14 +8473,14 @@ namespace jtshared {
       if (FramesInPatrolCue != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(FramesInPatrolCue);
       }
-      if (KilledToDropConsumableSpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(KilledToDropConsumableSpeciesId);
+      if (ExhaustedToDropConsumableSpeciesId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ExhaustedToDropConsumableSpeciesId);
       }
-      if (KilledToDropBuffSpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(KilledToDropBuffSpeciesId);
+      if (ExhaustedToDropBuffSpeciesId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ExhaustedToDropBuffSpeciesId);
       }
-      if (KilledToDropPickupSkillId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(KilledToDropPickupSkillId);
+      if (ExhaustedToDropPickupSkillId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ExhaustedToDropPickupSkillId);
       }
       if (IsMainTowerOfTeam != false) {
         size += 1 + 1;
@@ -8539,11 +8517,11 @@ namespace jtshared {
       if (other.GoalAsNpc != 0) {
         GoalAsNpc = other.GoalAsNpc;
       }
-      if (other.PublishingEvtMaskUponKilled != 0UL) {
-        PublishingEvtMaskUponKilled = other.PublishingEvtMaskUponKilled;
+      if (other.PublishingEvtMaskUponExhausted != 0UL) {
+        PublishingEvtMaskUponExhausted = other.PublishingEvtMaskUponExhausted;
       }
-      if (other.PublishingToTriggerIdUponKilled != 0) {
-        PublishingToTriggerIdUponKilled = other.PublishingToTriggerIdUponKilled;
+      if (other.PublishingToTriggerIdUponExhausted != 0) {
+        PublishingToTriggerIdUponExhausted = other.PublishingToTriggerIdUponExhausted;
       }
       if (other.SubscribesToTriggerId != 0) {
         SubscribesToTriggerId = other.SubscribesToTriggerId;
@@ -8554,14 +8532,14 @@ namespace jtshared {
       if (other.FramesInPatrolCue != 0) {
         FramesInPatrolCue = other.FramesInPatrolCue;
       }
-      if (other.KilledToDropConsumableSpeciesId != 0) {
-        KilledToDropConsumableSpeciesId = other.KilledToDropConsumableSpeciesId;
+      if (other.ExhaustedToDropConsumableSpeciesId != 0) {
+        ExhaustedToDropConsumableSpeciesId = other.ExhaustedToDropConsumableSpeciesId;
       }
-      if (other.KilledToDropBuffSpeciesId != 0) {
-        KilledToDropBuffSpeciesId = other.KilledToDropBuffSpeciesId;
+      if (other.ExhaustedToDropBuffSpeciesId != 0) {
+        ExhaustedToDropBuffSpeciesId = other.ExhaustedToDropBuffSpeciesId;
       }
-      if (other.KilledToDropPickupSkillId != 0) {
-        KilledToDropPickupSkillId = other.KilledToDropPickupSkillId;
+      if (other.ExhaustedToDropPickupSkillId != 0) {
+        ExhaustedToDropPickupSkillId = other.ExhaustedToDropPickupSkillId;
       }
       if (other.IsMainTowerOfTeam != false) {
         IsMainTowerOfTeam = other.IsMainTowerOfTeam;
@@ -8605,11 +8583,11 @@ namespace jtshared {
             break;
           }
           case 56: {
-            PublishingEvtMaskUponKilled = input.ReadUInt64();
+            PublishingEvtMaskUponExhausted = input.ReadUInt64();
             break;
           }
           case 64: {
-            PublishingToTriggerIdUponKilled = input.ReadUInt32();
+            PublishingToTriggerIdUponExhausted = input.ReadUInt32();
             break;
           }
           case 72: {
@@ -8625,15 +8603,15 @@ namespace jtshared {
             break;
           }
           case 96: {
-            KilledToDropConsumableSpeciesId = input.ReadUInt32();
+            ExhaustedToDropConsumableSpeciesId = input.ReadUInt32();
             break;
           }
           case 104: {
-            KilledToDropBuffSpeciesId = input.ReadUInt32();
+            ExhaustedToDropBuffSpeciesId = input.ReadUInt32();
             break;
           }
           case 112: {
-            KilledToDropPickupSkillId = input.ReadUInt32();
+            ExhaustedToDropPickupSkillId = input.ReadUInt32();
             break;
           }
           case 120: {
@@ -9128,11 +9106,8 @@ namespace jtshared {
       upsyncSnapshot_ = other.upsyncSnapshot_ != null ? other.upsyncSnapshot_.Clone() : null;
       selfParsedRdf_ = other.selfParsedRdf_ != null ? other.selfParsedRdf_.Clone() : null;
       battleDurationSeconds_ = other.battleDurationSeconds_;
-      serializedBarrierPolygons_ = other.serializedBarrierPolygons_.Clone();
-      serializedStaticPatrolCues_ = other.serializedStaticPatrolCues_.Clone();
+      serializedBarriers_ = other.serializedBarriers_.Clone();
       serializedStaticTraps_ = other.serializedStaticTraps_.Clone();
-      serializedTrapIdToColliderAttrs_ = other.serializedTrapIdToColliderAttrs_ != null ? other.serializedTrapIdToColliderAttrs_.Clone() : null;
-      serializedTriggerEditorIdDict_ = other.serializedTriggerEditorIdDict_ != null ? other.serializedTriggerEditorIdDict_.Clone() : null;
       preallocateNpcSpeciesDict_ = other.preallocateNpcSpeciesDict_.Clone();
       fallenDeathHeight_ = other.fallenDeathHeight_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -9220,24 +9195,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "serialized_barrier_polygons" field.</summary>
-    public const int SerializedBarrierPolygonsFieldNumber = 8;
-    private static readonly pb::FieldCodec<global::jtshared.SerializableConvexPolygon> _repeated_serializedBarrierPolygons_codec
-        = pb::FieldCodec.ForMessage(66, global::jtshared.SerializableConvexPolygon.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.SerializableConvexPolygon> serializedBarrierPolygons_ = new pbc::RepeatedField<global::jtshared.SerializableConvexPolygon>();
+    /// <summary>Field number for the "serialized_barriers" field.</summary>
+    public const int SerializedBarriersFieldNumber = 8;
+    private static readonly pb::FieldCodec<global::jtshared.SerializedBarrierCollider> _repeated_serializedBarriers_codec
+        = pb::FieldCodec.ForMessage(66, global::jtshared.SerializedBarrierCollider.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.SerializedBarrierCollider> serializedBarriers_ = new pbc::RepeatedField<global::jtshared.SerializedBarrierCollider>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.SerializableConvexPolygon> SerializedBarrierPolygons {
-      get { return serializedBarrierPolygons_; }
-    }
-
-    /// <summary>Field number for the "serialized_static_patrol_cues" field.</summary>
-    public const int SerializedStaticPatrolCuesFieldNumber = 9;
-    private static readonly pb::FieldCodec<global::jtshared.SerializedStaticPatrolCueCollider> _repeated_serializedStaticPatrolCues_codec
-        = pb::FieldCodec.ForMessage(74, global::jtshared.SerializedStaticPatrolCueCollider.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.SerializedStaticPatrolCueCollider> serializedStaticPatrolCues_ = new pbc::RepeatedField<global::jtshared.SerializedStaticPatrolCueCollider>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.SerializedStaticPatrolCueCollider> SerializedStaticPatrolCues {
-      get { return serializedStaticPatrolCues_; }
+    public pbc::RepeatedField<global::jtshared.SerializedBarrierCollider> SerializedBarriers {
+      get { return serializedBarriers_; }
     }
 
     /// <summary>Field number for the "serialized_static_traps" field.</summary>
@@ -9248,28 +9213,6 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::jtshared.SerializedStaticTrapCollider> SerializedStaticTraps {
       get { return serializedStaticTraps_; }
-    }
-
-    /// <summary>Field number for the "serialized_trap_id_to_collider_attrs" field.</summary>
-    public const int SerializedTrapIdToColliderAttrsFieldNumber = 11;
-    private global::jtshared.SerializedTrapLocalIdToColliderAttrs serializedTrapIdToColliderAttrs_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.SerializedTrapLocalIdToColliderAttrs SerializedTrapIdToColliderAttrs {
-      get { return serializedTrapIdToColliderAttrs_; }
-      set {
-        serializedTrapIdToColliderAttrs_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "serialized_trigger_editor_id_dict" field.</summary>
-    public const int SerializedTriggerEditorIdDictFieldNumber = 12;
-    private global::jtshared.SerializedTriggerEditorIdDict serializedTriggerEditorIdDict_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.SerializedTriggerEditorIdDict SerializedTriggerEditorIdDict {
-      get { return serializedTriggerEditorIdDict_; }
-      set {
-        serializedTriggerEditorIdDict_ = value;
-      }
     }
 
     /// <summary>Field number for the "preallocate_npc_species_dict" field.</summary>
@@ -9313,11 +9256,8 @@ namespace jtshared {
       if (!object.Equals(UpsyncSnapshot, other.UpsyncSnapshot)) return false;
       if (!object.Equals(SelfParsedRdf, other.SelfParsedRdf)) return false;
       if (BattleDurationSeconds != other.BattleDurationSeconds) return false;
-      if(!serializedBarrierPolygons_.Equals(other.serializedBarrierPolygons_)) return false;
-      if(!serializedStaticPatrolCues_.Equals(other.serializedStaticPatrolCues_)) return false;
+      if(!serializedBarriers_.Equals(other.serializedBarriers_)) return false;
       if(!serializedStaticTraps_.Equals(other.serializedStaticTraps_)) return false;
-      if (!object.Equals(SerializedTrapIdToColliderAttrs, other.SerializedTrapIdToColliderAttrs)) return false;
-      if (!object.Equals(SerializedTriggerEditorIdDict, other.SerializedTriggerEditorIdDict)) return false;
       if (!PreallocateNpcSpeciesDict.Equals(other.PreallocateNpcSpeciesDict)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(FallenDeathHeight, other.FallenDeathHeight)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -9333,11 +9273,8 @@ namespace jtshared {
       if (upsyncSnapshot_ != null) hash ^= UpsyncSnapshot.GetHashCode();
       if (selfParsedRdf_ != null) hash ^= SelfParsedRdf.GetHashCode();
       if (BattleDurationSeconds != 0) hash ^= BattleDurationSeconds.GetHashCode();
-      hash ^= serializedBarrierPolygons_.GetHashCode();
-      hash ^= serializedStaticPatrolCues_.GetHashCode();
+      hash ^= serializedBarriers_.GetHashCode();
       hash ^= serializedStaticTraps_.GetHashCode();
-      if (serializedTrapIdToColliderAttrs_ != null) hash ^= SerializedTrapIdToColliderAttrs.GetHashCode();
-      if (serializedTriggerEditorIdDict_ != null) hash ^= SerializedTriggerEditorIdDict.GetHashCode();
       hash ^= PreallocateNpcSpeciesDict.GetHashCode();
       if (FallenDeathHeight != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(FallenDeathHeight);
       if (_unknownFields != null) {
@@ -9381,17 +9318,8 @@ namespace jtshared {
         output.WriteRawTag(56);
         output.WriteInt32(BattleDurationSeconds);
       }
-      serializedBarrierPolygons_.WriteTo(output, _repeated_serializedBarrierPolygons_codec);
-      serializedStaticPatrolCues_.WriteTo(output, _repeated_serializedStaticPatrolCues_codec);
+      serializedBarriers_.WriteTo(output, _repeated_serializedBarriers_codec);
       serializedStaticTraps_.WriteTo(output, _repeated_serializedStaticTraps_codec);
-      if (serializedTrapIdToColliderAttrs_ != null) {
-        output.WriteRawTag(90);
-        output.WriteMessage(SerializedTrapIdToColliderAttrs);
-      }
-      if (serializedTriggerEditorIdDict_ != null) {
-        output.WriteRawTag(98);
-        output.WriteMessage(SerializedTriggerEditorIdDict);
-      }
       preallocateNpcSpeciesDict_.WriteTo(output, _map_preallocateNpcSpeciesDict_codec);
       if (FallenDeathHeight != 0F) {
         output.WriteRawTag(117);
@@ -9426,15 +9354,8 @@ namespace jtshared {
       if (BattleDurationSeconds != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(BattleDurationSeconds);
       }
-      size += serializedBarrierPolygons_.CalculateSize(_repeated_serializedBarrierPolygons_codec);
-      size += serializedStaticPatrolCues_.CalculateSize(_repeated_serializedStaticPatrolCues_codec);
+      size += serializedBarriers_.CalculateSize(_repeated_serializedBarriers_codec);
       size += serializedStaticTraps_.CalculateSize(_repeated_serializedStaticTraps_codec);
-      if (serializedTrapIdToColliderAttrs_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(SerializedTrapIdToColliderAttrs);
-      }
-      if (serializedTriggerEditorIdDict_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(SerializedTriggerEditorIdDict);
-      }
       size += preallocateNpcSpeciesDict_.CalculateSize(_map_preallocateNpcSpeciesDict_codec);
       if (FallenDeathHeight != 0F) {
         size += 1 + 4;
@@ -9477,21 +9398,8 @@ namespace jtshared {
       if (other.BattleDurationSeconds != 0) {
         BattleDurationSeconds = other.BattleDurationSeconds;
       }
-      serializedBarrierPolygons_.Add(other.serializedBarrierPolygons_);
-      serializedStaticPatrolCues_.Add(other.serializedStaticPatrolCues_);
+      serializedBarriers_.Add(other.serializedBarriers_);
       serializedStaticTraps_.Add(other.serializedStaticTraps_);
-      if (other.serializedTrapIdToColliderAttrs_ != null) {
-        if (serializedTrapIdToColliderAttrs_ == null) {
-          SerializedTrapIdToColliderAttrs = new global::jtshared.SerializedTrapLocalIdToColliderAttrs();
-        }
-        SerializedTrapIdToColliderAttrs.MergeFrom(other.SerializedTrapIdToColliderAttrs);
-      }
-      if (other.serializedTriggerEditorIdDict_ != null) {
-        if (serializedTriggerEditorIdDict_ == null) {
-          SerializedTriggerEditorIdDict = new global::jtshared.SerializedTriggerEditorIdDict();
-        }
-        SerializedTriggerEditorIdDict.MergeFrom(other.SerializedTriggerEditorIdDict);
-      }
       preallocateNpcSpeciesDict_.Add(other.preallocateNpcSpeciesDict_);
       if (other.FallenDeathHeight != 0F) {
         FallenDeathHeight = other.FallenDeathHeight;
@@ -9542,29 +9450,11 @@ namespace jtshared {
             break;
           }
           case 66: {
-            serializedBarrierPolygons_.AddEntriesFrom(input, _repeated_serializedBarrierPolygons_codec);
-            break;
-          }
-          case 74: {
-            serializedStaticPatrolCues_.AddEntriesFrom(input, _repeated_serializedStaticPatrolCues_codec);
+            serializedBarriers_.AddEntriesFrom(input, _repeated_serializedBarriers_codec);
             break;
           }
           case 82: {
             serializedStaticTraps_.AddEntriesFrom(input, _repeated_serializedStaticTraps_codec);
-            break;
-          }
-          case 90: {
-            if (serializedTrapIdToColliderAttrs_ == null) {
-              SerializedTrapIdToColliderAttrs = new global::jtshared.SerializedTrapLocalIdToColliderAttrs();
-            }
-            input.ReadMessage(SerializedTrapIdToColliderAttrs);
-            break;
-          }
-          case 98: {
-            if (serializedTriggerEditorIdDict_ == null) {
-              SerializedTriggerEditorIdDict = new global::jtshared.SerializedTriggerEditorIdDict();
-            }
-            input.ReadMessage(SerializedTriggerEditorIdDict);
             break;
           }
           case 106: {
@@ -14855,9 +14745,6 @@ namespace jtshared {
       speed_ = other.speed_;
       dirX_ = other.dirX_;
       dirY_ = other.dirY_;
-      subscribesToId_ = other.subscribesToId_;
-      subscribesToIdAfterInitialFire_ = other.subscribesToIdAfterInitialFire_;
-      subscribesToIdAlt_ = other.subscribesToIdAlt_;
       boxCw_ = other.boxCw_;
       boxCh_ = other.boxCh_;
       initNoAngularVel_ = other.initNoAngularVel_;
@@ -14936,48 +14823,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "subscribes_to_id" field.</summary>
-    public const int SubscribesToIdFieldNumber = 7;
-    private int subscribesToId_;
-    /// <summary>
-    /// [WARNING] This is a "trigger editor id", I don't want to overcomplicated the config of traps, use an additional Trigger to bridge complicated subscription combination between other triggers and a trap
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SubscribesToId {
-      get { return subscribesToId_; }
-      set {
-        subscribesToId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "subscribes_to_id_after_initial_fire" field.</summary>
-    public const int SubscribesToIdAfterInitialFireFieldNumber = 8;
-    private int subscribesToIdAfterInitialFire_;
-    /// <summary>
-    /// [WARNING] For boss door only, couldn't coexist with "subscribes_to_id_after_initial_fire" 
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SubscribesToIdAfterInitialFire {
-      get { return subscribesToIdAfterInitialFire_; }
-      set {
-        subscribesToIdAfterInitialFire_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "subscribes_to_id_alt" field.</summary>
-    public const int SubscribesToIdAltFieldNumber = 9;
-    private int subscribesToIdAlt_;
-    /// <summary>
-    /// [WARNING] For elevator only, couldn't coexist with "subscribes_to_id_after_initial_fire"
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SubscribesToIdAlt {
-      get { return subscribesToIdAlt_; }
-      set {
-        subscribesToIdAlt_ = value;
-      }
-    }
-
     /// <summary>Field number for the "box_cw" field.</summary>
     public const int BoxCwFieldNumber = 10;
     private float boxCw_;
@@ -15029,9 +14874,6 @@ namespace jtshared {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Speed, other.Speed)) return false;
       if (DirX != other.DirX) return false;
       if (DirY != other.DirY) return false;
-      if (SubscribesToId != other.SubscribesToId) return false;
-      if (SubscribesToIdAfterInitialFire != other.SubscribesToIdAfterInitialFire) return false;
-      if (SubscribesToIdAlt != other.SubscribesToIdAlt) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxCw, other.BoxCw)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxCh, other.BoxCh)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(InitNoAngularVel, other.InitNoAngularVel)) return false;
@@ -15046,9 +14888,6 @@ namespace jtshared {
       if (Speed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Speed);
       if (DirX != 0) hash ^= DirX.GetHashCode();
       if (DirY != 0) hash ^= DirY.GetHashCode();
-      if (SubscribesToId != 0) hash ^= SubscribesToId.GetHashCode();
-      if (SubscribesToIdAfterInitialFire != 0) hash ^= SubscribesToIdAfterInitialFire.GetHashCode();
-      if (SubscribesToIdAlt != 0) hash ^= SubscribesToIdAlt.GetHashCode();
       if (BoxCw != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxCw);
       if (BoxCh != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxCh);
       if (InitNoAngularVel != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(InitNoAngularVel);
@@ -15085,18 +14924,6 @@ namespace jtshared {
         output.WriteRawTag(40);
         output.WriteInt32(DirY);
       }
-      if (SubscribesToId != 0) {
-        output.WriteRawTag(56);
-        output.WriteInt32(SubscribesToId);
-      }
-      if (SubscribesToIdAfterInitialFire != 0) {
-        output.WriteRawTag(64);
-        output.WriteInt32(SubscribesToIdAfterInitialFire);
-      }
-      if (SubscribesToIdAlt != 0) {
-        output.WriteRawTag(72);
-        output.WriteInt32(SubscribesToIdAlt);
-      }
       if (BoxCw != 0F) {
         output.WriteRawTag(85);
         output.WriteFloat(BoxCw);
@@ -15132,15 +14959,6 @@ namespace jtshared {
       if (DirY != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(DirY);
       }
-      if (SubscribesToId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubscribesToId);
-      }
-      if (SubscribesToIdAfterInitialFire != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubscribesToIdAfterInitialFire);
-      }
-      if (SubscribesToIdAlt != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubscribesToIdAlt);
-      }
       if (BoxCw != 0F) {
         size += 1 + 4;
       }
@@ -15175,15 +14993,6 @@ namespace jtshared {
       }
       if (other.DirY != 0) {
         DirY = other.DirY;
-      }
-      if (other.SubscribesToId != 0) {
-        SubscribesToId = other.SubscribesToId;
-      }
-      if (other.SubscribesToIdAfterInitialFire != 0) {
-        SubscribesToIdAfterInitialFire = other.SubscribesToIdAfterInitialFire;
-      }
-      if (other.SubscribesToIdAlt != 0) {
-        SubscribesToIdAlt = other.SubscribesToIdAlt;
       }
       if (other.BoxCw != 0F) {
         BoxCw = other.BoxCw;
@@ -15225,18 +15034,6 @@ namespace jtshared {
             DirY = input.ReadInt32();
             break;
           }
-          case 56: {
-            SubscribesToId = input.ReadInt32();
-            break;
-          }
-          case 64: {
-            SubscribesToIdAfterInitialFire = input.ReadInt32();
-            break;
-          }
-          case 72: {
-            SubscribesToIdAlt = input.ReadInt32();
-            break;
-          }
           case 85: {
             BoxCw = input.ReadFloat();
             break;
@@ -15255,6 +15052,275 @@ namespace jtshared {
 
   }
 
+  public sealed partial class BarrierColliderAttr : pb::IMessage<BarrierColliderAttr> {
+    private static readonly pb::MessageParser<BarrierColliderAttr> _parser = new pb::MessageParser<BarrierColliderAttr>(() => new BarrierColliderAttr());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BarrierColliderAttr> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BarrierColliderAttr() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BarrierColliderAttr(BarrierColliderAttr other) : this() {
+      providesHardPushback_ = other.providesHardPushback_;
+      providesSlipJump_ = other.providesSlipJump_;
+      prohibitsWallGrabbing_ = other.prohibitsWallGrabbing_;
+      forcesCrouching_ = other.forcesCrouching_;
+      onlyAllowsAlignedVelX_ = other.onlyAllowsAlignedVelX_;
+      onlyAllowsAlignedVelY_ = other.onlyAllowsAlignedVelY_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BarrierColliderAttr Clone() {
+      return new BarrierColliderAttr(this);
+    }
+
+    /// <summary>Field number for the "provides_hard_pushback" field.</summary>
+    public const int ProvidesHardPushbackFieldNumber = 1;
+    private bool providesHardPushback_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool ProvidesHardPushback {
+      get { return providesHardPushback_; }
+      set {
+        providesHardPushback_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "provides_slip_jump" field.</summary>
+    public const int ProvidesSlipJumpFieldNumber = 2;
+    private bool providesSlipJump_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool ProvidesSlipJump {
+      get { return providesSlipJump_; }
+      set {
+        providesSlipJump_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "prohibits_wall_grabbing" field.</summary>
+    public const int ProhibitsWallGrabbingFieldNumber = 3;
+    private bool prohibitsWallGrabbing_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool ProhibitsWallGrabbing {
+      get { return prohibitsWallGrabbing_; }
+      set {
+        prohibitsWallGrabbing_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "forces_crouching" field.</summary>
+    public const int ForcesCrouchingFieldNumber = 4;
+    private bool forcesCrouching_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool ForcesCrouching {
+      get { return forcesCrouching_; }
+      set {
+        forcesCrouching_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "only_allows_aligned_vel_x" field.</summary>
+    public const int OnlyAllowsAlignedVelXFieldNumber = 5;
+    private int onlyAllowsAlignedVelX_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int OnlyAllowsAlignedVelX {
+      get { return onlyAllowsAlignedVelX_; }
+      set {
+        onlyAllowsAlignedVelX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "only_allows_aligned_vel_y" field.</summary>
+    public const int OnlyAllowsAlignedVelYFieldNumber = 6;
+    private int onlyAllowsAlignedVelY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int OnlyAllowsAlignedVelY {
+      get { return onlyAllowsAlignedVelY_; }
+      set {
+        onlyAllowsAlignedVelY_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BarrierColliderAttr);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BarrierColliderAttr other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (ProvidesHardPushback != other.ProvidesHardPushback) return false;
+      if (ProvidesSlipJump != other.ProvidesSlipJump) return false;
+      if (ProhibitsWallGrabbing != other.ProhibitsWallGrabbing) return false;
+      if (ForcesCrouching != other.ForcesCrouching) return false;
+      if (OnlyAllowsAlignedVelX != other.OnlyAllowsAlignedVelX) return false;
+      if (OnlyAllowsAlignedVelY != other.OnlyAllowsAlignedVelY) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (ProvidesHardPushback != false) hash ^= ProvidesHardPushback.GetHashCode();
+      if (ProvidesSlipJump != false) hash ^= ProvidesSlipJump.GetHashCode();
+      if (ProhibitsWallGrabbing != false) hash ^= ProhibitsWallGrabbing.GetHashCode();
+      if (ForcesCrouching != false) hash ^= ForcesCrouching.GetHashCode();
+      if (OnlyAllowsAlignedVelX != 0) hash ^= OnlyAllowsAlignedVelX.GetHashCode();
+      if (OnlyAllowsAlignedVelY != 0) hash ^= OnlyAllowsAlignedVelY.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ProvidesHardPushback != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(ProvidesHardPushback);
+      }
+      if (ProvidesSlipJump != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(ProvidesSlipJump);
+      }
+      if (ProhibitsWallGrabbing != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(ProhibitsWallGrabbing);
+      }
+      if (ForcesCrouching != false) {
+        output.WriteRawTag(32);
+        output.WriteBool(ForcesCrouching);
+      }
+      if (OnlyAllowsAlignedVelX != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(OnlyAllowsAlignedVelX);
+      }
+      if (OnlyAllowsAlignedVelY != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(OnlyAllowsAlignedVelY);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (ProvidesHardPushback != false) {
+        size += 1 + 1;
+      }
+      if (ProvidesSlipJump != false) {
+        size += 1 + 1;
+      }
+      if (ProhibitsWallGrabbing != false) {
+        size += 1 + 1;
+      }
+      if (ForcesCrouching != false) {
+        size += 1 + 1;
+      }
+      if (OnlyAllowsAlignedVelX != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OnlyAllowsAlignedVelX);
+      }
+      if (OnlyAllowsAlignedVelY != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OnlyAllowsAlignedVelY);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BarrierColliderAttr other) {
+      if (other == null) {
+        return;
+      }
+      if (other.ProvidesHardPushback != false) {
+        ProvidesHardPushback = other.ProvidesHardPushback;
+      }
+      if (other.ProvidesSlipJump != false) {
+        ProvidesSlipJump = other.ProvidesSlipJump;
+      }
+      if (other.ProhibitsWallGrabbing != false) {
+        ProhibitsWallGrabbing = other.ProhibitsWallGrabbing;
+      }
+      if (other.ForcesCrouching != false) {
+        ForcesCrouching = other.ForcesCrouching;
+      }
+      if (other.OnlyAllowsAlignedVelX != 0) {
+        OnlyAllowsAlignedVelX = other.OnlyAllowsAlignedVelX;
+      }
+      if (other.OnlyAllowsAlignedVelY != 0) {
+        OnlyAllowsAlignedVelY = other.OnlyAllowsAlignedVelY;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            ProvidesHardPushback = input.ReadBool();
+            break;
+          }
+          case 16: {
+            ProvidesSlipJump = input.ReadBool();
+            break;
+          }
+          case 24: {
+            ProhibitsWallGrabbing = input.ReadBool();
+            break;
+          }
+          case 32: {
+            ForcesCrouching = input.ReadBool();
+            break;
+          }
+          case 40: {
+            OnlyAllowsAlignedVelX = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            OnlyAllowsAlignedVelY = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class TrapColliderAttr : pb::IMessage<TrapColliderAttr> {
     private static readonly pb::MessageParser<TrapColliderAttr> _parser = new pb::MessageParser<TrapColliderAttr>(() => new TrapColliderAttr());
     private pb::UnknownFieldSet _unknownFields;
@@ -15263,7 +15329,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15280,23 +15346,9 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TrapColliderAttr(TrapColliderAttr other) : this() {
-      hitboxOffsetX_ = other.hitboxOffsetX_;
-      hitboxOffsetY_ = other.hitboxOffsetY_;
-      hitboxHalfSizeX_ = other.hitboxHalfSizeX_;
-      hitboxHalfSizeY_ = other.hitboxHalfSizeY_;
-      providesHardPushback_ = other.providesHardPushback_;
       providesDamage_ = other.providesDamage_;
-      providesEscape_ = other.providesEscape_;
-      providesSlipJump_ = other.providesSlipJump_;
-      prohibitsWallGrabbing_ = other.prohibitsWallGrabbing_;
-      forcesCrouching_ = other.forcesCrouching_;
-      speciesId_ = other.speciesId_;
-      onlyAllowsAlignedVelX_ = other.onlyAllowsAlignedVelX_;
-      onlyAllowsAlignedVelY_ = other.onlyAllowsAlignedVelY_;
       asPatrolCue_ = other.asPatrolCue_;
       tcPc_ = other.tcPc_ != null ? other.tcPc_.Clone() : null;
-      id_ = other.id_;
-      collisionTypeMask_ = other.collisionTypeMask_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -15305,66 +15357,8 @@ namespace jtshared {
       return new TrapColliderAttr(this);
     }
 
-    /// <summary>Field number for the "hitbox_offset_x" field.</summary>
-    public const int HitboxOffsetXFieldNumber = 1;
-    private int hitboxOffsetX_;
-    /// <summary>
-    /// In the case of a trap, it might own multiple hitboxes and each hitbox is drawn in Tiled and assigned after parsing the tmx file, thus not put in static config.
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int HitboxOffsetX {
-      get { return hitboxOffsetX_; }
-      set {
-        hitboxOffsetX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hitbox_offset_y" field.</summary>
-    public const int HitboxOffsetYFieldNumber = 2;
-    private int hitboxOffsetY_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int HitboxOffsetY {
-      get { return hitboxOffsetY_; }
-      set {
-        hitboxOffsetY_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hitbox_half_size_x" field.</summary>
-    public const int HitboxHalfSizeXFieldNumber = 3;
-    private int hitboxHalfSizeX_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int HitboxHalfSizeX {
-      get { return hitboxHalfSizeX_; }
-      set {
-        hitboxHalfSizeX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hitbox_half_size_y" field.</summary>
-    public const int HitboxHalfSizeYFieldNumber = 4;
-    private int hitboxHalfSizeY_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int HitboxHalfSizeY {
-      get { return hitboxHalfSizeY_; }
-      set {
-        hitboxHalfSizeY_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "provides_hard_pushback" field.</summary>
-    public const int ProvidesHardPushbackFieldNumber = 5;
-    private bool providesHardPushback_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ProvidesHardPushback {
-      get { return providesHardPushback_; }
-      set {
-        providesHardPushback_ = value;
-      }
-    }
-
     /// <summary>Field number for the "provides_damage" field.</summary>
-    public const int ProvidesDamageFieldNumber = 6;
+    public const int ProvidesDamageFieldNumber = 1;
     private bool providesDamage_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool ProvidesDamage {
@@ -15374,88 +15368,8 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "provides_escape" field.</summary>
-    public const int ProvidesEscapeFieldNumber = 7;
-    private bool providesEscape_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ProvidesEscape {
-      get { return providesEscape_; }
-      set {
-        providesEscape_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "provides_slip_jump" field.</summary>
-    public const int ProvidesSlipJumpFieldNumber = 8;
-    private bool providesSlipJump_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ProvidesSlipJump {
-      get { return providesSlipJump_; }
-      set {
-        providesSlipJump_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "prohibits_wall_grabbing" field.</summary>
-    public const int ProhibitsWallGrabbingFieldNumber = 9;
-    private bool prohibitsWallGrabbing_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ProhibitsWallGrabbing {
-      get { return prohibitsWallGrabbing_; }
-      set {
-        prohibitsWallGrabbing_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "forces_crouching" field.</summary>
-    public const int ForcesCrouchingFieldNumber = 10;
-    private bool forcesCrouching_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ForcesCrouching {
-      get { return forcesCrouching_; }
-      set {
-        forcesCrouching_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 11;
-    private uint speciesId_;
-    /// <summary>
-    /// Redundancy for referencing "Trap_config"
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SpeciesId {
-      get { return speciesId_; }
-      set {
-        speciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "only_allows_aligned_vel_x" field.</summary>
-    public const int OnlyAllowsAlignedVelXFieldNumber = 12;
-    private int onlyAllowsAlignedVelX_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int OnlyAllowsAlignedVelX {
-      get { return onlyAllowsAlignedVelX_; }
-      set {
-        onlyAllowsAlignedVelX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "only_allows_aligned_vel_y" field.</summary>
-    public const int OnlyAllowsAlignedVelYFieldNumber = 13;
-    private int onlyAllowsAlignedVelY_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int OnlyAllowsAlignedVelY {
-      get { return onlyAllowsAlignedVelY_; }
-      set {
-        onlyAllowsAlignedVelY_ = value;
-      }
-    }
-
     /// <summary>Field number for the "as_patrol_cue" field.</summary>
-    public const int AsPatrolCueFieldNumber = 14;
+    public const int AsPatrolCueFieldNumber = 2;
     private bool asPatrolCue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool AsPatrolCue {
@@ -15466,38 +15380,13 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "tc_pc" field.</summary>
-    public const int TcPcFieldNumber = 15;
+    public const int TcPcFieldNumber = 3;
     private global::jtshared.PatrolCue tcPc_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.PatrolCue TcPc {
       get { return tcPc_; }
       set {
         tcPc_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "id" field.</summary>
-    public const int IdFieldNumber = 1024;
-    private uint id_;
-    /// <summary>
-    /// ref-back upon collision, for damage handling
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint Id {
-      get { return id_; }
-      set {
-        id_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "collision_type_mask" field.</summary>
-    public const int CollisionTypeMaskFieldNumber = 1029;
-    private ulong collisionTypeMask_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong CollisionTypeMask {
-      get { return collisionTypeMask_; }
-      set {
-        collisionTypeMask_ = value;
       }
     }
 
@@ -15514,46 +15403,18 @@ namespace jtshared {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (HitboxOffsetX != other.HitboxOffsetX) return false;
-      if (HitboxOffsetY != other.HitboxOffsetY) return false;
-      if (HitboxHalfSizeX != other.HitboxHalfSizeX) return false;
-      if (HitboxHalfSizeY != other.HitboxHalfSizeY) return false;
-      if (ProvidesHardPushback != other.ProvidesHardPushback) return false;
       if (ProvidesDamage != other.ProvidesDamage) return false;
-      if (ProvidesEscape != other.ProvidesEscape) return false;
-      if (ProvidesSlipJump != other.ProvidesSlipJump) return false;
-      if (ProhibitsWallGrabbing != other.ProhibitsWallGrabbing) return false;
-      if (ForcesCrouching != other.ForcesCrouching) return false;
-      if (SpeciesId != other.SpeciesId) return false;
-      if (OnlyAllowsAlignedVelX != other.OnlyAllowsAlignedVelX) return false;
-      if (OnlyAllowsAlignedVelY != other.OnlyAllowsAlignedVelY) return false;
       if (AsPatrolCue != other.AsPatrolCue) return false;
       if (!object.Equals(TcPc, other.TcPc)) return false;
-      if (Id != other.Id) return false;
-      if (CollisionTypeMask != other.CollisionTypeMask) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HitboxOffsetX != 0) hash ^= HitboxOffsetX.GetHashCode();
-      if (HitboxOffsetY != 0) hash ^= HitboxOffsetY.GetHashCode();
-      if (HitboxHalfSizeX != 0) hash ^= HitboxHalfSizeX.GetHashCode();
-      if (HitboxHalfSizeY != 0) hash ^= HitboxHalfSizeY.GetHashCode();
-      if (ProvidesHardPushback != false) hash ^= ProvidesHardPushback.GetHashCode();
       if (ProvidesDamage != false) hash ^= ProvidesDamage.GetHashCode();
-      if (ProvidesEscape != false) hash ^= ProvidesEscape.GetHashCode();
-      if (ProvidesSlipJump != false) hash ^= ProvidesSlipJump.GetHashCode();
-      if (ProhibitsWallGrabbing != false) hash ^= ProhibitsWallGrabbing.GetHashCode();
-      if (ForcesCrouching != false) hash ^= ForcesCrouching.GetHashCode();
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
-      if (OnlyAllowsAlignedVelX != 0) hash ^= OnlyAllowsAlignedVelX.GetHashCode();
-      if (OnlyAllowsAlignedVelY != 0) hash ^= OnlyAllowsAlignedVelY.GetHashCode();
       if (AsPatrolCue != false) hash ^= AsPatrolCue.GetHashCode();
       if (tcPc_ != null) hash ^= TcPc.GetHashCode();
-      if (Id != 0) hash ^= Id.GetHashCode();
-      if (CollisionTypeMask != 0UL) hash ^= CollisionTypeMask.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -15567,73 +15428,17 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HitboxOffsetX != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(HitboxOffsetX);
-      }
-      if (HitboxOffsetY != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(HitboxOffsetY);
-      }
-      if (HitboxHalfSizeX != 0) {
-        output.WriteRawTag(24);
-        output.WriteInt32(HitboxHalfSizeX);
-      }
-      if (HitboxHalfSizeY != 0) {
-        output.WriteRawTag(32);
-        output.WriteInt32(HitboxHalfSizeY);
-      }
-      if (ProvidesHardPushback != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(ProvidesHardPushback);
-      }
       if (ProvidesDamage != false) {
-        output.WriteRawTag(48);
+        output.WriteRawTag(8);
         output.WriteBool(ProvidesDamage);
       }
-      if (ProvidesEscape != false) {
-        output.WriteRawTag(56);
-        output.WriteBool(ProvidesEscape);
-      }
-      if (ProvidesSlipJump != false) {
-        output.WriteRawTag(64);
-        output.WriteBool(ProvidesSlipJump);
-      }
-      if (ProhibitsWallGrabbing != false) {
-        output.WriteRawTag(72);
-        output.WriteBool(ProhibitsWallGrabbing);
-      }
-      if (ForcesCrouching != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(ForcesCrouching);
-      }
-      if (SpeciesId != 0) {
-        output.WriteRawTag(88);
-        output.WriteUInt32(SpeciesId);
-      }
-      if (OnlyAllowsAlignedVelX != 0) {
-        output.WriteRawTag(96);
-        output.WriteInt32(OnlyAllowsAlignedVelX);
-      }
-      if (OnlyAllowsAlignedVelY != 0) {
-        output.WriteRawTag(104);
-        output.WriteInt32(OnlyAllowsAlignedVelY);
-      }
       if (AsPatrolCue != false) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(16);
         output.WriteBool(AsPatrolCue);
       }
       if (tcPc_ != null) {
-        output.WriteRawTag(122);
+        output.WriteRawTag(26);
         output.WriteMessage(TcPc);
-      }
-      if (Id != 0) {
-        output.WriteRawTag(128, 64);
-        output.WriteUInt32(Id);
-      }
-      if (CollisionTypeMask != 0UL) {
-        output.WriteRawTag(168, 64);
-        output.WriteUInt64(CollisionTypeMask);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -15643,56 +15448,14 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HitboxOffsetX != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(HitboxOffsetX);
-      }
-      if (HitboxOffsetY != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(HitboxOffsetY);
-      }
-      if (HitboxHalfSizeX != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(HitboxHalfSizeX);
-      }
-      if (HitboxHalfSizeY != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(HitboxHalfSizeY);
-      }
-      if (ProvidesHardPushback != false) {
-        size += 1 + 1;
-      }
       if (ProvidesDamage != false) {
         size += 1 + 1;
-      }
-      if (ProvidesEscape != false) {
-        size += 1 + 1;
-      }
-      if (ProvidesSlipJump != false) {
-        size += 1 + 1;
-      }
-      if (ProhibitsWallGrabbing != false) {
-        size += 1 + 1;
-      }
-      if (ForcesCrouching != false) {
-        size += 1 + 1;
-      }
-      if (SpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SpeciesId);
-      }
-      if (OnlyAllowsAlignedVelX != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OnlyAllowsAlignedVelX);
-      }
-      if (OnlyAllowsAlignedVelY != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OnlyAllowsAlignedVelY);
       }
       if (AsPatrolCue != false) {
         size += 1 + 1;
       }
       if (tcPc_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TcPc);
-      }
-      if (Id != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(Id);
-      }
-      if (CollisionTypeMask != 0UL) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(CollisionTypeMask);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -15705,44 +15468,8 @@ namespace jtshared {
       if (other == null) {
         return;
       }
-      if (other.HitboxOffsetX != 0) {
-        HitboxOffsetX = other.HitboxOffsetX;
-      }
-      if (other.HitboxOffsetY != 0) {
-        HitboxOffsetY = other.HitboxOffsetY;
-      }
-      if (other.HitboxHalfSizeX != 0) {
-        HitboxHalfSizeX = other.HitboxHalfSizeX;
-      }
-      if (other.HitboxHalfSizeY != 0) {
-        HitboxHalfSizeY = other.HitboxHalfSizeY;
-      }
-      if (other.ProvidesHardPushback != false) {
-        ProvidesHardPushback = other.ProvidesHardPushback;
-      }
       if (other.ProvidesDamage != false) {
         ProvidesDamage = other.ProvidesDamage;
-      }
-      if (other.ProvidesEscape != false) {
-        ProvidesEscape = other.ProvidesEscape;
-      }
-      if (other.ProvidesSlipJump != false) {
-        ProvidesSlipJump = other.ProvidesSlipJump;
-      }
-      if (other.ProhibitsWallGrabbing != false) {
-        ProhibitsWallGrabbing = other.ProhibitsWallGrabbing;
-      }
-      if (other.ForcesCrouching != false) {
-        ForcesCrouching = other.ForcesCrouching;
-      }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
-      }
-      if (other.OnlyAllowsAlignedVelX != 0) {
-        OnlyAllowsAlignedVelX = other.OnlyAllowsAlignedVelX;
-      }
-      if (other.OnlyAllowsAlignedVelY != 0) {
-        OnlyAllowsAlignedVelY = other.OnlyAllowsAlignedVelY;
       }
       if (other.AsPatrolCue != false) {
         AsPatrolCue = other.AsPatrolCue;
@@ -15752,12 +15479,6 @@ namespace jtshared {
           TcPc = new global::jtshared.PatrolCue();
         }
         TcPc.MergeFrom(other.TcPc);
-      }
-      if (other.Id != 0) {
-        Id = other.Id;
-      }
-      if (other.CollisionTypeMask != 0UL) {
-        CollisionTypeMask = other.CollisionTypeMask;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -15771,74 +15492,18 @@ namespace jtshared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            HitboxOffsetX = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            HitboxOffsetY = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            HitboxHalfSizeX = input.ReadInt32();
-            break;
-          }
-          case 32: {
-            HitboxHalfSizeY = input.ReadInt32();
-            break;
-          }
-          case 40: {
-            ProvidesHardPushback = input.ReadBool();
-            break;
-          }
-          case 48: {
             ProvidesDamage = input.ReadBool();
             break;
           }
-          case 56: {
-            ProvidesEscape = input.ReadBool();
-            break;
-          }
-          case 64: {
-            ProvidesSlipJump = input.ReadBool();
-            break;
-          }
-          case 72: {
-            ProhibitsWallGrabbing = input.ReadBool();
-            break;
-          }
-          case 80: {
-            ForcesCrouching = input.ReadBool();
-            break;
-          }
-          case 88: {
-            SpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 96: {
-            OnlyAllowsAlignedVelX = input.ReadInt32();
-            break;
-          }
-          case 104: {
-            OnlyAllowsAlignedVelY = input.ReadInt32();
-            break;
-          }
-          case 112: {
+          case 16: {
             AsPatrolCue = input.ReadBool();
             break;
           }
-          case 122: {
+          case 26: {
             if (tcPc_ == null) {
               TcPc = new global::jtshared.PatrolCue();
             }
             input.ReadMessage(TcPc);
-            break;
-          }
-          case 8192: {
-            Id = input.ReadUInt32();
-            break;
-          }
-          case 8232: {
-            CollisionTypeMask = input.ReadUInt64();
             break;
           }
         }
@@ -15859,7 +15524,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15878,7 +15543,6 @@ namespace jtshared {
     public Trap(Trap other) : this() {
       id_ = other.id_;
       patrolCueAngularVelFlipMark_ = other.patrolCueAngularVelFlipMark_;
-      configFromTiled_ = other.configFromTiled_ != null ? other.configFromTiled_.Clone() : null;
       trapState_ = other.trapState_;
       framesInTrapState_ = other.framesInTrapState_;
       isStatic_ = other.isStatic_;
@@ -15888,16 +15552,19 @@ namespace jtshared {
       waivingSpontaneousPatrol_ = other.waivingSpontaneousPatrol_;
       subscribesToTriggerId_ = other.subscribesToTriggerId_;
       subscribesToTriggerIdAlt_ = other.subscribesToTriggerIdAlt_;
-      spinCos_ = other.spinCos_;
-      spinSin_ = other.spinSin_;
-      angularFrameVelCos_ = other.angularFrameVelCos_;
-      angularFrameVelSin_ = other.angularFrameVelSin_;
       x_ = other.x_;
       y_ = other.y_;
-      dirX_ = other.dirX_;
-      dirY_ = other.dirY_;
+      z_ = other.z_;
+      qX_ = other.qX_;
+      qY_ = other.qY_;
+      qZ_ = other.qZ_;
+      qW_ = other.qW_;
       velX_ = other.velX_;
       velY_ = other.velY_;
+      velZ_ = other.velZ_;
+      angVelX_ = other.angVelX_;
+      angVelY_ = other.angVelY_;
+      angVelZ_ = other.angVelZ_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -15909,9 +15576,6 @@ namespace jtshared {
     /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 1;
     private uint id_;
-    /// <summary>
-    /// [WARNING] Used to look up proper "List&lt;TrapColliderAttr>" which is configured in Tiled Editor and remained static during the whole battle!
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint Id {
       get { return id_; }
@@ -15928,17 +15592,6 @@ namespace jtshared {
       get { return patrolCueAngularVelFlipMark_; }
       set {
         patrolCueAngularVelFlipMark_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "config_from_tiled" field.</summary>
-    public const int ConfigFromTiledFieldNumber = 3;
-    private global::jtshared.TrapConfigFromTiled configFromTiled_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.TrapConfigFromTiled ConfigFromTiled {
-      get { return configFromTiled_; }
-      set {
-        configFromTiled_ = value;
       }
     }
 
@@ -16041,58 +15694,8 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "spin_cos" field.</summary>
-    public const int SpinCosFieldNumber = 13;
-    private float spinCos_;
-    /// <summary>
-    /// To be used after applying "dir_x (used for mirroring)"
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float SpinCos {
-      get { return spinCos_; }
-      set {
-        spinCos_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "spin_sin" field.</summary>
-    public const int SpinSinFieldNumber = 14;
-    private float spinSin_;
-    /// <summary>
-    /// To be used after applying "dir_x (used for mirroring)"
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float SpinSin {
-      get { return spinSin_; }
-      set {
-        spinSin_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "angular_frame_vel_cos" field.</summary>
-    public const int AngularFrameVelCosFieldNumber = 15;
-    private float angularFrameVelCos_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float AngularFrameVelCos {
-      get { return angularFrameVelCos_; }
-      set {
-        angularFrameVelCos_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "angular_frame_vel_sin" field.</summary>
-    public const int AngularFrameVelSinFieldNumber = 16;
-    private float angularFrameVelSin_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float AngularFrameVelSin {
-      get { return angularFrameVelSin_; }
-      set {
-        angularFrameVelSin_ = value;
-      }
-    }
-
     /// <summary>Field number for the "x" field.</summary>
-    public const int XFieldNumber = 17;
+    public const int XFieldNumber = 13;
     private float x_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float X {
@@ -16103,7 +15706,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "y" field.</summary>
-    public const int YFieldNumber = 18;
+    public const int YFieldNumber = 14;
     private float y_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Y {
@@ -16113,31 +15716,67 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "dir_x" field.</summary>
-    public const int DirXFieldNumber = 19;
-    private int dirX_;
+    /// <summary>Field number for the "z" field.</summary>
+    public const int ZFieldNumber = 15;
+    private float z_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int DirX {
-      get { return dirX_; }
+    public float Z {
+      get { return z_; }
       set {
-        dirX_ = value;
+        z_ = value;
       }
     }
 
-    /// <summary>Field number for the "dir_y" field.</summary>
-    public const int DirYFieldNumber = 20;
-    private int dirY_;
+    /// <summary>Field number for the "q_x" field.</summary>
+    public const int QXFieldNumber = 16;
+    private float qX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int DirY {
-      get { return dirY_; }
+    public float QX {
+      get { return qX_; }
       set {
-        dirY_ = value;
+        qX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "q_y" field.</summary>
+    public const int QYFieldNumber = 17;
+    private float qY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float QY {
+      get { return qY_; }
+      set {
+        qY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "q_z" field.</summary>
+    public const int QZFieldNumber = 18;
+    private float qZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float QZ {
+      get { return qZ_; }
+      set {
+        qZ_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "q_w" field.</summary>
+    public const int QWFieldNumber = 19;
+    private float qW_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float QW {
+      get { return qW_; }
+      set {
+        qW_ = value;
       }
     }
 
     /// <summary>Field number for the "vel_x" field.</summary>
-    public const int VelXFieldNumber = 21;
+    public const int VelXFieldNumber = 20;
     private float velX_;
+    /// <summary>
+    /// Linear velocity.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float VelX {
       get { return velX_; }
@@ -16147,13 +15786,60 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "vel_y" field.</summary>
-    public const int VelYFieldNumber = 22;
+    public const int VelYFieldNumber = 21;
     private float velY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float VelY {
       get { return velY_; }
       set {
         velY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vel_z" field.</summary>
+    public const int VelZFieldNumber = 22;
+    private float velZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float VelZ {
+      get { return velZ_; }
+      set {
+        velZ_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ang_vel_x" field.</summary>
+    public const int AngVelXFieldNumber = 23;
+    private float angVelX_;
+    /// <summary>
+    /// Angular velocity.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float AngVelX {
+      get { return angVelX_; }
+      set {
+        angVelX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ang_vel_y" field.</summary>
+    public const int AngVelYFieldNumber = 24;
+    private float angVelY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float AngVelY {
+      get { return angVelY_; }
+      set {
+        angVelY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ang_vel_z" field.</summary>
+    public const int AngVelZFieldNumber = 25;
+    private float angVelZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float AngVelZ {
+      get { return angVelZ_; }
+      set {
+        angVelZ_ = value;
       }
     }
 
@@ -16172,7 +15858,6 @@ namespace jtshared {
       }
       if (Id != other.Id) return false;
       if (PatrolCueAngularVelFlipMark != other.PatrolCueAngularVelFlipMark) return false;
-      if (!object.Equals(ConfigFromTiled, other.ConfigFromTiled)) return false;
       if (TrapState != other.TrapState) return false;
       if (FramesInTrapState != other.FramesInTrapState) return false;
       if (IsStatic != other.IsStatic) return false;
@@ -16182,16 +15867,19 @@ namespace jtshared {
       if (WaivingSpontaneousPatrol != other.WaivingSpontaneousPatrol) return false;
       if (SubscribesToTriggerId != other.SubscribesToTriggerId) return false;
       if (SubscribesToTriggerIdAlt != other.SubscribesToTriggerIdAlt) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SpinCos, other.SpinCos)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SpinSin, other.SpinSin)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AngularFrameVelCos, other.AngularFrameVelCos)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AngularFrameVelSin, other.AngularFrameVelSin)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
-      if (DirX != other.DirX) return false;
-      if (DirY != other.DirY) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Z, other.Z)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(QX, other.QX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(QY, other.QY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(QZ, other.QZ)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(QW, other.QW)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelX, other.VelX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelY, other.VelY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelZ, other.VelZ)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AngVelX, other.AngVelX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AngVelY, other.AngVelY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AngVelZ, other.AngVelZ)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -16200,7 +15888,6 @@ namespace jtshared {
       int hash = 1;
       if (Id != 0) hash ^= Id.GetHashCode();
       if (PatrolCueAngularVelFlipMark != 0) hash ^= PatrolCueAngularVelFlipMark.GetHashCode();
-      if (configFromTiled_ != null) hash ^= ConfigFromTiled.GetHashCode();
       if (TrapState != 0) hash ^= TrapState.GetHashCode();
       if (FramesInTrapState != 0) hash ^= FramesInTrapState.GetHashCode();
       if (IsStatic != false) hash ^= IsStatic.GetHashCode();
@@ -16210,16 +15897,19 @@ namespace jtshared {
       if (WaivingSpontaneousPatrol != false) hash ^= WaivingSpontaneousPatrol.GetHashCode();
       if (SubscribesToTriggerId != 0) hash ^= SubscribesToTriggerId.GetHashCode();
       if (SubscribesToTriggerIdAlt != 0) hash ^= SubscribesToTriggerIdAlt.GetHashCode();
-      if (SpinCos != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SpinCos);
-      if (SpinSin != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SpinSin);
-      if (AngularFrameVelCos != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AngularFrameVelCos);
-      if (AngularFrameVelSin != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AngularFrameVelSin);
       if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
       if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
-      if (DirX != 0) hash ^= DirX.GetHashCode();
-      if (DirY != 0) hash ^= DirY.GetHashCode();
+      if (Z != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Z);
+      if (QX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(QX);
+      if (QY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(QY);
+      if (QZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(QZ);
+      if (QW != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(QW);
       if (VelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelX);
       if (VelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelY);
+      if (VelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelZ);
+      if (AngVelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AngVelX);
+      if (AngVelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AngVelY);
+      if (AngVelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AngVelZ);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -16240,10 +15930,6 @@ namespace jtshared {
       if (PatrolCueAngularVelFlipMark != 0) {
         output.WriteRawTag(16);
         output.WriteInt32(PatrolCueAngularVelFlipMark);
-      }
-      if (configFromTiled_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(ConfigFromTiled);
       }
       if (TrapState != 0) {
         output.WriteRawTag(32);
@@ -16281,45 +15967,57 @@ namespace jtshared {
         output.WriteRawTag(96);
         output.WriteUInt32(SubscribesToTriggerIdAlt);
       }
-      if (SpinCos != 0F) {
-        output.WriteRawTag(109);
-        output.WriteFloat(SpinCos);
-      }
-      if (SpinSin != 0F) {
-        output.WriteRawTag(117);
-        output.WriteFloat(SpinSin);
-      }
-      if (AngularFrameVelCos != 0F) {
-        output.WriteRawTag(125);
-        output.WriteFloat(AngularFrameVelCos);
-      }
-      if (AngularFrameVelSin != 0F) {
-        output.WriteRawTag(133, 1);
-        output.WriteFloat(AngularFrameVelSin);
-      }
       if (X != 0F) {
-        output.WriteRawTag(141, 1);
+        output.WriteRawTag(109);
         output.WriteFloat(X);
       }
       if (Y != 0F) {
-        output.WriteRawTag(149, 1);
+        output.WriteRawTag(117);
         output.WriteFloat(Y);
       }
-      if (DirX != 0) {
-        output.WriteRawTag(152, 1);
-        output.WriteInt32(DirX);
+      if (Z != 0F) {
+        output.WriteRawTag(125);
+        output.WriteFloat(Z);
       }
-      if (DirY != 0) {
-        output.WriteRawTag(160, 1);
-        output.WriteInt32(DirY);
+      if (QX != 0F) {
+        output.WriteRawTag(133, 1);
+        output.WriteFloat(QX);
+      }
+      if (QY != 0F) {
+        output.WriteRawTag(141, 1);
+        output.WriteFloat(QY);
+      }
+      if (QZ != 0F) {
+        output.WriteRawTag(149, 1);
+        output.WriteFloat(QZ);
+      }
+      if (QW != 0F) {
+        output.WriteRawTag(157, 1);
+        output.WriteFloat(QW);
       }
       if (VelX != 0F) {
-        output.WriteRawTag(173, 1);
+        output.WriteRawTag(165, 1);
         output.WriteFloat(VelX);
       }
       if (VelY != 0F) {
-        output.WriteRawTag(181, 1);
+        output.WriteRawTag(173, 1);
         output.WriteFloat(VelY);
+      }
+      if (VelZ != 0F) {
+        output.WriteRawTag(181, 1);
+        output.WriteFloat(VelZ);
+      }
+      if (AngVelX != 0F) {
+        output.WriteRawTag(189, 1);
+        output.WriteFloat(AngVelX);
+      }
+      if (AngVelY != 0F) {
+        output.WriteRawTag(197, 1);
+        output.WriteFloat(AngVelY);
+      }
+      if (AngVelZ != 0F) {
+        output.WriteRawTag(205, 1);
+        output.WriteFloat(AngVelZ);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -16334,9 +16032,6 @@ namespace jtshared {
       }
       if (PatrolCueAngularVelFlipMark != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(PatrolCueAngularVelFlipMark);
-      }
-      if (configFromTiled_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ConfigFromTiled);
       }
       if (TrapState != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) TrapState);
@@ -16365,34 +16060,43 @@ namespace jtshared {
       if (SubscribesToTriggerIdAlt != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SubscribesToTriggerIdAlt);
       }
-      if (SpinCos != 0F) {
-        size += 1 + 4;
-      }
-      if (SpinSin != 0F) {
-        size += 1 + 4;
-      }
-      if (AngularFrameVelCos != 0F) {
-        size += 1 + 4;
-      }
-      if (AngularFrameVelSin != 0F) {
-        size += 2 + 4;
-      }
       if (X != 0F) {
-        size += 2 + 4;
+        size += 1 + 4;
       }
       if (Y != 0F) {
+        size += 1 + 4;
+      }
+      if (Z != 0F) {
+        size += 1 + 4;
+      }
+      if (QX != 0F) {
         size += 2 + 4;
       }
-      if (DirX != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(DirX);
+      if (QY != 0F) {
+        size += 2 + 4;
       }
-      if (DirY != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(DirY);
+      if (QZ != 0F) {
+        size += 2 + 4;
+      }
+      if (QW != 0F) {
+        size += 2 + 4;
       }
       if (VelX != 0F) {
         size += 2 + 4;
       }
       if (VelY != 0F) {
+        size += 2 + 4;
+      }
+      if (VelZ != 0F) {
+        size += 2 + 4;
+      }
+      if (AngVelX != 0F) {
+        size += 2 + 4;
+      }
+      if (AngVelY != 0F) {
+        size += 2 + 4;
+      }
+      if (AngVelZ != 0F) {
         size += 2 + 4;
       }
       if (_unknownFields != null) {
@@ -16411,12 +16115,6 @@ namespace jtshared {
       }
       if (other.PatrolCueAngularVelFlipMark != 0) {
         PatrolCueAngularVelFlipMark = other.PatrolCueAngularVelFlipMark;
-      }
-      if (other.configFromTiled_ != null) {
-        if (configFromTiled_ == null) {
-          ConfigFromTiled = new global::jtshared.TrapConfigFromTiled();
-        }
-        ConfigFromTiled.MergeFrom(other.ConfigFromTiled);
       }
       if (other.TrapState != 0) {
         TrapState = other.TrapState;
@@ -16445,35 +16143,44 @@ namespace jtshared {
       if (other.SubscribesToTriggerIdAlt != 0) {
         SubscribesToTriggerIdAlt = other.SubscribesToTriggerIdAlt;
       }
-      if (other.SpinCos != 0F) {
-        SpinCos = other.SpinCos;
-      }
-      if (other.SpinSin != 0F) {
-        SpinSin = other.SpinSin;
-      }
-      if (other.AngularFrameVelCos != 0F) {
-        AngularFrameVelCos = other.AngularFrameVelCos;
-      }
-      if (other.AngularFrameVelSin != 0F) {
-        AngularFrameVelSin = other.AngularFrameVelSin;
-      }
       if (other.X != 0F) {
         X = other.X;
       }
       if (other.Y != 0F) {
         Y = other.Y;
       }
-      if (other.DirX != 0) {
-        DirX = other.DirX;
+      if (other.Z != 0F) {
+        Z = other.Z;
       }
-      if (other.DirY != 0) {
-        DirY = other.DirY;
+      if (other.QX != 0F) {
+        QX = other.QX;
+      }
+      if (other.QY != 0F) {
+        QY = other.QY;
+      }
+      if (other.QZ != 0F) {
+        QZ = other.QZ;
+      }
+      if (other.QW != 0F) {
+        QW = other.QW;
       }
       if (other.VelX != 0F) {
         VelX = other.VelX;
       }
       if (other.VelY != 0F) {
         VelY = other.VelY;
+      }
+      if (other.VelZ != 0F) {
+        VelZ = other.VelZ;
+      }
+      if (other.AngVelX != 0F) {
+        AngVelX = other.AngVelX;
+      }
+      if (other.AngVelY != 0F) {
+        AngVelY = other.AngVelY;
+      }
+      if (other.AngVelZ != 0F) {
+        AngVelZ = other.AngVelZ;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -16492,13 +16199,6 @@ namespace jtshared {
           }
           case 16: {
             PatrolCueAngularVelFlipMark = input.ReadInt32();
-            break;
-          }
-          case 26: {
-            if (configFromTiled_ == null) {
-              ConfigFromTiled = new global::jtshared.TrapConfigFromTiled();
-            }
-            input.ReadMessage(ConfigFromTiled);
             break;
           }
           case 32: {
@@ -16538,264 +16238,55 @@ namespace jtshared {
             break;
           }
           case 109: {
-            SpinCos = input.ReadFloat();
-            break;
-          }
-          case 117: {
-            SpinSin = input.ReadFloat();
-            break;
-          }
-          case 125: {
-            AngularFrameVelCos = input.ReadFloat();
-            break;
-          }
-          case 133: {
-            AngularFrameVelSin = input.ReadFloat();
-            break;
-          }
-          case 141: {
             X = input.ReadFloat();
             break;
           }
-          case 149: {
+          case 117: {
             Y = input.ReadFloat();
             break;
           }
-          case 152: {
-            DirX = input.ReadInt32();
+          case 125: {
+            Z = input.ReadFloat();
             break;
           }
-          case 160: {
-            DirY = input.ReadInt32();
+          case 133: {
+            QX = input.ReadFloat();
             break;
           }
-          case 173: {
+          case 141: {
+            QY = input.ReadFloat();
+            break;
+          }
+          case 149: {
+            QZ = input.ReadFloat();
+            break;
+          }
+          case 157: {
+            QW = input.ReadFloat();
+            break;
+          }
+          case 165: {
             VelX = input.ReadFloat();
             break;
           }
-          case 181: {
+          case 173: {
             VelY = input.ReadFloat();
             break;
           }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class TriggerConfig : pb::IMessage<TriggerConfig> {
-    private static readonly pb::MessageParser<TriggerConfig> _parser = new pb::MessageParser<TriggerConfig>(() => new TriggerConfig());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<TriggerConfig> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerConfig() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerConfig(TriggerConfig other) : this() {
-      speciesId_ = other.speciesId_;
-      speciesName_ = other.speciesName_;
-      triggerType_ = other.triggerType_;
-      collisionTypeMask_ = other.collisionTypeMask_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerConfig Clone() {
-      return new TriggerConfig(this);
-    }
-
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 1;
-    private uint speciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SpeciesId {
-      get { return speciesId_; }
-      set {
-        speciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "species_name" field.</summary>
-    public const int SpeciesNameFieldNumber = 2;
-    private string speciesName_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string SpeciesName {
-      get { return speciesName_; }
-      set {
-        speciesName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "trigger_type" field.</summary>
-    public const int TriggerTypeFieldNumber = 3;
-    private global::jtshared.TriggerType triggerType_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.TriggerType TriggerType {
-      get { return triggerType_; }
-      set {
-        triggerType_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "collision_type_mask" field.</summary>
-    public const int CollisionTypeMaskFieldNumber = 4;
-    private ulong collisionTypeMask_;
-    /// <summary>
-    ///
-    ///:repeats "quota" times
-    ///|&lt;-------------------------------------- recoveryFrames ----------------------------->|&lt;-----------------recoveryFrames ---------->|.......
-    ///:repeats "subCycleQuota" times                                                        :repeats "subCycleQuota" times
-    ///|&lt;-delayedFrames->|&lt;-subCycleTriggerFrames->|&lt;-subCycleTriggerFrames->|&lt;-subCycleTriggerFrames->|       |.......
-    ///|TReady           |TCoolingDown             |TCoolingDown(replay)     |TCoolingDown(replay)     |TReady |.......
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong CollisionTypeMask {
-      get { return collisionTypeMask_; }
-      set {
-        collisionTypeMask_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as TriggerConfig);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(TriggerConfig other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (SpeciesId != other.SpeciesId) return false;
-      if (SpeciesName != other.SpeciesName) return false;
-      if (TriggerType != other.TriggerType) return false;
-      if (CollisionTypeMask != other.CollisionTypeMask) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
-      if (SpeciesName.Length != 0) hash ^= SpeciesName.GetHashCode();
-      if (TriggerType != 0) hash ^= TriggerType.GetHashCode();
-      if (CollisionTypeMask != 0UL) hash ^= CollisionTypeMask.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (SpeciesId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(SpeciesId);
-      }
-      if (SpeciesName.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(SpeciesName);
-      }
-      if (TriggerType != 0) {
-        output.WriteRawTag(24);
-        output.WriteEnum((int) TriggerType);
-      }
-      if (CollisionTypeMask != 0UL) {
-        output.WriteRawTag(32);
-        output.WriteUInt64(CollisionTypeMask);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (SpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SpeciesId);
-      }
-      if (SpeciesName.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(SpeciesName);
-      }
-      if (TriggerType != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) TriggerType);
-      }
-      if (CollisionTypeMask != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(CollisionTypeMask);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(TriggerConfig other) {
-      if (other == null) {
-        return;
-      }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
-      }
-      if (other.SpeciesName.Length != 0) {
-        SpeciesName = other.SpeciesName;
-      }
-      if (other.TriggerType != 0) {
-        TriggerType = other.TriggerType;
-      }
-      if (other.CollisionTypeMask != 0UL) {
-        CollisionTypeMask = other.CollisionTypeMask;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            SpeciesId = input.ReadUInt32();
+          case 181: {
+            VelZ = input.ReadFloat();
             break;
           }
-          case 18: {
-            SpeciesName = input.ReadString();
+          case 189: {
+            AngVelX = input.ReadFloat();
             break;
           }
-          case 24: {
-            TriggerType = (global::jtshared.TriggerType) input.ReadEnum();
+          case 197: {
+            AngVelY = input.ReadFloat();
             break;
           }
-          case 32: {
-            CollisionTypeMask = input.ReadUInt64();
+          case 205: {
+            AngVelZ = input.ReadFloat();
             break;
           }
         }
@@ -17017,6 +16508,127 @@ namespace jtshared {
 
   }
 
+  public sealed partial class StepResult : pb::IMessage<StepResult> {
+    private static readonly pb::MessageParser<StepResult> _parser = new pb::MessageParser<StepResult>(() => new StepResult());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StepResult> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StepResult() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StepResult(StepResult other) : this() {
+      fulfilledTriggers_ = other.fulfilledTriggers_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StepResult Clone() {
+      return new StepResult(this);
+    }
+
+    /// <summary>Field number for the "fulfilled_triggers" field.</summary>
+    public const int FulfilledTriggersFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::jtshared.Trigger> _repeated_fulfilledTriggers_codec
+        = pb::FieldCodec.ForMessage(10, global::jtshared.Trigger.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Trigger> fulfilledTriggers_ = new pbc::RepeatedField<global::jtshared.Trigger>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::jtshared.Trigger> FulfilledTriggers {
+      get { return fulfilledTriggers_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StepResult);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StepResult other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!fulfilledTriggers_.Equals(other.fulfilledTriggers_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= fulfilledTriggers_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      fulfilledTriggers_.WriteTo(output, _repeated_fulfilledTriggers_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += fulfilledTriggers_.CalculateSize(_repeated_fulfilledTriggers_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StepResult other) {
+      if (other == null) {
+        return;
+      }
+      fulfilledTriggers_.Add(other.fulfilledTriggers_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            fulfilledTriggers_.AddEntriesFrom(input, _repeated_fulfilledTriggers_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class RenderFrame : pb::IMessage<RenderFrame> {
     private static readonly pb::MessageParser<RenderFrame> _parser = new pb::MessageParser<RenderFrame>(() => new RenderFrame());
     private pb::UnknownFieldSet _unknownFields;
@@ -17025,7 +16637,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17058,6 +16670,7 @@ namespace jtshared {
       npcCount_ = other.npcCount_;
       dynamicTrapCount_ = other.dynamicTrapCount_;
       pickableCount_ = other.pickableCount_;
+      prevRdfStepResult_ = other.prevRdfStepResult_ != null ? other.prevRdfStepResult_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -17236,6 +16849,17 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "prev_rdf_step_result" field.</summary>
+    public const int PrevRdfStepResultFieldNumber = 512;
+    private global::jtshared.StepResult prevRdfStepResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::jtshared.StepResult PrevRdfStepResult {
+      get { return prevRdfStepResult_; }
+      set {
+        prevRdfStepResult_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as RenderFrame);
@@ -17265,6 +16889,7 @@ namespace jtshared {
       if (NpcCount != other.NpcCount) return false;
       if (DynamicTrapCount != other.DynamicTrapCount) return false;
       if (PickableCount != other.PickableCount) return false;
+      if (!object.Equals(PrevRdfStepResult, other.PrevRdfStepResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -17287,6 +16912,7 @@ namespace jtshared {
       if (NpcCount != 0) hash ^= NpcCount.GetHashCode();
       if (DynamicTrapCount != 0) hash ^= DynamicTrapCount.GetHashCode();
       if (PickableCount != 0) hash ^= PickableCount.GetHashCode();
+      if (prevRdfStepResult_ != null) hash ^= PrevRdfStepResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -17346,6 +16972,10 @@ namespace jtshared {
         output.WriteRawTag(128, 1);
         output.WriteUInt32(PickableCount);
       }
+      if (prevRdfStepResult_ != null) {
+        output.WriteRawTag(130, 32);
+        output.WriteMessage(PrevRdfStepResult);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -17389,6 +17019,9 @@ namespace jtshared {
       }
       if (PickableCount != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(PickableCount);
+      }
+      if (prevRdfStepResult_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(PrevRdfStepResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -17436,6 +17069,12 @@ namespace jtshared {
       }
       if (other.PickableCount != 0) {
         PickableCount = other.PickableCount;
+      }
+      if (other.prevRdfStepResult_ != null) {
+        if (prevRdfStepResult_ == null) {
+          PrevRdfStepResult = new global::jtshared.StepResult();
+        }
+        PrevRdfStepResult.MergeFrom(other.PrevRdfStepResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -17512,6 +17151,13 @@ namespace jtshared {
             PickableCount = input.ReadUInt32();
             break;
           }
+          case 4098: {
+            if (prevRdfStepResult_ == null) {
+              PrevRdfStepResult = new global::jtshared.StepResult();
+            }
+            input.ReadMessage(PrevRdfStepResult);
+            break;
+          }
         }
       }
     }
@@ -17526,7 +17172,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17767,7 +17413,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17954,7 +17600,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18449,7 +18095,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18834,7 +18480,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19270,7 +18916,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19427,7 +19073,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19724,7 +19370,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20363,7 +20009,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20632,7 +20278,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20792,7 +20438,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20949,7 +20595,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21162,7 +20808,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21347,7 +20993,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21700,7 +21346,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21913,7 +21559,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22034,7 +21680,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22166,7 +21812,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22295,7 +21941,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22495,7 +22141,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22863,7 +22509,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23032,7 +22678,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23314,7 +22960,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23494,7 +23140,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23710,7 +23356,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23859,7 +23505,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24042,7 +23688,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24163,7 +23809,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24333,15 +23979,15 @@ namespace jtshared {
 
   }
 
-  public sealed partial class SerializedStaticPatrolCueCollider : pb::IMessage<SerializedStaticPatrolCueCollider> {
-    private static readonly pb::MessageParser<SerializedStaticPatrolCueCollider> _parser = new pb::MessageParser<SerializedStaticPatrolCueCollider>(() => new SerializedStaticPatrolCueCollider());
+  public sealed partial class SerializedBarrierCollider : pb::IMessage<SerializedBarrierCollider> {
+    private static readonly pb::MessageParser<SerializedBarrierCollider> _parser = new pb::MessageParser<SerializedBarrierCollider>(() => new SerializedBarrierCollider());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<SerializedStaticPatrolCueCollider> Parser { get { return _parser; } }
+    public static pb::MessageParser<SerializedBarrierCollider> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24350,29 +23996,29 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticPatrolCueCollider() {
+    public SerializedBarrierCollider() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticPatrolCueCollider(SerializedStaticPatrolCueCollider other) : this() {
+    public SerializedBarrierCollider(SerializedBarrierCollider other) : this() {
       attr_ = other.attr_ != null ? other.attr_.Clone() : null;
       polygon_ = other.polygon_ != null ? other.polygon_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticPatrolCueCollider Clone() {
-      return new SerializedStaticPatrolCueCollider(this);
+    public SerializedBarrierCollider Clone() {
+      return new SerializedBarrierCollider(this);
     }
 
     /// <summary>Field number for the "attr" field.</summary>
     public const int AttrFieldNumber = 1;
-    private global::jtshared.PatrolCue attr_;
+    private global::jtshared.BarrierColliderAttr attr_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.PatrolCue Attr {
+    public global::jtshared.BarrierColliderAttr Attr {
       get { return attr_; }
       set {
         attr_ = value;
@@ -24392,11 +24038,11 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as SerializedStaticPatrolCueCollider);
+      return Equals(other as SerializedBarrierCollider);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(SerializedStaticPatrolCueCollider other) {
+    public bool Equals(SerializedBarrierCollider other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -24455,13 +24101,13 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(SerializedStaticPatrolCueCollider other) {
+    public void MergeFrom(SerializedBarrierCollider other) {
       if (other == null) {
         return;
       }
       if (other.attr_ != null) {
         if (attr_ == null) {
-          Attr = new global::jtshared.PatrolCue();
+          Attr = new global::jtshared.BarrierColliderAttr();
         }
         Attr.MergeFrom(other.Attr);
       }
@@ -24484,7 +24130,7 @@ namespace jtshared {
             break;
           case 10: {
             if (attr_ == null) {
-              Attr = new global::jtshared.PatrolCue();
+              Attr = new global::jtshared.BarrierColliderAttr();
             }
             input.ReadMessage(Attr);
             break;
@@ -24510,7 +24156,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24528,6 +24174,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SerializedStaticTrapCollider(SerializedStaticTrapCollider other) : this() {
       attr_ = other.attr_ != null ? other.attr_.Clone() : null;
+      barrierAttr_ = other.barrierAttr_ != null ? other.barrierAttr_.Clone() : null;
       polygon_ = other.polygon_ != null ? other.polygon_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -24540,9 +24187,6 @@ namespace jtshared {
     /// <summary>Field number for the "attr" field.</summary>
     public const int AttrFieldNumber = 1;
     private global::jtshared.TrapColliderAttr attr_;
-    /// <summary>
-    /// "TrapColliderAttr.collision_type_mask" is a little peculiar, it can be a composite of different COLLISION_*_INDEX_PREFIX, thus often NOT taken care of by the COLLIDABLE_PAIRS set 
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.TrapColliderAttr Attr {
       get { return attr_; }
@@ -24551,8 +24195,19 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "barrier_attr" field.</summary>
+    public const int BarrierAttrFieldNumber = 2;
+    private global::jtshared.BarrierColliderAttr barrierAttr_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::jtshared.BarrierColliderAttr BarrierAttr {
+      get { return barrierAttr_; }
+      set {
+        barrierAttr_ = value;
+      }
+    }
+
     /// <summary>Field number for the "polygon" field.</summary>
-    public const int PolygonFieldNumber = 2;
+    public const int PolygonFieldNumber = 3;
     private global::jtshared.SerializableConvexPolygon polygon_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.SerializableConvexPolygon Polygon {
@@ -24576,6 +24231,7 @@ namespace jtshared {
         return true;
       }
       if (!object.Equals(Attr, other.Attr)) return false;
+      if (!object.Equals(BarrierAttr, other.BarrierAttr)) return false;
       if (!object.Equals(Polygon, other.Polygon)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -24584,6 +24240,7 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (attr_ != null) hash ^= Attr.GetHashCode();
+      if (barrierAttr_ != null) hash ^= BarrierAttr.GetHashCode();
       if (polygon_ != null) hash ^= Polygon.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -24602,8 +24259,12 @@ namespace jtshared {
         output.WriteRawTag(10);
         output.WriteMessage(Attr);
       }
-      if (polygon_ != null) {
+      if (barrierAttr_ != null) {
         output.WriteRawTag(18);
+        output.WriteMessage(BarrierAttr);
+      }
+      if (polygon_ != null) {
+        output.WriteRawTag(26);
         output.WriteMessage(Polygon);
       }
       if (_unknownFields != null) {
@@ -24616,6 +24277,9 @@ namespace jtshared {
       int size = 0;
       if (attr_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Attr);
+      }
+      if (barrierAttr_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(BarrierAttr);
       }
       if (polygon_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Polygon);
@@ -24636,6 +24300,12 @@ namespace jtshared {
           Attr = new global::jtshared.TrapColliderAttr();
         }
         Attr.MergeFrom(other.Attr);
+      }
+      if (other.barrierAttr_ != null) {
+        if (barrierAttr_ == null) {
+          BarrierAttr = new global::jtshared.BarrierColliderAttr();
+        }
+        BarrierAttr.MergeFrom(other.BarrierAttr);
       }
       if (other.polygon_ != null) {
         if (polygon_ == null) {
@@ -24662,6 +24332,13 @@ namespace jtshared {
             break;
           }
           case 18: {
+            if (barrierAttr_ == null) {
+              BarrierAttr = new global::jtshared.BarrierColliderAttr();
+            }
+            input.ReadMessage(BarrierAttr);
+            break;
+          }
+          case 26: {
             if (polygon_ == null) {
               Polygon = new global::jtshared.SerializableConvexPolygon();
             }
@@ -24674,183 +24351,11 @@ namespace jtshared {
 
   }
 
-  public sealed partial class SerializedStaticTriggerCollider : pb::IMessage<SerializedStaticTriggerCollider> {
-    private static readonly pb::MessageParser<SerializedStaticTriggerCollider> _parser = new pb::MessageParser<SerializedStaticTriggerCollider>(() => new SerializedStaticTriggerCollider());
+  public sealed partial class PickableConfig : pb::IMessage<PickableConfig> {
+    private static readonly pb::MessageParser<PickableConfig> _parser = new pb::MessageParser<PickableConfig>(() => new PickableConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<SerializedStaticTriggerCollider> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticTriggerCollider() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticTriggerCollider(SerializedStaticTriggerCollider other) : this() {
-      attr_ = other.attr_ != null ? other.attr_.Clone() : null;
-      polygon_ = other.polygon_ != null ? other.polygon_.Clone() : null;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedStaticTriggerCollider Clone() {
-      return new SerializedStaticTriggerCollider(this);
-    }
-
-    /// <summary>Field number for the "attr" field.</summary>
-    public const int AttrFieldNumber = 1;
-    private global::jtshared.TriggerColliderAttr attr_;
-    /// <summary>
-    /// "collision_type_mask" can be derived from here
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.TriggerColliderAttr Attr {
-      get { return attr_; }
-      set {
-        attr_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "polygon" field.</summary>
-    public const int PolygonFieldNumber = 2;
-    private global::jtshared.SerializableConvexPolygon polygon_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.SerializableConvexPolygon Polygon {
-      get { return polygon_; }
-      set {
-        polygon_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as SerializedStaticTriggerCollider);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(SerializedStaticTriggerCollider other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Attr, other.Attr)) return false;
-      if (!object.Equals(Polygon, other.Polygon)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (attr_ != null) hash ^= Attr.GetHashCode();
-      if (polygon_ != null) hash ^= Polygon.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (attr_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Attr);
-      }
-      if (polygon_ != null) {
-        output.WriteRawTag(18);
-        output.WriteMessage(Polygon);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (attr_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Attr);
-      }
-      if (polygon_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Polygon);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(SerializedStaticTriggerCollider other) {
-      if (other == null) {
-        return;
-      }
-      if (other.attr_ != null) {
-        if (attr_ == null) {
-          Attr = new global::jtshared.TriggerColliderAttr();
-        }
-        Attr.MergeFrom(other.Attr);
-      }
-      if (other.polygon_ != null) {
-        if (polygon_ == null) {
-          Polygon = new global::jtshared.SerializableConvexPolygon();
-        }
-        Polygon.MergeFrom(other.Polygon);
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            if (attr_ == null) {
-              Attr = new global::jtshared.TriggerColliderAttr();
-            }
-            input.ReadMessage(Attr);
-            break;
-          }
-          case 18: {
-            if (polygon_ == null) {
-              Polygon = new global::jtshared.SerializableConvexPolygon();
-            }
-            input.ReadMessage(Polygon);
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class TrapColliderAttrArray : pb::IMessage<TrapColliderAttrArray> {
-    private static readonly pb::MessageParser<TrapColliderAttrArray> _parser = new pb::MessageParser<TrapColliderAttrArray>(() => new TrapColliderAttrArray());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<TrapColliderAttrArray> Parser { get { return _parser; } }
+    public static pb::MessageParser<PickableConfig> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -24863,54 +24368,86 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TrapColliderAttrArray() {
+    public PickableConfig() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TrapColliderAttrArray(TrapColliderAttrArray other) : this() {
-      list_ = other.list_.Clone();
+    public PickableConfig(PickableConfig other) : this() {
+      pickupType_ = other.pickupType_;
+      takesGravity_ = other.takesGravity_;
+      vfxSpeciesId_ = other.vfxSpeciesId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TrapColliderAttrArray Clone() {
-      return new TrapColliderAttrArray(this);
+    public PickableConfig Clone() {
+      return new PickableConfig(this);
     }
 
-    /// <summary>Field number for the "list" field.</summary>
-    public const int ListFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::jtshared.TrapColliderAttr> _repeated_list_codec
-        = pb::FieldCodec.ForMessage(10, global::jtshared.TrapColliderAttr.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.TrapColliderAttr> list_ = new pbc::RepeatedField<global::jtshared.TrapColliderAttr>();
+    /// <summary>Field number for the "pickup_type" field.</summary>
+    public const int PickupTypeFieldNumber = 1;
+    private global::jtshared.PickupType pickupType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.TrapColliderAttr> List {
-      get { return list_; }
+    public global::jtshared.PickupType PickupType {
+      get { return pickupType_; }
+      set {
+        pickupType_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "takes_gravity" field.</summary>
+    public const int TakesGravityFieldNumber = 2;
+    private bool takesGravity_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool TakesGravity {
+      get { return takesGravity_; }
+      set {
+        takesGravity_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vfx_species_id" field.</summary>
+    public const int VfxSpeciesIdFieldNumber = 3;
+    private uint vfxSpeciesId_;
+    /// <summary>
+    /// Always use pixelated vfx
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint VfxSpeciesId {
+      get { return vfxSpeciesId_; }
+      set {
+        vfxSpeciesId_ = value;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as TrapColliderAttrArray);
+      return Equals(other as PickableConfig);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(TrapColliderAttrArray other) {
+    public bool Equals(PickableConfig other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if(!list_.Equals(other.list_)) return false;
+      if (PickupType != other.PickupType) return false;
+      if (TakesGravity != other.TakesGravity) return false;
+      if (VfxSpeciesId != other.VfxSpeciesId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      hash ^= list_.GetHashCode();
+      if (PickupType != 0) hash ^= PickupType.GetHashCode();
+      if (TakesGravity != false) hash ^= TakesGravity.GetHashCode();
+      if (VfxSpeciesId != 0) hash ^= VfxSpeciesId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -24924,7 +24461,18 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      list_.WriteTo(output, _repeated_list_codec);
+      if (PickupType != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) PickupType);
+      }
+      if (TakesGravity != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(TakesGravity);
+      }
+      if (VfxSpeciesId != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(VfxSpeciesId);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -24933,7 +24481,15 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      size += list_.CalculateSize(_repeated_list_codec);
+      if (PickupType != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) PickupType);
+      }
+      if (TakesGravity != false) {
+        size += 1 + 1;
+      }
+      if (VfxSpeciesId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(VfxSpeciesId);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -24941,11 +24497,19 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(TrapColliderAttrArray other) {
+    public void MergeFrom(PickableConfig other) {
       if (other == null) {
         return;
       }
-      list_.Add(other.list_);
+      if (other.PickupType != 0) {
+        PickupType = other.PickupType;
+      }
+      if (other.TakesGravity != false) {
+        TakesGravity = other.TakesGravity;
+      }
+      if (other.VfxSpeciesId != 0) {
+        VfxSpeciesId = other.VfxSpeciesId;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -24957,270 +24521,16 @@ namespace jtshared {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            list_.AddEntriesFrom(input, _repeated_list_codec);
+          case 8: {
+            PickupType = (global::jtshared.PickupType) input.ReadEnum();
             break;
           }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class SerializedTrapLocalIdToColliderAttrs : pb::IMessage<SerializedTrapLocalIdToColliderAttrs> {
-    private static readonly pb::MessageParser<SerializedTrapLocalIdToColliderAttrs> _parser = new pb::MessageParser<SerializedTrapLocalIdToColliderAttrs>(() => new SerializedTrapLocalIdToColliderAttrs());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<SerializedTrapLocalIdToColliderAttrs> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTrapLocalIdToColliderAttrs() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTrapLocalIdToColliderAttrs(SerializedTrapLocalIdToColliderAttrs other) : this() {
-      dict_ = other.dict_.Clone();
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTrapLocalIdToColliderAttrs Clone() {
-      return new SerializedTrapLocalIdToColliderAttrs(this);
-    }
-
-    /// <summary>Field number for the "dict" field.</summary>
-    public const int DictFieldNumber = 1;
-    private static readonly pbc::MapField<int, global::jtshared.TrapColliderAttrArray>.Codec _map_dict_codec
-        = new pbc::MapField<int, global::jtshared.TrapColliderAttrArray>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.TrapColliderAttrArray.Parser), 10);
-    private readonly pbc::MapField<int, global::jtshared.TrapColliderAttrArray> dict_ = new pbc::MapField<int, global::jtshared.TrapColliderAttrArray>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, global::jtshared.TrapColliderAttrArray> Dict {
-      get { return dict_; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as SerializedTrapLocalIdToColliderAttrs);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(SerializedTrapLocalIdToColliderAttrs other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!Dict.Equals(other.Dict)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      hash ^= Dict.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      dict_.WriteTo(output, _map_dict_codec);
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      size += dict_.CalculateSize(_map_dict_codec);
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(SerializedTrapLocalIdToColliderAttrs other) {
-      if (other == null) {
-        return;
-      }
-      dict_.Add(other.dict_);
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            dict_.AddEntriesFrom(input, _map_dict_codec);
+          case 16: {
+            TakesGravity = input.ReadBool();
             break;
           }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class SerializedTriggerEditorIdDict : pb::IMessage<SerializedTriggerEditorIdDict> {
-    private static readonly pb::MessageParser<SerializedTriggerEditorIdDict> _parser = new pb::MessageParser<SerializedTriggerEditorIdDict>(() => new SerializedTriggerEditorIdDict());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<SerializedTriggerEditorIdDict> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTriggerEditorIdDict() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTriggerEditorIdDict(SerializedTriggerEditorIdDict other) : this() {
-      dict_ = other.dict_.Clone();
-      dict2_ = other.dict2_.Clone();
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SerializedTriggerEditorIdDict Clone() {
-      return new SerializedTriggerEditorIdDict(this);
-    }
-
-    /// <summary>Field number for the "dict" field.</summary>
-    public const int DictFieldNumber = 1;
-    private static readonly pbc::MapField<uint, uint>.Codec _map_dict_codec
-        = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 10);
-    private readonly pbc::MapField<uint, uint> dict_ = new pbc::MapField<uint, uint>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<uint, uint> Dict {
-      get { return dict_; }
-    }
-
-    /// <summary>Field number for the "dict2" field.</summary>
-    public const int Dict2FieldNumber = 2;
-    private static readonly pbc::MapField<uint, global::jtshared.TriggerConfigFromTiled>.Codec _map_dict2_codec
-        = new pbc::MapField<uint, global::jtshared.TriggerConfigFromTiled>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForMessage(18, global::jtshared.TriggerConfigFromTiled.Parser), 18);
-    private readonly pbc::MapField<uint, global::jtshared.TriggerConfigFromTiled> dict2_ = new pbc::MapField<uint, global::jtshared.TriggerConfigFromTiled>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<uint, global::jtshared.TriggerConfigFromTiled> Dict2 {
-      get { return dict2_; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as SerializedTriggerEditorIdDict);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(SerializedTriggerEditorIdDict other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!Dict.Equals(other.Dict)) return false;
-      if (!Dict2.Equals(other.Dict2)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      hash ^= Dict.GetHashCode();
-      hash ^= Dict2.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      dict_.WriteTo(output, _map_dict_codec);
-      dict2_.WriteTo(output, _map_dict2_codec);
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      size += dict_.CalculateSize(_map_dict_codec);
-      size += dict2_.CalculateSize(_map_dict2_codec);
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(SerializedTriggerEditorIdDict other) {
-      if (other == null) {
-        return;
-      }
-      dict_.Add(other.dict_);
-      dict2_.Add(other.dict2_);
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            dict_.AddEntriesFrom(input, _map_dict_codec);
-            break;
-          }
-          case 18: {
-            dict2_.AddEntriesFrom(input, _map_dict2_codec);
+          case 24: {
+            VfxSpeciesId = input.ReadUInt32();
             break;
           }
         }
@@ -25237,7 +24547,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25254,20 +24564,10 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PickableConfigFromTiled(PickableConfigFromTiled other) : this() {
-      initVirtualGridX_ = other.initVirtualGridX_;
-      initVirtualGridY_ = other.initVirtualGridY_;
-      takesGravity_ = other.takesGravity_;
-      firstShowRdfId_ = other.firstShowRdfId_;
-      recurQuota_ = other.recurQuota_;
-      recurIntervalRdfCount_ = other.recurIntervalRdfCount_;
-      lifetimeRdfCountPerOccurrence_ = other.lifetimeRdfCountPerOccurrence_;
       pickupType_ = other.pickupType_;
+      recurQuota_ = other.recurQuota_;
+      lifetimeRdfCountPerOccurrence_ = other.lifetimeRdfCountPerOccurrence_;
       stockQuotaPerOccurrence_ = other.stockQuotaPerOccurrence_;
-      subscriptionId_ = other.subscriptionId_;
-      vfxSpeciesId_ = other.vfxSpeciesId_;
-      consumableSpeciesId_ = other.consumableSpeciesId_;
-      buffSpeciesId_ = other.buffSpeciesId_;
-      skillId_ = other.skillId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -25276,88 +24576,8 @@ namespace jtshared {
       return new PickableConfigFromTiled(this);
     }
 
-    /// <summary>Field number for the "init_virtual_grid_x" field.</summary>
-    public const int InitVirtualGridXFieldNumber = 1;
-    private int initVirtualGridX_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int InitVirtualGridX {
-      get { return initVirtualGridX_; }
-      set {
-        initVirtualGridX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "init_virtual_grid_y" field.</summary>
-    public const int InitVirtualGridYFieldNumber = 2;
-    private int initVirtualGridY_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int InitVirtualGridY {
-      get { return initVirtualGridY_; }
-      set {
-        initVirtualGridY_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "takes_gravity" field.</summary>
-    public const int TakesGravityFieldNumber = 3;
-    private bool takesGravity_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool TakesGravity {
-      get { return takesGravity_; }
-      set {
-        takesGravity_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "first_show_rdf_id" field.</summary>
-    public const int FirstShowRdfIdFieldNumber = 4;
-    private int firstShowRdfId_;
-    /// <summary>
-    /// If "terminating_trigger_editor_id != subscription_id", then this field represents the "first_show_rdf_id" after subscription_id is fulfilled
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int FirstShowRdfId {
-      get { return firstShowRdfId_; }
-      set {
-        firstShowRdfId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "recur_quota" field.</summary>
-    public const int RecurQuotaFieldNumber = 5;
-    private int recurQuota_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int RecurQuota {
-      get { return recurQuota_; }
-      set {
-        recurQuota_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "recur_interval_rdf_count" field.</summary>
-    public const int RecurIntervalRdfCountFieldNumber = 6;
-    private uint recurIntervalRdfCount_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint RecurIntervalRdfCount {
-      get { return recurIntervalRdfCount_; }
-      set {
-        recurIntervalRdfCount_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "lifetime_rdf_count_per_occurrence" field.</summary>
-    public const int LifetimeRdfCountPerOccurrenceFieldNumber = 7;
-    private uint lifetimeRdfCountPerOccurrence_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint LifetimeRdfCountPerOccurrence {
-      get { return lifetimeRdfCountPerOccurrence_; }
-      set {
-        lifetimeRdfCountPerOccurrence_ = value;
-      }
-    }
-
     /// <summary>Field number for the "pickup_type" field.</summary>
-    public const int PickupTypeFieldNumber = 8;
+    public const int PickupTypeFieldNumber = 1;
     private global::jtshared.PickupType pickupType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.PickupType PickupType {
@@ -25367,75 +24587,36 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "recur_quota" field.</summary>
+    public const int RecurQuotaFieldNumber = 2;
+    private int recurQuota_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RecurQuota {
+      get { return recurQuota_; }
+      set {
+        recurQuota_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "lifetime_rdf_count_per_occurrence" field.</summary>
+    public const int LifetimeRdfCountPerOccurrenceFieldNumber = 3;
+    private uint lifetimeRdfCountPerOccurrence_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint LifetimeRdfCountPerOccurrence {
+      get { return lifetimeRdfCountPerOccurrence_; }
+      set {
+        lifetimeRdfCountPerOccurrence_ = value;
+      }
+    }
+
     /// <summary>Field number for the "stock_quota_per_occurrence" field.</summary>
-    public const int StockQuotaPerOccurrenceFieldNumber = 9;
+    public const int StockQuotaPerOccurrenceFieldNumber = 4;
     private uint stockQuotaPerOccurrence_;
-    /// <summary>
-    /// Only meaningful when "pickup_type == PutIntoInventory"
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint StockQuotaPerOccurrence {
       get { return stockQuotaPerOccurrence_; }
       set {
         stockQuotaPerOccurrence_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "subscription_id" field.</summary>
-    public const int SubscriptionIdFieldNumber = 10;
-    private int subscriptionId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SubscriptionId {
-      get { return subscriptionId_; }
-      set {
-        subscriptionId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "vfx_species_id" field.</summary>
-    public const int VfxSpeciesIdFieldNumber = 11;
-    private uint vfxSpeciesId_;
-    /// <summary>
-    /// Always use pixelated vfx
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint VfxSpeciesId {
-      get { return vfxSpeciesId_; }
-      set {
-        vfxSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "consumable_species_id" field.</summary>
-    public const int ConsumableSpeciesIdFieldNumber = 1024;
-    private uint consumableSpeciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint ConsumableSpeciesId {
-      get { return consumableSpeciesId_; }
-      set {
-        consumableSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "buff_species_id" field.</summary>
-    public const int BuffSpeciesIdFieldNumber = 1025;
-    private uint buffSpeciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint BuffSpeciesId {
-      get { return buffSpeciesId_; }
-      set {
-        buffSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "skill_id" field.</summary>
-    public const int SkillIdFieldNumber = 1026;
-    private uint skillId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SkillId {
-      get { return skillId_; }
-      set {
-        skillId_ = value;
       }
     }
 
@@ -25452,40 +24633,20 @@ namespace jtshared {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (InitVirtualGridX != other.InitVirtualGridX) return false;
-      if (InitVirtualGridY != other.InitVirtualGridY) return false;
-      if (TakesGravity != other.TakesGravity) return false;
-      if (FirstShowRdfId != other.FirstShowRdfId) return false;
-      if (RecurQuota != other.RecurQuota) return false;
-      if (RecurIntervalRdfCount != other.RecurIntervalRdfCount) return false;
-      if (LifetimeRdfCountPerOccurrence != other.LifetimeRdfCountPerOccurrence) return false;
       if (PickupType != other.PickupType) return false;
+      if (RecurQuota != other.RecurQuota) return false;
+      if (LifetimeRdfCountPerOccurrence != other.LifetimeRdfCountPerOccurrence) return false;
       if (StockQuotaPerOccurrence != other.StockQuotaPerOccurrence) return false;
-      if (SubscriptionId != other.SubscriptionId) return false;
-      if (VfxSpeciesId != other.VfxSpeciesId) return false;
-      if (ConsumableSpeciesId != other.ConsumableSpeciesId) return false;
-      if (BuffSpeciesId != other.BuffSpeciesId) return false;
-      if (SkillId != other.SkillId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (InitVirtualGridX != 0) hash ^= InitVirtualGridX.GetHashCode();
-      if (InitVirtualGridY != 0) hash ^= InitVirtualGridY.GetHashCode();
-      if (TakesGravity != false) hash ^= TakesGravity.GetHashCode();
-      if (FirstShowRdfId != 0) hash ^= FirstShowRdfId.GetHashCode();
-      if (RecurQuota != 0) hash ^= RecurQuota.GetHashCode();
-      if (RecurIntervalRdfCount != 0) hash ^= RecurIntervalRdfCount.GetHashCode();
-      if (LifetimeRdfCountPerOccurrence != 0) hash ^= LifetimeRdfCountPerOccurrence.GetHashCode();
       if (PickupType != 0) hash ^= PickupType.GetHashCode();
+      if (RecurQuota != 0) hash ^= RecurQuota.GetHashCode();
+      if (LifetimeRdfCountPerOccurrence != 0) hash ^= LifetimeRdfCountPerOccurrence.GetHashCode();
       if (StockQuotaPerOccurrence != 0) hash ^= StockQuotaPerOccurrence.GetHashCode();
-      if (SubscriptionId != 0) hash ^= SubscriptionId.GetHashCode();
-      if (VfxSpeciesId != 0) hash ^= VfxSpeciesId.GetHashCode();
-      if (ConsumableSpeciesId != 0) hash ^= ConsumableSpeciesId.GetHashCode();
-      if (BuffSpeciesId != 0) hash ^= BuffSpeciesId.GetHashCode();
-      if (SkillId != 0) hash ^= SkillId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -25499,61 +24660,21 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (InitVirtualGridX != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(InitVirtualGridX);
-      }
-      if (InitVirtualGridY != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(InitVirtualGridY);
-      }
-      if (TakesGravity != false) {
-        output.WriteRawTag(24);
-        output.WriteBool(TakesGravity);
-      }
-      if (FirstShowRdfId != 0) {
-        output.WriteRawTag(32);
-        output.WriteInt32(FirstShowRdfId);
-      }
-      if (RecurQuota != 0) {
-        output.WriteRawTag(40);
-        output.WriteInt32(RecurQuota);
-      }
-      if (RecurIntervalRdfCount != 0) {
-        output.WriteRawTag(48);
-        output.WriteUInt32(RecurIntervalRdfCount);
-      }
-      if (LifetimeRdfCountPerOccurrence != 0) {
-        output.WriteRawTag(56);
-        output.WriteUInt32(LifetimeRdfCountPerOccurrence);
-      }
       if (PickupType != 0) {
-        output.WriteRawTag(64);
+        output.WriteRawTag(8);
         output.WriteEnum((int) PickupType);
       }
+      if (RecurQuota != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(RecurQuota);
+      }
+      if (LifetimeRdfCountPerOccurrence != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(LifetimeRdfCountPerOccurrence);
+      }
       if (StockQuotaPerOccurrence != 0) {
-        output.WriteRawTag(72);
+        output.WriteRawTag(32);
         output.WriteUInt32(StockQuotaPerOccurrence);
-      }
-      if (SubscriptionId != 0) {
-        output.WriteRawTag(80);
-        output.WriteInt32(SubscriptionId);
-      }
-      if (VfxSpeciesId != 0) {
-        output.WriteRawTag(88);
-        output.WriteUInt32(VfxSpeciesId);
-      }
-      if (ConsumableSpeciesId != 0) {
-        output.WriteRawTag(128, 64);
-        output.WriteUInt32(ConsumableSpeciesId);
-      }
-      if (BuffSpeciesId != 0) {
-        output.WriteRawTag(136, 64);
-        output.WriteUInt32(BuffSpeciesId);
-      }
-      if (SkillId != 0) {
-        output.WriteRawTag(144, 64);
-        output.WriteUInt32(SkillId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -25563,47 +24684,17 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (InitVirtualGridX != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InitVirtualGridX);
-      }
-      if (InitVirtualGridY != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InitVirtualGridY);
-      }
-      if (TakesGravity != false) {
-        size += 1 + 1;
-      }
-      if (FirstShowRdfId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(FirstShowRdfId);
+      if (PickupType != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) PickupType);
       }
       if (RecurQuota != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(RecurQuota);
       }
-      if (RecurIntervalRdfCount != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(RecurIntervalRdfCount);
-      }
       if (LifetimeRdfCountPerOccurrence != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LifetimeRdfCountPerOccurrence);
       }
-      if (PickupType != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) PickupType);
-      }
       if (StockQuotaPerOccurrence != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(StockQuotaPerOccurrence);
-      }
-      if (SubscriptionId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubscriptionId);
-      }
-      if (VfxSpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(VfxSpeciesId);
-      }
-      if (ConsumableSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ConsumableSpeciesId);
-      }
-      if (BuffSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(BuffSpeciesId);
-      }
-      if (SkillId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(SkillId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -25616,47 +24707,17 @@ namespace jtshared {
       if (other == null) {
         return;
       }
-      if (other.InitVirtualGridX != 0) {
-        InitVirtualGridX = other.InitVirtualGridX;
-      }
-      if (other.InitVirtualGridY != 0) {
-        InitVirtualGridY = other.InitVirtualGridY;
-      }
-      if (other.TakesGravity != false) {
-        TakesGravity = other.TakesGravity;
-      }
-      if (other.FirstShowRdfId != 0) {
-        FirstShowRdfId = other.FirstShowRdfId;
+      if (other.PickupType != 0) {
+        PickupType = other.PickupType;
       }
       if (other.RecurQuota != 0) {
         RecurQuota = other.RecurQuota;
       }
-      if (other.RecurIntervalRdfCount != 0) {
-        RecurIntervalRdfCount = other.RecurIntervalRdfCount;
-      }
       if (other.LifetimeRdfCountPerOccurrence != 0) {
         LifetimeRdfCountPerOccurrence = other.LifetimeRdfCountPerOccurrence;
       }
-      if (other.PickupType != 0) {
-        PickupType = other.PickupType;
-      }
       if (other.StockQuotaPerOccurrence != 0) {
         StockQuotaPerOccurrence = other.StockQuotaPerOccurrence;
-      }
-      if (other.SubscriptionId != 0) {
-        SubscriptionId = other.SubscriptionId;
-      }
-      if (other.VfxSpeciesId != 0) {
-        VfxSpeciesId = other.VfxSpeciesId;
-      }
-      if (other.ConsumableSpeciesId != 0) {
-        ConsumableSpeciesId = other.ConsumableSpeciesId;
-      }
-      if (other.BuffSpeciesId != 0) {
-        BuffSpeciesId = other.BuffSpeciesId;
-      }
-      if (other.SkillId != 0) {
-        SkillId = other.SkillId;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -25670,59 +24731,19 @@ namespace jtshared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            InitVirtualGridX = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            InitVirtualGridY = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            TakesGravity = input.ReadBool();
-            break;
-          }
-          case 32: {
-            FirstShowRdfId = input.ReadInt32();
-            break;
-          }
-          case 40: {
-            RecurQuota = input.ReadInt32();
-            break;
-          }
-          case 48: {
-            RecurIntervalRdfCount = input.ReadUInt32();
-            break;
-          }
-          case 56: {
-            LifetimeRdfCountPerOccurrence = input.ReadUInt32();
-            break;
-          }
-          case 64: {
             PickupType = (global::jtshared.PickupType) input.ReadEnum();
             break;
           }
-          case 72: {
+          case 16: {
+            RecurQuota = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            LifetimeRdfCountPerOccurrence = input.ReadUInt32();
+            break;
+          }
+          case 32: {
             StockQuotaPerOccurrence = input.ReadUInt32();
-            break;
-          }
-          case 80: {
-            SubscriptionId = input.ReadInt32();
-            break;
-          }
-          case 88: {
-            VfxSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 8192: {
-            ConsumableSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 8200: {
-            BuffSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 8208: {
-            SkillId = input.ReadUInt32();
             break;
           }
         }
@@ -25739,7 +24760,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25757,15 +24778,17 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Pickable(Pickable other) : this() {
       id_ = other.id_;
-      x_ = other.x_;
-      y_ = other.y_;
-      configFromTiled_ = other.configFromTiled_ != null ? other.configFromTiled_.Clone() : null;
-      remainingLifetimeRdfCount_ = other.remainingLifetimeRdfCount_;
-      remainingRecurQuota_ = other.remainingRecurQuota_;
-      velX_ = other.velX_;
-      velY_ = other.velY_;
+      pickupType_ = other.pickupType_;
       pkState_ = other.pkState_;
       framesInPkState_ = other.framesInPkState_;
+      x_ = other.x_;
+      y_ = other.y_;
+      z_ = other.z_;
+      velX_ = other.velX_;
+      velY_ = other.velY_;
+      velZ_ = other.velZ_;
+      remainingLifetimeRdfCount_ = other.remainingLifetimeRdfCount_;
+      remainingRecurQuota_ = other.remainingRecurQuota_;
       pickerUd_ = other.pickerUd_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -25786,85 +24809,19 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "x" field.</summary>
-    public const int XFieldNumber = 2;
-    private float x_;
+    /// <summary>Field number for the "pickup_type" field.</summary>
+    public const int PickupTypeFieldNumber = 2;
+    private global::jtshared.PickupType pickupType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float X {
-      get { return x_; }
+    public global::jtshared.PickupType PickupType {
+      get { return pickupType_; }
       set {
-        x_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "y" field.</summary>
-    public const int YFieldNumber = 3;
-    private float y_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float Y {
-      get { return y_; }
-      set {
-        y_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "config_from_tiled" field.</summary>
-    public const int ConfigFromTiledFieldNumber = 4;
-    private global::jtshared.PickableConfigFromTiled configFromTiled_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.PickableConfigFromTiled ConfigFromTiled {
-      get { return configFromTiled_; }
-      set {
-        configFromTiled_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "remaining_lifetime_rdf_count" field.</summary>
-    public const int RemainingLifetimeRdfCountFieldNumber = 5;
-    private int remainingLifetimeRdfCount_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int RemainingLifetimeRdfCount {
-      get { return remainingLifetimeRdfCount_; }
-      set {
-        remainingLifetimeRdfCount_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "remaining_recur_quota" field.</summary>
-    public const int RemainingRecurQuotaFieldNumber = 6;
-    private int remainingRecurQuota_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int RemainingRecurQuota {
-      get { return remainingRecurQuota_; }
-      set {
-        remainingRecurQuota_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "vel_x" field.</summary>
-    public const int VelXFieldNumber = 7;
-    private float velX_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float VelX {
-      get { return velX_; }
-      set {
-        velX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "vel_y" field.</summary>
-    public const int VelYFieldNumber = 8;
-    private float velY_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float VelY {
-      get { return velY_; }
-      set {
-        velY_ = value;
+        pickupType_ = value;
       }
     }
 
     /// <summary>Field number for the "pk_state" field.</summary>
-    public const int PkStateFieldNumber = 9;
+    public const int PkStateFieldNumber = 3;
     private global::jtshared.PickableState pkState_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.PickableState PkState {
@@ -25875,7 +24832,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "frames_in_pk_state" field.</summary>
-    public const int FramesInPkStateFieldNumber = 10;
+    public const int FramesInPkStateFieldNumber = 4;
     private int framesInPkState_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FramesInPkState {
@@ -25885,8 +24842,96 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "x" field.</summary>
+    public const int XFieldNumber = 5;
+    private float x_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float X {
+      get { return x_; }
+      set {
+        x_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "y" field.</summary>
+    public const int YFieldNumber = 6;
+    private float y_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Y {
+      get { return y_; }
+      set {
+        y_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "z" field.</summary>
+    public const int ZFieldNumber = 7;
+    private float z_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Z {
+      get { return z_; }
+      set {
+        z_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vel_x" field.</summary>
+    public const int VelXFieldNumber = 8;
+    private float velX_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float VelX {
+      get { return velX_; }
+      set {
+        velX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vel_y" field.</summary>
+    public const int VelYFieldNumber = 9;
+    private float velY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float VelY {
+      get { return velY_; }
+      set {
+        velY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vel_z" field.</summary>
+    public const int VelZFieldNumber = 10;
+    private float velZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float VelZ {
+      get { return velZ_; }
+      set {
+        velZ_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "remaining_lifetime_rdf_count" field.</summary>
+    public const int RemainingLifetimeRdfCountFieldNumber = 11;
+    private int remainingLifetimeRdfCount_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RemainingLifetimeRdfCount {
+      get { return remainingLifetimeRdfCount_; }
+      set {
+        remainingLifetimeRdfCount_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "remaining_recur_quota" field.</summary>
+    public const int RemainingRecurQuotaFieldNumber = 12;
+    private int remainingRecurQuota_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RemainingRecurQuota {
+      get { return remainingRecurQuota_; }
+      set {
+        remainingRecurQuota_ = value;
+      }
+    }
+
     /// <summary>Field number for the "picker_ud" field.</summary>
-    public const int PickerUdFieldNumber = 11;
+    public const int PickerUdFieldNumber = 512;
     private ulong pickerUd_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong PickerUd {
@@ -25910,15 +24955,17 @@ namespace jtshared {
         return true;
       }
       if (Id != other.Id) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
-      if (!object.Equals(ConfigFromTiled, other.ConfigFromTiled)) return false;
-      if (RemainingLifetimeRdfCount != other.RemainingLifetimeRdfCount) return false;
-      if (RemainingRecurQuota != other.RemainingRecurQuota) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelX, other.VelX)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelY, other.VelY)) return false;
+      if (PickupType != other.PickupType) return false;
       if (PkState != other.PkState) return false;
       if (FramesInPkState != other.FramesInPkState) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Z, other.Z)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelX, other.VelX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelY, other.VelY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelZ, other.VelZ)) return false;
+      if (RemainingLifetimeRdfCount != other.RemainingLifetimeRdfCount) return false;
+      if (RemainingRecurQuota != other.RemainingRecurQuota) return false;
       if (PickerUd != other.PickerUd) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -25927,15 +24974,17 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (Id != 0) hash ^= Id.GetHashCode();
-      if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
-      if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
-      if (configFromTiled_ != null) hash ^= ConfigFromTiled.GetHashCode();
-      if (RemainingLifetimeRdfCount != 0) hash ^= RemainingLifetimeRdfCount.GetHashCode();
-      if (RemainingRecurQuota != 0) hash ^= RemainingRecurQuota.GetHashCode();
-      if (VelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelX);
-      if (VelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelY);
+      if (PickupType != 0) hash ^= PickupType.GetHashCode();
       if (PkState != 0) hash ^= PkState.GetHashCode();
       if (FramesInPkState != 0) hash ^= FramesInPkState.GetHashCode();
+      if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
+      if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
+      if (Z != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Z);
+      if (VelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelX);
+      if (VelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelY);
+      if (VelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelZ);
+      if (RemainingLifetimeRdfCount != 0) hash ^= RemainingLifetimeRdfCount.GetHashCode();
+      if (RemainingRecurQuota != 0) hash ^= RemainingRecurQuota.GetHashCode();
       if (PickerUd != 0UL) hash ^= PickerUd.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -25954,44 +25003,52 @@ namespace jtshared {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (X != 0F) {
-        output.WriteRawTag(21);
-        output.WriteFloat(X);
-      }
-      if (Y != 0F) {
-        output.WriteRawTag(29);
-        output.WriteFloat(Y);
-      }
-      if (configFromTiled_ != null) {
-        output.WriteRawTag(34);
-        output.WriteMessage(ConfigFromTiled);
-      }
-      if (RemainingLifetimeRdfCount != 0) {
-        output.WriteRawTag(40);
-        output.WriteInt32(RemainingLifetimeRdfCount);
-      }
-      if (RemainingRecurQuota != 0) {
-        output.WriteRawTag(48);
-        output.WriteInt32(RemainingRecurQuota);
-      }
-      if (VelX != 0F) {
-        output.WriteRawTag(61);
-        output.WriteFloat(VelX);
-      }
-      if (VelY != 0F) {
-        output.WriteRawTag(69);
-        output.WriteFloat(VelY);
+      if (PickupType != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) PickupType);
       }
       if (PkState != 0) {
-        output.WriteRawTag(72);
+        output.WriteRawTag(24);
         output.WriteEnum((int) PkState);
       }
       if (FramesInPkState != 0) {
-        output.WriteRawTag(80);
+        output.WriteRawTag(32);
         output.WriteInt32(FramesInPkState);
       }
-      if (PickerUd != 0UL) {
+      if (X != 0F) {
+        output.WriteRawTag(45);
+        output.WriteFloat(X);
+      }
+      if (Y != 0F) {
+        output.WriteRawTag(53);
+        output.WriteFloat(Y);
+      }
+      if (Z != 0F) {
+        output.WriteRawTag(61);
+        output.WriteFloat(Z);
+      }
+      if (VelX != 0F) {
+        output.WriteRawTag(69);
+        output.WriteFloat(VelX);
+      }
+      if (VelY != 0F) {
+        output.WriteRawTag(77);
+        output.WriteFloat(VelY);
+      }
+      if (VelZ != 0F) {
+        output.WriteRawTag(85);
+        output.WriteFloat(VelZ);
+      }
+      if (RemainingLifetimeRdfCount != 0) {
         output.WriteRawTag(88);
+        output.WriteInt32(RemainingLifetimeRdfCount);
+      }
+      if (RemainingRecurQuota != 0) {
+        output.WriteRawTag(96);
+        output.WriteInt32(RemainingRecurQuota);
+      }
+      if (PickerUd != 0UL) {
+        output.WriteRawTag(128, 32);
         output.WriteUInt64(PickerUd);
       }
       if (_unknownFields != null) {
@@ -26005,26 +25062,8 @@ namespace jtshared {
       if (Id != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
-      if (X != 0F) {
-        size += 1 + 4;
-      }
-      if (Y != 0F) {
-        size += 1 + 4;
-      }
-      if (configFromTiled_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ConfigFromTiled);
-      }
-      if (RemainingLifetimeRdfCount != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RemainingLifetimeRdfCount);
-      }
-      if (RemainingRecurQuota != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RemainingRecurQuota);
-      }
-      if (VelX != 0F) {
-        size += 1 + 4;
-      }
-      if (VelY != 0F) {
-        size += 1 + 4;
+      if (PickupType != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) PickupType);
       }
       if (PkState != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) PkState);
@@ -26032,8 +25071,32 @@ namespace jtshared {
       if (FramesInPkState != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(FramesInPkState);
       }
+      if (X != 0F) {
+        size += 1 + 4;
+      }
+      if (Y != 0F) {
+        size += 1 + 4;
+      }
+      if (Z != 0F) {
+        size += 1 + 4;
+      }
+      if (VelX != 0F) {
+        size += 1 + 4;
+      }
+      if (VelY != 0F) {
+        size += 1 + 4;
+      }
+      if (VelZ != 0F) {
+        size += 1 + 4;
+      }
+      if (RemainingLifetimeRdfCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RemainingLifetimeRdfCount);
+      }
+      if (RemainingRecurQuota != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RemainingRecurQuota);
+      }
       if (PickerUd != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PickerUd);
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(PickerUd);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -26049,23 +25112,23 @@ namespace jtshared {
       if (other.Id != 0) {
         Id = other.Id;
       }
+      if (other.PickupType != 0) {
+        PickupType = other.PickupType;
+      }
+      if (other.PkState != 0) {
+        PkState = other.PkState;
+      }
+      if (other.FramesInPkState != 0) {
+        FramesInPkState = other.FramesInPkState;
+      }
       if (other.X != 0F) {
         X = other.X;
       }
       if (other.Y != 0F) {
         Y = other.Y;
       }
-      if (other.configFromTiled_ != null) {
-        if (configFromTiled_ == null) {
-          ConfigFromTiled = new global::jtshared.PickableConfigFromTiled();
-        }
-        ConfigFromTiled.MergeFrom(other.ConfigFromTiled);
-      }
-      if (other.RemainingLifetimeRdfCount != 0) {
-        RemainingLifetimeRdfCount = other.RemainingLifetimeRdfCount;
-      }
-      if (other.RemainingRecurQuota != 0) {
-        RemainingRecurQuota = other.RemainingRecurQuota;
+      if (other.Z != 0F) {
+        Z = other.Z;
       }
       if (other.VelX != 0F) {
         VelX = other.VelX;
@@ -26073,11 +25136,14 @@ namespace jtshared {
       if (other.VelY != 0F) {
         VelY = other.VelY;
       }
-      if (other.PkState != 0) {
-        PkState = other.PkState;
+      if (other.VelZ != 0F) {
+        VelZ = other.VelZ;
       }
-      if (other.FramesInPkState != 0) {
-        FramesInPkState = other.FramesInPkState;
+      if (other.RemainingLifetimeRdfCount != 0) {
+        RemainingLifetimeRdfCount = other.RemainingLifetimeRdfCount;
+      }
+      if (other.RemainingRecurQuota != 0) {
+        RemainingRecurQuota = other.RemainingRecurQuota;
       }
       if (other.PickerUd != 0UL) {
         PickerUd = other.PickerUd;
@@ -26097,46 +25163,51 @@ namespace jtshared {
             Id = input.ReadUInt32();
             break;
           }
-          case 21: {
-            X = input.ReadFloat();
+          case 16: {
+            PickupType = (global::jtshared.PickupType) input.ReadEnum();
             break;
           }
-          case 29: {
-            Y = input.ReadFloat();
-            break;
-          }
-          case 34: {
-            if (configFromTiled_ == null) {
-              ConfigFromTiled = new global::jtshared.PickableConfigFromTiled();
-            }
-            input.ReadMessage(ConfigFromTiled);
-            break;
-          }
-          case 40: {
-            RemainingLifetimeRdfCount = input.ReadInt32();
-            break;
-          }
-          case 48: {
-            RemainingRecurQuota = input.ReadInt32();
-            break;
-          }
-          case 61: {
-            VelX = input.ReadFloat();
-            break;
-          }
-          case 69: {
-            VelY = input.ReadFloat();
-            break;
-          }
-          case 72: {
+          case 24: {
             PkState = (global::jtshared.PickableState) input.ReadEnum();
             break;
           }
-          case 80: {
+          case 32: {
             FramesInPkState = input.ReadInt32();
             break;
           }
+          case 45: {
+            X = input.ReadFloat();
+            break;
+          }
+          case 53: {
+            Y = input.ReadFloat();
+            break;
+          }
+          case 61: {
+            Z = input.ReadFloat();
+            break;
+          }
+          case 69: {
+            VelX = input.ReadFloat();
+            break;
+          }
+          case 77: {
+            VelY = input.ReadFloat();
+            break;
+          }
+          case 85: {
+            VelZ = input.ReadFloat();
+            break;
+          }
           case 88: {
+            RemainingLifetimeRdfCount = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            RemainingRecurQuota = input.ReadInt32();
+            break;
+          }
+          case 4096: {
             PickerUd = input.ReadUInt64();
             break;
           }
@@ -26154,7 +25225,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26311,7 +25382,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26485,7 +25556,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26672,15 +25743,15 @@ namespace jtshared {
 
   }
 
-  public sealed partial class TriggerColliderAttr : pb::IMessage<TriggerColliderAttr> {
-    private static readonly pb::MessageParser<TriggerColliderAttr> _parser = new pb::MessageParser<TriggerColliderAttr>(() => new TriggerColliderAttr());
+  public sealed partial class TriggerConfig : pb::IMessage<TriggerConfig> {
+    private static readonly pb::MessageParser<TriggerConfig> _parser = new pb::MessageParser<TriggerConfig>(() => new TriggerConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<TriggerColliderAttr> Parser { get { return _parser; } }
+    public static pb::MessageParser<TriggerConfig> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26689,69 +25760,55 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerColliderAttr() {
+    public TriggerConfig() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerColliderAttr(TriggerColliderAttr other) : this() {
-      id_ = other.id_;
-      speciesId_ = other.speciesId_;
+    public TriggerConfig(TriggerConfig other) : this() {
+      tt_ = other.tt_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TriggerColliderAttr Clone() {
-      return new TriggerColliderAttr(this);
+    public TriggerConfig Clone() {
+      return new TriggerConfig(this);
     }
 
-    /// <summary>Field number for the "id" field.</summary>
-    public const int IdFieldNumber = 1;
-    private int id_;
+    /// <summary>Field number for the "tt" field.</summary>
+    public const int TtFieldNumber = 1;
+    private global::jtshared.TriggerType tt_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int Id {
-      get { return id_; }
+    public global::jtshared.TriggerType Tt {
+      get { return tt_; }
       set {
-        id_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 2;
-    private int speciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SpeciesId {
-      get { return speciesId_; }
-      set {
-        speciesId_ = value;
+        tt_ = value;
       }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as TriggerColliderAttr);
+      return Equals(other as TriggerConfig);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(TriggerColliderAttr other) {
+    public bool Equals(TriggerConfig other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Id != other.Id) return false;
-      if (SpeciesId != other.SpeciesId) return false;
+      if (Tt != other.Tt) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Id != 0) hash ^= Id.GetHashCode();
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
+      if (Tt != 0) hash ^= Tt.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -26765,13 +25822,9 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Id != 0) {
+      if (Tt != 0) {
         output.WriteRawTag(8);
-        output.WriteInt32(Id);
-      }
-      if (SpeciesId != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(SpeciesId);
+        output.WriteEnum((int) Tt);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -26781,11 +25834,8 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Id != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
-      }
-      if (SpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SpeciesId);
+      if (Tt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Tt);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -26794,15 +25844,12 @@ namespace jtshared {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(TriggerColliderAttr other) {
+    public void MergeFrom(TriggerConfig other) {
       if (other == null) {
         return;
       }
-      if (other.Id != 0) {
-        Id = other.Id;
-      }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
+      if (other.Tt != 0) {
+        Tt = other.Tt;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -26816,11 +25863,7 @@ namespace jtshared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Id = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            SpeciesId = input.ReadInt32();
+            Tt = (global::jtshared.TriggerType) input.ReadEnum();
             break;
           }
         }
@@ -26837,7 +25880,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26854,26 +25897,23 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TriggerConfigFromTiled(TriggerConfigFromTiled other) : this() {
-      editorId_ = other.editorId_;
-      speciesId_ = other.speciesId_;
+      tt_ = other.tt_;
       delayedFrames_ = other.delayedFrames_;
       recoveryFrames_ = other.recoveryFrames_;
       bulletTeamId_ = other.bulletTeamId_;
       subCycleTriggerFrames_ = other.subCycleTriggerFrames_;
       subCycleQuota_ = other.subCycleQuota_;
       quotaCap_ = other.quotaCap_;
-      subscribesToIdList_ = other.subscribesToIdList_.Clone();
-      subscribesToExhaustedIdList_ = other.subscribesToExhaustedIdList_.Clone();
       newRevivalX_ = other.newRevivalX_;
       newRevivalY_ = other.newRevivalY_;
       initDirX_ = other.initDirX_;
       initDirY_ = other.initDirY_;
       publishingEvtMaskUponExhausted_ = other.publishingEvtMaskUponExhausted_;
-      characterSpawnerTimeSeq_ = other.characterSpawnerTimeSeq_.Clone();
-      pickableSpawnerTimeSeq_ = other.pickableSpawnerTimeSeq_.Clone();
+      publishingToTriggerIdUponExhausted_ = other.publishingToTriggerIdUponExhausted_;
       forceCtrlRdfCount_ = other.forceCtrlRdfCount_;
       forceCtrlCmd_ = other.forceCtrlCmd_;
-      reloadCollidersInNewPhase_ = other.reloadCollidersInNewPhase_;
+      characterSpawnerTimeSeq_ = other.characterSpawnerTimeSeq_.Clone();
+      pickableSpawnerTimeSeq_ = other.pickableSpawnerTimeSeq_.Clone();
       storyPointId_ = other.storyPointId_;
       bgmId_ = other.bgmId_;
       bossSpeciesSet_ = other.bossSpeciesSet_.Clone();
@@ -26886,25 +25926,14 @@ namespace jtshared {
       return new TriggerConfigFromTiled(this);
     }
 
-    /// <summary>Field number for the "editor_id" field.</summary>
-    public const int EditorIdFieldNumber = 1;
-    private uint editorId_;
+    /// <summary>Field number for the "tt" field.</summary>
+    public const int TtFieldNumber = 1;
+    private global::jtshared.TriggerType tt_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint EditorId {
-      get { return editorId_; }
+    public global::jtshared.TriggerType Tt {
+      get { return tt_; }
       set {
-        editorId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 2;
-    private uint speciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SpeciesId {
-      get { return speciesId_; }
-      set {
-        speciesId_ = value;
+        tt_ = value;
       }
     }
 
@@ -26974,26 +26003,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "subscribes_to_id_list" field.</summary>
-    public const int SubscribesToIdListFieldNumber = 9;
-    private static readonly pb::FieldCodec<int> _repeated_subscribesToIdList_codec
-        = pb::FieldCodec.ForInt32(74);
-    private readonly pbc::RepeatedField<int> subscribesToIdList_ = new pbc::RepeatedField<int>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<int> SubscribesToIdList {
-      get { return subscribesToIdList_; }
-    }
-
-    /// <summary>Field number for the "subscribes_to_exhausted_id_list" field.</summary>
-    public const int SubscribesToExhaustedIdListFieldNumber = 10;
-    private static readonly pb::FieldCodec<int> _repeated_subscribesToExhaustedIdList_codec
-        = pb::FieldCodec.ForInt32(82);
-    private readonly pbc::RepeatedField<int> subscribesToExhaustedIdList_ = new pbc::RepeatedField<int>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<int> SubscribesToExhaustedIdList {
-      get { return subscribesToExhaustedIdList_; }
-    }
-
     /// <summary>Field number for the "new_revival_x" field.</summary>
     public const int NewRevivalXFieldNumber = 11;
     private float newRevivalX_;
@@ -27049,30 +26058,15 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "character_spawner_time_seq" field.</summary>
-    public const int CharacterSpawnerTimeSeqFieldNumber = 16;
-    private static readonly pb::FieldCodec<global::jtshared.CharacterSpawnerConfig> _repeated_characterSpawnerTimeSeq_codec
-        = pb::FieldCodec.ForMessage(130, global::jtshared.CharacterSpawnerConfig.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> characterSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig>();
-    /// <summary>
-    /// MUST Be configured by increasing "cutoff_rdf_id"!
-    /// </summary>
+    /// <summary>Field number for the "publishing_to_trigger_id_upon_exhausted" field.</summary>
+    public const int PublishingToTriggerIdUponExhaustedFieldNumber = 16;
+    private uint publishingToTriggerIdUponExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> CharacterSpawnerTimeSeq {
-      get { return characterSpawnerTimeSeq_; }
-    }
-
-    /// <summary>Field number for the "pickable_spawner_time_seq" field.</summary>
-    public const int PickableSpawnerTimeSeqFieldNumber = 17;
-    private static readonly pb::FieldCodec<global::jtshared.PickableSpawnerConfig> _repeated_pickableSpawnerTimeSeq_codec
-        = pb::FieldCodec.ForMessage(138, global::jtshared.PickableSpawnerConfig.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> pickableSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.PickableSpawnerConfig>();
-    /// <summary>
-    /// MUST Be configured by increasing "cutoff_rdf_id"!
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> PickableSpawnerTimeSeq {
-      get { return pickableSpawnerTimeSeq_; }
+    public uint PublishingToTriggerIdUponExhausted {
+      get { return publishingToTriggerIdUponExhausted_; }
+      set {
+        publishingToTriggerIdUponExhausted_ = value;
+      }
     }
 
     /// <summary>Field number for the "force_ctrl_rdf_count" field.</summary>
@@ -27097,18 +26091,30 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "reload_colliders_in_new_phase" field.</summary>
-    public const int ReloadCollidersInNewPhaseFieldNumber = 20;
-    private bool reloadCollidersInNewPhase_;
+    /// <summary>Field number for the "character_spawner_time_seq" field.</summary>
+    public const int CharacterSpawnerTimeSeqFieldNumber = 20;
+    private static readonly pb::FieldCodec<global::jtshared.CharacterSpawnerConfig> _repeated_characterSpawnerTimeSeq_codec
+        = pb::FieldCodec.ForMessage(162, global::jtshared.CharacterSpawnerConfig.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> characterSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig>();
     /// <summary>
-    /// When set to "true", will (a.) remove all NPCs activated before current rdf_id (b.) remove all traps/pickables/barriers whose collision boxes not fully contained in this trigger's box
+    /// MUST Be configured by increasing "cutoff_rdf_id"!
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ReloadCollidersInNewPhase {
-      get { return reloadCollidersInNewPhase_; }
-      set {
-        reloadCollidersInNewPhase_ = value;
-      }
+    public pbc::RepeatedField<global::jtshared.CharacterSpawnerConfig> CharacterSpawnerTimeSeq {
+      get { return characterSpawnerTimeSeq_; }
+    }
+
+    /// <summary>Field number for the "pickable_spawner_time_seq" field.</summary>
+    public const int PickableSpawnerTimeSeqFieldNumber = 21;
+    private static readonly pb::FieldCodec<global::jtshared.PickableSpawnerConfig> _repeated_pickableSpawnerTimeSeq_codec
+        = pb::FieldCodec.ForMessage(170, global::jtshared.PickableSpawnerConfig.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> pickableSpawnerTimeSeq_ = new pbc::RepeatedField<global::jtshared.PickableSpawnerConfig>();
+    /// <summary>
+    /// MUST Be configured by increasing "cutoff_rdf_id"!
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::jtshared.PickableSpawnerConfig> PickableSpawnerTimeSeq {
+      get { return pickableSpawnerTimeSeq_; }
     }
 
     /// <summary>Field number for the "story_point_id" field.</summary>
@@ -27167,26 +26173,23 @@ namespace jtshared {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (EditorId != other.EditorId) return false;
-      if (SpeciesId != other.SpeciesId) return false;
+      if (Tt != other.Tt) return false;
       if (DelayedFrames != other.DelayedFrames) return false;
       if (RecoveryFrames != other.RecoveryFrames) return false;
       if (BulletTeamId != other.BulletTeamId) return false;
       if (SubCycleTriggerFrames != other.SubCycleTriggerFrames) return false;
       if (SubCycleQuota != other.SubCycleQuota) return false;
       if (QuotaCap != other.QuotaCap) return false;
-      if(!subscribesToIdList_.Equals(other.subscribesToIdList_)) return false;
-      if(!subscribesToExhaustedIdList_.Equals(other.subscribesToExhaustedIdList_)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(NewRevivalX, other.NewRevivalX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(NewRevivalY, other.NewRevivalY)) return false;
       if (InitDirX != other.InitDirX) return false;
       if (InitDirY != other.InitDirY) return false;
       if (PublishingEvtMaskUponExhausted != other.PublishingEvtMaskUponExhausted) return false;
-      if(!characterSpawnerTimeSeq_.Equals(other.characterSpawnerTimeSeq_)) return false;
-      if(!pickableSpawnerTimeSeq_.Equals(other.pickableSpawnerTimeSeq_)) return false;
+      if (PublishingToTriggerIdUponExhausted != other.PublishingToTriggerIdUponExhausted) return false;
       if (ForceCtrlRdfCount != other.ForceCtrlRdfCount) return false;
       if (ForceCtrlCmd != other.ForceCtrlCmd) return false;
-      if (ReloadCollidersInNewPhase != other.ReloadCollidersInNewPhase) return false;
+      if(!characterSpawnerTimeSeq_.Equals(other.characterSpawnerTimeSeq_)) return false;
+      if(!pickableSpawnerTimeSeq_.Equals(other.pickableSpawnerTimeSeq_)) return false;
       if (StoryPointId != other.StoryPointId) return false;
       if (BgmId != other.BgmId) return false;
       if (!BossSpeciesSet.Equals(other.BossSpeciesSet)) return false;
@@ -27197,26 +26200,23 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (EditorId != 0) hash ^= EditorId.GetHashCode();
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
+      if (Tt != 0) hash ^= Tt.GetHashCode();
       if (DelayedFrames != 0) hash ^= DelayedFrames.GetHashCode();
       if (RecoveryFrames != 0) hash ^= RecoveryFrames.GetHashCode();
       if (BulletTeamId != 0) hash ^= BulletTeamId.GetHashCode();
       if (SubCycleTriggerFrames != 0) hash ^= SubCycleTriggerFrames.GetHashCode();
       if (SubCycleQuota != 0) hash ^= SubCycleQuota.GetHashCode();
       if (QuotaCap != 0) hash ^= QuotaCap.GetHashCode();
-      hash ^= subscribesToIdList_.GetHashCode();
-      hash ^= subscribesToExhaustedIdList_.GetHashCode();
       if (NewRevivalX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(NewRevivalX);
       if (NewRevivalY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(NewRevivalY);
       if (InitDirX != 0) hash ^= InitDirX.GetHashCode();
       if (InitDirY != 0) hash ^= InitDirY.GetHashCode();
       if (PublishingEvtMaskUponExhausted != 0UL) hash ^= PublishingEvtMaskUponExhausted.GetHashCode();
-      hash ^= characterSpawnerTimeSeq_.GetHashCode();
-      hash ^= pickableSpawnerTimeSeq_.GetHashCode();
+      if (PublishingToTriggerIdUponExhausted != 0) hash ^= PublishingToTriggerIdUponExhausted.GetHashCode();
       if (ForceCtrlRdfCount != 0) hash ^= ForceCtrlRdfCount.GetHashCode();
       if (ForceCtrlCmd != 0UL) hash ^= ForceCtrlCmd.GetHashCode();
-      if (ReloadCollidersInNewPhase != false) hash ^= ReloadCollidersInNewPhase.GetHashCode();
+      hash ^= characterSpawnerTimeSeq_.GetHashCode();
+      hash ^= pickableSpawnerTimeSeq_.GetHashCode();
       if (StoryPointId != 0) hash ^= StoryPointId.GetHashCode();
       if (BgmId != 0) hash ^= BgmId.GetHashCode();
       hash ^= BossSpeciesSet.GetHashCode();
@@ -27234,13 +26234,9 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (EditorId != 0) {
+      if (Tt != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(EditorId);
-      }
-      if (SpeciesId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(SpeciesId);
+        output.WriteEnum((int) Tt);
       }
       if (DelayedFrames != 0) {
         output.WriteRawTag(24);
@@ -27266,8 +26262,6 @@ namespace jtshared {
         output.WriteRawTag(64);
         output.WriteInt32(QuotaCap);
       }
-      subscribesToIdList_.WriteTo(output, _repeated_subscribesToIdList_codec);
-      subscribesToExhaustedIdList_.WriteTo(output, _repeated_subscribesToExhaustedIdList_codec);
       if (NewRevivalX != 0F) {
         output.WriteRawTag(93);
         output.WriteFloat(NewRevivalX);
@@ -27288,8 +26282,10 @@ namespace jtshared {
         output.WriteRawTag(120);
         output.WriteUInt64(PublishingEvtMaskUponExhausted);
       }
-      characterSpawnerTimeSeq_.WriteTo(output, _repeated_characterSpawnerTimeSeq_codec);
-      pickableSpawnerTimeSeq_.WriteTo(output, _repeated_pickableSpawnerTimeSeq_codec);
+      if (PublishingToTriggerIdUponExhausted != 0) {
+        output.WriteRawTag(128, 1);
+        output.WriteUInt32(PublishingToTriggerIdUponExhausted);
+      }
       if (ForceCtrlRdfCount != 0) {
         output.WriteRawTag(144, 1);
         output.WriteInt32(ForceCtrlRdfCount);
@@ -27298,10 +26294,8 @@ namespace jtshared {
         output.WriteRawTag(152, 1);
         output.WriteUInt64(ForceCtrlCmd);
       }
-      if (ReloadCollidersInNewPhase != false) {
-        output.WriteRawTag(160, 1);
-        output.WriteBool(ReloadCollidersInNewPhase);
-      }
+      characterSpawnerTimeSeq_.WriteTo(output, _repeated_characterSpawnerTimeSeq_codec);
+      pickableSpawnerTimeSeq_.WriteTo(output, _repeated_pickableSpawnerTimeSeq_codec);
       if (StoryPointId != 0) {
         output.WriteRawTag(128, 64);
         output.WriteInt32(StoryPointId);
@@ -27323,11 +26317,8 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (EditorId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EditorId);
-      }
-      if (SpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SpeciesId);
+      if (Tt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Tt);
       }
       if (DelayedFrames != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(DelayedFrames);
@@ -27347,8 +26338,6 @@ namespace jtshared {
       if (QuotaCap != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(QuotaCap);
       }
-      size += subscribesToIdList_.CalculateSize(_repeated_subscribesToIdList_codec);
-      size += subscribesToExhaustedIdList_.CalculateSize(_repeated_subscribesToExhaustedIdList_codec);
       if (NewRevivalX != 0F) {
         size += 1 + 4;
       }
@@ -27364,17 +26353,17 @@ namespace jtshared {
       if (PublishingEvtMaskUponExhausted != 0UL) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PublishingEvtMaskUponExhausted);
       }
-      size += characterSpawnerTimeSeq_.CalculateSize(_repeated_characterSpawnerTimeSeq_codec);
-      size += pickableSpawnerTimeSeq_.CalculateSize(_repeated_pickableSpawnerTimeSeq_codec);
+      if (PublishingToTriggerIdUponExhausted != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(PublishingToTriggerIdUponExhausted);
+      }
       if (ForceCtrlRdfCount != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(ForceCtrlRdfCount);
       }
       if (ForceCtrlCmd != 0UL) {
         size += 2 + pb::CodedOutputStream.ComputeUInt64Size(ForceCtrlCmd);
       }
-      if (ReloadCollidersInNewPhase != false) {
-        size += 2 + 1;
-      }
+      size += characterSpawnerTimeSeq_.CalculateSize(_repeated_characterSpawnerTimeSeq_codec);
+      size += pickableSpawnerTimeSeq_.CalculateSize(_repeated_pickableSpawnerTimeSeq_codec);
       if (StoryPointId != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(StoryPointId);
       }
@@ -27396,11 +26385,8 @@ namespace jtshared {
       if (other == null) {
         return;
       }
-      if (other.EditorId != 0) {
-        EditorId = other.EditorId;
-      }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
+      if (other.Tt != 0) {
+        Tt = other.Tt;
       }
       if (other.DelayedFrames != 0) {
         DelayedFrames = other.DelayedFrames;
@@ -27420,8 +26406,6 @@ namespace jtshared {
       if (other.QuotaCap != 0) {
         QuotaCap = other.QuotaCap;
       }
-      subscribesToIdList_.Add(other.subscribesToIdList_);
-      subscribesToExhaustedIdList_.Add(other.subscribesToExhaustedIdList_);
       if (other.NewRevivalX != 0F) {
         NewRevivalX = other.NewRevivalX;
       }
@@ -27437,17 +26421,17 @@ namespace jtshared {
       if (other.PublishingEvtMaskUponExhausted != 0UL) {
         PublishingEvtMaskUponExhausted = other.PublishingEvtMaskUponExhausted;
       }
-      characterSpawnerTimeSeq_.Add(other.characterSpawnerTimeSeq_);
-      pickableSpawnerTimeSeq_.Add(other.pickableSpawnerTimeSeq_);
+      if (other.PublishingToTriggerIdUponExhausted != 0) {
+        PublishingToTriggerIdUponExhausted = other.PublishingToTriggerIdUponExhausted;
+      }
       if (other.ForceCtrlRdfCount != 0) {
         ForceCtrlRdfCount = other.ForceCtrlRdfCount;
       }
       if (other.ForceCtrlCmd != 0UL) {
         ForceCtrlCmd = other.ForceCtrlCmd;
       }
-      if (other.ReloadCollidersInNewPhase != false) {
-        ReloadCollidersInNewPhase = other.ReloadCollidersInNewPhase;
-      }
+      characterSpawnerTimeSeq_.Add(other.characterSpawnerTimeSeq_);
+      pickableSpawnerTimeSeq_.Add(other.pickableSpawnerTimeSeq_);
       if (other.StoryPointId != 0) {
         StoryPointId = other.StoryPointId;
       }
@@ -27470,11 +26454,7 @@ namespace jtshared {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            EditorId = input.ReadUInt32();
-            break;
-          }
-          case 16: {
-            SpeciesId = input.ReadUInt32();
+            Tt = (global::jtshared.TriggerType) input.ReadEnum();
             break;
           }
           case 24: {
@@ -27501,16 +26481,6 @@ namespace jtshared {
             QuotaCap = input.ReadInt32();
             break;
           }
-          case 74:
-          case 72: {
-            subscribesToIdList_.AddEntriesFrom(input, _repeated_subscribesToIdList_codec);
-            break;
-          }
-          case 82:
-          case 80: {
-            subscribesToExhaustedIdList_.AddEntriesFrom(input, _repeated_subscribesToExhaustedIdList_codec);
-            break;
-          }
           case 93: {
             NewRevivalX = input.ReadFloat();
             break;
@@ -27531,12 +26501,8 @@ namespace jtshared {
             PublishingEvtMaskUponExhausted = input.ReadUInt64();
             break;
           }
-          case 130: {
-            characterSpawnerTimeSeq_.AddEntriesFrom(input, _repeated_characterSpawnerTimeSeq_codec);
-            break;
-          }
-          case 138: {
-            pickableSpawnerTimeSeq_.AddEntriesFrom(input, _repeated_pickableSpawnerTimeSeq_codec);
+          case 128: {
+            PublishingToTriggerIdUponExhausted = input.ReadUInt32();
             break;
           }
           case 144: {
@@ -27547,8 +26513,12 @@ namespace jtshared {
             ForceCtrlCmd = input.ReadUInt64();
             break;
           }
-          case 160: {
-            ReloadCollidersInNewPhase = input.ReadBool();
+          case 162: {
+            characterSpawnerTimeSeq_.AddEntriesFrom(input, _repeated_characterSpawnerTimeSeq_codec);
+            break;
+          }
+          case 170: {
+            pickableSpawnerTimeSeq_.AddEntriesFrom(input, _repeated_pickableSpawnerTimeSeq_codec);
             break;
           }
           case 8192: {
@@ -27573,6 +26543,14 @@ namespace jtshared {
 
   }
 
+  /// <summary>
+  ///
+  ///:repeats "quota" times
+  ///|&lt;-------------------------------------- recoveryFrames ----------------------------->|&lt;-----------------recoveryFrames ---------->|.......
+  ///:repeats "subCycleQuota" times                                                        :repeats "subCycleQuota" times
+  ///|&lt;-delayedFrames->|&lt;-subCycleTriggerFrames->|&lt;-subCycleTriggerFrames->|&lt;-subCycleTriggerFrames->|       |.......
+  ///|TReady           |TCoolingDown             |TCoolingDown(replay)     |TCoolingDown(replay)     |TReady |.......
+  /// </summary>
   public sealed partial class Trigger : pb::IMessage<Trigger> {
     private static readonly pb::MessageParser<Trigger> _parser = new pb::MessageParser<Trigger>(() => new Trigger());
     private pb::UnknownFieldSet _unknownFields;
@@ -27581,7 +26559,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[66]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -27599,24 +26577,24 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Trigger(Trigger other) : this() {
       id_ = other.id_;
-      editorId_ = other.editorId_;
       framesToFire_ = other.framesToFire_;
       framesToRecover_ = other.framesToRecover_;
       quota_ = other.quota_;
       bulletTeamId_ = other.bulletTeamId_;
-      dirX_ = other.dirX_;
-      subCycleQuotaLeft_ = other.subCycleQuotaLeft_;
+      subCycleQuota_ = other.subCycleQuota_;
       state_ = other.state_;
       framesInState_ = other.framesInState_;
       x_ = other.x_;
       y_ = other.y_;
+      z_ = other.z_;
       demandedEvtMask_ = other.demandedEvtMask_;
       fulfilledEvtMask_ = other.fulfilledEvtMask_;
-      waveNpcKilledEvtMaskCounter_ = other.waveNpcKilledEvtMaskCounter_;
-      subscriberIdsMask_ = other.subscriberIdsMask_;
-      exhaustSubscriberIdsMask_ = other.exhaustSubscriberIdsMask_;
+      waveNpcExhaustedEvtMaskCounter_ = other.waveNpcExhaustedEvtMaskCounter_;
+      publishingEvtMaskUponExhausted_ = other.publishingEvtMaskUponExhausted_;
+      publishingToTriggerIdUponExhausted_ = other.publishingToTriggerIdUponExhausted_;
       offenderUd_ = other.offenderUd_;
       offenderBulletTeamId_ = other.offenderBulletTeamId_;
+      triggerType_ = other.triggerType_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -27636,17 +26614,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "editor_id" field.</summary>
-    public const int EditorIdFieldNumber = 2;
-    private uint editorId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint EditorId {
-      get { return editorId_; }
-      set {
-        editorId_ = value;
-      }
-    }
-
     /// <summary>Field number for the "frames_to_fire" field.</summary>
     public const int FramesToFireFieldNumber = 3;
     private int framesToFire_;
@@ -27662,7 +26629,7 @@ namespace jtshared {
     public const int FramesToRecoverFieldNumber = 4;
     private int framesToRecover_;
     /// <summary>
-    /// if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 &lt; sub_cycle_quota_left" and itself becomes 0
+    /// if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 &lt; sub_cycle_quota" and itself becomes 0
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FramesToRecover {
@@ -27697,28 +26664,17 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "dir_x" field.</summary>
-    public const int DirXFieldNumber = 7;
-    private int dirX_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int DirX {
-      get { return dirX_; }
-      set {
-        dirX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "sub_cycle_quota_left" field.</summary>
-    public const int SubCycleQuotaLeftFieldNumber = 9;
-    private int subCycleQuotaLeft_;
+    /// <summary>Field number for the "sub_cycle_quota" field.</summary>
+    public const int SubCycleQuotaFieldNumber = 9;
+    private int subCycleQuota_;
     /// <summary>
-    /// resets whenever "frames_to_recover" becomes 0; for TRIGGER_MASK_BY_WAVE, this field is repurposed as the "remaining NPC count of current wave" 
+    /// resets whenever "frames_to_recover" becomes 0; for WaveNpcSpawner, this field is repurposed as the "remaining NPC count of current wave (i.e. current sub-cycle)" 
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int SubCycleQuotaLeft {
-      get { return subCycleQuotaLeft_; }
+    public int SubCycleQuota {
+      get { return subCycleQuota_; }
       set {
-        subCycleQuotaLeft_ = value;
+        subCycleQuota_ = value;
       }
     }
 
@@ -27766,11 +26722,22 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "z" field.</summary>
+    public const int ZFieldNumber = 14;
+    private float z_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Z {
+      get { return z_; }
+      set {
+        z_ = value;
+      }
+    }
+
     /// <summary>Field number for the "demanded_evt_mask" field.</summary>
-    public const int DemandedEvtMaskFieldNumber = 14;
+    public const int DemandedEvtMaskFieldNumber = 15;
     private ulong demandedEvtMask_;
     /// <summary>
-    /// Even the "demanded_evt_mask" changes with time/battle progress
+    /// [WARNING] changes with time/battle progress
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong DemandedEvtMask {
@@ -27781,7 +26748,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "fulfilled_evt_mask" field.</summary>
-    public const int FulfilledEvtMaskFieldNumber = 15;
+    public const int FulfilledEvtMaskFieldNumber = 16;
     private ulong fulfilledEvtMask_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong FulfilledEvtMask {
@@ -27791,47 +26758,41 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "wave_npc_killed_evt_mask_counter" field.</summary>
-    public const int WaveNpcKilledEvtMaskCounterFieldNumber = 16;
-    private ulong waveNpcKilledEvtMaskCounter_;
+    /// <summary>Field number for the "wave_npc_exhausted_evt_mask_counter" field.</summary>
+    public const int WaveNpcExhaustedEvtMaskCounterFieldNumber = 17;
+    private ulong waveNpcExhaustedEvtMaskCounter_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong WaveNpcKilledEvtMaskCounter {
-      get { return waveNpcKilledEvtMaskCounter_; }
+    public ulong WaveNpcExhaustedEvtMaskCounter {
+      get { return waveNpcExhaustedEvtMaskCounter_; }
       set {
-        waveNpcKilledEvtMaskCounter_ = value;
+        waveNpcExhaustedEvtMaskCounter_ = value;
       }
     }
 
-    /// <summary>Field number for the "subscriber_ids_mask" field.</summary>
-    public const int SubscriberIdsMaskFieldNumber = 17;
-    private ulong subscriberIdsMask_;
-    /// <summary>
-    /// For fast reverse-referencing
-    /// </summary>
+    /// <summary>Field number for the "publishing_evt_mask_upon_exhausted" field.</summary>
+    public const int PublishingEvtMaskUponExhaustedFieldNumber = 18;
+    private ulong publishingEvtMaskUponExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong SubscriberIdsMask {
-      get { return subscriberIdsMask_; }
+    public ulong PublishingEvtMaskUponExhausted {
+      get { return publishingEvtMaskUponExhausted_; }
       set {
-        subscriberIdsMask_ = value;
+        publishingEvtMaskUponExhausted_ = value;
       }
     }
 
-    /// <summary>Field number for the "exhaust_subscriber_ids_mask" field.</summary>
-    public const int ExhaustSubscriberIdsMaskFieldNumber = 18;
-    private ulong exhaustSubscriberIdsMask_;
-    /// <summary>
-    /// For fast reverse-referencing
-    /// </summary>
+    /// <summary>Field number for the "publishing_to_trigger_id_upon_exhausted" field.</summary>
+    public const int PublishingToTriggerIdUponExhaustedFieldNumber = 19;
+    private uint publishingToTriggerIdUponExhausted_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong ExhaustSubscriberIdsMask {
-      get { return exhaustSubscriberIdsMask_; }
+    public uint PublishingToTriggerIdUponExhausted {
+      get { return publishingToTriggerIdUponExhausted_; }
       set {
-        exhaustSubscriberIdsMask_ = value;
+        publishingToTriggerIdUponExhausted_ = value;
       }
     }
 
     /// <summary>Field number for the "offender_ud" field.</summary>
-    public const int OffenderUdFieldNumber = 19;
+    public const int OffenderUdFieldNumber = 20;
     private ulong offenderUd_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OffenderUd {
@@ -27842,13 +26803,24 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "offender_bullet_team_id" field.</summary>
-    public const int OffenderBulletTeamIdFieldNumber = 20;
+    public const int OffenderBulletTeamIdFieldNumber = 21;
     private int offenderBulletTeamId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OffenderBulletTeamId {
       get { return offenderBulletTeamId_; }
       set {
         offenderBulletTeamId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "trigger_type" field.</summary>
+    public const int TriggerTypeFieldNumber = 22;
+    private global::jtshared.TriggerType triggerType_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::jtshared.TriggerType TriggerType {
+      get { return triggerType_; }
+      set {
+        triggerType_ = value;
       }
     }
 
@@ -27866,24 +26838,24 @@ namespace jtshared {
         return true;
       }
       if (Id != other.Id) return false;
-      if (EditorId != other.EditorId) return false;
       if (FramesToFire != other.FramesToFire) return false;
       if (FramesToRecover != other.FramesToRecover) return false;
       if (Quota != other.Quota) return false;
       if (BulletTeamId != other.BulletTeamId) return false;
-      if (DirX != other.DirX) return false;
-      if (SubCycleQuotaLeft != other.SubCycleQuotaLeft) return false;
+      if (SubCycleQuota != other.SubCycleQuota) return false;
       if (State != other.State) return false;
       if (FramesInState != other.FramesInState) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Z, other.Z)) return false;
       if (DemandedEvtMask != other.DemandedEvtMask) return false;
       if (FulfilledEvtMask != other.FulfilledEvtMask) return false;
-      if (WaveNpcKilledEvtMaskCounter != other.WaveNpcKilledEvtMaskCounter) return false;
-      if (SubscriberIdsMask != other.SubscriberIdsMask) return false;
-      if (ExhaustSubscriberIdsMask != other.ExhaustSubscriberIdsMask) return false;
+      if (WaveNpcExhaustedEvtMaskCounter != other.WaveNpcExhaustedEvtMaskCounter) return false;
+      if (PublishingEvtMaskUponExhausted != other.PublishingEvtMaskUponExhausted) return false;
+      if (PublishingToTriggerIdUponExhausted != other.PublishingToTriggerIdUponExhausted) return false;
       if (OffenderUd != other.OffenderUd) return false;
       if (OffenderBulletTeamId != other.OffenderBulletTeamId) return false;
+      if (TriggerType != other.TriggerType) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -27891,24 +26863,24 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (Id != 0) hash ^= Id.GetHashCode();
-      if (EditorId != 0) hash ^= EditorId.GetHashCode();
       if (FramesToFire != 0) hash ^= FramesToFire.GetHashCode();
       if (FramesToRecover != 0) hash ^= FramesToRecover.GetHashCode();
       if (Quota != 0) hash ^= Quota.GetHashCode();
       if (BulletTeamId != 0) hash ^= BulletTeamId.GetHashCode();
-      if (DirX != 0) hash ^= DirX.GetHashCode();
-      if (SubCycleQuotaLeft != 0) hash ^= SubCycleQuotaLeft.GetHashCode();
+      if (SubCycleQuota != 0) hash ^= SubCycleQuota.GetHashCode();
       if (State != 0) hash ^= State.GetHashCode();
       if (FramesInState != 0) hash ^= FramesInState.GetHashCode();
       if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
       if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
+      if (Z != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Z);
       if (DemandedEvtMask != 0UL) hash ^= DemandedEvtMask.GetHashCode();
       if (FulfilledEvtMask != 0UL) hash ^= FulfilledEvtMask.GetHashCode();
-      if (WaveNpcKilledEvtMaskCounter != 0UL) hash ^= WaveNpcKilledEvtMaskCounter.GetHashCode();
-      if (SubscriberIdsMask != 0UL) hash ^= SubscriberIdsMask.GetHashCode();
-      if (ExhaustSubscriberIdsMask != 0UL) hash ^= ExhaustSubscriberIdsMask.GetHashCode();
+      if (WaveNpcExhaustedEvtMaskCounter != 0UL) hash ^= WaveNpcExhaustedEvtMaskCounter.GetHashCode();
+      if (PublishingEvtMaskUponExhausted != 0UL) hash ^= PublishingEvtMaskUponExhausted.GetHashCode();
+      if (PublishingToTriggerIdUponExhausted != 0) hash ^= PublishingToTriggerIdUponExhausted.GetHashCode();
       if (OffenderUd != 0UL) hash ^= OffenderUd.GetHashCode();
       if (OffenderBulletTeamId != 0) hash ^= OffenderBulletTeamId.GetHashCode();
+      if (TriggerType != 0) hash ^= TriggerType.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -27926,10 +26898,6 @@ namespace jtshared {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (EditorId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(EditorId);
-      }
       if (FramesToFire != 0) {
         output.WriteRawTag(24);
         output.WriteInt32(FramesToFire);
@@ -27946,13 +26914,9 @@ namespace jtshared {
         output.WriteRawTag(48);
         output.WriteInt32(BulletTeamId);
       }
-      if (DirX != 0) {
-        output.WriteRawTag(56);
-        output.WriteInt32(DirX);
-      }
-      if (SubCycleQuotaLeft != 0) {
+      if (SubCycleQuota != 0) {
         output.WriteRawTag(72);
-        output.WriteInt32(SubCycleQuotaLeft);
+        output.WriteInt32(SubCycleQuota);
       }
       if (State != 0) {
         output.WriteRawTag(80);
@@ -27970,33 +26934,41 @@ namespace jtshared {
         output.WriteRawTag(109);
         output.WriteFloat(Y);
       }
+      if (Z != 0F) {
+        output.WriteRawTag(117);
+        output.WriteFloat(Z);
+      }
       if (DemandedEvtMask != 0UL) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(120);
         output.WriteUInt64(DemandedEvtMask);
       }
       if (FulfilledEvtMask != 0UL) {
-        output.WriteRawTag(120);
+        output.WriteRawTag(128, 1);
         output.WriteUInt64(FulfilledEvtMask);
       }
-      if (WaveNpcKilledEvtMaskCounter != 0UL) {
-        output.WriteRawTag(128, 1);
-        output.WriteUInt64(WaveNpcKilledEvtMaskCounter);
-      }
-      if (SubscriberIdsMask != 0UL) {
+      if (WaveNpcExhaustedEvtMaskCounter != 0UL) {
         output.WriteRawTag(136, 1);
-        output.WriteUInt64(SubscriberIdsMask);
+        output.WriteUInt64(WaveNpcExhaustedEvtMaskCounter);
       }
-      if (ExhaustSubscriberIdsMask != 0UL) {
+      if (PublishingEvtMaskUponExhausted != 0UL) {
         output.WriteRawTag(144, 1);
-        output.WriteUInt64(ExhaustSubscriberIdsMask);
+        output.WriteUInt64(PublishingEvtMaskUponExhausted);
+      }
+      if (PublishingToTriggerIdUponExhausted != 0) {
+        output.WriteRawTag(152, 1);
+        output.WriteUInt32(PublishingToTriggerIdUponExhausted);
       }
       if (OffenderUd != 0UL) {
-        output.WriteRawTag(152, 1);
+        output.WriteRawTag(160, 1);
         output.WriteUInt64(OffenderUd);
       }
       if (OffenderBulletTeamId != 0) {
-        output.WriteRawTag(160, 1);
+        output.WriteRawTag(168, 1);
         output.WriteInt32(OffenderBulletTeamId);
+      }
+      if (TriggerType != 0) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) TriggerType);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -28008,9 +26980,6 @@ namespace jtshared {
       int size = 0;
       if (Id != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
-      }
-      if (EditorId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EditorId);
       }
       if (FramesToFire != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(FramesToFire);
@@ -28024,11 +26993,8 @@ namespace jtshared {
       if (BulletTeamId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(BulletTeamId);
       }
-      if (DirX != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DirX);
-      }
-      if (SubCycleQuotaLeft != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubCycleQuotaLeft);
+      if (SubCycleQuota != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SubCycleQuota);
       }
       if (State != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) State);
@@ -28042,26 +27008,32 @@ namespace jtshared {
       if (Y != 0F) {
         size += 1 + 4;
       }
+      if (Z != 0F) {
+        size += 1 + 4;
+      }
       if (DemandedEvtMask != 0UL) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(DemandedEvtMask);
       }
       if (FulfilledEvtMask != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(FulfilledEvtMask);
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(FulfilledEvtMask);
       }
-      if (WaveNpcKilledEvtMaskCounter != 0UL) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(WaveNpcKilledEvtMaskCounter);
+      if (WaveNpcExhaustedEvtMaskCounter != 0UL) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(WaveNpcExhaustedEvtMaskCounter);
       }
-      if (SubscriberIdsMask != 0UL) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(SubscriberIdsMask);
+      if (PublishingEvtMaskUponExhausted != 0UL) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(PublishingEvtMaskUponExhausted);
       }
-      if (ExhaustSubscriberIdsMask != 0UL) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(ExhaustSubscriberIdsMask);
+      if (PublishingToTriggerIdUponExhausted != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(PublishingToTriggerIdUponExhausted);
       }
       if (OffenderUd != 0UL) {
         size += 2 + pb::CodedOutputStream.ComputeUInt64Size(OffenderUd);
       }
       if (OffenderBulletTeamId != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(OffenderBulletTeamId);
+      }
+      if (TriggerType != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) TriggerType);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -28077,9 +27049,6 @@ namespace jtshared {
       if (other.Id != 0) {
         Id = other.Id;
       }
-      if (other.EditorId != 0) {
-        EditorId = other.EditorId;
-      }
       if (other.FramesToFire != 0) {
         FramesToFire = other.FramesToFire;
       }
@@ -28092,11 +27061,8 @@ namespace jtshared {
       if (other.BulletTeamId != 0) {
         BulletTeamId = other.BulletTeamId;
       }
-      if (other.DirX != 0) {
-        DirX = other.DirX;
-      }
-      if (other.SubCycleQuotaLeft != 0) {
-        SubCycleQuotaLeft = other.SubCycleQuotaLeft;
+      if (other.SubCycleQuota != 0) {
+        SubCycleQuota = other.SubCycleQuota;
       }
       if (other.State != 0) {
         State = other.State;
@@ -28110,26 +27076,32 @@ namespace jtshared {
       if (other.Y != 0F) {
         Y = other.Y;
       }
+      if (other.Z != 0F) {
+        Z = other.Z;
+      }
       if (other.DemandedEvtMask != 0UL) {
         DemandedEvtMask = other.DemandedEvtMask;
       }
       if (other.FulfilledEvtMask != 0UL) {
         FulfilledEvtMask = other.FulfilledEvtMask;
       }
-      if (other.WaveNpcKilledEvtMaskCounter != 0UL) {
-        WaveNpcKilledEvtMaskCounter = other.WaveNpcKilledEvtMaskCounter;
+      if (other.WaveNpcExhaustedEvtMaskCounter != 0UL) {
+        WaveNpcExhaustedEvtMaskCounter = other.WaveNpcExhaustedEvtMaskCounter;
       }
-      if (other.SubscriberIdsMask != 0UL) {
-        SubscriberIdsMask = other.SubscriberIdsMask;
+      if (other.PublishingEvtMaskUponExhausted != 0UL) {
+        PublishingEvtMaskUponExhausted = other.PublishingEvtMaskUponExhausted;
       }
-      if (other.ExhaustSubscriberIdsMask != 0UL) {
-        ExhaustSubscriberIdsMask = other.ExhaustSubscriberIdsMask;
+      if (other.PublishingToTriggerIdUponExhausted != 0) {
+        PublishingToTriggerIdUponExhausted = other.PublishingToTriggerIdUponExhausted;
       }
       if (other.OffenderUd != 0UL) {
         OffenderUd = other.OffenderUd;
       }
       if (other.OffenderBulletTeamId != 0) {
         OffenderBulletTeamId = other.OffenderBulletTeamId;
+      }
+      if (other.TriggerType != 0) {
+        TriggerType = other.TriggerType;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -28144,10 +27116,6 @@ namespace jtshared {
             break;
           case 8: {
             Id = input.ReadUInt32();
-            break;
-          }
-          case 16: {
-            EditorId = input.ReadUInt32();
             break;
           }
           case 24: {
@@ -28166,12 +27134,8 @@ namespace jtshared {
             BulletTeamId = input.ReadInt32();
             break;
           }
-          case 56: {
-            DirX = input.ReadInt32();
-            break;
-          }
           case 72: {
-            SubCycleQuotaLeft = input.ReadInt32();
+            SubCycleQuota = input.ReadInt32();
             break;
           }
           case 80: {
@@ -28190,32 +27154,40 @@ namespace jtshared {
             Y = input.ReadFloat();
             break;
           }
-          case 112: {
-            DemandedEvtMask = input.ReadUInt64();
+          case 117: {
+            Z = input.ReadFloat();
             break;
           }
           case 120: {
-            FulfilledEvtMask = input.ReadUInt64();
+            DemandedEvtMask = input.ReadUInt64();
             break;
           }
           case 128: {
-            WaveNpcKilledEvtMaskCounter = input.ReadUInt64();
+            FulfilledEvtMask = input.ReadUInt64();
             break;
           }
           case 136: {
-            SubscriberIdsMask = input.ReadUInt64();
+            WaveNpcExhaustedEvtMaskCounter = input.ReadUInt64();
             break;
           }
           case 144: {
-            ExhaustSubscriberIdsMask = input.ReadUInt64();
+            PublishingEvtMaskUponExhausted = input.ReadUInt64();
             break;
           }
           case 152: {
-            OffenderUd = input.ReadUInt64();
+            PublishingToTriggerIdUponExhausted = input.ReadUInt32();
             break;
           }
           case 160: {
+            OffenderUd = input.ReadUInt64();
+            break;
+          }
+          case 168: {
             OffenderBulletTeamId = input.ReadInt32();
+            break;
+          }
+          case 176: {
+            TriggerType = (global::jtshared.TriggerType) input.ReadEnum();
             break;
           }
         }
@@ -28232,7 +27204,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[67]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28473,7 +27445,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[68]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[66]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28686,7 +27658,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[69]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[67]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28753,7 +27725,6 @@ namespace jtshared {
       maxBtnHoldingRdfCnt_ = other.maxBtnHoldingRdfCnt_;
       maxFlyingRdfCnt_ = other.maxFlyingRdfCnt_;
       maxReversePushbackFramesToRecover_ = other.maxReversePushbackFramesToRecover_;
-      terminatingTriggerEditorId_ = other.terminatingTriggerEditorId_;
       speedNotHitNotSpecified_ = other.speedNotHitNotSpecified_;
       defaultPreallocNpcCapacity_ = other.defaultPreallocNpcCapacity_;
       defaultPreallocBulletCapacity_ = other.defaultPreallocBulletCapacity_;
@@ -29425,17 +28396,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "terminating_trigger_editor_id" field.</summary>
-    public const int TerminatingTriggerEditorIdFieldNumber = 51;
-    private uint terminatingTriggerEditorId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint TerminatingTriggerEditorId {
-      get { return terminatingTriggerEditorId_; }
-      set {
-        terminatingTriggerEditorId_ = value;
-      }
-    }
-
     /// <summary>Field number for the "speed_not_hit_not_specified" field.</summary>
     public const int SpeedNotHitNotSpecifiedFieldNumber = 53;
     private int speedNotHitNotSpecified_;
@@ -30022,7 +28982,7 @@ namespace jtshared {
     public const int TerminatingBuffSpeciesIdFieldNumber = 104;
     private uint terminatingBuffSpeciesId_;
     /// <summary>
-    /// Default for proto int32 to save space in "CharacterDownsync.killedToDropBuffSpeciesId"
+    /// Default for proto int32 to save space
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint TerminatingBuffSpeciesId {
@@ -30047,7 +29007,7 @@ namespace jtshared {
     public const int TerminatingConsumableSpeciesIdFieldNumber = 106;
     private uint terminatingConsumableSpeciesId_;
     /// <summary>
-    /// Default for proto int32 to save space in "CharacterDownsync.killedToDropConsumableSpeciesId"
+    /// Default for proto int32 to save space
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint TerminatingConsumableSpeciesId {
@@ -30676,7 +29636,6 @@ namespace jtshared {
       if (MaxBtnHoldingRdfCnt != other.MaxBtnHoldingRdfCnt) return false;
       if (MaxFlyingRdfCnt != other.MaxFlyingRdfCnt) return false;
       if (MaxReversePushbackFramesToRecover != other.MaxReversePushbackFramesToRecover) return false;
-      if (TerminatingTriggerEditorId != other.TerminatingTriggerEditorId) return false;
       if (SpeedNotHitNotSpecified != other.SpeedNotHitNotSpecified) return false;
       if (DefaultPreallocNpcCapacity != other.DefaultPreallocNpcCapacity) return false;
       if (DefaultPreallocBulletCapacity != other.DefaultPreallocBulletCapacity) return false;
@@ -30837,7 +29796,6 @@ namespace jtshared {
       if (MaxBtnHoldingRdfCnt != 0) hash ^= MaxBtnHoldingRdfCnt.GetHashCode();
       if (MaxFlyingRdfCnt != 0) hash ^= MaxFlyingRdfCnt.GetHashCode();
       if (MaxReversePushbackFramesToRecover != 0) hash ^= MaxReversePushbackFramesToRecover.GetHashCode();
-      if (TerminatingTriggerEditorId != 0) hash ^= TerminatingTriggerEditorId.GetHashCode();
       if (SpeedNotHitNotSpecified != 0) hash ^= SpeedNotHitNotSpecified.GetHashCode();
       if (DefaultPreallocNpcCapacity != 0) hash ^= DefaultPreallocNpcCapacity.GetHashCode();
       if (DefaultPreallocBulletCapacity != 0) hash ^= DefaultPreallocBulletCapacity.GetHashCode();
@@ -31154,10 +30112,6 @@ namespace jtshared {
       if (MaxReversePushbackFramesToRecover != 0) {
         output.WriteRawTag(144, 3);
         output.WriteInt32(MaxReversePushbackFramesToRecover);
-      }
-      if (TerminatingTriggerEditorId != 0) {
-        output.WriteRawTag(152, 3);
-        output.WriteUInt32(TerminatingTriggerEditorId);
       }
       if (SpeedNotHitNotSpecified != 0) {
         output.WriteRawTag(168, 3);
@@ -31733,9 +30687,6 @@ namespace jtshared {
       if (MaxReversePushbackFramesToRecover != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(MaxReversePushbackFramesToRecover);
       }
-      if (TerminatingTriggerEditorId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(TerminatingTriggerEditorId);
-      }
       if (SpeedNotHitNotSpecified != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(SpeedNotHitNotSpecified);
       }
@@ -32208,9 +31159,6 @@ namespace jtshared {
       }
       if (other.MaxReversePushbackFramesToRecover != 0) {
         MaxReversePushbackFramesToRecover = other.MaxReversePushbackFramesToRecover;
-      }
-      if (other.TerminatingTriggerEditorId != 0) {
-        TerminatingTriggerEditorId = other.TerminatingTriggerEditorId;
       }
       if (other.SpeedNotHitNotSpecified != 0) {
         SpeedNotHitNotSpecified = other.SpeedNotHitNotSpecified;
@@ -32735,10 +31683,6 @@ namespace jtshared {
             MaxReversePushbackFramesToRecover = input.ReadInt32();
             break;
           }
-          case 408: {
-            TerminatingTriggerEditorId = input.ReadUInt32();
-            break;
-          }
           case 424: {
             SpeedNotHitNotSpecified = input.ReadInt32();
             break;
@@ -33169,7 +32113,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[70]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[68]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -33314,155 +32258,6 @@ namespace jtshared {
           }
           case 26: {
             debuffConfigs_.AddEntriesFrom(input, _map_debuffConfigs_codec);
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class StepResult : pb::IMessage<StepResult> {
-    private static readonly pb::MessageParser<StepResult> _parser = new pb::MessageParser<StepResult>(() => new StepResult());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<StepResult> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[71]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StepResult() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StepResult(StepResult other) : this() {
-      updatedTriggersArr_ = other.updatedTriggersArr_.Clone();
-      updatedTriggersCount_ = other.updatedTriggersCount_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StepResult Clone() {
-      return new StepResult(this);
-    }
-
-    /// <summary>Field number for the "updated_triggers_arr" field.</summary>
-    public const int UpdatedTriggersArrFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::jtshared.Trigger> _repeated_updatedTriggersArr_codec
-        = pb::FieldCodec.ForMessage(10, global::jtshared.Trigger.Parser);
-    private readonly pbc::RepeatedField<global::jtshared.Trigger> updatedTriggersArr_ = new pbc::RepeatedField<global::jtshared.Trigger>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::jtshared.Trigger> UpdatedTriggersArr {
-      get { return updatedTriggersArr_; }
-    }
-
-    /// <summary>Field number for the "updated_triggers_count" field.</summary>
-    public const int UpdatedTriggersCountFieldNumber = 2;
-    private uint updatedTriggersCount_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint UpdatedTriggersCount {
-      get { return updatedTriggersCount_; }
-      set {
-        updatedTriggersCount_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as StepResult);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(StepResult other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!updatedTriggersArr_.Equals(other.updatedTriggersArr_)) return false;
-      if (UpdatedTriggersCount != other.UpdatedTriggersCount) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      hash ^= updatedTriggersArr_.GetHashCode();
-      if (UpdatedTriggersCount != 0) hash ^= UpdatedTriggersCount.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      updatedTriggersArr_.WriteTo(output, _repeated_updatedTriggersArr_codec);
-      if (UpdatedTriggersCount != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(UpdatedTriggersCount);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      size += updatedTriggersArr_.CalculateSize(_repeated_updatedTriggersArr_codec);
-      if (UpdatedTriggersCount != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(UpdatedTriggersCount);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(StepResult other) {
-      if (other == null) {
-        return;
-      }
-      updatedTriggersArr_.Add(other.updatedTriggersArr_);
-      if (other.UpdatedTriggersCount != 0) {
-        UpdatedTriggersCount = other.UpdatedTriggersCount;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            updatedTriggersArr_.AddEntriesFrom(input, _repeated_updatedTriggersArr_codec);
-            break;
-          }
-          case 16: {
-            UpdatedTriggersCount = input.ReadUInt32();
             break;
           }
         }

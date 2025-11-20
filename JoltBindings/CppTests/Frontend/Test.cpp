@@ -2943,7 +2943,8 @@ int main(int argc, char** argv)
     auto startRdf = mockStartRdf();
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = initializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -2994,7 +2995,8 @@ int main(int argc, char** argv)
     WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto fallenDeathStartRdf = mockFallenDeathRdf();
     for (auto hull : fallenDeathHulls) {
-        SerializableConvexPolygon* srcPolygon = fallenDeathInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = fallenDeathInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -3009,7 +3011,8 @@ int main(int argc, char** argv)
     auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf();
 
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = bladeGirlSkillInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = bladeGirlSkillInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
@@ -3024,7 +3027,8 @@ int main(int argc, char** argv)
     auto bountyHunterSkillStartRdf = mockBountyHunterSkillRdf();
     
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = bountyHunterSkillInitializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = bountyHunterSkillInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }

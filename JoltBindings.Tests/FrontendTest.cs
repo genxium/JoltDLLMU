@@ -131,7 +131,7 @@ public class FrontendTest {
                 SelfParsedRdf = startRdf,
             };
 
-            var serializedBarriers = wsReq.SerializedBarrierPolygons;
+            var serializedBarriers = wsReq.SerializedBarriers;
             foreach (var hull in hulls1) {
                 RepeatedField<float> points2 = new RepeatedField<float>();
                 foreach (var point in hull) {
@@ -140,10 +140,13 @@ public class FrontendTest {
                 }
                 var srcPolygon = new SerializableConvexPolygon {
                     AnchorX = 0f,
-                            AnchorY = 0f,
+                    AnchorY = 0f,
                 };
                 srcPolygon.Points.AddRange(points2);
-                serializedBarriers.Add(srcPolygon);
+                var srcBarrier = new SerializedBarrierCollider {
+                    Polygon = srcPolygon
+                };
+                serializedBarriers.Add(srcBarrier);
             }
 
             byte[] buffer = wsReq.ToByteArray();

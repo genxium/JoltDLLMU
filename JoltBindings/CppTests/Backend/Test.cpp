@@ -549,7 +549,8 @@ int main(int argc, char** argv)
     auto startRdf = mockStartRdf();
     WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     for (auto hull : hulls) {
-        SerializableConvexPolygon* srcPolygon = initializerMapData->add_serialized_barrier_polygons();
+        auto srcBarrier = initializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
         for (auto xOrY : hull) {
             srcPolygon->add_points(xOrY);
         }
