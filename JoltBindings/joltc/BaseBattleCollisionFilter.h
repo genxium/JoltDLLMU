@@ -5,6 +5,7 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Math/Float2.h>
+#include <utility> // for "std::pair"
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -19,9 +20,13 @@
 #define BL_CACHE_KEY_T std::vector<float>
 #define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
 #define CH_CACHE_KEY_T std::vector<float>
+#define NON_CONTACT_CONSTRAINT_KEY_T std::pair<JPH::EConstraintType, JPH::EConstraintSubType> 
 
 #define CH_COLLIDER_T JPH::Character
 #define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
+
+#define NON_CONTACT_CONSTRAINT_T JPH::Constraint
+#define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
 class BaseBattleCollisionFilter {
 public:

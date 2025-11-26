@@ -1862,7 +1862,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 }
 
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
-    // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
     bodyIDsToClear.clear();
     while (!activeChColliders.empty()) {
         CH_COLLIDER_T* single = activeChColliders.back();
@@ -1931,8 +1930,11 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     - [BodyInterface::DeactivateBodies](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyInterface.cpp#L249) doesn't even touch "BodyInterface.mBroadPhase" (thus no operation on the QuadTree), and
     - [BodyInterface::RemoveBodies](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyInterface.cpp#L202) contains "BodyInterface::DeactivateBodies".
     */
-    bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    if (!bodyIDsToClear.empty()) {
+        bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    }
 
+    // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
     transientUdToChCollider.clear();
     transientUdToBodyID.clear();
 
@@ -2340,13 +2342,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case InAirDashing:
                 nextChd->set_ch_state(Dashing);
                 break;
-            case Atk1:
-                nextChd->set_ch_state(InAirAtk1);
-                // No inAir transition for ATK2/ATK3 for now
-                break;
-            case Atked1:
-                nextChd->set_ch_state(InAirAtked1);
-                break;
             }
         }
     } else {
@@ -2364,15 +2359,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     break;
                 }
                 nextChd->set_ch_state(Idle1);
-                break;
-            case InAirAtked1:
-                nextChd->set_ch_state(Atked1);
-                break;
-            case InAirAtk1:
-            case InAirAtk2:
-                if (nullptr != activeBulletConfig && activeBulletConfig->remains_upon_hit()) {
-                    nextChd->set_frames_to_recover(currChd.frames_to_recover() - 1);
-                }
                 break;
             case Def1:
             case Def1Broken:
@@ -2472,11 +2458,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         } else if ((Dashing == currChd.ch_state() && InAirDashing == nextChd->ch_state()) || (InAirDashing == currChd.ch_state() && Dashing == nextChd->ch_state())) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else {
-            bool isAtk1Transition = (Atk1 == currChd.ch_state() && InAirAtk1 == nextChd->ch_state()) || (InAirAtk1 == currChd.ch_state() && Atk1 == nextChd->ch_state());
-            bool isAtked1Transition = (Atked1 == currChd.ch_state() && InAirAtked1 == nextChd->ch_state()) || (InAirAtked1 == currChd.ch_state() && Atked1 == nextChd->ch_state());
-            if (!isAtk1Transition && !isAtked1Transition) {
-                nextChd->set_frames_in_ch_state(0);
-            }
+            nextChd->set_frames_in_ch_state(0);
         }
     }
 
