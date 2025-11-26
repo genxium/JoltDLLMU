@@ -17,7 +17,7 @@ namespace JoltCSharp {
         public const uint SPECIES_YELLOWDOG = 10;
         public const uint SPECIES_BLACKDOG = 11;
         public const uint SPECIES_YELLOWCAT = 12;
-        public const uint SPECIES_BLACKCAT = 13;
+        public const uint SPECIES_BLACKSABER1 = 13;
 
         public const uint SPECIES_EKRAIL = 14;
         public const uint SPECIES_SWORDMAN = 15;
@@ -49,6 +49,17 @@ namespace JoltCSharp {
         public const uint SPECIES_SUCCUBUS = 4115;
 
         public const uint SPECIES_CMD_TRAINER = 4116;
+
+        public const uint TT_NONE = 0;
+        public const uint TT_CYCLIC_TIMED = 1;
+        public const uint TT_BY_MOVEMENT = 2;
+        public const uint TT_BY_ATTACK = 3;
+        public const uint TT_INDI_WAVE_NPC_SPAWNER = 4;
+        public const uint TT_SYNC_WAVE_NPC_SPAWNER = 5;
+        public const uint TT_SAVE_POINT_ONLY = 6;
+        public const uint TT_STORY_POINT_ONLY = 7;
+        public const uint TT_SAVE_AND_STORY_POINT = 8;
+        public const uint TT_VICTORY = 9;
 
         // Non-interauctive
         public const uint SPECIES_VIL_MALE1 = 8192;
@@ -145,7 +156,6 @@ namespace JoltCSharp {
             MaxBtnHoldingRdfCnt = 999999999,
             MaxFlyingRdfCnt = 999999999,
             MaxReversePushbackFramesToRecover = 30,
-            TerminatingTriggerEditorId = 0,
             SpeedNotHitNotSpecified = 0,
             DefaultPreallocNpcCapacity = 24, // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
             DefaultPreallocBulletCapacity = 48, // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)
@@ -279,6 +289,21 @@ namespace JoltCSharp {
 
             StartingRenderFrameId = 1,
             StartingInputFrameId = 1,
+
+            TtNone = TT_NONE,
+
+            TtCyclicTimed = TT_CYCLIC_TIMED,
+            TtByMovement = TT_BY_MOVEMENT,
+            TtByAttack = TT_BY_ATTACK,
+
+            TtIndiWaveNpcSpawner = TT_INDI_WAVE_NPC_SPAWNER,
+            TtSyncWaveNpcSpawner = TT_SYNC_WAVE_NPC_SPAWNER,
+
+            TtSavePointOnly = TT_SAVE_POINT_ONLY,
+            TtStoryPointOnly = TT_STORY_POINT_ONLY,
+            TtSaveAndStoryPoint = TT_SAVE_AND_STORY_POINT,
+
+            TtVictory = TT_VICTORY, 
         };
     }
 }

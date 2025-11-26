@@ -65,9 +65,9 @@ Note that in addition to guarding write-operations to "inputBuffer/ifdBuffer", "
 JPH_CAPI void* BACKEND_CreateBattle(int rdfBufferSize);
 JPH_CAPI bool BACKEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt);
 JPH_CAPI bool BACKEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, bool fromUdp, bool fromTcp, char* outBytesPreallocatedStart, long* outBytesCntLimit, int* outStEvictedCnt, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId); // [WARNING] Possibly writes "DownsyncSnapshot" into "outBytesPreallocatedStart" 
-JPH_CAPI bool BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+JPH_CAPI int BACKEND_Step(void* inBattle, int fromRdfId, int toRdfId);
+JPH_CAPI int BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI int BACKEND_GetDynamicsRdfId(void* inBattle);
-JPH_CAPI bool BACKEND_MoveForwardLcacIfdIdAndStep(void* inBattle, bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
 JPH_CAPI void* FRONTEND_CreateBattle(int rdfBufferSize, bool isOnlineArenaMode);
 JPH_CAPI bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);

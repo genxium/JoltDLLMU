@@ -68,6 +68,14 @@ public:
 
     }
 
+    inline const uint64_t calcPublishingToTriggerUd(const NpcCharacterDownsync& npcChd) {
+        return UDT_TRIGGER + npcChd.publishing_to_trigger_id_upon_exhausted();
+    }
+
+    inline const uint64_t calcPublishingToTriggerUd(const Trigger& tr) {
+        return UDT_TRIGGER + tr.publishing_to_trigger_id_upon_exhausted();
+    }
+
     inline const uint64_t calcUserData(const PlayerCharacterDownsync& playerChd) const {
         return UDT_PLAYER + playerChd.join_index();
     }
@@ -78,6 +86,10 @@ public:
 
     inline const uint64_t calcUserData(const Bullet& bl) const {
         return UDT_BL + bl.id();
+    }
+
+    inline const uint64_t calcUserData(const Trigger& tr) const {
+        return UDT_TRIGGER + tr.id();
     }
 
     inline const uint64_t calcStaticColliderUserData(const int staticColliderId) const {

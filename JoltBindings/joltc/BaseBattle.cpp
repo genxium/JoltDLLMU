@@ -355,6 +355,38 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf);
 
+    auto stepResult = nextRdf->mutable_prev_rdf_step_result();
+    stepResult->clear_fulfilled_triggers();
+    for (int i = 0; i < currRdf->triggers_arr_size(); i++) {
+        const Trigger& currTrigger = currRdf->triggers_arr(i);
+        if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
+        Trigger* nextTrigger = nextRdf->mutable_triggers_arr(i);
+        auto ud = calcUserData(currTrigger);
+        transientUdToCurrTrigger[ud] = &currTrigger;
+        transientUdToNextTrigger[ud] = nextTrigger;
+
+        if (0 != currTrigger.demanded_evt_mask() && currTrigger.fulfilled_evt_mask() == currTrigger.demanded_evt_mask()) {
+            auto fulfilledTrigger = stepResult->add_fulfilled_triggers();
+            fulfilledTrigger->CopyFrom(currTrigger);
+
+            int newQuota = currTrigger.quota() - 1;
+            if (0 > newQuota) {
+                newQuota = 0;
+            }
+            nextTrigger->set_quota(newQuota);
+            nextTrigger->set_state(TriggerState::TCoolingDown);
+            nextTrigger->set_frames_in_state(0);
+
+            // TODO: Reset "demanded_evt_mask" for certain "TriggerType"s 
+            auto triggerConfig = getTriggerConfig(currTrigger.trigger_type());
+            if (triggerConfigFromTileDict.count(currTrigger.id())) {
+                auto triggerConfigFromTiled = triggerConfigFromTileDict[currTrigger.id()];
+                int newFramesToRecover = triggerConfigFromTiled->recovery_frames();
+                nextTrigger->set_frames_to_recover(newFramesToRecover);
+            }
+        }
+    }
+
     JobSystem::Barrier* prePhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     for (int i = 0; i < playersCnt; i++) {
         uint64_t singleInput = delayedIfd->input_list(i);
@@ -628,9 +660,10 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier);
     
     calcFallenDeath(currRdf, nextRdf);
-    leftShiftDeadNpcs(currRdfId, nextRdf);
-    leftShiftDeadBullets(currRdfId, nextRdf, mNextRdfBulletCount);
+    leftShiftDeadNpcs(currRdfId, nextRdf); // Might change "mNextRdfBulletIdCounter" and "mNextRdfBulletCount"
+    leftShiftDeadBullets(currRdfId, nextRdf); // Might change "mNextRdfBulletCount"
     leftShiftDeadPickables(currRdfId, nextRdf);
+    leftShiftDeadTriggers(currRdfId, nextRdf);
     batchRemoveFromPhySysAndCache(currRdfId, currRdf);
 
     nextRdf->set_bullet_id_counter(mNextRdfBulletIdCounter.load());
@@ -758,6 +791,7 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     */
     fallenDeathHeight = initializerMapData->fallen_death_height();
     auto startRdf = initializerMapData->self_parsed_rdf();
+
     playersCnt = startRdf.players_arr_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
 
@@ -767,7 +801,9 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         RenderFrame* holder = rdfBuffer.DryPut();
         holder->CopyFrom(startRdf);
         holder->set_id(gapRdfId);
+        initializeTriggerDemandedEvtMask(holder);
     }
+
     if (frameLogEnabled) {
         while (frameLogBuffer.EdFrameId <= stRdfId) {
             int gapRdfId = frameLogBuffer.EdFrameId;
@@ -785,8 +821,9 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
 
     int staticColliderId = 1;
     staticColliderBodyIDs.clear();
-    for (int i = 0; i < initializerMapData->serialized_barrier_polygons_size(); i++) {
-        auto& convexPolygon = initializerMapData->serialized_barrier_polygons(i);
+    for (int i = 0; i < initializerMapData->serialized_barriers_size(); i++) {
+        auto& barrier = initializerMapData->serialized_barriers(i);
+        auto& convexPolygon = barrier.polygon();
         TriangleList triangles;
         for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
             auto fromI = pi;
@@ -853,6 +890,56 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     safeDeactiviatedPosition = Vec3(65535.0, -65535.0, 0);
 
     preallocateBodies(&startRdf, initializerMapData->preallocate_npc_species_dict());
+
+    return true;
+}
+
+bool BaseBattle::initializeTriggerDemandedEvtMask(RenderFrame* startRdf) {
+    std::unordered_map<uint32_t, uint64_t> collectedPublishingEvtMaskUponExhausted;
+    std::unordered_map<uint32_t, uint64_t> collectedDemandedEvtMask;
+
+    for (int i = 0; i < startRdf->npcs_arr_size(); ++i) {
+        NpcCharacterDownsync* npc = startRdf->mutable_npcs_arr(i);
+        if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
+        auto targetTriggerId = npc->publishing_to_trigger_id_upon_exhausted();
+        if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) continue;
+        
+        if (!collectedPublishingEvtMaskUponExhausted.count(targetTriggerId)) {
+            collectedPublishingEvtMaskUponExhausted[targetTriggerId] = 1;
+        } else {
+            collectedPublishingEvtMaskUponExhausted[targetTriggerId] <<= 1;
+        }
+
+        npc->set_publishing_evt_mask_upon_exhausted(collectedPublishingEvtMaskUponExhausted[targetTriggerId]);
+        collectedDemandedEvtMask[targetTriggerId] |= collectedPublishingEvtMaskUponExhausted[targetTriggerId];
+    }
+
+    for (int i = 0; i < startRdf->triggers_arr_size(); ++i) {
+        Trigger* tr = startRdf->mutable_triggers_arr(i);
+        if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
+        auto targetTriggerId = tr->publishing_to_trigger_id_upon_exhausted();
+        if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) continue;
+
+        if (!collectedPublishingEvtMaskUponExhausted.count(targetTriggerId)) {
+            collectedPublishingEvtMaskUponExhausted[targetTriggerId] = 1;
+        } else {
+            collectedPublishingEvtMaskUponExhausted[targetTriggerId] <<= 1;
+        }
+
+        tr->set_publishing_evt_mask_upon_exhausted(collectedPublishingEvtMaskUponExhausted[targetTriggerId]);
+        collectedDemandedEvtMask[targetTriggerId] |= collectedPublishingEvtMaskUponExhausted[targetTriggerId];
+    }
+    
+    for (int i = 0; i < startRdf->triggers_arr_size(); ++i) {
+        Trigger* tr = startRdf->mutable_triggers_arr(i);
+        if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
+        if (!collectedDemandedEvtMask.count(tr->id())) {
+            // For "TtByMovement" or "TtByAttack"
+            tr->set_demanded_evt_mask(1);
+        } else {
+            tr->set_demanded_evt_mask(collectedDemandedEvtMask[tr->id()]);
+        }
+    }
 
     return true;
 }
@@ -1463,66 +1550,17 @@ void BaseBattle::elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf) {
         elapse1RdfForBl(currRdfId, bl, skill, bulletConfig);
     }
 
+    for (int i = 0; i < nextRdf->triggers_arr_size(); i++) {
+        auto tr = nextRdf->mutable_triggers_arr(i);
+        if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
+        elapse1RdfForTrigger(tr);
+    }
+
     for (int i = 0; i < nextRdf->pickables_size(); i++) {
         auto pk = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == pk->id()) break;
         elapse1RdfForPickable(pk);
     }
-}
-
-void BaseBattle::elapse1RdfForPickable(Pickable* pk) {
-    pk->set_frames_in_pk_state(pk->frames_in_pk_state()+1);
-    int newLifetimeRdfCount = pk->remaining_lifetime_rdf_count() - 1;
-    if (0 > newLifetimeRdfCount) {
-        newLifetimeRdfCount = 0;
-        if (PickableState::PIdle == pk->pk_state()) {
-            pk->set_pk_state(PickableState::PDisappearing);
-            pk->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
-        }
-    }
-    pk->set_remaining_lifetime_rdf_count(newLifetimeRdfCount);
-}
-
-void BaseBattle::elapse1RdfForBl(int currRdfId, Bullet* bl, const Skill* skill, const BulletConfig* bulletConfig) {
-    int newFramesInBlState = bl->frames_in_bl_state() + 1;
-    switch (bl->bl_state())
-    {
-    case BulletState::StartUp:
-        if (newFramesInBlState > bulletConfig->startup_frames()) {
-            bl->set_bl_state(BulletState::Active);
-            newFramesInBlState = 0;
-/*
-#ifndef  NDEBUG
-            std::ostringstream oss;
-            oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became active at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
-            Debug::Log(oss.str(), DColor::Orange);
-#endif // ! NDEBUG
-*/
-        }
-        break;
-    case BulletState::Active:
-        if (newFramesInBlState > bulletConfig->active_frames()) {
-            if (bulletConfig->touch_explosion_bomb_collision()) {
-                bl->set_bl_state(BulletState::Exploding);
-            } else {
-                bl->set_bl_state(BulletState::Vanishing);
-/*
-#ifndef  NDEBUG
-                std::ostringstream oss;
-                oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became vanishing at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
-                Debug::Log(oss.str(), DColor::Orange);
-#endif // ! NDEBUG
-*/
-            }
-            newFramesInBlState = 0;
-            bl->set_vel_x(0);
-            bl->set_vel_y(0);
-        }
-        break;
-    default:
-        break;
-    }
-    bl->set_frames_in_bl_state(newFramesInBlState);
 }
 
 void BaseBattle::elapse1RdfForPlayerChd(const int currRdfId, PlayerCharacterDownsync* playerChd, const CharacterConfig* cc) {
@@ -1577,6 +1615,78 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, co
     leftShiftDeadIvSlots(currRdfId, cd);
     leftShiftDeadBuffs(currRdfId, cd);
     leftShiftDeadDebuffs(currRdfId, cd);
+}
+
+void BaseBattle::elapse1RdfForBl(int currRdfId, Bullet* bl, const Skill* skill, const BulletConfig* bulletConfig) {
+    int newFramesInBlState = bl->frames_in_bl_state() + 1;
+    switch (bl->bl_state())
+    {
+    case BulletState::StartUp:
+        if (newFramesInBlState > bulletConfig->startup_frames()) {
+            bl->set_bl_state(BulletState::Active);
+            newFramesInBlState = 0;
+/*
+#ifndef  NDEBUG
+            std::ostringstream oss;
+            oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became active at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+*/
+        }
+        break;
+    case BulletState::Active:
+        if (newFramesInBlState > bulletConfig->active_frames()) {
+            if (bulletConfig->touch_explosion_bomb_collision()) {
+                bl->set_bl_state(BulletState::Exploding);
+            } else {
+                bl->set_bl_state(BulletState::Vanishing);
+/*
+#ifndef  NDEBUG
+                std::ostringstream oss;
+                oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became vanishing at rdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+*/
+            }
+            newFramesInBlState = 0;
+            bl->set_vel_x(0);
+            bl->set_vel_y(0);
+        }
+        break;
+    default:
+        break;
+    }
+    bl->set_frames_in_bl_state(newFramesInBlState);
+}
+
+void BaseBattle::elapse1RdfForTrigger(Trigger* tr) {
+    int newFramesToFire = tr->frames_to_fire() - 1; 
+    if (newFramesToFire < 0) {
+        newFramesToFire = 0;
+    }
+    tr->set_frames_to_fire(newFramesToFire);
+
+    int newFramesToRecover = tr->frames_to_recover() - 1; 
+    if (newFramesToRecover < 0) {
+        newFramesToRecover = 0;
+    }
+    tr->set_frames_to_recover(newFramesToRecover);
+
+    int newFramesInState = tr->frames_in_state() + 1;
+    tr->set_frames_in_state(newFramesInState);
+}
+
+void BaseBattle::elapse1RdfForPickable(Pickable* pk) {
+    pk->set_frames_in_pk_state(pk->frames_in_pk_state()+1);
+    int newLifetimeRdfCount = pk->remaining_lifetime_rdf_count() - 1;
+    if (0 > newLifetimeRdfCount) {
+        newLifetimeRdfCount = 0;
+        if (PickableState::PIdle == pk->pk_state()) {
+            pk->set_pk_state(PickableState::PDisappearing);
+            pk->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
+        }
+    }
+    pk->set_remaining_lifetime_rdf_count(newLifetimeRdfCount);
 }
 
 InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
@@ -1704,6 +1814,11 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         bodyIDsToActivate.push_back(bodyID);
     }
 
+    /*
+    [WARNING]
+
+    The callstack "getOrCreateCachedCharacterCollider -> createDefaultCharacterCollider" implicitly adds the "JPH::Character.mBodyID" into "BroadPhase", therefore "bodyIDsToAdd" starts here.
+    */ 
     bodyIDsToAdd.clear();
     for (int i = 0; i < currRdf->bullets_size(); i++) {
         const Bullet& currBl = currRdf->bullets(i);
@@ -1744,7 +1859,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
     if (!bodyIDsToActivate.empty()) {
         bi->ActivateBodies(bodyIDsToActivate.data(), bodyIDsToActivate.size());
     }
-
 }
 
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
@@ -1830,6 +1944,9 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
 
     transientUdToCurrBl.clear();
     transientUdToNextBl.clear();
+
+    transientUdToCurrTrigger.clear();
+    transientUdToNextTrigger.clear();
 
     transientUdToCurrTrap.clear();
     transientUdToNextTrap.clear();
@@ -2489,38 +2606,35 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
     auto& characterConfigs = globalConfigConsts->character_configs();
     while (candI < nextRdf->npcs_arr_size()) {
-        const NpcCharacterDownsync& candidate = nextRdf->npcs_arr(candI);
-        if (globalPrimitiveConsts->terminating_character_id() == candidate.id()) break;
-        const CharacterDownsync& chd = candidate.chd();
+        const NpcCharacterDownsync* candidate = &(nextRdf->npcs_arr(candI));
+        if (globalPrimitiveConsts->terminating_character_id() == candidate->id()) break;
+        const CharacterDownsync& chd = candidate->chd();
         const CharacterConfig& candidateConfig = characterConfigs.at(chd.species_id());
 
         /*
         // TODO: Drop pickable
-        if (isNpcJustDead(candidate)) {
-            if ((TERMINATING_CONSUMABLE_SPECIES_ID != candidate.KilledToDropConsumableSpeciesId || TERMINATING_BUFF_SPECIES_ID != candidate.KilledToDropBuffSpeciesId || NO_SKILL != candidate.KilledToDropPickupSkillId)) {
-                addNewPickableToNextFrame(rdfId, candidate.VirtualGridX, candidate.VirtualGridY, 0, +1, MAX_INT, 0, true, MAX_UINT, MAX_UINT, (NO_SKILL == candidate.KilledToDropPickupSkillId ? PickupType.Immediate : PickupType.PutIntoInventory), 1, nextRenderFramePickables, candidate.KilledToDropConsumableSpeciesId, candidate.KilledToDropBuffSpeciesId, candidate.KilledToDropPickupSkillId, ref pickableLocalIdCounter, ref nextRdfPickableCnt);
-            }
-        }
         */
         
-        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate.id() && isNpcDeadToDisappear(&chd)) {
-            if (globalPrimitiveConsts->terminating_trigger_id() != candidate.publishing_to_trigger_id_upon_killed()) {
-                auto targetTriggerInNextFrame = nextRdf->mutable_triggers_arr(candidate.publishing_to_trigger_id_upon_killed()-1);
+        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(&chd)) {
+            if (globalPrimitiveConsts->terminating_trigger_id() != candidate->publishing_to_trigger_id_upon_exhausted()) {
+                auto triggerUd = calcPublishingToTriggerUd(*candidate);
+                auto targetTriggerInNextFrame = transientUdToNextTrigger[triggerUd];
                 if (0 == chd.last_damaged_by_ud() && globalPrimitiveConsts->terminating_bullet_team_id() == chd.last_damaged_by_bullet_team_id()) {
-                    // TODO
                     if (1 == playersCnt) {
-                        publishNpcKilledEvt(currRdfId, candidate.publishing_evt_mask_upon_killed(), 1, 1, targetTriggerInNextFrame);
+                        publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), 1, 1, targetTriggerInNextFrame);
                     } else {
 #ifndef  NDEBUG
-                        // Debug::Log("@rdfId=" + rdfId + " publishing evtMask=" + candidate.PublishingEvtMaskUponKilled + " to trigger " + targetTriggerInNextFrame.ToString() + " with no join index and no bullet team id!");
+                        // Debug::Log("@rdfId=" + rdfId + " publishing evtMask=" + candidate.PublishingEvtMaskUponExhausted + " to trigger " + targetTriggerInNextFrame.ToString() + " with no join index and no bullet team id!");
 #endif // ! NDEBUG
-                        publishNpcKilledEvt(currRdfId, candidate.publishing_evt_mask_upon_killed(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                        publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
                     }
                 } else {
-                    publishNpcKilledEvt(currRdfId, candidate.publishing_evt_mask_upon_killed(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                    publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
                 }
             }
             candI++;
+            if (candI >= nextRdf->npcs_arr_size()) break;
+            candidate = &(nextRdf->npcs_arr(candI));
         }
 
         if (candI >= nextRdf->npcs_arr_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs_arr(candI).id()) {
@@ -2583,7 +2697,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     }
 }
 
-void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomic<uint32_t>& mNextRdfBulletCount) {
+void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
     int mNextRdfBulletCountVal = mNextRdfBulletCount.load();
     while (candI < mNextRdfBulletCountVal) {
@@ -2599,6 +2713,7 @@ void BaseBattle::leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf, atomi
 
         while (candI < mNextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
             candI++;
+            if (candI >= nextRdf->bullets_size()) break;
             candidate = &(nextRdf->bullets(candI));
         }
 
@@ -2656,6 +2771,40 @@ void BaseBattle::leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf) {
         terminatingCand->set_id(globalPrimitiveConsts->terminating_pickable_id());
     }
     nextRdf->set_pickable_count(aliveI);
+}
+
+void BaseBattle::leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf) {
+    int aliveI = 0, candI = 0;
+    while (candI < nextRdf->triggers_arr_size()) {
+        const Trigger* cand = &(nextRdf->triggers_arr(candI));
+        if (globalPrimitiveConsts->terminating_trigger_id() == cand->id()) {
+            break;
+        }
+        while (candI < nextRdf->triggers_arr_size() && globalPrimitiveConsts->terminating_trigger_id() != cand->id() && !isTriggerAlive(cand, currRdfId)) {
+            candI++;
+            if (candI >= nextRdf->triggers_arr_size()) break;
+            cand = &(nextRdf->triggers_arr(candI));
+        }
+
+        if (candI >= nextRdf->triggers_arr_size() || globalPrimitiveConsts->terminating_trigger_id() == nextRdf->triggers_arr(candI).id()) {
+            break;
+        }
+
+        if (candI != aliveI) {
+            const Trigger& src = nextRdf->triggers_arr(candI);
+            auto dst = nextRdf->mutable_triggers_arr(aliveI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candI++;
+        aliveI++;
+    }
+    if (aliveI < nextRdf->triggers_arr_size()) {
+        auto terminatingCand = nextRdf->mutable_triggers_arr(aliveI);
+        terminatingCand->set_id(globalPrimitiveConsts->terminating_trigger_id());
+    }
+    nextRdf->set_trigger_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* nextChd) {
@@ -3462,6 +3611,314 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
         } 
     }
+}
+
+void BaseBattle::stepSingleTriggerState(int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger) {
+    /*
+    bool isSubcycleConfigured = (0 < triggerConfigFromTiled.SubCycleQuota);
+    var triggerConfig = triggerConfigs[triggerConfigFromTiled.SpeciesId];
+    // [WARNING] The ORDER of zero checks of "currTrigger.FramesToRecover" and "currTrigger.FramesToFire" below is important, because we want to avoid "wrong SubCycleQuotaLeft replenishing when 0 == currTrigger.FramesToRecover"!
+    
+    bool mainCycleFulfilled = (EVTSUB_NO_DEMAND_MASK != currTrigger.DemandedEvtMask && currTrigger.DemandedEvtMask == currTrigger.FulfilledEvtMask);
+
+    if (TRIGGER_SPECIES_TIMED_WAVE_DOOR_1 == triggerConfig.SpeciesId || TRIGGER_SPECIES_TIMED_WAVE_PICKABLE_DROPPER == triggerConfig.SpeciesId) {
+        if (0 >= currTrigger.FramesToRecover) {
+            if (EVTSUB_NO_DEMAND_MASK == currTrigger.DemandedEvtMask) {
+                // If the TimedWaveDoor doesn't subscribe to any other trigger, it should just tick on its own
+                if (0 < currTrigger.Quota) {
+                    mainCycleFulfilled = true;
+                }
+                // The exhaust should still be triggered by NPC-exhausted
+            } else {
+                if (triggerConfigFromTiled.QuotaCap > currTrigger.Quota && 0 < currTrigger.Quota) {
+                    // If the TimedWaveDoor subscribes to any other trigger, it should ONLY respect that for the initial firing, the rest firings should still be done by ticking on its own
+                    mainCycleFulfilled = true;
+                }
+                // The exhaust should still be triggered by NPC-exhausted
+            }
+        } else {
+            // [WARNING] Regardless of whether or not the TimedWaveDoor subscribers to any other trigger, when (0 < currTrigger.FramesToRecover), it shouldn't fire EXCEPT FOR all spawned NPC-exhausted 
+            if (0 == currTrigger.Quota && EVTSUB_NO_DEMAND_MASK != currTrigger.DemandedEvtMask) {
+            } else {
+                mainCycleFulfilled = false;
+            } 
+        }
+    }
+
+    bool subCycleFulfilled = (0 >= currTrigger.FramesToFire);
+    switch (triggerConfig.SpeciesId) {
+    case TRIGGER_SPECIES_VICTORY_TRIGGER_TRIVIAL:
+    case TRIGGER_SPECIES_NPC_AWAKER_MV:
+    case TRIGGER_SPECIES_BOSS_AWAKER_MV:
+        if (mainCycleFulfilled) {
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.State = TriggerState.TcoolingDown;
+                    triggerInNextFrame.FramesInState = 0;
+                    triggerInNextFrame.Quota = 0;
+                    triggerInNextFrame.FramesToRecover = MAX_INT;
+                    triggerInNextFrame.FramesToFire = MAX_INT;
+                    justTriggeredBgmId = triggerConfigFromTiled.BgmId;
+                    fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                    _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, false, triggerEditorIdToTiledConfig, logger);
+                    //logger.LogInfo(String.Format("@rdfId={0}, one-off trigger editor id = {1}, local id = {2} is fulfilled", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId));
+                    if (0 != triggerConfigFromTiled.NewRevivalX || 0 != triggerConfigFromTiled.NewRevivalY) {
+                        if (0 < currTrigger.OffenderJoinIndex && currTrigger.OffenderJoinIndex <= roomCapacity) {
+                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
+                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                        } else if (1 == roomCapacity) {
+                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[0];
+                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                        }
+                    }   
+                }
+        }
+    break;
+    case TRIGGER_SPECIES_TRAP_ATK_TRIGGER_MV:
+    case TRIGGER_SPECIES_CTRL_PROMPT_MV:
+        mainCycleFulfilled &= (TriggerState.Tready == currTrigger.State);
+        if (!isSubcycleConfigured) {
+            if (mainCycleFulfilled) {
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.State = TriggerState.TcoolingDown;
+                    triggerInNextFrame.FramesInState = 0;
+                    triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                    triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                    fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                    _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, false, triggerEditorIdToTiledConfig, logger);
+                } else if (0 == currTrigger.Quota) {
+                    // Set to exhausted
+                    triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+                }
+            } else if (0 == currTrigger.FramesToRecover) {
+                // replenish upon mainCycle ends, but "false == mainCycleFulfilled"
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.State = TriggerState.Tready;
+                    triggerInNextFrame.FramesInState = 0;
+                }
+            }
+        } else {
+            if (subCycleFulfilled) {
+                fireSubscribingTraps(currTrigger, triggerConfigFromTiled, triggerInNextFrame, ref fulfilledTriggerSetMask, currRenderFrame, nextRenderFrameTriggers, triggerEditorIdToTiledConfig, logger);
+            } else if (mainCycleFulfilled) {
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.State = TriggerState.TcoolingDown;
+                    triggerInNextFrame.FramesInState = 0;
+                    triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                    triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                    triggerInNextFrame.FramesToFire = triggerConfigFromTiled.DelayedFrames;
+                    triggerInNextFrame.SubCycleQuotaLeft = triggerConfigFromTiled.SubCycleQuota;
+                } else if (0 == currTrigger.Quota) {
+                    // Set to exhausted
+                    triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+                }
+            } else if (0 == currTrigger.FramesToRecover) {
+                // replenish upon mainCycle ends, but "false == mainCycleFulfilled"
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.State = TriggerState.Tready;
+                    triggerInNextFrame.FramesInState = 0;
+                }
+            }
+        }
+    break; 
+    case TRIGGER_SPECIES_BOSS_SAVEPOINT:
+        if (mainCycleFulfilled) {
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.FramesToRecover = DEFAULT_FRAMES_DELAYED_OF_BOSS_SAVEPOINT;
+                    triggerInNextFrame.FramesToFire = MAX_INT;
+                    if (0 != triggerConfigFromTiled.NewRevivalX || 0 != triggerConfigFromTiled.NewRevivalY) {
+                        if (0 < currTrigger.OffenderJoinIndex && currTrigger.OffenderJoinIndex <= roomCapacity) {
+                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
+                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                        } else if (1 == roomCapacity) {
+                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[0];
+                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                        }
+                    }   
+                }
+        } else if (0 == currTrigger.FramesToRecover) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.FramesToRecover = MAX_INT;
+                triggerInNextFrame.Quota = 0;
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_NSWITCH:
+    case TRIGGER_SPECIES_PSWITCH:
+        if (mainCycleFulfilled) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.State = TriggerState.TcoolingDown;
+                triggerInNextFrame.FramesInState = 0;
+                triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                triggerInNextFrame.FramesToFire = triggerConfigFromTiled.DelayedFrames;
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, false, triggerEditorIdToTiledConfig, logger);
+                //logger.LogInfo(String.Format("@rdfId={0}, switch trigger editor id = {1}, local id = {2} is fulfilled", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId));
+            }
+        } else if (0 == currTrigger.FramesToRecover) {
+            // replenish upon mainCycle ends, but "false == mainCycleFulfilled"
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.State = TriggerState.Tready;
+                triggerInNextFrame.FramesInState = 0;
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_STORYPOINT_TRIVIAL:
+    case TRIGGER_SPECIES_STORYPOINT_MV:
+        if (mainCycleFulfilled) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                triggerInNextFrame.FramesToFire = triggerConfigFromTiled.DelayedFrames;
+                justTriggeredStoryPointId = triggerConfigFromTiled.StoryPointId;
+                justTriggeredBgmId = triggerConfigFromTiled.BgmId;
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                //logger.LogInfo(String.Format("@rdfId={0}, story point trigger editor id = {1}, local id = {2} is fulfilled", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId));
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_TIMED_WAVE_PICKABLE_DROPPER:
+        if (subCycleFulfilled) {
+            int pickableSpawnerConfigIdx = triggerConfigFromTiled.QuotaCap - currTrigger.Quota;
+            var pickableSpawnerConfig = lowerBoundForPickableSpawnerConfig(pickableSpawnerConfigIdx, triggerConfigFromTiled.PickableSpawnerTimeSeq, logger);
+            fireTriggerPickableSpawning(currRenderFrame, currTrigger, triggerInNextFrame, ref pickableLocalIdCounter, ref nextRdfPickableCnt, nextRenderFramePickables, decodedInputHolder, pickableSpawnerConfig, triggerEditorIdToTiledConfig, logger);
+        } else if (mainCycleFulfilled) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                triggerInNextFrame.FramesToFire = triggerConfigFromTiled.DelayedFrames;
+                triggerInNextFrame.SubCycleQuotaLeft = triggerConfigFromTiled.SubCycleQuota;
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+            } else if (0 == currTrigger.Quota) {
+                // Set to exhausted
+                triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+            }
+        } else if (0 == currTrigger.FramesToRecover) {
+            // replenish upon mainCycle ends, but "false == mainCycleFulfilled"
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.State = TriggerState.Tready;
+                triggerInNextFrame.FramesInState = 0;
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_TIMED_WAVE_DOOR_1:
+    case TRIGGER_SPECIES_INDI_WAVE_DOOR_1:
+    case TRIGGER_SPECIES_SYNC_WAVE_DOOR_1:
+        var firstSubscribesToTriggerEditorId = (0 >= triggerConfigFromTiled.SubscribesToIdList.Count ? TERMINATING_EVTSUB_ID_INT : triggerConfigFromTiled.SubscribesToIdList[0]);
+        var subscribesToTriggerInNextFrame = (TERMINATING_EVTSUB_ID_INT == firstSubscribesToTriggerEditorId ? null : nextRenderFrameTriggers[triggerEditorIdToLocalId[firstSubscribesToTriggerEditorId] - 1]);
+        var npcExhaustedReceptionTriggerInNextFrame = ((TRIGGER_SPECIES_INDI_WAVE_DOOR_1 == triggerConfig.SpeciesId || TRIGGER_SPECIES_TIMED_WAVE_DOOR_1 == triggerConfig.SpeciesId) ? triggerInNextFrame : subscribesToTriggerInNextFrame);
+
+        if (subCycleFulfilled) {
+            // [WARNING] The information of "justFulfilled" will be lost after then just-fulfilled renderFrame, thus temporarily using "FramesToFire" to keep track of subsequent spawning
+            int chSpawnerConfigIdx = triggerConfigFromTiled.QuotaCap - currTrigger.Quota;
+            var chSpawnerConfig = lowerBoundForSpawnerConfig(chSpawnerConfigIdx, triggerConfigFromTiled.CharacterSpawnerTimeSeq);
+            fireTriggerSpawning(currRenderFrame, roomCapacity, currTrigger, triggerInNextFrame, nextRenderFrameNpcs, ref npcLocalIdCounter, ref npcCnt, npcExhaustedReceptionTriggerInNextFrame, decodedInputHolder, chSpawnerConfig, triggerEditorIdToTiledConfig, logger);
+        } else if (mainCycleFulfilled) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                triggerInNextFrame.FramesToFire = triggerConfigFromTiled.DelayedFrames;
+                int chSpawnerConfigIdx = triggerConfigFromTiled.QuotaCap - triggerInNextFrame.Quota;
+                var chSpawnerConfig = lowerBoundForSpawnerConfig(chSpawnerConfigIdx, triggerConfigFromTiled.CharacterSpawnerTimeSeq);
+                int nextWaveNpcCnt = (chSpawnerConfig.SpeciesIdList.Count < triggerConfigFromTiled.SubCycleQuota ? chSpawnerConfig.SpeciesIdList.Count : triggerConfigFromTiled.SubCycleQuota);
+                triggerInNextFrame.SubCycleQuotaLeft = triggerConfigFromTiled.SubCycleQuota;
+                if (TRIGGER_SPECIES_TIMED_WAVE_DOOR_1 == triggerConfigFromTiled.SpeciesId) {
+                    // [WARNING] For exhaustion of a TimedWaveDoor, we required all spawned NPC-exhausted
+                    if (currTrigger.Quota == triggerConfigFromTiled.QuotaCap) {
+                        triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter = 1UL;
+                        triggerInNextFrame.DemandedEvtMask = (1UL << nextWaveNpcCnt) - 1; 
+                        //logger.LogInfo(String.Format("@rdfId={0}, {10} editor id = {1} INITIAL mainCycleFulfilled, local id = {2}, of next frame:: demandedEvtMask = {3}, fulfilledEvtMask = {4}, waveNpcExhaustedEvtMaskCounter = {5}, quota = {6}, subCycleQuota = {7}, framesToRecover = {8}, framesToFire = {9}", currRenderFrame.Id, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId, triggerInNextFrame.DemandedEvtMask, triggerInNextFrame.FulfilledEvtMask, triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter, triggerInNextFrame.Quota, triggerInNextFrame.SubCycleQuotaLeft, triggerInNextFrame.FramesToRecover, triggerInNextFrame.FramesToFire, currTrigger.Config.SpeciesName));
+                    } else {
+                        triggerInNextFrame.DemandedEvtMask <<= nextWaveNpcCnt; 
+                        triggerInNextFrame.DemandedEvtMask |= (1UL << nextWaveNpcCnt) - 1;
+                        //logger.LogInfo(String.Format("@rdfId={0}, {10} editor id = {1} SUBSEQ mainCycleFulfilled, local id = {2}, of next frame: demandedEvtMask = {3}, fulfilledEvtMask = {4}, waveNpcExhaustedEvtMaskCounter = {5}, quota = {6}, subCycleQuota = {7}, framesToRecover = {8}, framesToFire = {9}", currRenderFrame.Id, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId, triggerInNextFrame.DemandedEvtMask, triggerInNextFrame.FulfilledEvtMask, triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter, triggerInNextFrame.Quota, triggerInNextFrame.SubCycleQuotaLeft, triggerInNextFrame.FramesToRecover, triggerInNextFrame.FramesToFire, currTrigger.Config.SpeciesName));
+                    }     
+                } else {
+                    // [WARNING] For SyncWaveDoor, its main cycles are not triggered by NPC-exhausted, thus assigning this value uniformly is not an issue!
+                    triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter = 1UL;
+                    triggerInNextFrame.DemandedEvtMask = (1UL << nextWaveNpcCnt) - 1;
+                    triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    //logger.LogInfo(String.Format("@rdfId={0}, {1} editor id = {2} mainCycleFulfilled, local id = {3} of next frame: demandedEvtMask = {4}, fulfilledEvtMask = {5}, waveNpcExhaustedEvtMaskCounter = {6}, quota = {7}, subCycleQuota = {8}, framesToRecover = {9}, framesToFire = {10}", currRenderFrame.Id, currTrigger.Config.SpeciesName, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId, triggerInNextFrame.DemandedEvtMask, triggerInNextFrame.FulfilledEvtMask, triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter, triggerInNextFrame.Quota, triggerInNextFrame.SubCycleQuotaLeft, triggerInNextFrame.FramesToRecover, triggerInNextFrame.FramesToFire));
+                }
+
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+            } else if (0 == currTrigger.Quota) {
+                // Set to exhausted
+                // [WARNING] Exclude MAGIC_QUOTA_INFINITE and MAGIC_QUOTA_EXHAUSTED here!
+                //logger.LogInfo(String.Format("@rdfId={0}, {6} editor id = {1} exhausted, local id = {2}, of next frame:: demandedEvtMask = {3}, fulfilledEvtMask = {4}, waveNpcExhaustedEvtMaskCounter = {5}", currRenderFrame.Id, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId, triggerInNextFrame.DemandedEvtMask, triggerInNextFrame.FulfilledEvtMask, triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter, currTrigger.Config.SpeciesName));
+                triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+                
+                if (null != subscribesToTriggerInNextFrame) {
+                    // [WARNING] Whenever a single NPC wave door is subscribing to any group trigger, ignore its exhaust subscribers, i.e. exhaust subscribers should respect the group trigger instead!
+                    subscribesToTriggerInNextFrame.FulfilledEvtMask |= (1UL << (currTrigger.TriggerLocalId-1));
+                } else {
+                    _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, true, triggerEditorIdToTiledConfig, logger);
+                }
+            }
+        } else if (0 == currTrigger.FramesToRecover) {
+            // replenish upon mainCycle ends, but "false == mainCycleFulfilled"
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.State = TriggerState.Tready;
+                triggerInNextFrame.FramesInState = 0;
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_INDI_WAVE_GROUP_TRIGGER_TRIVIAL:
+    case TRIGGER_SPECIES_INDI_WAVE_GROUP_TRIGGER_MV:
+        if (mainCycleFulfilled) {
+            if (0 < currTrigger.Quota) {
+                triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, false, triggerEditorIdToTiledConfig, logger); 
+                // Special handling, reverse subscription and repurpose evt mask fields. 
+                triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                triggerInNextFrame.DemandedEvtMask = triggerInNextFrame.SubscriberLocalIdsMask;
+                triggerInNextFrame.SubscriberLocalIdsMask = EVTSUB_NO_DEMAND_MASK; // There's no long any subscriber to this group trigger 
+                fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                //logger.LogInfo(String.Format("@rdfId={0}, {3} editor id = {1}, local id = {2} is fulfilled for the first time and re-purposed", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId, currTrigger.Config.SpeciesName));
+            } else {
+                // Set to exhausted
+                //logger.LogInfo(String.Format("@rdfId={0}, {3} editor id = {1}, local id = {2} is exhausted", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId, currTrigger.Config.SpeciesName));
+                triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+                _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, true, triggerEditorIdToTiledConfig, logger);
+            }
+        }
+    break;
+    case TRIGGER_SPECIES_SYNC_WAVE_GROUP_TRIGGER_TRIVIAL:
+    case TRIGGER_SPECIES_SYNC_WAVE_GROUP_TRIGGER_MV:
+            if (mainCycleFulfilled) {
+                if (0 < currTrigger.Quota) {
+                    triggerInNextFrame.Quota = currTrigger.Quota - 1;
+                    triggerInNextFrame.FramesToRecover = triggerConfigFromTiled.RecoveryFrames;
+                    triggerInNextFrame.WaveNpcExhaustedEvtMaskCounter = 1UL;
+                    int nextWaveNpcCnt = _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, true, false, triggerEditorIdToTiledConfig, logger); 
+                    triggerInNextFrame.DemandedEvtMask = (1UL << nextWaveNpcCnt) - 1;
+                    // Special handling, reverse subscription and repurpose evt mask fields. 
+                    triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    fulfilledTriggerSetMask |= (1UL << (triggerInNextFrame.TriggerLocalId - 1));
+                    //logger.LogInfo(String.Format("@rdfId={0}, {1} editor id = {2}, local id = {3} is initiated and re-purposed. DemandedEvtMask={4} from nextWaveNpcCnt={5}", currRenderFrame.Id, currTrigger.Config.SpeciesName, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId, triggerInNextFrame.DemandedEvtMask, nextWaveNpcCnt));
+                } else {
+                    // Set to exhausted
+                    //logger.LogInfo(String.Format("@rdfId={0}, {1} editor id = {2}, local id = {3} is exhausted", currRenderFrame.Id, currTrigger.Config.SpeciesName, triggerInNextFrame.EditorId, triggerInNextFrame.TriggerLocalId));
+                    triggerInNextFrame.FulfilledEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    triggerInNextFrame.DemandedEvtMask = EVTSUB_NO_DEMAND_MASK;
+                    _notifySubscriberTriggers(currRenderFrame.Id, triggerInNextFrame, nextRenderFrameTriggers, false, true, triggerEditorIdToTiledConfig, logger);
+                }
+            }
+            break;
+    }
+    */
 }
 
 void BaseBattle::handleLhsCharacterCollision(
