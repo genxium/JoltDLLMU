@@ -34,7 +34,13 @@ typedef struct VectorFloatHasher {
         }
         return seed;
     }
-} COLLIDER_HASH_KEY_T;
+} VectorFloatHasher;
+
+typedef struct NonContactConstraintHasher {
+    std::size_t operator()(const NON_CONTACT_CONSTRAINT_KEY_T& k) const {
+        return std::hash<int>()(static_cast<int>(k.first)) + 0x9e3779b9 + std::hash<int>()(static_cast<int>(k.second));
+    }
+} NonContactConstraintHasher;
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
@@ -87,7 +93,7 @@ public:
 
     BL_COLLIDER_Q activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
-    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, VectorFloatHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
     CH_COLLIDER_Q activeChColliders;
 
@@ -100,7 +106,10 @@ public:
 
     Moreover, by using this approach to manage multi-shape character I dropped the "shared shapes across bodies" feature of Jolt.
     */
-    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, COLLIDER_HASH_KEY_T > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
+    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, VectorFloatHasher > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
+
+    NON_CONTACT_CONSTRAINT_Q activeNonContactConstraints;
+    std::unordered_map< NON_CONTACT_CONSTRAINT_KEY_T, NON_CONTACT_CONSTRAINT_Q, NonContactConstraintHasher > cachedNonContactConstraints; // Key is "{non-contact-constraint type}"
 
 public:
     static void FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
@@ -373,7 +382,7 @@ protected:
     CH_COLLIDER_T* getOrCreateCachedNpcCollider(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
-    Body*             getOrCreateCachedBulletCollider(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
+    Body*          getOrCreateCachedBulletCollider(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
 
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
