@@ -47,7 +47,7 @@ namespace JoltCSharp {
             DyingCapsuleRadius = (16.0f),
             DyingCapsuleHalfHeight = (6.0f),
             HasTurnAroundAnim = false,
-            ProactiveJumpStartupFrames = 4,
+            ProactiveJumpStartupFrames = 2,
             Hardness = 5,
             HasDimmedAnim = true,
             MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
@@ -99,7 +99,7 @@ namespace JoltCSharp {
             WallSlidingVelY = (-1) * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
-            ProactiveJumpStartupFrames = 4,
+            ProactiveJumpStartupFrames = 2,
             Hardness = 5,
             MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
             SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
@@ -144,8 +144,8 @@ namespace JoltCSharp {
             VisionSizeY = (100.0f),
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
-            CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
-            CapsuleHalfHeight = (16.0f),
+            CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (10.0f),
             ShrinkedCapsuleRadius = (8.0f),
             ShrinkedCapsuleHalfHeight = (12.0f),
             LayDownCapsuleRadius = (16.0f),

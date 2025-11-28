@@ -2933,6 +2933,12 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     if (globalPrimitiveConsts->pattern_id_no_op() == patternId || globalPrimitiveConsts->pattern_id_unable_to_op() == patternId) {
         return false;
     }
+
+    bool inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
+    if (inJumpStartupOrJustEnded) {
+        return false;
+    }
+    
     bool notRecovered = (0 < currChd.frames_to_recover());
     if (CharacterState::Parried == currChd.ch_state()) {
         notRecovered = (currChd.frames_in_ch_state() >= globalPrimitiveConsts->parried_frames_to_start_cancellable());
@@ -3084,7 +3090,7 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
 
 #ifndef NDEBUG
     std::ostringstream oss3;
-    oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by (nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextX=" << nextChd->x() << ", nextY=" << nextChd->y() << ", nextVelX=" << nextChd->vel_x() << ", " << ", nextVelY=" << nextChd->vel_y() << ", patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ")";
+    oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by (currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << ", framesToStartJump=" << currChd.frames_to_start_jump() << "), (nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextX=" << nextChd->x() << ", nextY=" << nextChd->y() << ", nextVelX=" << nextChd->vel_x() << ", " << ", nextVelY=" << nextChd->vel_y() << ", patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy << ")";
     Debug::Log(oss3.str(), DColor::Orange);
 #endif // !NDEBUG
     return true;
