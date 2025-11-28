@@ -3017,7 +3017,11 @@ bool runTestCase15(FrontendBattle* reusedBattle, const WsReq* initializerMapData
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         }
 
-        if (88 == outerTimerRdfId) {
+        if (81 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Dying == npc1Chd.ch_state());
+        }
+
+        if (182 == outerTimerRdfId) {
             auto& prevRdfStepResult = outerTimerRdf->prev_rdf_step_result();
             JPH_ASSERT(1 == prevRdfStepResult.fulfilled_triggers_size());
             auto& prevRdfFulfilledTr1 = prevRdfStepResult.fulfilled_triggers(0);
@@ -3123,7 +3127,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-
+    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();

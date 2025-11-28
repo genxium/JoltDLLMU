@@ -481,9 +481,9 @@ protected:
 
     void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
-    bool transitToDying(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd);
-    bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer);
-    bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc);
+    bool transitToDying(const int currRdfId, const CharacterDownsync& currChd, const bool cvInAir, CharacterDownsync* nextChd);
+    bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, const bool cvInAir, PlayerCharacterDownsync* nextPlayer);
+    bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, const bool cvInAir, NpcCharacterDownsync* nextNpc);
 
     void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
 
@@ -778,12 +778,18 @@ public:
             if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
                 return JPH::ValidateResult::RejectContact;
             }
+            if (invinsibleSet.count(rhsCurrChd.ch_state())) {
+                return JPH::ValidateResult::RejectContact;
+            }
             return JPH::ValidateResult::AcceptContact;
         }
         case UDT_NPC: {
             auto& rhsCurrNpc = transientUdToCurrNpc[udRhs];
             auto& rhsCurrChd = rhsCurrNpc->chd();
             if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            if (invinsibleSet.count(rhsCurrChd.ch_state())) {
                 return JPH::ValidateResult::RejectContact;
             }
             return JPH::ValidateResult::AcceptContact;
