@@ -282,18 +282,22 @@ void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const Chara
     }
 }
 
-bool BaseBattle::transitToDying(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd) {
+bool BaseBattle::transitToDying(const int currRdfId, const CharacterDownsync& currChd, const bool cvInAir, CharacterDownsync* nextChd) {
     if (CharacterState::Dying == currChd.ch_state()) return false;
     nextChd->set_ch_state(CharacterState::Dying);
     nextChd->set_frames_in_ch_state(0);
-    nextChd->set_frames_to_recover(0);
+    nextChd->set_frames_to_recover(globalPrimitiveConsts->dying_frames_to_recover());
     nextChd->set_frames_invinsible(0);
     nextChd->set_hp(0);
+    if (!cvInAir) {
+        nextChd->set_vel_x(0);
+        nextChd->set_vel_y(0);
+    }
     resetJumpStartup(nextChd);
     return true;
 }
 
-bool BaseBattle::transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, PlayerCharacterDownsync* nextPlayer) {
+bool BaseBattle::transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, const bool cvInAir, PlayerCharacterDownsync* nextPlayer) {
     auto& currChd = currPlayer.chd();
     auto nextChd = nextPlayer->mutable_chd();
 #ifndef NDEBUG
@@ -301,14 +305,14 @@ bool BaseBattle::transitToDying(const int currRdfId, const PlayerCharacterDownsy
     oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead due to fallen death with nextChd->position=(" << nextChd->x() << "," << nextChd->y() << "), orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state() << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
     Debug::Log(oss.str(), DColor::Orange);
 #endif
-    bool res = transitToDying(currRdfId, currChd, nextChd);
+    bool res = transitToDying(currRdfId, currChd, cvInAir, nextChd);
     return res;
 }
 
-bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc) {
+bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, const bool cvInAir, NpcCharacterDownsync* nextNpc) {
     auto& currChd = currNpc.chd();
     auto nextChd = nextNpc->mutable_chd();
-    bool res = transitToDying(currRdfId, currChd, nextChd);
+    bool res = transitToDying(currRdfId, currChd, cvInAir, nextChd);
     // For NPC should also reset patrol book-keepers
     nextNpc->set_frames_in_patrol_cue(0);
     return res;
@@ -541,7 +545,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
-                    transitToDying(currRdfId, currPlayer, nextPlayer);
+                    transitToDying(currRdfId, currPlayer, cvInAir, nextPlayer);
                 } else if (globalPrimitiveConsts->dying_frames_to_recover() < nextChd->frames_in_ch_state()) {
         #ifndef NDEBUG
                     std::ostringstream oss;
@@ -602,6 +606,12 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
             postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+
+            if (isDead) {
+                if (CharacterState::Dying != nextChd->ch_state()) {
+                    transitToDying(currRdfId, currNpc, cvInAir, nextNpc);
+                }
+            }
         }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -2336,12 +2346,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     break;
                 }
                 break;
-            case BackDashing:
-                nextChd->set_ch_state(InAirBackDashing);
-                break;
-            case InAirDashing:
-                nextChd->set_ch_state(Dashing);
-                break;
             }
         }
     } else {
@@ -2372,12 +2376,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 break;
             case InAirWalkStopping:
                 nextChd->set_ch_state(WalkStopping);
-                break;
-            case InAirBackDashing:
-                nextChd->set_ch_state(BackDashing);
-                break;
-            case InAirDashing:
-                nextChd->set_ch_state(Dashing);
                 break;
             default:
                 nextChd->set_ch_state(Idle1);
@@ -2452,10 +2450,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         } else if ((TurnAround == currChd.ch_state() && InAirTurnAround == nextChd->ch_state()) || (InAirTurnAround == currChd.ch_state() && TurnAround == nextChd->ch_state())) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else if ((WalkStopping == currChd.ch_state() && InAirWalkStopping == nextChd->ch_state()) || (InAirWalkStopping == currChd.ch_state() && WalkStopping == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((BackDashing == currChd.ch_state() && InAirBackDashing == nextChd->ch_state()) || (InAirBackDashing == currChd.ch_state() && BackDashing == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((Dashing == currChd.ch_state() && InAirDashing == nextChd->ch_state()) || (InAirDashing == currChd.ch_state() && Dashing == nextChd->ch_state())) {
             nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
         } else {
             nextChd->set_frames_in_ch_state(0);
@@ -2651,7 +2645,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2*chConfig.capsule_half_height();
         if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
-            transitToDying(currRdfId, currPlayer, nextPlayer);
+            transitToDying(currRdfId, currPlayer, true, nextPlayer);
         }
     }
 
@@ -2663,7 +2657,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         const CharacterConfig& chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2 * chConfig.capsule_half_height();
         if (fallenDeathHeight > chTop && Dying != chd->ch_state()) {
-            transitToDying(currRdfId, currNpc, nextNpc);
+            transitToDying(currRdfId, currNpc, true, nextNpc);
         }
     }
 
