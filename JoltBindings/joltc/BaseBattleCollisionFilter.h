@@ -19,14 +19,17 @@
 #define BL_COLLIDER_T JPH::Body
 #define BL_CACHE_KEY_T std::vector<float>
 #define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
-#define CH_CACHE_KEY_T std::vector<float>
-#define NON_CONTACT_CONSTRAINT_KEY_T std::pair<JPH::EConstraintType, JPH::EConstraintSubType> 
+#define BL_COLLIDER_MAP std::unordered_map<uint64_t, BL_COLLIDER_T*>
 
+#define CH_CACHE_KEY_T std::vector<float>
 #define CH_COLLIDER_T JPH::Character
 #define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
+#define CH_COLLIDER_MAP std::unordered_map<uint64_t, CH_COLLIDER_T*>
 
+#define NON_CONTACT_CONSTRAINT_KEY_T std::pair<JPH::EConstraintType, JPH::EConstraintSubType> 
 #define NON_CONTACT_CONSTRAINT_T JPH::Constraint
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
+#define NON_CONTACT_CONSTRAINT_MAP std::unordered_map<uint64_t, NON_CONTACT_CONSTRAINT_T*>
 
 class BaseBattleCollisionFilter {
 public:
@@ -74,39 +77,64 @@ public:
     }
 
     inline const uint64_t calcPublishingToTriggerUd(const NpcCharacterDownsync& npcChd) {
-        return UDT_TRIGGER + npcChd.publishing_to_trigger_id_upon_exhausted();
+        return calcTriggerUserData(npcChd.publishing_to_trigger_id_upon_exhausted());
     }
 
     inline const uint64_t calcPublishingToTriggerUd(const Trigger& tr) {
-        return UDT_TRIGGER + tr.publishing_to_trigger_id_upon_exhausted();
+        return calcTriggerUserData(tr.publishing_to_trigger_id_upon_exhausted());
     }
 
     inline const uint64_t calcUserData(const PlayerCharacterDownsync& playerChd) const {
-        return UDT_PLAYER + playerChd.join_index();
+        return calcPlayerUserData(playerChd.join_index());
     }
 
     inline const uint64_t calcUserData(const NpcCharacterDownsync& npcChd) const {
-        return UDT_NPC + npcChd.id();
+        return calcNpcUserData(npcChd.id());
     }
 
     inline const uint64_t calcUserData(const Bullet& bl) const {
-        return UDT_BL + bl.id();
+        return calcBulletUserData(bl.id());
     }
 
-    inline const uint64_t calcUserData(const Trigger& tr) const {
-        return UDT_TRIGGER + tr.id();
+    inline const uint64_t calcUserData(const Trigger& trigger) const {
+        return calcTriggerUserData(trigger.id());
     }
 
-    inline const uint64_t calcStaticColliderUserData(const int staticColliderId) const {
-        return UDT_OBSTACLE + staticColliderId;
+    inline const uint64_t calcUserData(const Trap& trap) const {
+        return calcTrapUserData(trap.id());
     }
 
-    inline const uint64_t getUDT(const uint64_t& ud) const {
+    // The following static member functions are to be used by frontend too 
+    inline static const uint64_t getUDT(const uint64_t& ud) {
         return (ud & UDT_STRIPPER);
     }
 
-    inline const uint32_t getUDPayload(const uint64_t& ud) const {
+    inline static const uint32_t getUDPayload(const uint64_t& ud) {
         return (ud & UD_PAYLOAD_STRIPPER);
+    }
+
+    inline static const uint64_t calcStaticColliderUserData(const uint32_t staticColliderId) {
+        return UDT_OBSTACLE + staticColliderId;
+    }
+
+    inline static const uint64_t calcPlayerUserData(const uint32_t joinIndex) {
+        return UDT_PLAYER + joinIndex;
+    }
+
+    inline static const uint64_t calcNpcUserData(const uint32_t npcId) {
+        return UDT_NPC + npcId;
+    }
+
+    inline static const uint64_t calcBulletUserData(const uint32_t bulletId) {
+        return UDT_BL + bulletId;
+    }
+
+    inline static const uint64_t calcTriggerUserData(const uint32_t triggerId) {
+        return UDT_TRIGGER + triggerId;
+    }
+
+    inline static const uint64_t calcTrapUserData(const uint32_t trapId) {
+        return UDT_TRAP + trapId;
     }
 }; 
 

@@ -180,6 +180,34 @@ uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t value) {
     return battle->SetInactiveJoinMask(value);
 }
 
+uint32_t APP_GetUDPayload(uint64_t ud) {
+    return BaseBattleCollisionFilter::getUDPayload(ud);
+}
+
+uint64_t APP_CalcStaticColliderUserData(uint32_t staticColliderId) {
+    return BaseBattleCollisionFilter::calcStaticColliderUserData(staticColliderId);
+}
+
+uint64_t APP_CalcPlayerUserData(uint32_t joinIndex) {
+    return BaseBattleCollisionFilter::calcPlayerUserData(joinIndex);
+}
+
+uint64_t APP_CalcNpcUserData(uint32_t npcId) {
+    return BaseBattleCollisionFilter::calcNpcUserData(npcId);
+}
+
+uint64_t APP_CalcBulletUserData(uint32_t bulletId) {
+    return BaseBattleCollisionFilter::calcBulletUserData(bulletId);
+}
+
+uint64_t APP_CalcTriggerUserData(uint32_t triggerId) {
+    return BaseBattleCollisionFilter::calcTriggerUserData(triggerId);
+}
+
+uint64_t APP_CalcTrapUserData(uint32_t trapId) {
+    return BaseBattleCollisionFilter::calcTrapUserData(trapId);
+}
+
 void* BACKEND_CreateBattle(int rdfBufferSize) {
     // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
     BackendBattle* result = new BackendBattle(rdfBufferSize, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);

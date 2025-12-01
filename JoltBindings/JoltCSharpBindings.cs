@@ -59,6 +59,27 @@ namespace JoltCSharp {
         public static extern ulong APP_SetInactiveJoinMask(UIntPtr inBattle, ulong newValue);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern uint APP_GetUDPayload(ulong ud);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcStaticColliderUserData(uint staticColliderId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcPlayerUserData(uint joinIndex);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcNpcUserData(uint npcId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcBulletUserData(uint bulletId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcTriggerUserData(uint triggerId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcTrapUserData(uint trapId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int APP_EncodePatternForCancelTransit(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

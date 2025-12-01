@@ -174,9 +174,9 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider(const uint64_t ud,
     }
 
     // must be active when called by "getOrCreateCachedCharacterCollider"
-    activeChColliders.push_back(chCollider);
     auto bodyID = chCollider->GetBodyID();
     transientUdToChCollider[ud] = chCollider;
+    activeChColliderList.push_back(chCollider);
     bi->SetUserData(bodyID, ud);
 
     return chCollider;
@@ -236,7 +236,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
     blCollider->SetUserData(ud);
 
     // must be active when called by "getOrCreateCachedBulletCollider"
-    activeBlColliders.push_back(blCollider);
+    activeBlColliderList.push_back(blCollider);
 
     return blCollider;
 }
@@ -699,9 +699,10 @@ void BaseBattle::Clear() {
 
     - No need to explicitly remove "Character.mBodyID"s, the destructor "~Character" will take care of it.
     */ 
-    while (!activeChColliders.empty()) {
-        auto& single = activeChColliders.back();
-        activeChColliders.pop_back();
+
+    while (!activeChColliderList.empty()) {
+        CH_COLLIDER_T* single = activeChColliderList.back();
+        activeChColliderList.pop_back();
         single->RemoveFromPhysicsSystem();
         delete single;
     }
@@ -720,9 +721,9 @@ void BaseBattle::Clear() {
     }
 
     bodyIDsToClear.clear();
-    while (!activeBlColliders.empty()) {
-        auto& single = activeBlColliders.back();
-        activeBlColliders.pop_back();
+    while (!activeBlColliderList.empty()) { 
+        BL_COLLIDER_T* single = activeBlColliderList.back();
+        activeBlColliderList.pop_back();
         auto bodyID = single->GetID();
         bodyIDsToClear.push_back(bodyID);
     }
@@ -1873,9 +1874,9 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
     bodyIDsToClear.clear();
-    while (!activeChColliders.empty()) {
-        CH_COLLIDER_T* single = activeChColliders.back();
-        activeChColliders.pop_back();
+    while (!activeChColliderList.empty()) {
+        CH_COLLIDER_T* single = activeChColliderList.back();
+        activeChColliderList.pop_back();
         auto bodyID = single->GetBodyID();
         uint64_t ud = bi->GetUserData(bodyID);
         uint64_t udt = getUDT(ud);
@@ -1898,9 +1899,9 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         bodyIDsToClear.push_back(bodyID);
     }
 
-    while (!activeBlColliders.empty()) {
-        Body* single = activeBlColliders.back();
-        activeBlColliders.pop_back();
+    while (!activeBlColliderList.empty()) { 
+        BL_COLLIDER_T* single = activeBlColliderList.back();
+        activeBlColliderList.pop_back();
         auto ud = single->GetUserData();
         JPH_ASSERT(0 < transientUdToCurrBl.count(ud));
         const Bullet& bl = *(transientUdToCurrBl[ud]);

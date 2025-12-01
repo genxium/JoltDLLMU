@@ -3127,7 +3127,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3162,7 +3162,7 @@ int main(int argc, char** argv)
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+
     initTest11Data();
     runTestCase11(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
