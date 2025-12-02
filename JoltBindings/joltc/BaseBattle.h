@@ -91,12 +91,16 @@ public:
     BodyInterface* bi;
     JobSystemThreadPool* jobSys;
 
-    BL_COLLIDER_Q activeBlColliders;
+    BL_COLLIDER_Q activeBlColliderList;
     BL_COLLIDER_Q* blStockCache;
     std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, VectorFloatHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
-    CH_COLLIDER_Q activeChColliders;
+    /*
+    [WARNING] The use of "activeChColliderList" in "BaseBattle::batchRemoveFromPhySysAndCache" is order-sensitive, i.e. the traversal order of removing "activeChColliderList" MUST BE "BACK-TO-FRONT", any other traversal order there results in failure of "FrontendTest/runTestCase11" when checking rollback-chasing alignment of characters. 
 
+    By the time of writing the cause of misalignment when using removal orders other than back-to-front is unknown, while "back-to-front" being correct might be a coincidence of matching some order-sensitive mechanism in JoltPhysics/PhysicsSystem-Character setters.
+    */
+    CH_COLLIDER_Q activeChColliderList;
     /*
      [TODO]
 
@@ -386,7 +390,7 @@ protected:
 
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
-    std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
+    CH_COLLIDER_MAP transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
