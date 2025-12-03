@@ -114,7 +114,7 @@ namespace jtshared {
             "IAoYdXNlX2lkbGUxX2FzX2ZseWluZ19pZGxlGGMgASgIEg8KB25vX2ZsZWUY",
             "ZCABKAgSDwoHYWNjX21hZxhlIAEoAhI0Cg1hdGsxX21hZ2F6aW5lGGYgASgL",
             "Mh0uanRzaGFyZWQuSW52ZW50b3J5U2xvdENvbmZpZxI2Cg9zdXBlcl9hdGtf",
-            "Z3VhZ2UYZyABKAsyHS5qdHNoYXJlZC5JbnZlbnRvcnlTbG90Q29uZmlnEjsK",
+            "Z2F1Z2UYZyABKAsyHS5qdHNoYXJlZC5JbnZlbnRvcnlTbG90Q29uZmlnEjsK",
             "FGluaXRfaW52ZW50b3J5X3Nsb3RzGGggAygLMh0uanRzaGFyZWQuSW52ZW50",
             "b3J5U2xvdENvbmZpZxJaChtidG5fYl9hdXRvX3VuaG9sZF9jaF9zdGF0ZXMY",
             "aSADKAsyNS5qdHNoYXJlZC5DaGFyYWN0ZXJDb25maWcuQnRuQkF1dG9Vbmhv",
@@ -790,7 +790,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketPayloadResp), global::jtshared.SteamAuthenticateUserTicketPayloadResp.Parser, new[]{ "Params" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketResult), global::jtshared.SteamAuthenticateUserTicketResult.Parser, new[]{ "Response" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleInvitation), global::jtshared.BattleInvitation.Parser, new[]{ "FromPlayerId", "ToBattlesrvId", "BoundRoomId", "ExpiresAt", "Passcode" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "Atk1UsesMagazine", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedCapsuleRadius", "ShrinkedCapsuleHalfHeight", "LayDownCapsuleRadius", "LayDownCapsuleHalfHeight", "DyingCapsuleRadius", "DyingCapsuleHalfHeight", "DimmedCapsuleRadius", "DimmedCapsuleHalfHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenExhausted", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "AccMag", "Atk1Magazine", "SuperAtkGuage", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates", "InitSkillTransit", "HasInAirWalkingAnim", "HasTurnAroundAnim", "HasInAirTurnAroundAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "HasDimmedAnim", "HasAwakingAnim" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "Atk1UsesMagazine", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "VisionOffsetX", "VisionOffsetY", "VisionSizeX", "VisionSizeY", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedCapsuleRadius", "ShrinkedCapsuleHalfHeight", "LayDownCapsuleRadius", "LayDownCapsuleHalfHeight", "DyingCapsuleRadius", "DyingCapsuleHalfHeight", "DimmedCapsuleRadius", "DimmedCapsuleHalfHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenExhausted", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "AccMag", "Atk1Magazine", "SuperAtkGauge", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates", "InitSkillTransit", "HasInAirWalkingAnim", "HasTurnAroundAnim", "HasInAirTurnAroundAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "HasDimmedAnim", "HasAwakingAnim" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterDownsync), global::jtshared.CharacterDownsync.Parser, new[]{ "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "AimingQX", "AimingQY", "AimingQZ", "AimingQW", "Hp", "Mp", "ChState", "FramesInChState", "JumpTriggered", "OmitGravity", "SpeciesId", "Speed", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "FramesToRecover", "NewBirthRdfCountdown", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "BulletTeamId", "RemainingAirJumpQuota", "RemainingAirDashQuota", "DamagedHintRdfCountdown", "DamagedElementalAttrs", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "LastDamagedByUd", "LastDamagedByBulletTeamId", "ActiveSkillId", "ActiveSkillHit", "BtnAHoldingRdfCnt", "BtnBHoldingRdfCnt", "BtnCHoldingRdfCnt", "BtnDHoldingRdfCnt", "BtnEHoldingRdfCnt", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnUd", "ChCollisionTeamId", "BuffList", "DebuffList", "Atk1Magazine", "SuperAtkGauge", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerCharacterDownsync), global::jtshared.PlayerCharacterDownsync.Parser, new[]{ "Chd", "JoinIndex", "BeatsCnt", "BeatenCnt", "RevivalX", "RevivalY", "RevivalZ", "RevivalQX", "RevivalQY", "RevivalQZ", "RevivalQW", "NotEnoughMpHintRdfCountdown" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.NpcCharacterDownsync), global::jtshared.NpcCharacterDownsync.Parser, new[]{ "Chd", "Id", "ActivatedRdfId", "CachedCueCmd", "WaivingPatrolCueId", "GoalAsNpc", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "SubscribesToTriggerId", "CapturedByPatrolCue", "FramesInPatrolCue", "ExhaustedToDropConsumableSpeciesId", "ExhaustedToDropBuffSpeciesId", "ExhaustedToDropPickupSkillId", "IsMainTowerOfTeam" }, null, null, null),
@@ -2871,7 +2871,7 @@ namespace jtshared {
       noFlee_ = other.noFlee_;
       accMag_ = other.accMag_;
       atk1Magazine_ = other.atk1Magazine_ != null ? other.atk1Magazine_.Clone() : null;
-      superAtkGuage_ = other.superAtkGuage_ != null ? other.superAtkGuage_.Clone() : null;
+      superAtkGauge_ = other.superAtkGauge_ != null ? other.superAtkGauge_.Clone() : null;
       initInventorySlots_ = other.initInventorySlots_.Clone();
       btnBAutoUnholdChStates_ = other.btnBAutoUnholdChStates_.Clone();
       loopingChStates_ = other.loopingChStates_.Clone();
@@ -3965,14 +3965,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "super_atk_guage" field.</summary>
-    public const int SuperAtkGuageFieldNumber = 103;
-    private global::jtshared.InventorySlotConfig superAtkGuage_;
+    /// <summary>Field number for the "super_atk_gauge" field.</summary>
+    public const int SuperAtkGaugeFieldNumber = 103;
+    private global::jtshared.InventorySlotConfig superAtkGauge_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.InventorySlotConfig SuperAtkGuage {
-      get { return superAtkGuage_; }
+    public global::jtshared.InventorySlotConfig SuperAtkGauge {
+      get { return superAtkGauge_; }
       set {
-        superAtkGuage_ = value;
+        superAtkGauge_ = value;
       }
     }
 
@@ -4205,7 +4205,7 @@ namespace jtshared {
       if (NoFlee != other.NoFlee) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AccMag, other.AccMag)) return false;
       if (!object.Equals(Atk1Magazine, other.Atk1Magazine)) return false;
-      if (!object.Equals(SuperAtkGuage, other.SuperAtkGuage)) return false;
+      if (!object.Equals(SuperAtkGauge, other.SuperAtkGauge)) return false;
       if(!initInventorySlots_.Equals(other.initInventorySlots_)) return false;
       if (!BtnBAutoUnholdChStates.Equals(other.BtnBAutoUnholdChStates)) return false;
       if (!LoopingChStates.Equals(other.LoopingChStates)) return false;
@@ -4319,7 +4319,7 @@ namespace jtshared {
       if (NoFlee != false) hash ^= NoFlee.GetHashCode();
       if (AccMag != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AccMag);
       if (atk1Magazine_ != null) hash ^= Atk1Magazine.GetHashCode();
-      if (superAtkGuage_ != null) hash ^= SuperAtkGuage.GetHashCode();
+      if (superAtkGauge_ != null) hash ^= SuperAtkGauge.GetHashCode();
       hash ^= initInventorySlots_.GetHashCode();
       hash ^= BtnBAutoUnholdChStates.GetHashCode();
       hash ^= LoopingChStates.GetHashCode();
@@ -4728,9 +4728,9 @@ namespace jtshared {
         output.WriteRawTag(178, 6);
         output.WriteMessage(Atk1Magazine);
       }
-      if (superAtkGuage_ != null) {
+      if (superAtkGauge_ != null) {
         output.WriteRawTag(186, 6);
-        output.WriteMessage(SuperAtkGuage);
+        output.WriteMessage(SuperAtkGauge);
       }
       initInventorySlots_.WriteTo(output, _repeated_initInventorySlots_codec);
       btnBAutoUnholdChStates_.WriteTo(output, _map_btnBAutoUnholdChStates_codec);
@@ -5060,8 +5060,8 @@ namespace jtshared {
       if (atk1Magazine_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Atk1Magazine);
       }
-      if (superAtkGuage_ != null) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SuperAtkGuage);
+      if (superAtkGauge_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SuperAtkGauge);
       }
       size += initInventorySlots_.CalculateSize(_repeated_initInventorySlots_codec);
       size += btnBAutoUnholdChStates_.CalculateSize(_map_btnBAutoUnholdChStates_codec);
@@ -5390,11 +5390,11 @@ namespace jtshared {
         }
         Atk1Magazine.MergeFrom(other.Atk1Magazine);
       }
-      if (other.superAtkGuage_ != null) {
-        if (superAtkGuage_ == null) {
-          SuperAtkGuage = new global::jtshared.InventorySlotConfig();
+      if (other.superAtkGauge_ != null) {
+        if (superAtkGauge_ == null) {
+          SuperAtkGauge = new global::jtshared.InventorySlotConfig();
         }
-        SuperAtkGuage.MergeFrom(other.SuperAtkGuage);
+        SuperAtkGauge.MergeFrom(other.SuperAtkGauge);
       }
       initInventorySlots_.Add(other.initInventorySlots_);
       btnBAutoUnholdChStates_.Add(other.btnBAutoUnholdChStates_);
@@ -5820,10 +5820,10 @@ namespace jtshared {
             break;
           }
           case 826: {
-            if (superAtkGuage_ == null) {
-              SuperAtkGuage = new global::jtshared.InventorySlotConfig();
+            if (superAtkGauge_ == null) {
+              SuperAtkGauge = new global::jtshared.InventorySlotConfig();
             }
-            input.ReadMessage(SuperAtkGuage);
+            input.ReadMessage(SuperAtkGauge);
             break;
           }
           case 834: {
