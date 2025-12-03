@@ -91,16 +91,16 @@ public:
     BodyInterface* bi;
     JobSystemThreadPool* jobSys;
 
-    BL_COLLIDER_Q activeBlColliderList;
+    BL_COLLIDER_Q activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
     std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, VectorFloatHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
     /*
-    [WARNING] The use of "activeChColliderList" in "BaseBattle::batchRemoveFromPhySysAndCache" is order-sensitive, i.e. the traversal order of removing "activeChColliderList" MUST BE "BACK-TO-FRONT", any other traversal order there results in failure of "FrontendTest/runTestCase11" when checking rollback-chasing alignment of characters. 
+    [WARNING] The use of "activeChColliders" in "BaseBattle::batchRemoveFromPhySysAndCache" is order-sensitive, i.e. the removal order of "activeChColliders" MUST BE "reverse-order w.r.t. BaseBattle::batchPutIntoPhySysFromCache" (including Player and Npc), any other removal order there results in failure of "FrontendTest/runTestCase11" when checking rollback-chasing alignment of characters. 
 
-    By the time of writing the cause of misalignment when using removal orders other than back-to-front is unknown, while "back-to-front" being correct might be a coincidence of matching some order-sensitive mechanism in JoltPhysics/PhysicsSystem-Character setters.
+     While "reverse-order w.r.t. BaseBattle::batchPutIntoPhySysFromCache" being correct might be a coincidence of matching some order-sensitive mechanism in JoltPhysics/PhysicsSystem-Character setters, by the time of writing the cause of misalignment when using other removal orders is yet UNKNOWN. 
     */
-    CH_COLLIDER_Q activeChColliderList;
+    CH_COLLIDER_Q activeChColliders;
     /*
      [TODO]
 
@@ -272,18 +272,18 @@ public:
         JPH_ASSERT(lhs->npc_id_counter() == rhs->npc_id_counter());
         for (int i = 0; i < lhs->npcs_arr_size(); i++) {
             auto lhsCh = lhs->npcs_arr(i);
+            if (globalPrimitiveConsts->terminating_character_id() == lhsCh.id()) break;
             auto rhsCh = rhs->npcs_arr(i);
             BaseBattle::AssertNearlySame(lhsCh, rhsCh);
-            if (globalPrimitiveConsts->terminating_character_id() == lhsCh.id()) break;
         }
         JPH_ASSERT(lhs->bullets_size() == rhs->bullets_size());
         JPH_ASSERT(lhs->bullet_id_counter() == rhs->bullet_id_counter());
         JPH_ASSERT(lhs->bullet_count() == rhs->bullet_count());
         for (int i = 0; i < lhs->bullets_size(); i++) {
             auto lhsB = lhs->bullets(i);
+            if (globalPrimitiveConsts->terminating_bullet_id() == lhsB.id()) break;
             auto rhsB = rhs->bullets(i);
             BaseBattle::AssertNearlySame(lhsB, rhsB);
-            if (globalPrimitiveConsts->terminating_bullet_id() == lhsB.id()) break;
         }
     }
 
@@ -378,6 +378,7 @@ protected:
     inline void elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, const CharacterConfig* cc);
     inline void elapse1RdfForTrigger(Trigger* tr);
     inline void elapse1RdfForPickable(Pickable* pk);
+    inline void elapse1RdfForIvSlot(InventorySlot* ivs, const InventorySlotConfig* ivsConfig);
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 

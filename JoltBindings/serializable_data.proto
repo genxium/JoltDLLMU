@@ -360,7 +360,7 @@ message CharacterConfig {
     float acc_mag = 101; // acceleration magnitude per second
 
     InventorySlotConfig atk1_magazine = 102; 
-    InventorySlotConfig super_atk_guage = 103; 
+    InventorySlotConfig super_atk_gauge = 103; 
 
     repeated InventorySlotConfig init_inventory_slots = 104;
     map<int32, int32> btn_b_auto_unhold_ch_states = 105; 

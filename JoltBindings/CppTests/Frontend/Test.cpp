@@ -106,6 +106,109 @@ RenderFrame* mockStartRdf() {
     return startRdf;
 }
 
+RenderFrame* mockRollbackChasingAlignTestStartRdf() {
+    const int roomCapacity = 2;
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players_arr(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto player2 = startRdf->mutable_players_arr(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+90);
+    playerCh2->set_y(300);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
+
+    auto npc1 = startRdf->mutable_npcs_arr(0);
+    npc1->set_id(npcIdCounter++);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+70);
+    npcCh1->set_y(200);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(cTurnbackAroundYAxis.GetX());
+    npcCh1->set_q_y(cTurnbackAroundYAxis.GetY());
+    npcCh1->set_q_z(cTurnbackAroundYAxis.GetZ());
+    npcCh1->set_q_w(cTurnbackAroundYAxis.GetW());
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+    
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockFallenDeathRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
@@ -2738,19 +2841,7 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         int referenceBattleChaserRdfIdEd = outerTimerRdfId;
         FRONTEND_ChaseRolledBackRdfs(referenceBattle, &newReferenceBattleChaserRdfId, true);
         FRONTEND_Step(referenceBattle);
-
-        if (130 <= outerTimerRdfId && outerTimerRdfId <= 133) {
-            auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
-            auto referencedP1 = referencedRdf->players_arr(0);
-            auto p1Chd = referencedP1.chd();
-            auto referencedP2 = referencedRdf->players_arr(1);
-            auto p2Chd = referencedP2.chd();
-
-            /*
-            std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
-            */
-        }
-
+        
         if (doCompareWithRollback) {
             bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
             if (!cmdInjected) {
@@ -2762,7 +2853,22 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
 
             FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
             FRONTEND_Step(reusedBattle);
-            if (280 == outerTimerRdfId) {
+
+            if (loopRdfCnt < outerTimerRdfId + 10) {
+                auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+                auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+
+                const PlayerCharacterDownsync& referencedP1 = referencedRdf->players_arr(0);
+                const CharacterDownsync& p1Chd = referencedP1.chd();
+                const PlayerCharacterDownsync& referencedP2 = referencedRdf->players_arr(1);
+                const CharacterDownsync& p2Chd = referencedP2.chd();
+                const NpcCharacterDownsync& referencedNpc1 = referencedRdf->npcs_arr(0);
+                const CharacterDownsync& npc1Chd = referencedNpc1.chd();
+                
+                std::cout << "TestCase11/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")\n\tp2Chd chState=" << p2Chd.ch_state() << ", framesInChState=" << p2Chd.frames_in_ch_state() << ", dir=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ")\n\tnpc1Chd chState=" << npc1Chd.ch_state() << ", framesInChState=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ")" << std::endl;
+
+                BaseBattle::AssertNearlySame(referencedRdf, challengingRdf);
+            } else if (280 == outerTimerRdfId) {
                 int firstToBeConsistentRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(0);
                 int lastToBeConsistentRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(4) + 1;
                 for (int recRdfId = firstToBeConsistentRdfId; recRdfId <= lastToBeConsistentRdfId; recRdfId++) {
@@ -3127,7 +3233,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-
+     
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3162,11 +3268,21 @@ int main(int argc, char** argv)
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+     
+    auto rollbackChasingAlignTestStartRdf = mockRollbackChasingAlignTestStartRdf();
+    WsReq* rollbackChasingAlignTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
+    for (auto hull : hulls) {
+        auto srcBarrier = rollbackChasingAlignTestInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
+        for (auto xOrY : hull) {
+            srcPolygon->add_points(xOrY);
+        }
+    }
+    rollbackChasingAlignTestInitializerMapData->set_allocated_self_parsed_rdf(rollbackChasingAlignTestStartRdf);
     initTest11Data();
-    runTestCase11(battle, initializerMapData, selfJoinIndex);
+    runTestCase11(battle, rollbackChasingAlignTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
     WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto fallenDeathStartRdf = mockFallenDeathRdf();
     for (auto hull : fallenDeathHulls) {
@@ -3229,7 +3345,7 @@ int main(int argc, char** argv)
     initTest15Data();
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
     pbStarterWsReqAllocator.Reset();
 
     // clean up

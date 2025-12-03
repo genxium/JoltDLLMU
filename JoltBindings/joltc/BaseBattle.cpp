@@ -176,7 +176,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider(const uint64_t ud,
     // must be active when called by "getOrCreateCachedCharacterCollider"
     auto bodyID = chCollider->GetBodyID();
     transientUdToChCollider[ud] = chCollider;
-    activeChColliderList.push_back(chCollider);
+    activeChColliders.push_back(chCollider);
     bi->SetUserData(bodyID, ud);
 
     return chCollider;
@@ -236,7 +236,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider(const uint64_t ud, const 
     blCollider->SetUserData(ud);
 
     // must be active when called by "getOrCreateCachedBulletCollider"
-    activeBlColliderList.push_back(blCollider);
+    activeBlColliders.push_back(blCollider);
 
     return blCollider;
 }
@@ -531,16 +531,15 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState);
-
             /*
-            #ifndef NDEBUG
+#ifndef NDEBUG
                 if (groundBodyIsChCollider) {
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << (i+1) << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << ", currChdChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << "; cvSupported=" << cvSupported << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState=" << CharacterBase::sToString(cvGroundState) << ", groundUd(a character)=" << single->GetGroundUserData() << ", groundBodyId=" << single->GetGroundBodyID().GetIndexAndSequenceNumber() << ", groundNormal=(" << single->GetGroundNormal().GetX() << ", " << single->GetGroundNormal().GetY() << ", " << single->GetGroundNormal().GetZ() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
                 }
-            #endif
-            */
+#endif
+            */ 
             postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
 
             if (isDead) {
@@ -700,9 +699,9 @@ void BaseBattle::Clear() {
     - No need to explicitly remove "Character.mBodyID"s, the destructor "~Character" will take care of it.
     */ 
 
-    while (!activeChColliderList.empty()) {
-        CH_COLLIDER_T* single = activeChColliderList.back();
-        activeChColliderList.pop_back();
+    while (!activeChColliders.empty()) {
+        CH_COLLIDER_T* single = activeChColliders.back();
+        activeChColliders.pop_back();
         single->RemoveFromPhysicsSystem();
         delete single;
     }
@@ -711,7 +710,7 @@ void BaseBattle::Clear() {
         for (auto it = cachedChColliders.begin(); it != cachedChColliders.end(); ) {
             auto& q = it->second;
             while (!q.empty()) {
-                auto& single = q.back();
+                CH_COLLIDER_T* single = q.back();
                 q.pop_back();
                 single->RemoveFromPhysicsSystem();
                 delete single;
@@ -721,9 +720,9 @@ void BaseBattle::Clear() {
     }
 
     bodyIDsToClear.clear();
-    while (!activeBlColliderList.empty()) { 
-        BL_COLLIDER_T* single = activeBlColliderList.back();
-        activeBlColliderList.pop_back();
+    while (!activeBlColliders.empty()) { 
+        BL_COLLIDER_T* single = activeBlColliders.back();
+        activeBlColliders.pop_back();
         auto bodyID = single->GetID();
         bodyIDsToClear.push_back(bodyID);
     }
@@ -732,7 +731,7 @@ void BaseBattle::Clear() {
         for (auto it = cachedBlColliders.begin(); it != cachedBlColliders.end(); ) {
             auto& q = it->second;
             while (!q.empty()) {
-                auto& single = q.back();
+                BL_COLLIDER_T* single = q.back();
                 q.pop_back();
                 auto bodyID = single->GetID();
                 bodyIDsToClear.push_back(bodyID);
@@ -747,6 +746,25 @@ void BaseBattle::Clear() {
     }
 
     blStockCache = nullptr;
+
+    while (!activeNonContactConstraints.empty()) {
+        NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
+        activeNonContactConstraints.pop_back();
+        phySys->RemoveConstraint(single);
+        delete single;
+    }
+
+    while (!cachedNonContactConstraints.empty()) {
+        for (auto it = cachedNonContactConstraints.begin(); it != cachedNonContactConstraints.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                NON_CONTACT_CONSTRAINT_T* single = q.back();
+                q.pop_back();
+                delete single;
+            }
+            it = cachedNonContactConstraints.erase(it);
+        }
+    }
 
     // Deallocate temp variables in Pb arena
     pbTempAllocator.Reset();
@@ -1622,6 +1640,25 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, co
         auto newRemainingLifetimeRdfCount = cand->remaining_lifetime_rdf_count() - 1;
         cand->set_remaining_lifetime_rdf_count(newRemainingLifetimeRdfCount);
     }
+
+    if (cd->has_atk1_magazine()) {
+        elapse1RdfForIvSlot(cd->mutable_atk1_magazine(), &(cc->atk1_magazine()));
+    }
+
+    if (cd->has_super_atk_gauge()) {
+        elapse1RdfForIvSlot(cd->mutable_super_atk_gauge(), &(cc->super_atk_gauge()));
+    }
+
+    if (cd->has_inventory()) {
+        Inventory* iv = cd->mutable_inventory(); 
+        for (int i = 0; i < iv->slots_size(); ++i) {
+            InventorySlot* cand = iv->mutable_slots(i);
+            if (InventorySlotStockType::NoneIv == cand->stock_type()) break;
+            const InventorySlotConfig* ivsConfig = &(cc->init_inventory_slots(i));
+            elapse1RdfForIvSlot(cand, ivsConfig);
+        }
+    }
+
     leftShiftDeadBlImmuneRecords(currRdfId, cd);
     leftShiftDeadIvSlots(currRdfId, cd);
     leftShiftDeadBuffs(currRdfId, cd);
@@ -1698,6 +1735,39 @@ void BaseBattle::elapse1RdfForPickable(Pickable* pk) {
         }
     }
     pk->set_remaining_lifetime_rdf_count(newLifetimeRdfCount);
+}
+
+void BaseBattle::elapse1RdfForIvSlot(InventorySlot* ivs, const InventorySlotConfig* ivsConfig) {
+    int newFramesToRecover = ivs->frames_to_recover();
+    int newQuota = ivs->quota();
+    int newGaugeCharged = ivs->gauge_charged();
+    switch (ivs->stock_type()) {
+        case PocketIv:
+        break;
+        case TimedIv:
+            newQuota -= 1;
+            if (0 > newQuota) {
+                newQuota = 0;
+            }
+        break;
+        case TimedMagazineIv:
+            if (0 >= newQuota) {
+                bool isToRefill = (1 == newFramesToRecover);
+                newFramesToRecover -= 1;
+                if (0 >= newFramesToRecover) {
+                    newFramesToRecover = 0;
+                }
+                if (isToRefill) {
+                    newQuota = ivsConfig->quota();
+                } 
+            }
+        break;
+        default:
+        break;
+    }
+    ivs->set_frames_to_recover(newFramesToRecover);
+    ivs->set_quota(newQuota);
+    ivs->set_gauge_charged(newGaugeCharged);
 }
 
 InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated) {
@@ -1874,9 +1944,9 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
     bodyIDsToClear.clear();
-    while (!activeChColliderList.empty()) {
-        CH_COLLIDER_T* single = activeChColliderList.back();
-        activeChColliderList.pop_back();
+    while (!activeChColliders.empty()) {
+        CH_COLLIDER_T* single = activeChColliders.back();
+        activeChColliders.pop_back();
         auto bodyID = single->GetBodyID();
         uint64_t ud = bi->GetUserData(bodyID);
         uint64_t udt = getUDT(ud);
@@ -1899,9 +1969,9 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         bodyIDsToClear.push_back(bodyID);
     }
 
-    while (!activeBlColliderList.empty()) { 
-        BL_COLLIDER_T* single = activeBlColliderList.back();
-        activeBlColliderList.pop_back();
+    while (!activeBlColliders.empty()) { 
+        BL_COLLIDER_T* single = activeBlColliders.back();
+        activeBlColliders.pop_back();
         auto ud = single->GetUserData();
         JPH_ASSERT(0 < transientUdToCurrBl.count(ud));
         const Bullet& bl = *(transientUdToCurrBl[ud]);
@@ -1943,6 +2013,28 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     */
     if (!bodyIDsToClear.empty()) {
         bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+    }
+
+    while (!activeNonContactConstraints.empty()) {
+        NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
+        activeNonContactConstraints.pop_back();
+        NON_CONTACT_CONSTRAINT_KEY_T nonContactConstraintCacheKey = std::make_pair<JPH::EConstraintType, JPH::EConstraintSubType>(single->GetType(), single->GetSubType());
+
+        /*
+        [WARNING] This removal operation is O(1) time-complexity, see the underlying implementation of "ConstraintManager::Remove".
+
+        I've also considered using "JPH::Constraint.SetEnabled(false)" as an alternative here, yet "JPH::PhysicsSystem.RemoveConstraint(single)" seems fast enough as well as more comforting for the same purpose. 
+        */
+        phySys->RemoveConstraint(single);
+
+        auto it = cachedNonContactConstraints.find(nonContactConstraintCacheKey);
+        if (it == cachedNonContactConstraints.end()) {
+            NON_CONTACT_CONSTRAINT_Q q = { single };
+            cachedNonContactConstraints.emplace(nonContactConstraintCacheKey, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
     }
 
     // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
