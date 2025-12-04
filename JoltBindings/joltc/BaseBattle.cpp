@@ -3685,6 +3685,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         } else if (BlownUp1 == nextChd->ch_state()){
             nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
         } 
+        nextChd->set_damaged_hint_rdf_countdown(90); // TODO: Remove this hardcoded constant
     }
 }
 
