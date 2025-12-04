@@ -2443,7 +2443,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     } else {
         // next frame NOT in air
-        if (oldNextEffInAir && BlownUp1 != oldNextChState && OnWallIdle1 != oldNextChState) {
+        if (oldNextEffInAir && nonAttackingSet.count(oldNextChState) && !onWallSet.count(oldNextChState) && BlownUp1 != oldNextChState) {
             switch (oldNextChState) {
             case InAirIdle1NoJump:
             case InAirIdle2ByJump:
