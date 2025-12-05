@@ -1609,6 +1609,11 @@ void BaseBattle::elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* 
 void BaseBattle::elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, const CharacterConfig* cc) {
     cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
     cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
+    /*
+    if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
+        cd->set_lower_part_rdf_cnt(cd->lower_part_rdf_cnt() + 1);
+    }
+    */
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
     cd->set_mp_regen_rdf_countdown(0 < cd->mp_regen_rdf_countdown() ? cd->mp_regen_rdf_countdown() - 1 : 0);
     auto mp = cd->mp();
@@ -2514,39 +2519,16 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 
     // Reset "FramesInChState" if "CharacterState" is changed
     if (nextChd->ch_state() != currChd.ch_state()) {
-        if (Walking == currChd.ch_state() && (WalkingAtk1 == nextChd->ch_state() || WalkingAtk4 == nextChd->ch_state())) {
-            uint32_t nextActiveSkillId = nextChd->active_skill_id();
-            int nextActiveSkillHit = nextChd->active_skill_hit();
-            if (globalPrimitiveConsts->no_skill() != nextActiveSkillId && globalPrimitiveConsts->no_skill_hit() != nextActiveSkillHit) {
-                const Skill* nextActiveSkill = nullptr;
-                const BulletConfig* nextActiveBulletConfig = nullptr;
-                FindBulletConfig(nextActiveSkillId, nextActiveSkillHit, nextActiveSkill, nextActiveBulletConfig);
-                JPH_ASSERT(nullptr != nextActiveSkill && nullptr != nextActiveBulletConfig);
-                int newFramesInChState = currChd.frames_in_ch_state() + 1;
-                newFramesInChState %= nextActiveSkill->recovery_frames(); // [TODO] Enhance this for GUI smoothness.
-                nextChd->set_frames_in_ch_state(newFramesInChState);
-            } else {
-#ifndef NDEBUG
-                std::ostringstream oss1;
-                oss1 << "@currRdfId=" << currRdfId << ", chd ud=" << ud << " will transit back into Walking, orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state();
-                Debug::Log(oss1.str(), DColor::Orange);
-#endif // !NDEBUG
-                nextChd->set_ch_state(Walking);
-            }
-        } else if ((WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) && Walking == nextChd->ch_state()) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((Atk1 == currChd.ch_state() && WalkingAtk1 == nextChd->ch_state()) || (Atk4 == currChd.ch_state() && WalkingAtk4 == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((WalkingAtk1 == currChd.ch_state() && Atk1 == nextChd->ch_state()) || (WalkingAtk4 == currChd.ch_state() && Atk4 == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((Walking == currChd.ch_state() && InAirWalking == nextChd->ch_state()) || (InAirWalking == currChd.ch_state() && Walking == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((TurnAround == currChd.ch_state() && InAirTurnAround == nextChd->ch_state()) || (InAirTurnAround == currChd.ch_state() && TurnAround == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
-        } else if ((WalkStopping == currChd.ch_state() && InAirWalkStopping == nextChd->ch_state()) || (InAirWalkStopping == currChd.ch_state() && WalkStopping == nextChd->ch_state())) {
-            nextChd->set_frames_in_ch_state(currChd.frames_in_ch_state() + 1);
+        nextChd->set_frames_in_ch_state(0);
+        if (lowerPartForwardTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
+            nextChd->set_lower_part_rdf_cnt(currChd.ch_state() + 1);
+        } else if (lowerPartReverseTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
+            nextChd->set_frames_in_ch_state(currChd.lower_part_rdf_cnt() + 1);
+            nextChd->set_lower_part_rdf_cnt(globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
+        } else if (lowerPartInheritTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
+            nextChd->set_lower_part_rdf_cnt(currChd.lower_part_rdf_cnt() + 1);
         } else {
-            nextChd->set_frames_in_ch_state(0);
+            nextChd->set_lower_part_rdf_cnt(globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
         }
     }
 

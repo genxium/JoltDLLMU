@@ -2213,10 +2213,10 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
         /*
-        if (60 >= outerTimerRdfId) {
+        if (60 <= outerTimerRdfId && 83 >= outerTimerRdfId) {
             std::cout << "TestCase2/outerTimerRdfId=" << outerTimerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << "," << p1Chd.y() << "," << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << "," << p1Chd.vel_y() << "," << p1Chd.vel_z() << ")" << std::endl;
         }
-        
+        */
         if (20 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
         } else if (21 == outerTimerRdfId) {
@@ -2235,7 +2235,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         } else if (82 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
-        */
+        
         outerTimerRdfId++;
     }
 
@@ -3068,7 +3068,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (300 == outerTimerRdfId) {
-            JPH_ASSERT(130 == p2Chd.hp());
+            JPH_ASSERT(140 == p2Chd.hp());
         }
 
         outerTimerRdfId++;

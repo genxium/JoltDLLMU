@@ -4,6 +4,7 @@
 #include "serializable_data.pb.h"
 #include "joltc_export.h"
 #include <set>
+#include <utility>
 
 using namespace jtshared;
 
@@ -134,6 +135,30 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     BackDashing,
     InAirBackDashing,
     */
+};
+
+
+typedef struct ChStatePairHasher {
+    std::size_t operator()(const std::pair<CharacterState, CharacterState>& v) const {
+        return std::hash<CharacterState>()(v.first) ^ std::hash<CharacterState>()(v.second);
+    }
+} ChStatePairHasher;
+
+const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairHasher> lowerPartForwardTransitionSet = {
+    std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk1),
+    std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk4),
+    std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk1_Charging),
+};
+
+const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairHasher> lowerPartReverseTransitionSet = {
+    std::make_pair<CharacterState, CharacterState>(WalkingAtk1, Walking),
+    std::make_pair<CharacterState, CharacterState>(WalkingAtk4, Walking),
+    std::make_pair<CharacterState, CharacterState>(WalkingAtk1_Charging, Walking),
+};
+
+const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairHasher> lowerPartInheritTransitionSet = {
+    std::make_pair<CharacterState, CharacterState>(WalkingAtk1_Charging, WalkingAtk1),
+    std::make_pair<CharacterState, CharacterState>(WalkingAtk1, WalkingAtk1_Charging),
 };
 
 #endif
