@@ -60,6 +60,7 @@ JPH_CAPI uint64_t APP_CalcNpcUserData(uint32_t npcId);
 JPH_CAPI uint64_t APP_CalcBulletUserData(uint32_t bulletId);
 JPH_CAPI uint64_t APP_CalcTriggerUserData(uint32_t triggerId);
 JPH_CAPI uint64_t APP_CalcTrapUserData(uint32_t trapId);
+JPH_CAPI uint64_t APP_CalcPickableUserData(uint32_t pickableId);
 
 /*
 [WARNING] 

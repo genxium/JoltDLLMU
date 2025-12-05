@@ -892,6 +892,7 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         Shape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
         BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
         bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
+        bodyCreationSettings.mFriction = cDefaultBarrierFriction;
         Body* body = bi->CreateBody(bodyCreationSettings);
         staticColliderBodyIDs.push_back(body->GetID());
 #ifndef NDEBUG
@@ -3316,7 +3317,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     Ref<CharacterSettings> settings = new CharacterSettings();
     settings->mMaxSlopeAngle = cMaxSlopeAngle;
     settings->mLayer = MyObjectLayers::MOVING;
-    settings->mFriction = cDefaultFriction;
+    settings->mFriction = cDefaultChFriction;
     settings->mSupportingVolume = Plane(Vec3::sAxisY(), -cc->capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
     settings->mEnhancedInternalEdgeRemoval = cEnhancedInternalEdgeRemoval;
     settings->mShape = chShape;
