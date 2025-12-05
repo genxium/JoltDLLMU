@@ -104,6 +104,10 @@ public:
         return calcTrapUserData(trap.id());
     }
 
+    inline const uint64_t calcUserData(const Pickable& pk) const {
+        return calcPickableUserData(pk.id());
+    }
+
     // The following static member functions are to be used by frontend too 
     inline static const uint64_t getUDT(const uint64_t& ud) {
         return (ud & UDT_STRIPPER);
@@ -135,6 +139,10 @@ public:
 
     inline static const uint64_t calcTrapUserData(const uint32_t trapId) {
         return UDT_TRAP + trapId;
+    }
+
+    inline static const uint64_t calcPickableUserData(const uint32_t pickableId) {
+        return UDT_PICKABLE + pickableId;
     }
 }; 
 

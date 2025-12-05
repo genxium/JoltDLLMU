@@ -80,6 +80,9 @@ namespace JoltCSharp {
         public static extern ulong APP_CalcTrapUserData(uint trapId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong APP_CalcPickableUserData(uint pickableId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int APP_EncodePatternForCancelTransit(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

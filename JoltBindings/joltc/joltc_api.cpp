@@ -208,6 +208,10 @@ uint64_t APP_CalcTrapUserData(uint32_t trapId) {
     return BaseBattleCollisionFilter::calcTrapUserData(trapId);
 }
 
+uint64_t APP_CalcPickableUserData(uint32_t pickableId) {
+    return BaseBattleCollisionFilter::calcPickableUserData(pickableId);
+}
+
 void* BACKEND_CreateBattle(int rdfBufferSize) {
     // There's NO rollback on backend, so no need for a big "rdfBufferSize". 
     BackendBattle* result = new BackendBattle(rdfBufferSize, globalPrimitiveConsts->default_backend_input_buffer_size(), globalTempAllocator);
