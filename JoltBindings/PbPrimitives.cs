@@ -127,6 +127,7 @@ namespace JoltCSharp {
 
             TerminatingRenderFrameId = 0,
             TerminatingInputFrameId = 0,
+            TerminatingLowerPartRdfCnt = -1,
 
             DownsyncMsgActBattleColliderInfo = 1,
             DownsyncMsgActInputBatch = 2,

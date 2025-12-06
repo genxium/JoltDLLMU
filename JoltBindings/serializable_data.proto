@@ -191,7 +191,7 @@ enum CharacterState {
 
     OnWallAtk1 = 3072; 
 
-    Idle1_Charging = 3073;
+    Atk1_Charging = 3073;
     WalkingAtk1_Charging = 3074;
     InAirAtk1_Charging = 3075;
     OnWallAtk1_Charging = 3076;
@@ -409,11 +409,12 @@ message CharacterDownsync {
 
     CharacterState ch_state = 17;
     int32 frames_in_ch_state = 18; // number of frames elapsed in the current character state   
-    bool jump_triggered = 19;
-    bool omit_gravity = 20;
+    int32 lower_part_rdf_cnt = 19;   
 
-    uint32 species_id = 21; // For evolution during battle
-    float speed = 22; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
+    bool jump_triggered = 20;
+    bool omit_gravity = 21;
+
+    uint32 species_id = 22; // For evolution during battle
 
     bool forced_crouching = 23; // by design a standalone field only inferred by the collision result of "Step" instead of "character_state", because we need check the transition for "character_state" from this field, i.e. "forced_crouching (prev -> curr)"
 
@@ -460,17 +461,18 @@ message CharacterDownsync {
     uint64 locking_on_ud = 51;
 
     int32 ch_collision_team_id = 52;
+    float speed = 53; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
 
-    repeated Buff buff_list = 53; 
-    repeated Debuff debuff_list = 54; 
+    repeated Buff buff_list = 54; 
+    repeated Debuff debuff_list = 55; 
 
-    InventorySlot atk1_magazine = 55; 
-    InventorySlot super_atk_gauge = 56; 
-    Inventory inventory = 57;
+    InventorySlot atk1_magazine = 56; 
+    InventorySlot super_atk_gauge = 57; 
+    Inventory inventory = 58;
 
-    repeated BulletImmuneRecord bullet_immune_records = 58;
+    repeated BulletImmuneRecord bullet_immune_records = 59;
 
-    repeated float kinematic_knobs = 59; // including both forward-kinematics and inverse-kinematics   
+    repeated float kinematic_knobs = 60; // including both forward-kinematics and inverse-kinematics   
 }
 
 message PlayerCharacterDownsync {
@@ -1661,6 +1663,8 @@ message PrimitiveConsts {
     uint32 tt_save_and_story_point = 165;
 
     uint32 tt_victory = 166; 
+
+    int32 terminating_lower_part_rdf_cnt = 167;
 }
 
 message ConfigConsts {
