@@ -2066,7 +2066,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
         if (incomingDownsyncSnapshots1.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots1[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
@@ -2118,7 +2118,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -2130,7 +2130,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (82 == outerTimerRdfId) {
+        } else if (81 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -2151,7 +2151,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
         if (incomingDownsyncSnapshots2.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots2[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
@@ -2223,7 +2223,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
@@ -2232,8 +2232,8 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
             BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-        } else if (82 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
+        } else if (81 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         }
         
         outerTimerRdfId++;
@@ -2257,7 +2257,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool ok1 = reusedBattle->GetRdfAndIfdIds(&timerRdfId, &newChaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
         if (incomingDownsyncSnapshots3.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots3[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
@@ -2636,7 +2636,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
 
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds8, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
@@ -2655,7 +2655,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 81) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -2667,7 +2667,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (82 == outerTimerRdfId) {
+        } else if (81 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -2688,7 +2688,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
         
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds9, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
@@ -2700,7 +2700,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
-        if (231 <= outerTimerRdfId && outerTimerRdfId <= 249) {
+        if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 231;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -2712,7 +2712,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (250 == outerTimerRdfId) {
+        } else if (249 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         }
         outerTimerRdfId++;
@@ -2734,7 +2734,7 @@ bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behaviour.
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
         if (incomingDownsyncSnapshots10.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots10[outerTimerRdfId];
             int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
@@ -3068,7 +3068,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
         }
 
         if (300 == outerTimerRdfId) {
-            JPH_ASSERT(140 == p2Chd.hp());
+            JPH_ASSERT(130 == p2Chd.hp());
         }
 
         outerTimerRdfId++;

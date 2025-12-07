@@ -432,6 +432,31 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
+    // Update positions and velocities of active bullets
+    for (int i = 0; i < currRdf->bullets_size(); i++) {
+        const Bullet& currBl = currRdf->bullets(i);
+        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
+        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+        auto ud = calcUserData(currBl);
+        if (transientUdToBodyID.count(ud)) {
+            auto bodyID = *(transientUdToBodyID[ud]);
+            
+            bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
+            bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()), Vec3::sZero());
+            const Skill* skill = nullptr;
+            const BulletConfig* blConfig = nullptr;
+            FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
+            switch (blConfig->b_type()) {
+            case BulletType::Melee:
+                bi->SetMotionQuality(bodyID, EMotionQuality::Discrete);
+                break;
+            default:
+                bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
+                break;
+            }
+        }
+    }
+
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
         auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
@@ -473,31 +498,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd);
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
-    }
-
-    // Update positions and velocities of active bullets
-    for (int i = 0; i < currRdf->bullets_size(); i++) {
-        const Bullet& currBl = currRdf->bullets(i);
-        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
-        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
-        auto ud = calcUserData(currBl);
-        if (transientUdToBodyID.count(ud)) {
-            auto bodyID = *(transientUdToBodyID[ud]);
-            
-            bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
-            bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()), Vec3::sZero());
-            const Skill* skill = nullptr;
-            const BulletConfig* blConfig = nullptr;
-            FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, blConfig);
-            switch (blConfig->b_type()) {
-            case BulletType::Melee:
-                bi->SetMotionQuality(bodyID, EMotionQuality::Discrete);
-                break;
-            default:
-                bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
-                break;
-            }
-        }
     }
 
     jobSys->WaitForJobs(prePhysicsUpdateMTBarrier);
@@ -1209,7 +1209,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
             newVelX = lerp(currChd.vel_x(), 0, xfac * cc->acc_mag() * dt);
         }
         nextChd->set_vel_x(newVelX);
-        if ((Walking == currChd.ch_state() || WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) && 0 != newVelX && !currParalyzed) {
+        if (Walking == currChd.ch_state() && 0 != newVelX && !currParalyzed) {
             // [WARNING] Only keep walking @"0 == effDx" when the character has been proactively walking 
             nextChd->set_ch_state(Walking);
         }
@@ -1226,10 +1226,6 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
 }
 
 void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun) {
-    if (0 < currChd.frames_to_recover()) {
-        return;
-    }
-
     if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
         return;
     }
@@ -1241,7 +1237,7 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
     if (currInBlockStun) {
         return;
     }
-    
+ 
     bool alignedWithInertia = true;
     bool exactTurningAround = false;
     bool stoppingFromWalking = false;
@@ -1255,7 +1251,18 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
         exactTurningAround = true;
     }
 
-    nextChd->set_ch_state(Idle1); // The default transition
+    bool isInWalkingAtk = walkingAtkSet.count(currChd.ch_state());
+    bool isInWalkingAtkAndNotRecovered = false;
+    if (0 < currChd.frames_to_recover()) {
+        if (!isInWalkingAtk) {
+            return;
+        } else {
+            // Otherwise don't change nextChd->ch_state()
+            isInWalkingAtkAndNotRecovered = true;
+        }
+    } else {
+        nextChd->set_ch_state(Idle1); // The default transition
+    }
     bool hasNonZeroSpeed = !(0 == cc->speed() && 0 == currChd.speed());
     bool recoveredFromAirAtk = (0 < currChd.frames_to_recover() && currEffInAir && !nonAttackingSet.count(currChd.ch_state()) && 0 == nextChd->frames_to_recover());
     float newVelX = 0, targetNewVelX = 0;
@@ -1324,9 +1331,13 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
 
         if (!currParalyzed) {
             if (0 == newVelX && !proactiveJumpingSet.count(currChd.ch_state())) {
-                nextChd->set_ch_state(Idle1);
+                if (!isInWalkingAtkAndNotRecovered) {
+                    nextChd->set_ch_state(Idle1);
+                }
             } else {
-                nextChd->set_ch_state(Walking);
+                if (!isInWalkingAtkAndNotRecovered) {
+                    nextChd->set_ch_state(Walking);
+                }
                 if (exactTurningAround && cc->has_turn_around_anim()) {
                     if (currEffInAir) {
                         nextChd->set_ch_state(InAirTurnAround);
@@ -3159,7 +3170,11 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     }
 
     nextChd->set_ch_state(targetSkillConfig.bound_ch_state());
-    nextChd->set_frames_in_ch_state(0); // Must reset "frames_in_ch_state()" here to handle the extreme case where a same skill, e.g. "Atk1", is used right after the previous one ended
+    if (currChd.ch_state() == targetSkillConfig.bound_ch_state() && walkingAtkSet.count(currChd.ch_state())) {
+        nextChd->set_frames_in_ch_state(pivotBulletConfig.anim_looping_rdf_offset()); 
+    } else {
+        nextChd->set_frames_in_ch_state(0); // Must reset "frames_in_ch_state()" here to handle the extreme case where a same skill, e.g. "Atk1", is used right after the previous one ended
+    }
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }

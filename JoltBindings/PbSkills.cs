@@ -43,7 +43,7 @@ namespace JoltCSharp {
         }
 
         private static BulletConfig BasicPistolBulletAir = new BulletConfig {
-            StartupFrames = 7,
+            StartupFrames = 6,
             ActiveFrames = 360,
             HitStunFrames = 7,
             BlockStunFrames = 7,
@@ -73,7 +73,6 @@ namespace JoltCSharp {
             CancellableStFrame = 11,
             CancellableEdFrame = 19,
             CollisionTypeMask = 0, // TODO
-            AnimLoopingRdfOffset = 10,
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
@@ -88,6 +87,7 @@ namespace JoltCSharp {
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetHitboxOffsets(14f, 24f)
                                                                 .SetAllowsWalking(true)
+                                                                .SetAnimLoopingRdfOffset(0)
                                                                 .SetAllowsCrouching(true);
 
         public static Skill HunterPistolWall = new Skill {
