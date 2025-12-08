@@ -266,10 +266,7 @@ message CharacterConfig {
     int32 ground_dodged_frames_invinsible = 29;
     float ground_dodged_speed = 30; // TODO: For better flexibility, should allow "configurable list of speed keyframes", like that of "Hurtboxes"  
 
-    float vision_offset_x = 31;
-    float vision_offset_y = 32;
-    float vision_size_x = 33;
-    float vision_size_y = 34;
+    bool  has_vision_reaction = 31;
 
     float capsule_radius = 35;
     float capsule_half_height = 36;
@@ -293,6 +290,12 @@ message CharacterConfig {
     bool omit_soft_pushback = 48;
     bool repel_soft_pushback = 49;
     uint64 collision_type_mask = 50;
+
+    float vision_offset_x = 51;
+    float vision_offset_y = 52;
+	float vision_half_height = 53;
+	float vision_top_radius = 54;
+	float vision_bottom_radius = 55;
 
     bool lay_down_to_recover_from_dimmed = 56;
 
@@ -695,11 +698,6 @@ message BulletConfig {
 
     float angular_frame_vel_cos = 52;
     float angular_frame_vel_sin = 53;
-
-    float vision_offset_x = 54;
-    float vision_offset_y = 55;
-    float vision_size_x = 56;
-    float vision_size_y = 57;
 
     uint32 elemental_attrs = 59;
 

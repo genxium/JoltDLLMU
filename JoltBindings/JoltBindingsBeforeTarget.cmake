@@ -8,9 +8,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11" CACHE STRING "Minimum OS X deployment version")
 set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for OS X")
 
-# When turning this option on, the library will be compiled using assertions. By default asserts are enabled in Debug build.
-option(USE_ASSERTS "Enable asserts" OFF)
-
 # When turning this option on, the library will be compiled using doubles for positions. This allows for much bigger worlds.
 option(DOUBLE_PRECISION "Use double precision math" OFF)
 
@@ -210,6 +207,7 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
     ${JOLTC_ROOT}/BulletCollideShapeCollector.h
     ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
+    ${JOLTC_ROOT}/CharacterVisionCollideShapeCollector.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h
     ${JOLTC_ROOT}/PbConsts.h

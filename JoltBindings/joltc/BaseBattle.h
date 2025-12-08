@@ -1,13 +1,13 @@
 #ifndef BASE_BATTLE_H_
 #define BASE_BATTLE_H_ 1
 
-#include "joltc_export.h"
-#include "CharacterCollideShapeCollector.h"
-#include "BulletCollideShapeCollector.h"
+#include "BaseBattleCollisionFilter.h"
 #include "FrameRingBuffer.h"
-
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+
 #include <vector>
 #include <map>
 #include <set>
@@ -46,7 +46,8 @@ typedef struct NonContactConstraintHasher {
 using namespace JPH;
 using namespace jtshared;
 
-const JPH::Quat cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
+const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
+const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*3.1415926);
 
 class JOLTC_EXPORT BaseBattle : public JPH::ContactListener, public BaseBattleCollisionFilter {
 public:
@@ -382,16 +383,17 @@ protected:
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 
-    CH_COLLIDER_T* getOrCreateCachedPlayerCollider(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
-    // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider" still works
-    CH_COLLIDER_T* getOrCreateCachedNpcCollider(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
-    CH_COLLIDER_T* getOrCreateCachedCharacterCollider(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
+    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
+    // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider_NotThreadSafe" still works
+    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
-    Body*          getOrCreateCachedBulletCollider(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
+    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
+
 
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
-    CH_COLLIDER_MAP transientUdToChCollider;
+    std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
@@ -462,9 +464,9 @@ protected:
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
-    void derivePlayerOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ioIfDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
+    void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
-    void deriveNpcOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
+    void postStepDeriveNpcVisionReaction(int rdfId, const BodyID& selfBodyID, const uint64_t ud, const NarrowPhaseQuery& narrowPhaseQuery, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
 
     void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill);
 
@@ -531,6 +533,7 @@ protected:
     inline bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder);
 
     CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc);
+
     inline EMotionType       calcBlMotionType(const BulletType blType) {
         /*
          Kindly note that in Jolt, "NonDynamics v.s. NonDynamics" (e.g. "Kinematic v.s. Static" or even "Kinematic v.s. Kinematic") WOULDN'T be automatically handled by "ContactConstraintManager" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1108). 
@@ -839,6 +842,27 @@ public:
         const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
         const uint64_t udRhs, const uint64_t udtRhs, 
         const JPH::CollideShapeResult& inResult);
+
+    virtual void handleLhsCharacterVisionCollision(
+        const int currRdfId,
+        const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc,
+        const uint64_t udRhs, const uint64_t udtRhs, 
+        const JPH::CollideShapeResult& inResult,
+        float& ioMinAbsColliderDx,
+        float& ioMinAbsColliderDy,
+        float& ioMinAbsColliderDxForAlly,
+        float& ioMinAbsColliderDyForAlly,
+        float& ioMinAbsColliderDxForMvBlocker,
+        float& ioMinAbsColliderDyForMvBlocker,
+        float& outRhsColliderLeft, 
+        float& outRhsColliderRight, 
+        float& outRhsColliderTop, 
+        float& outRhsColliderBottom,
+        uint64_t& oppoChUd,
+        uint64_t& oppoBlUd,
+        uint64_t& allyChUd,
+        uint64_t& mvBlockerUd
+    );
 
 public:
     // #JPH::ContactListener

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace JoltCSharp {
     // [WARNING] This class is NOT thread-safe!

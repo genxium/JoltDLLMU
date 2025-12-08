@@ -50,7 +50,7 @@ else ()
     )
 endif ()
 
-target_compile_definitions(${TARGET_NAME} PUBLIC JPH_SHARED_LIBRARY)
+target_compile_definitions(${TARGET_NAME} PRIVATE JPH_SHARED_LIBRARY)
 target_compile_definitions(${TARGET_NAME} PRIVATE JPH_BUILD_SHARED_LIBRARY)
 if (WIN32)
     target_compile_definitions(${TARGET_NAME} PRIVATE JPH_PLATFORM_WINDOWS)
@@ -66,12 +66,14 @@ generate_export_header(${TARGET_NAME}
 )
 
 if(MSVC)
+    target_compile_definitions(${TARGET_NAME} PRIVATE joltc_EXPORTS) # [IMPORTANT] Moreover, ${TARGET_NAME} should toggle on "joltc_EXPORTS", a weird flag used in the autogen "joltc_export.h" to enable "__declspec(dllexport)" in Windows.
     target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     # Expand inline functions for easier debugging.
     target_compile_options(${TARGET_NAME} PUBLIC
         $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
     )
 else()
+    # [IMPORTANT] No need to toggle on the weird flag "joltc_EXPORTS" for Linux build.
     target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     target_compile_options(${TARGET_NAME} PUBLIC
         $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
@@ -81,12 +83,13 @@ endif()
 #target_compile_definitions(${TARGET_NAME} PUBLIC USE_RBMT)
 
 # Set the debug/non-debug build flags
-target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 if(BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${TARGET_NAME} PUBLIC "_DEBUG>")
+    message(STATUS "Turning on JPH_ASSERT for BUILD_TYPE=Debug")
 else()
-    target_compile_definitions(${TARGET_NAME} PUBLIC "NDEBUG")
+    message(STATUS "Turning off JPH_ASSERT for BUILD_TYPE=Release")
+    target_compile_definitions(${TARGET_NAME} PUBLIC JPH_NO_DEBUG)
+    target_compile_definitions(${TARGET_NAME} PUBLIC NDEBUG)
 endif()
 
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)

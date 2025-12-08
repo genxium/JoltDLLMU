@@ -16,8 +16,9 @@ namespace JoltCSharp {
         public const uint SPECIES_LIGHTSPEARWOMAN = 9;
         public const uint SPECIES_YELLOWDOG = 10;
         public const uint SPECIES_BLACKDOG = 11;
-        public const uint SPECIES_YELLOWCAT = 12;
-        public const uint SPECIES_BLACKSABER1 = 13;
+
+        public const uint SPECIES_BLACKSABER1 = 12;
+        public const uint SPECIES_BLACKSABER_TEST = 13;
 
         public const uint SPECIES_EKRAIL = 14;
         public const uint SPECIES_SWORDMAN = 15;

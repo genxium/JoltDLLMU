@@ -1,9 +1,9 @@
 #ifndef CHARACTER_COLLIDE_SHAPE_COLLECTOR_H_
 #define CHARACTER_COLLIDE_SHAPE_COLLECTOR_H_ 1
 
-#include <Jolt/Physics/Collision/CollideShape.h>
-#include "PbConsts.h"
 #include "BaseBattleCollisionFilter.h"
+#include "PbConsts.h"
+#include <Jolt/Physics/Collision/CollideShape.h>
 
 class CharacterCollideShapeCollector : public JPH::CollideShapeCollector {
 public:
