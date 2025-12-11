@@ -169,6 +169,11 @@ namespace jtshared {
             ElementalAttrs = val;
             return this;
         }
+
+        public BulletConfig SetAnimLoopingRdfOffset(int val) {
+            AnimLoopingRdfOffset = val;
+            return this;
+        }
     }
 
     public sealed partial class Skill {

@@ -32,12 +32,6 @@ namespace JoltCSharp {
             WallJumpingInitVelX = (2.5f) * BATTLE_DYNAMICS_FPS,
             WallJumpingInitVelY =  (8f) * BATTLE_DYNAMICS_FPS,
             WallSlidingVelY = (-1f) * BATTLE_DYNAMICS_FPS,
-            VisionOffsetX = (8.0f),
-            VisionOffsetY = (5.0f),
-            VisionSizeX = (220.0f),
-            VisionSizeY = (100.0f),
-            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
-            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
             CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -75,12 +69,6 @@ namespace JoltCSharp {
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
             JumpingInitVelY = 8.9f * BATTLE_DYNAMICS_FPS,
             AccMag = 7.8f * BATTLE_DYNAMICS_FPS,
-            VisionOffsetX = (8.0f),
-            VisionOffsetY = (16.0f),
-            VisionSizeX = (160.0f),
-            VisionSizeY = (100.0f),
-            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
-            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
             CapsuleRadius = (8.0f),
             CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -140,8 +128,40 @@ namespace JoltCSharp {
             AccMag = 6.8f * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (8.0f),
             VisionOffsetY = (5.0f),
-            VisionSizeX = (220.0f),
-            VisionSizeY = (100.0f),
+            VisionHalfHeight = (36.0f),
+            VisionTopRadius = (6.0f),
+            VisionBottomRadius = (12.0f),
+            HasVisionReaction = true,
+            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
+            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
+            CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (10.0f),
+            ShrinkedCapsuleRadius = (8.0f),
+            ShrinkedCapsuleHalfHeight = (12.0f),
+            LayDownCapsuleRadius = (16.0f),
+            LayDownCapsuleHalfHeight = (8.0f),
+            DyingCapsuleRadius = (16.0f),
+            DyingCapsuleHalfHeight = (6.0f),
+            HasTurnAroundAnim = false,
+            Hardness = 6,
+            HasDimmedAnim = false,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+            GaugeIncWhenExhausted = 50,
+            Ifc = IfaceCat.Metal,
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+        };
+
+        public static CharacterConfig BLACKSABER_TEST = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKSABER_TEST,
+            SpeciesName = "BlackSaber1",
+            Hp = 40,
+            LayDownFrames = 12,
+            LayDownFramesToRecover = 12,
+            GetUpInvinsibleFrames = 19,
+            GetUpFramesToRecover = 14,
+            Speed = 1.2f * BATTLE_DYNAMICS_FPS,
+            JumpingInitVelY = 0, 
+            AccMag = 6.8f * BATTLE_DYNAMICS_FPS,
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
             CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
@@ -189,6 +209,9 @@ namespace JoltCSharp {
 
             // BLACKSABER1
             underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
+
+            // BLACKSABER_TEST
+            underlying.Add(BLACKSABER_TEST.SpeciesId, BLACKSABER_TEST);
         }
     }
 }

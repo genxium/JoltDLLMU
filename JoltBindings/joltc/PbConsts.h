@@ -60,10 +60,17 @@ const std::unordered_set<CharacterState> walkingSet = {
     Walking,
     WalkingAtk1,
     WalkingAtk1_Charging,
+    WalkingAtk4,
     BackWalking,
     CrouchWalking,
     InAirWalking,
     // [WARNING] "WalkStopping" doesn't count.
+};
+
+const std::unordered_set<CharacterState> walkingAtkSet = {
+    WalkingAtk1,
+    WalkingAtk1_Charging,
+    WalkingAtk4,
 };
 
 const std::unordered_set<CharacterState> invinsibleSet = {

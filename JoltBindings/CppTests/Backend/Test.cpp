@@ -1,11 +1,11 @@
 #include "joltc_export.h" // imports the "JOLTC_EXPORT" macro for "serializable_data.pb.h"
+#include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "serializable_data.pb.h"
 #include "joltc_api.h" 
 #include "PbConsts.h"
 #include "CppOnlyConsts.h"
 #include "DebugLog.h"
 
-#include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH
 #include "BackendBattle.h"
 #include <chrono>
 #include <fstream>

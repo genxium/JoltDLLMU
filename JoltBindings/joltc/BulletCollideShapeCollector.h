@@ -1,8 +1,8 @@
 #ifndef BULLET_COLLIDE_SHAPE_COLLECTOR_H_
 #define BULLET_COLLIDE_SHAPE_COLLECTOR_H_ 1
 
-#include <Jolt/Physics/Collision/CollideShape.h>
 #include "BaseBattleCollisionFilter.h"
+#include <Jolt/Physics/Collision/CollideShape.h>
 
 class BulletCollideShapeCollector : public JPH::CollideShapeCollector {
 

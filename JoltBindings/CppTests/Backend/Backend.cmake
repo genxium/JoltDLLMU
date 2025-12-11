@@ -9,7 +9,9 @@ set(BACKEND_TEST_SRC_FILES
 source_group(TREE ${BACKEND_TEST_ROOT} FILES ${BACKEND_TEST_SRC_FILES})
 
 add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
+#target_link_options(BackendTest PRIVATE "/VERBOSE")
 
+target_compile_definitions(BackendTest PRIVATE JPH_SHARED_LIBRARY) # [IMPORTANT] For correctly define the macro "JPH_EXPORT" as "__declspec(dllimport)"
 target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
 if(USE_STATIC_PB) 
     target_link_libraries(BackendTest PRIVATE 

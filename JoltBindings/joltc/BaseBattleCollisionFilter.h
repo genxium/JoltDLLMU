@@ -1,35 +1,28 @@
 #ifndef BASE_BATTLE_COLLISION_FILTER_H_
 #define BASE_BATTLE_COLLISION_FILTER_H_ 1
 
+#include "serializable_data.pb.h"
+
 #include <atomic>
-#include <Jolt/Jolt.h>
-#include <Jolt/Core/Reference.h>
-#include <Jolt/Math/Float2.h>
 #include <utility> // for "std::pair"
 
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Jolt.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
 #include "CppOnlyConsts.h"
 #include "PbConsts.h"
 
-#include "serializable_data.pb.h"
-
 #define BL_COLLIDER_T JPH::Body
 #define BL_CACHE_KEY_T std::vector<float>
 #define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
-#define BL_COLLIDER_MAP std::unordered_map<uint64_t, BL_COLLIDER_T*>
 
 #define CH_CACHE_KEY_T std::vector<float>
 #define CH_COLLIDER_T JPH::Character
 #define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
-#define CH_COLLIDER_MAP std::unordered_map<uint64_t, CH_COLLIDER_T*>
 
 #define NON_CONTACT_CONSTRAINT_KEY_T std::pair<JPH::EConstraintType, JPH::EConstraintSubType> 
 #define NON_CONTACT_CONSTRAINT_T JPH::Constraint
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
-#define NON_CONTACT_CONSTRAINT_MAP std::unordered_map<uint64_t, NON_CONTACT_CONSTRAINT_T*>
 
 class BaseBattleCollisionFilter {
 public:
@@ -71,6 +64,27 @@ public:
         const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
         const uint64_t udRhs, const uint64_t udtRhs, 
         const JPH::CollideShapeResult& inResult) = 0;
+
+    virtual void handleLhsCharacterVisionCollision(
+        const int currRdfId,
+        const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc,
+        const uint64_t udRhs, const uint64_t udtRhs, 
+        const JPH::CollideShapeResult& inResult,
+        float& ioMinAbsColliderDx,
+        float& ioMinAbsColliderDy,
+        float& ioMinAbsColliderDxForAlly,
+        float& ioMinAbsColliderDyForAlly,
+        float& ioMinAbsColliderDxForMvBlocker,
+        float& ioMinAbsColliderDyForMvBlocker,
+        float& outRhsColliderLeft, 
+        float& outRhsColliderRight, 
+        float& outRhsColliderTop, 
+        float& outRhsColliderBottom,
+        uint64_t& oppoChUd,
+        uint64_t& oppoBlUd,
+        uint64_t& allyChUd,
+        uint64_t& mvBlockerUd
+        ) = 0;
 
     virtual ~BaseBattleCollisionFilter() {
 

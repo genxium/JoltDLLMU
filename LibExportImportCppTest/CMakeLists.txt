@@ -34,14 +34,17 @@ set(CPP_TEST_SRC_FILES
 )
 
 add_executable(${TARGET_NAME} ${CPP_TEST_SRC_FILES})
+target_compile_definitions(${TARGET_NAME} PRIVATE JPH_SHARED_LIBRARY) # [IMPORTANT] For correctly define the macro "JPH_EXPORT" as "__declspec(dllimport)"
 
 target_include_directories(${TARGET_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${PREBUILT_HEADER_PATH}>
 	$<INSTALL_INTERFACE:/include>)
 
+message(STATUS "Finding dynamic joltc...")
 find_library(JOLTC_LIB NAMES joltc PATHS ${PREBUILT_LIB_PATH})
 add_library(JOLTC_LIB SHARED IMPORTED)
+message(STATUS "Linking against dynamic joltc lib")
 target_link_libraries(${TARGET_NAME} PUBLIC 
     ${JOLTC_LIB}
 )
@@ -59,10 +62,12 @@ else()
 endif()
 
 if(USE_STATIC_PB)
+    message(STATUS "Linking against static protobuf")
     target_link_libraries(${TARGET_NAME} PRIVATE 
             protobuf::libprotobuf
     )
 else()
+    message(STATUS "Linking against dynamic protobuf")
     target_link_libraries(${TARGET_NAME} PUBLIC 
             protobuf::libprotobuf
     )
@@ -75,7 +80,6 @@ else()
 endif()
 
 # Set the debug/non-debug build flags
-target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 
 # ---------------------------- Installation ----------------------------

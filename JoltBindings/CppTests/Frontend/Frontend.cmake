@@ -10,6 +10,8 @@ source_group(TREE ${FRONTEND_TEST_ROOT} FILES ${FRONTEND_TEST_SRC_FILES})
 
 add_executable(FrontendTest ${FRONTEND_TEST_SRC_FILES})
 
+target_compile_definitions(FrontendTest PRIVATE JPH_SHARED_LIBRARY) # [IMPORTANT] For correctly define the macro "JPH_EXPORT" as "__declspec(dllimport)"
+
 target_link_libraries(FrontendTest LINK_PUBLIC ${TARGET_NAME})
 if(USE_STATIC_PB) 
     target_link_libraries(FrontendTest PRIVATE 

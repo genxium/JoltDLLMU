@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace JoltCSharp {
     public class RingBuffer<T> where T : class {
