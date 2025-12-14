@@ -154,12 +154,6 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetAngularVel(float cosVal, float sinVal) {
-            AngularFrameVelCos = cosVal;
-            AngularFrameVelSin = sinVal;
-            return this;
-        }
-
         public BulletConfig SetMhInheritsSpin(bool val) {
             MhInheritsSpin = val;
             return this;

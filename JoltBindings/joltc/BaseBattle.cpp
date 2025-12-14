@@ -3,12 +3,13 @@
 #include "CppOnlyConsts.h"
 #include "BulletCollideShapeCollector.h"
 #include "CharacterCollideShapeCollector.h"
-#include "CharacterVisionCollideShapeCollector.h"
+#include "NpcReactionConsts.h"
 
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/TaperedCylinderShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
@@ -17,7 +18,7 @@
 #include <cstdarg>
 #include <thread>
 #include <string>
-#include <climits> // Required for "INT_MAX"
+#include <climits> // Required for "INT_MAX", "UINT_MAX" and "FLT_MAX"
 #include <cmath> // Required for "ceil()"
 
 #ifndef NDEBUG
@@ -25,6 +26,7 @@
 #endif
 
 using namespace jtshared;
+using namespace JPH;
 
 const float  cUpRotationX = 0;
 const float  cUpRotationZ = 0;
@@ -44,7 +46,7 @@ const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 static CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
 static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
 
-BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer(renderBufferSize << 1), globalTempAllocator(inGlobalTempAllocator) {
+BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer(renderBufferSize << 1), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING) {
     inactiveJoinMask = 0u;
     battleDurationFrames = 0;
 
@@ -58,7 +60,7 @@ BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator*
     safeDeactiviatedPosition = Vec3::sZero();
     
     phySys = nullptr;
-    bi = nullptr;
+    biNoLock = nullptr;
     jobSys = nullptr;
     blStockCache = nullptr;
 }
@@ -180,7 +182,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
     auto bodyID = chCollider->GetBodyID();
     transientUdToChCollider[ud] = chCollider;
     activeChColliders.push_back(chCollider);
-    bi->SetUserData(bodyID, ud);
+    biNoLock->SetUserData(bodyID, ud);
 
     return chCollider;
 }
@@ -227,7 +229,7 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint6
         blCollider->SetShapeInternal(newShape, true);
         blCollider->SetIsSensor(immediateIsSensor);
         blCollider->SetMotionType(immediateMotionType);
-        bi->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
+        biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
 
         while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
@@ -321,7 +323,7 @@ bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync&
     return res;
 }
 
-void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd) {
+void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd) {
     if (transientUdToChCollider.count(ud)) {
         auto chCollider = transientUdToChCollider[ud];
         /*
@@ -335,7 +337,11 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate(uint64_t ud, const Characte
         if (currChd.omit_gravity() || nextChd.omit_gravity() || cc->omit_gravity() || inJumpStartupOrJustEnded) {
             bi->SetGravityFactor(bodyID, 0);
         } else {
-            bi->SetGravityFactor(bodyID, 1);
+            if (currChd.btn_a_holding_rdf_cnt() > globalPrimitiveConsts->jump_holding_rdf_cnt_threshold_1()) {
+                bi->SetGravityFactor(bodyID, 0.75);
+            } else {
+                bi->SetGravityFactor(bodyID, 1);
+            }
         }
         bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
         chCollider->SetPositionAndRotation(Vec3(currChd.x(), currChd.y(), currChd.z()), Quat(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w()), EActivation::Activate);
@@ -430,7 +436,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, nextChd, nextRdf, usedSkill);
             }
 
-            updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd); // After "processSingleCharacterInput" setting proper "velocity" of "nextChd"
+            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, currChd, *nextChd); // After "processSingleCharacterInput" setting proper "velocity" of "nextChd"
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -475,7 +481,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                     nextNpc->set_cached_cue_cmd(0);
                 }
             }
-            updateChColliderBeforePhysicsUpdate(ud, currChd, *nextChd);
+            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, currChd, *nextChd);
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -484,11 +490,13 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < currRdf->bullets_size(); i++) {
         const Bullet& currBl = currRdf->bullets(i);
         if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
-        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
-        auto ud = calcUserData(currBl);
-        if (transientUdToBodyID.count(ud)) {
+        auto handle = jobSys->CreateJob("bullet-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+            const Bullet& currBl = currRdf->bullets(i);
+            Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+            auto ud = calcUserData(currBl);
+            if (!transientUdToBodyID.count(ud)) return;
             auto bodyID = *(transientUdToBodyID[ud]);
-            
+
             bi->SetPositionAndRotation(bodyID, Vec3(currBl.x(), currBl.y(), currBl.z()), Quat(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w()), EActivation::DontActivate); // It was already activated in "batchPutIntoPhySysFromCache"
             bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextBl->vel_x(), nextBl->vel_y(), nextBl->vel_z()), Vec3::sZero());
             const Skill* skill = nullptr;
@@ -502,15 +510,17 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
                 break;
             }
-        }
+        }, 0);
+        prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
     jobSys->WaitForJobs(prePhysicsUpdateMTBarrier);
     jobSys->DestroyBarrier(prePhysicsUpdateMTBarrier);
 
     // [REMINDER] The "class CharacterVirtual" instances WOULDN'T participate in "phySys->Update(...)" IF they were NOT filled with valid "mInnerBodyID". See "RuleOfThumb.md" for details.
-    phySys->Update(dt, 1, globalTempAllocator, jobSys); 
+    phySys->Update(dt, 1, globalTempAllocator, jobSys);
 
+    // [REMINDER] From now on, we can safely use "biNoLock" because there'd be NO USE of "bi->SetXxx(...)"!
     JobSystem::Barrier* postPhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     const BaseBattle* battle = this;
     for (int i = 0; i < playersCnt; i++) {
@@ -588,7 +598,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
         auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
             const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
             auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
 
@@ -600,7 +609,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             const CharacterConfig* cc = getCc(currChd.species_id());
             bool groundBodyIsChCollider = false, isDead = false; 
             CH_COLLIDER_T* single = transientUdToChCollider[ud];
-            const BodyID& selfBodyID = single->GetBodyID();
+            const BodyID& selfNpcBodyID = single->GetBodyID();
 
             bool currNotDashing = isNotDashing(currChd);
             bool currEffInAir = isEffInAir(currChd, currNotDashing);
@@ -619,7 +628,10 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 }
             } else if (!noOpSet.count(nextChd->ch_state())) {
                 if (cc->has_vision_reaction()) {
-                    postStepDeriveNpcVisionReaction(currRdfId, selfBodyID, ud, narrowPhaseQueryNoLock, currNpc, nextNpc, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+                    BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
+                    if (nullptr != npcReaction) {
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpc, nextNpc, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+                    }   
                 }
             }
         }, 0);
@@ -629,18 +641,17 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < currRdf->bullets_size(); i++) {
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
         auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
             const Bullet& currBl = currRdf->bullets(i);
             Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
             auto ud = calcUserData(currBl);
             
             if (transientUdToBodyID.count(ud)) {
                 auto bodyID = *(transientUdToBodyID[ud]);
-                auto blShape = bi->GetShape(bodyID);
+                auto blShape = biNoLock->GetShape(bodyID);
                 
-                auto blCOMTransform = bi->GetCenterOfMassTransform(bodyID);
-                auto newPos = bi->GetPosition(bodyID);
-                auto newVel = bi->GetLinearVelocity(bodyID);
+                auto blCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
+                auto newPos = biNoLock->GetPosition(bodyID);
+                auto newVel = biNoLock->GetLinearVelocity(bodyID);
                 
                 // Settings for collide shape
                 CollideShapeSettings settings;
@@ -660,7 +671,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 };
                 BulletBodyFilter blBodyFilter(bodyID);
                 BulletCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, UDT_BL, &currBl, nextBl, this);
-                narrowPhaseQueryNoLock.CollideShape(blShape, Vec3::sOne(), blCOMTransform, settings, newPos, collector, phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING), phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING), blBodyFilter);
+                narrowPhaseQueryNoLock->CollideShape(blShape, Vec3::sOne(), blCOMTransform, settings, newPos, collector, defaultBplf, defaultOlf, blBodyFilter);
 
                 JPH_ASSERT(transientUdToNextBl.count(ud));
                 auto& nextBl = transientUdToNextBl[ud];
@@ -697,8 +708,8 @@ void BaseBattle::Clear() {
     }
 
     if (!staticColliderBodyIDs.empty()) {
-        bi->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
-        bi->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+        biNoLock->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+        biNoLock->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
         staticColliderBodyIDs.clear();
     }
     
@@ -751,31 +762,12 @@ void BaseBattle::Clear() {
         }
     }
     if (!bodyIDsToClear.empty()) {
-        bi->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-        bi->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        biNoLock->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
+        biNoLock->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
         bodyIDsToClear.clear();
     }
 
     blStockCache = nullptr;
-
-    while (!activeNonContactConstraints.empty()) {
-        NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
-        activeNonContactConstraints.pop_back();
-        phySys->RemoveConstraint(single);
-        delete single;
-    }
-
-    while (!cachedNonContactConstraints.empty()) {
-        for (auto it = cachedNonContactConstraints.begin(); it != cachedNonContactConstraints.end(); ) {
-            auto& q = it->second;
-            while (!q.empty()) {
-                NON_CONTACT_CONSTRAINT_T* single = q.back();
-                q.pop_back();
-                delete single;
-            }
-            it = cachedNonContactConstraints.erase(it);
-        }
-    }
 
     // Deallocate temp variables in Pb arena
     pbTempAllocator.Reset();
@@ -799,7 +791,7 @@ bool BaseBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
     return ResetStartRdf(initializerMapData);
 }
 
-bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
+bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     /* [WARNING] 
 
     When running unit tests to compare a "reference battle" with a "reused battle" for "rollback-chasing determinism", any mismatch of "BodyID" (i.e. managed by "BodyManager.mBodyIDFreeListStart" in "BodyManager::AddBody" and "BodyManager::RemoveBodyInternal" if the "PhysicsSystem" instance is not re-allocated) impacts the comparison by 
@@ -862,19 +854,48 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
     int staticColliderId = 1;
     staticColliderBodyIDs.clear();
     for (int i = 0; i < initializerMapData->serialized_barriers_size(); i++) {
-        auto& barrier = initializerMapData->serialized_barriers(i);
-        auto& convexPolygon = barrier.polygon();
+        SerializedBarrierCollider* barrier = initializerMapData->mutable_serialized_barriers(i);
+        SerializableConvexPolygon* convexPolygon = barrier->mutable_polygon();
+        const PbVec2& anchor = convexPolygon->anchor();
+        const double anchorX = anchor.x();
+        const double anchorY = anchor.y();
+
+        int pointsCnt = convexPolygon->points_size();
+        std::vector<PbVec2> effConvexPolygonPoints;
+        effConvexPolygonPoints.reserve(pointsCnt);
+        for (auto& srcPoint : convexPolygon->points()) {
+            effConvexPolygonPoints.push_back(srcPoint);
+        }
+        std::sort(effConvexPolygonPoints.begin(), effConvexPolygonPoints.end(), [anchorX, anchorY](const PbVec2& a, const PbVec2& b) {
+            const double dxA = (a.x() - anchorX);
+            const double dyA = (a.y() - anchorY);
+            const double dxB = (b.x() - anchorX);
+            const double dyB = (b.y() - anchorY);
+            double crossProduct = dxA * dyB - dyA * dxB;
+
+            if (crossProduct != 0) {
+                return (crossProduct < 0);
+            } else {
+                double distA2 = dxA * dxA + dyA * dyA;
+                double distB2 = dxB * dxB + dyB * dyB;
+                return (distA2 < distB2);
+            }
+        });
+
         TriangleList triangles;
-        for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
+        for (int pi = 0; pi < pointsCnt; pi++) {
             auto fromI = pi;
-            auto toI = fromI + 2;
-            if (toI >= convexPolygon.points_size()) {
+            auto toI = fromI + 1;
+            if (toI >= pointsCnt) {
                 toI = 0;
             }
-            auto x1 = convexPolygon.points(fromI);
-            auto y1 = convexPolygon.points(fromI + 1);
-            auto x2 = convexPolygon.points(toI);
-            auto y2 = convexPolygon.points(toI + 1);
+            auto& p1 = effConvexPolygonPoints[fromI];
+            auto& p2 = effConvexPolygonPoints[toI];
+
+            auto x1 = p1.x();
+            auto y1 = p1.y();
+            auto x2 = p2.x();
+            auto y2 = p2.y();
 
             Float3 v1 = Float3(x1, y1, +cDefaultBarrierHalfThickness);
             Float3 v2 = Float3(x1, y1, -cDefaultBarrierHalfThickness);
@@ -904,22 +925,23 @@ bool BaseBattle::ResetStartRdf(const WsReq* initializerMapData) {
         BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
         bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
         bodyCreationSettings.mFriction = cDefaultBarrierFriction;
-        Body* body = bi->CreateBody(bodyCreationSettings);
+        Body* body = biNoLock->CreateBody(bodyCreationSettings);
         staticColliderBodyIDs.push_back(body->GetID());
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
-        for (int pi = 0; pi < convexPolygon.points_size(); pi += 2) {
-            auto x = convexPolygon.points(pi);
-            auto y = convexPolygon.points(pi + 1);
+        oss << "The " << i + 1 << "-th static collider with ud=" << bodyCreationSettings.mUserData << ", bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
+        for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
+            auto& p = convexPolygon->points(pi);
+            auto x = p.x();
+            auto y = p.y();
             oss << "(" << x << "," << y << ") ";
         }
         Debug::Log(oss.str(), DColor::Orange);
 #endif
         staticColliderId++;
     }
-    auto layerState = bi->AddBodiesPrepare(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
-    bi->AddBodiesFinalize(staticColliderBodyIDs.data(), staticColliderBodyIDs.size(), layerState, EActivation::DontActivate);
+    auto layerState = biNoLock->AddBodiesPrepare(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
+    biNoLock->AddBodiesFinalize(staticColliderBodyIDs.data(), staticColliderBodyIDs.size(), layerState, EActivation::DontActivate);
 
     phySys->OptimizeBroadPhase();
 
@@ -1961,12 +1983,12 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
     }
 
     if (!bodyIDsToAdd.empty()) {
-        auto layerState = bi->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
-        bi->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
+        auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
+        biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
     }
 
     if (!bodyIDsToActivate.empty()) {
-        bi->ActivateBodies(bodyIDsToActivate.data(), bodyIDsToActivate.size());
+        biNoLock->ActivateBodies(bodyIDsToActivate.data(), bodyIDsToActivate.size());
     }
 }
 
@@ -1978,7 +2000,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         CH_COLLIDER_T* single = activeChColliders.back();
         activeChColliders.pop_back();
         auto bodyID = single->GetBodyID();
-        uint64_t ud = bi->GetUserData(bodyID);
+        uint64_t ud = biNoLock->GetUserData(bodyID);
         uint64_t udt = getUDT(ud);
         const CharacterDownsync& currChd = immutableCurrChdFromUd(udt, ud);
         const CharacterConfig* cc = getCc(currChd.species_id());
@@ -2025,11 +2047,11 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
             cacheQue.push_back(single);
         }
 
-        bi->SetPositionAndRotation(single->GetID()
+        biNoLock->SetPositionAndRotation(single->GetID()
             , safeDeactiviatedPosition // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
             , Quat::sIdentity()
             , EActivation::DontActivate);
-        bi->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
+        biNoLock->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
         bodyIDsToClear.push_back(single->GetID());
     }
 
@@ -2046,29 +2068,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     - [BodyInterface::RemoveBodies](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyInterface.cpp#L202) contains "BodyInterface::DeactivateBodies".
     */
     if (!bodyIDsToClear.empty()) {
-        bi->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
-    }
-
-    while (!activeNonContactConstraints.empty()) {
-        NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
-        activeNonContactConstraints.pop_back();
-        NON_CONTACT_CONSTRAINT_KEY_T nonContactConstraintCacheKey = std::make_pair<JPH::EConstraintType, JPH::EConstraintSubType>(single->GetType(), single->GetSubType());
-
-        /*
-        [WARNING] This removal operation is O(1) time-complexity, see the underlying implementation of "ConstraintManager::Remove".
-
-        I've also considered using "JPH::Constraint.SetEnabled(false)" as an alternative here, yet "JPH::PhysicsSystem.RemoveConstraint(single)" seems fast enough as well as more comforting for the same purpose. 
-        */
-        phySys->RemoveConstraint(single);
-
-        auto it = cachedNonContactConstraints.find(nonContactConstraintCacheKey);
-        if (it == cachedNonContactConstraints.end()) {
-            NON_CONTACT_CONSTRAINT_Q q = { single };
-            cachedNonContactConstraints.emplace(nonContactConstraintCacheKey, q);
-        } else {
-            auto& cacheQue = it->second;
-            cacheQue.push_back(single);
-        }
+        biNoLock->DeactivateBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
     }
 
     // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
@@ -2089,6 +2089,12 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
 
     transientUdToCurrTrap.clear();
     transientUdToNextTrap.clear();
+
+    if (0 < transientNonContactConstraintsCnt) {
+        phySys->RemoveConstraints(transientNonContactConstraints.data(), transientNonContactConstraintsCnt);
+        transientNonContactConstraints.clear();
+        transientNonContactConstraintsCnt = 0;
+    }
 }
 
 void BaseBattle::deriveCharacterOpPattern(const int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
@@ -2199,88 +2205,6 @@ void BaseBattle::deriveCharacterOpPattern(const int rdfId, const CharacterDownsy
             }
         }
     }
-}
-
-void BaseBattle::postStepDeriveNpcVisionReaction(int currRdfId, const BodyID& selfBodyID, const uint64_t ud, const NarrowPhaseQuery& narrowPhaseQueryNoLock, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState) {
-    
-    auto npcSelfCOMTransform = bi->GetCenterOfMassTransform(selfBodyID);
-    float visionOffsetX = cc->vision_offset_x(), visionOffsetY = cc->vision_offset_y();
-    Vec3 initVisionOffset(visionOffsetX, visionOffsetY, 0);    
-    auto visionSelfCOMTransform = npcSelfCOMTransform*JPH::Mat44::sRotationTranslation(cTurn90DegsAroundZAxis, initVisionOffset);
-    
-    float visionHalfHeight = cc->vision_half_height(), visionTopRadius = cc->vision_top_radius(), visionBottomRadius = cc->vision_bottom_radius();
-    float visionConvexRadius = (visionHalfHeight + (visionTopRadius + visionBottomRadius) * 0.5)*0.5;
-    TaperedCylinderShapeSettings initVisionShapeSettings(visionHalfHeight, visionTopRadius, visionBottomRadius, visionConvexRadius);
-    TaperedCylinderShapeSettings::ShapeResult shapeResult;
-    TaperedCylinderShape initVisionShape(initVisionShapeSettings, shapeResult); // [WARNING] A transient, on-stack shape only bound to lifecycle of the current function & current thread. 
-
-    const TaperedCylinderShape* effVisionShape = &initVisionShape; 
-
-    Vec3 effVisionOffset = cTurn90DegsAroundZAxis*initVisionOffset;    
-    auto newPos = bi->GetPosition(selfBodyID) + effVisionOffset;
-    auto newVel = bi->GetLinearVelocity(selfBodyID);
-
-    // Settings for collide shape
-    CollideShapeSettings settings;
-    settings.mMaxSeparationDistance = cCollisionTolerance;
-    settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
-    settings.mActiveEdgeMovementDirection = newVel;
-    settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-
-    class VisionBodyFilter : public IgnoreSingleBodyFilter {
-    public:
-        using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
-
-        virtual bool	ShouldCollideLocked(const Body& inBody) const override
-        {
-            return !inBody.IsSensor();
-        }
-    };
-    
-    CH_COLLIDER_T* npcSelfCollider = transientUdToChCollider[ud];
-    VisionBodyFilter visionBodyFilter(selfBodyID);
-    CharacterVisionCollideShapeCollector collector(currRdfId, bi, ud, UDT_NPC, &currNpc, nextNpc, this, npcSelfCollider);
-    narrowPhaseQueryNoLock.CollideShape(effVisionShape, Vec3::sOne(), visionSelfCOMTransform, settings, newPos, collector, phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING), phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING), visionBodyFilter);
-    nextNpc->set_cached_cue_cmd(0u);
-}
-
-std::vector<std::vector<int>> DIRECTION_DECODER = {
-    { 0, 0 }, // 0
-    { 0, +2 }, // 1
-    { 0, -2 }, // 2
-    { +2, 0 }, // 3
-    { -2, 0 }, // 4
-    { +1, +1 }, // 5
-    { -1, -1 }, // 6
-    { +1, -1 }, // 7
-    { -1, +1 }, // 8
-    /* The rest is for safe access from malicious inputs */
-    { 0, 0 }, // 9
-    { 0, 0 }, // 10
-    { 0, 0 }, // 11
-    { 0, 0 }, // 12
-    { 0, 0 }, // 13
-    { 0, 0 }, // 14
-    { 0, 0 }, // 15
-};
-
-bool BaseBattle::decodeInput(uint64_t encodedInput, InputFrameDecoded* holder) {
-    holder->Clear();
-    int encodedDirection = (int)(encodedInput & 15);
-    int btnALevel = (int)((encodedInput >> 4) & 1);
-    int btnBLevel = (int)((encodedInput >> 5) & 1);
-    int btnCLevel = (int)((encodedInput >> 6) & 1);
-    int btnDLevel = (int)((encodedInput >> 7) & 1);
-    int btnELevel = (int)((encodedInput >> 8) & 1);
-
-    holder->set_dx(DIRECTION_DECODER[encodedDirection][0]);
-    holder->set_dy(DIRECTION_DECODER[encodedDirection][1]);
-    holder->set_btn_a_level(btnALevel);
-    holder->set_btn_b_level(btnBLevel);
-    holder->set_btn_c_level(btnCLevel);
-    holder->set_btn_d_level(btnDLevel);
-    holder->set_btn_e_level(btnELevel);
-    return true;
 }
 
 void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill) {
@@ -3393,7 +3317,7 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mGravityFactor = 0; // TODO
     bodyCreationSettings.mIsSensor = isSensor; // TODO
-    Body* body = bi->CreateBody(bodyCreationSettings);
+    Body* body = biNoLock->CreateBody(bodyCreationSettings);
     JPH_ASSERT(nullptr != body);
     blStockCache->push_back(body);
 
@@ -3452,8 +3376,8 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::p
         auto preallocatedBlCollider = createDefaultBulletCollider(cDefaultBlHalfLength, cDefaultBlHalfLength, dummyNewConvexRadius);
         bodyIDsToAdd.push_back(preallocatedBlCollider->GetID());
     }
-    auto layerState = bi->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
-    bi->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
+    auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
+    biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
 
     phySys->OptimizeBroadPhase();
 
@@ -3605,12 +3529,22 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     Quat newRot;
     single->GetPositionAndRotation(newPos, newRot);
     auto newVel = single->GetLinearVelocity();
-    CharacterCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
 
-    const NarrowPhaseQuery& narrowPhaseQueryNoLock = phySys->GetNarrowPhaseQueryNoLock(); // no need to lock after physics update
+    /*
+    [TODO] For NPCs with more complicated shapes, use an extra collector with a compound shape and specified hurt-box to pick up damage.
+    */
 
-    // Collide shape
-    auto chCOMTransform = bi->GetCenterOfMassTransform(bodyID);
+    Vec3 narrowPhaseInBaseOffset = newPos;
+    /*
+    For "narrowPhaseInBaseOffset", in most cases any value will work BUT it's recommended to choose ONLY among {Vec3::sZero(), centerOfMassTranslationOfBody1InWorldSpace}
+
+    - using "narrowPhaseInBaseOffset = Vec3::sZero()" makes "CollideShapeResult.mContactPointOn[1|2]" in world space, and
+
+    - using "narrowPhaseInBaseOffset = centerOfMassTranslationOfBody1InWorldSpace" makes "CollideShapeResult.mContactPointOn[1|2]" in "body1 local space"
+    */
+    CharacterCollideShapeCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), narrowPhaseInBaseOffset, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+
+    auto chCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
 
     // Settings for collide shape
     CollideShapeSettings settings;
@@ -3618,18 +3552,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
     settings.mActiveEdgeMovementDirection = newVel;
     settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-
-    class CharacterBodyFilter : public IgnoreSingleBodyFilter {
-    public:
-        using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
-
-        virtual bool	ShouldCollideLocked(const Body& inBody) const override
-        {
-            return true; // Don't skip when "inBody" is sensor!
-        }
-    };
+    
     CharacterBodyFilter chBodyFilter(bodyID);
-    narrowPhaseQueryNoLock.CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, settings, newPos, collector, phySys->GetDefaultBroadPhaseLayerFilter(MyObjectLayers::MOVING), phySys->GetDefaultLayerFilter(MyObjectLayers::MOVING), chBodyFilter);
+    narrowPhaseQueryNoLock->CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, settings, narrowPhaseInBaseOffset, collector, defaultBplf, defaultOlf, chBodyFilter);
     
     // Copy results
     single->SetGroundBodyID(collector.mGroundBodyID, collector.mGroundBodySubShapeID);
@@ -3646,7 +3571,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
 
         // Copy other body properties
-        single->SetGroundBodyUd(bi->GetMaterial(collector.mGroundBodyID, collector.mGroundBodySubShapeID), bi->GetPointVelocity(collector.mGroundBodyID, collector.mGroundPosition), bi->GetUserData(collector.mGroundBodyID));
+        single->SetGroundBodyUd(biNoLock->GetMaterial(collector.mGroundBodyID, collector.mGroundBodySubShapeID), biNoLock->GetPointVelocity(collector.mGroundBodyID, collector.mGroundPosition), biNoLock->GetUserData(collector.mGroundBodyID));
     } else {
         single->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
         single->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, Vec3::sZero(), 0);
@@ -3793,13 +3718,13 @@ void BaseBattle::stepSingleTriggerState(int currRdfId, const Trigger& currTrigge
                     //logger.LogInfo(String.Format("@rdfId={0}, one-off trigger editor id = {1}, local id = {2} is fulfilled", currRenderFrame.Id, triggerInNextFrame.EditorId ,triggerInNextFrame.TriggerLocalId));
                     if (0 != triggerConfigFromTiled.NewRevivalX || 0 != triggerConfigFromTiled.NewRevivalY) {
                         if (0 < currTrigger.OffenderJoinIndex && currTrigger.OffenderJoinIndex <= roomCapacity) {
-                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
-                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
-                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                            var nextChd = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
+                            nextChd.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            nextChd.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
                         } else if (1 == roomCapacity) {
-                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[0];
-                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
-                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                            var nextChd = nextRenderFrame.PlayersArr[0];
+                            nextChd.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            nextChd.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
                         }
                     }   
                 }
@@ -3861,13 +3786,13 @@ void BaseBattle::stepSingleTriggerState(int currRdfId, const Trigger& currTrigge
                     triggerInNextFrame.FramesToFire = MAX_INT;
                     if (0 != triggerConfigFromTiled.NewRevivalX || 0 != triggerConfigFromTiled.NewRevivalY) {
                         if (0 < currTrigger.OffenderJoinIndex && currTrigger.OffenderJoinIndex <= roomCapacity) {
-                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
-                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
-                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                            var nextChd = nextRenderFrame.PlayersArr[currTrigger.OffenderJoinIndex - 1];
+                            nextChd.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            nextChd.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
                         } else if (1 == roomCapacity) {
-                            var thatCharacterInNextFrame = nextRenderFrame.PlayersArr[0];
-                            thatCharacterInNextFrame.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
-                            thatCharacterInNextFrame.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
+                            var nextChd = nextRenderFrame.PlayersArr[0];
+                            nextChd.RevivalVirtualGridX = triggerConfigFromTiled.NewRevivalX;
+                            nextChd.RevivalVirtualGridY = triggerConfigFromTiled.NewRevivalY;
                         }
                     }   
                 }
@@ -4210,9 +4135,10 @@ void BaseBattle::handleLhsBulletCollision(
     }
 }
 
-void BaseBattle::handleLhsCharacterVisionCollision(
+/*
+void handleLhsCharacterVisionCollision(
     const int currRdfId,
-    const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc,
+    const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc, const JPH::AABox& lhsSelfNpcWorldSpaceBounds,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const JPH::CollideShapeResult& inResult,
     float& ioMinAbsColliderDx,
@@ -4221,15 +4147,17 @@ void BaseBattle::handleLhsCharacterVisionCollision(
     float& ioMinAbsColliderDyForAlly,
     float& ioMinAbsColliderDxForMvBlocker,
     float& ioMinAbsColliderDyForMvBlocker,
-    float& outRhsColliderLeft, 
-    float& outRhsColliderRight, 
-    float& outRhsColliderTop, 
-    float& outRhsColliderBottom,
     uint64_t& oppoChUd,
     uint64_t& oppoBlUd,
     uint64_t& allyChUd,
     uint64_t& mvBlockerUd
 ) {
+    auto& currSelfChd = currSelfNpc->chd();
+    Vec3 positionDiff = inResult.mContactPointOn1;
+    float absColliderDx = std::abs(positionDiff.GetX());
+    float absColliderDy = std::abs(positionDiff.GetY());
+    bool isCharacterFlying = false;
+
     switch (udtRhs) {
     case UDT_PLAYER:
     case UDT_NPC: {
@@ -4241,13 +4169,6 @@ void BaseBattle::handleLhsCharacterVisionCollision(
             const NpcCharacterDownsync* currRhsNpc = transientUdToCurrNpc[udRhs]; 
             currRhsChd = &(currRhsNpc->chd());
         }
-        auto& currSelfChd = currSelfNpc->chd();
-        CH_COLLIDER_T* rhsCollider = transientUdToChCollider[udRhs]; 
-        float colliderDx = (currRhsChd->x() - currSelfChd.x());
-        float colliderDy = (currRhsChd->y() - currSelfChd.y());
-        float absColliderDx = std::abs(colliderDx);
-        float absColliderDy = std::abs(colliderDy);
-
         if (currRhsChd->bullet_team_id() != currSelfChd.bullet_team_id()) {
             // different teams
             if (absColliderDx > ioMinAbsColliderDx) {
@@ -4276,23 +4197,85 @@ void BaseBattle::handleLhsCharacterVisionCollision(
         }  
     }
     break;
-    case UDT_BL:
-        // TODO
+    case UDT_BL: {
+        const Bullet* currRhsBl = transientUdToCurrBl[udRhs];
+        if (currRhsBl->team_id() == currSelfChd.bullet_team_id()) {
+            break;
+        }
+
+        const Skill* currRhsBlSkill = nullptr;
+        const BulletConfig* currRhsBlConfig = nullptr;
+        FindBulletConfig(currRhsBl->skill_id(), currRhsBl->active_skill_hit(), currRhsBlSkill, currRhsBlConfig);
+        if (nullptr == currRhsBlConfig || (0 >= currRhsBlConfig->damage() && !currRhsBlConfig->has_buff_config())) {
+            break; // currRhsBl is not offensive
+        }
+        Vec3 blVel(currRhsBl->vel_x(), currRhsBl->vel_y(), 0);
+        if (0 <= positionDiff.Dot(blVel)) {
+            break; // currRhsBl is not offensive
+        }
+
+        if (absColliderDx > ioMinAbsColliderDx) {
+            break;
+        }
+
+        if (absColliderDx == ioMinAbsColliderDx && absColliderDy > ioMinAbsColliderDy) {
+            break;
+        }
+        ioMinAbsColliderDx = absColliderDx;
+        ioMinAbsColliderDy = absColliderDy;
+        oppoChUd = 0;
+        oppoBlUd = udRhs;
+    }
     break;
-    case UDT_OBSTACLE:
-        // TODO
-        // _updateStandingColliderAndMvBlockerCollider(rdfId, currCharacterDownsync, chConfig, isCharacterFlying, npcSelfCollider, visionShape, mNpcSelfColliderTop, mNpcSelfColliderBottom, mNpcSelfColliderLeft, mNpcSelfColliderRight, rhsCollider, rhsColliderTop, rhsColliderBottom, rhsColliderLeft, rhsColliderRight, null, ref overlapResult, ref mvBlockerOverlapResult, ref minAbsColliderDxForMvBlocker, ref minAbsColliderDyForMvBlocker, ref res4, ref res4Tpc, ref standingOnCollider, logger);
+    case UDT_OBSTACLE: {
+        Vec3 currSelfNpcVel(currSelfChd.vel_x(), currSelfChd.vel_y(), 0);
+        Quat currSelfNpcQ(currSelfChd.q_x(), currSelfChd.q_y(), currSelfChd.q_z(), currSelfChd.q_w());
+        Vec3 currSelfNpcFacing = currSelfNpcQ*Vec3(1, 0, 0);
+
+        const BodyID& rhsBodyID = inResult.mBodyID2;
+
+        bool isAlongForwardMv = (0 < positionDiff.Dot(currSelfNpcVel)) || (0 < positionDiff.Dot(currSelfNpcFacing));
+        if (!isAlongForwardMv) {
+            break;
+        }
+
+        if (!isCharacterFlying) {
+            TransformedShape rhsShapeInWorldSpace = biNoLock->GetTransformedShape(rhsBodyID);
+            AABox rhsAABoxInWorldSpace = rhsShapeInWorldSpace.GetWorldSpaceBounds();
+            bool strictlyUp = (rhsAABoxInWorldSpace.mMin.GetY() >= lhsSelfNpcWorldSpaceBounds.mMax.GetY());
+            bool holdableForRight = (rhsAABoxInWorldSpace.mMax.GetX() > lhsSelfNpcWorldSpaceBounds.mMax.GetX());
+            bool holdableForLeft = (rhsAABoxInWorldSpace.mMin.GetX() < lhsSelfNpcWorldSpaceBounds.mMin.GetX());
+            bool strictlyUpAndHoldableOnBothSides = (strictlyUp && holdableForLeft && holdableForRight);
+            if (strictlyUpAndHoldableOnBothSides) {
+                break;
+            }
+        }
+       
+        if (absColliderDx > ioMinAbsColliderDxForMvBlocker) {
+            break;
+        }
+
+        if (absColliderDx == ioMinAbsColliderDxForMvBlocker && absColliderDy > ioMinAbsColliderDyForMvBlocker) {
+            break;
+        }
+        ioMinAbsColliderDxForMvBlocker = absColliderDx;
+        ioMinAbsColliderDyForMvBlocker = absColliderDy;
+        mvBlockerUd = udRhs;
+    }
     break;
     default:
     break;
     }
 }
+*/
 
 bool BaseBattle::deallocPhySys() {
     if (nullptr == phySys) return false;
     delete phySys;
     phySys = nullptr;
     bi = nullptr;
+    biNoLock = nullptr;
+    narrowPhaseQueryNoLock = nullptr;
 
     /*
     [WARNING] Unlike "std::vector" and "std::unordered_map", the customized containers "JPH::StaticArray" and "JPH::UnorderedMap" will deallocate their pointer-typed elements in their destructors.

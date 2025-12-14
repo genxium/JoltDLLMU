@@ -207,7 +207,11 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
     ${JOLTC_ROOT}/BulletCollideShapeCollector.h
     ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
-    ${JOLTC_ROOT}/CharacterVisionCollideShapeCollector.h
+    ${JOLTC_ROOT}/BaseNpcReaction.h
+    ${JOLTC_ROOT}/BaseNpcReaction.cpp
+    ${JOLTC_ROOT}/BlackSaber1NpcReaction.h
+    ${JOLTC_ROOT}/BlackSaber1NpcReaction.cpp
+    ${JOLTC_ROOT}/NpcReactionConsts.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h
     ${JOLTC_ROOT}/PbConsts.h

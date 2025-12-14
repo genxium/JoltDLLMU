@@ -97,7 +97,7 @@ void DebugLogCb(const char* message, int color, int size) {
 }
 
 int forceConfirmedStEvictedCnt = 0, oldLcacIfdId = 0, newLcacIfdId = 0, oldDynamicsRdfId = 0, newDynamicsRdfId = 0;
-bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -172,7 +172,7 @@ bool runTestCase1(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     return true;
 }
 
-bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -266,7 +266,7 @@ bool runTestCase2(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     return true;
 }
 
-bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase3(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -320,7 +320,7 @@ bool runTestCase3(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     return true;
 }
 
-bool runTestCase4(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase4(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -347,7 +347,7 @@ bool runTestCase4(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     return true;
 }
 
-bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase5(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -403,7 +403,7 @@ bool runTestCase5(BackendBattle* reusedBattle, const WsReq* initializerMapData) 
     return true;
 }
 
-bool runTestCase6(BackendBattle* reusedBattle, const WsReq* initializerMapData) {
+bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
     DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -554,8 +554,10 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = initializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i+1]);
         }
     }
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly

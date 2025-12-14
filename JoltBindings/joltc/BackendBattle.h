@@ -49,7 +49,7 @@ public:
     int MoveForwardLcacIfdIdAndStep(bool withRefRdf, int* outOldLcacIfdId, int* outNewLcacIfdId, int* outOldDynamicsRdfId, int* outNewDynamicsRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
-    virtual bool ResetStartRdf(const WsReq* initializerMapData);
+    virtual bool ResetStartRdf(WsReq* initializerMapData);
 
     int GetDynamicsRdfId();
 
@@ -77,7 +77,9 @@ protected:
         phySys->SetPhysicsSettings(clonedPhySettings);
 
         bi = &(phySys->GetBodyInterface());
-
+        biNoLock = &(phySys->GetBodyInterfaceNoLock());
+        narrowPhaseQueryNoLock = &(phySys->GetNarrowPhaseQueryNoLock());
+       
         return true;
     }
 };

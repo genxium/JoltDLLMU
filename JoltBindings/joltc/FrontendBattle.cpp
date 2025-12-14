@@ -594,7 +594,7 @@ bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t
     return ResetStartRdf(initializerMapData, inSelfJoinIndex, inSelfPlayerId, inSelfCmdAuthKey);
 }
 
-bool FrontendBattle::ResetStartRdf(const WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
+bool FrontendBattle::ResetStartRdf(WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
     if (0 >= inSelfJoinIndex) {
         return false;
     }

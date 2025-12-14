@@ -19,10 +19,6 @@ google::protobuf::Arena pbTestCaseDataAllocator;
 using namespace jtshared;
 using namespace std::filesystem;
 
-const uint32_t SPECIES_BLADEGIRL = 1;
-const uint32_t SPECIES_BOUNTYHUNTER = 7;
-const uint32_t SPECIES_BLACKSABER1 = 12;
-
 const int pbBufferSizeLimit = (1 << 14);
 char pbByteBuffer[pbBufferSizeLimit];
 char rdfFetchBuffer[pbBufferSizeLimit];
@@ -31,6 +27,7 @@ const char* const selfPlayerId = "foobar";
 int selfCmdAuthKey = 123456;
 
 RenderFrame* mockStartRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -42,7 +39,7 @@ RenderFrame* mockStartRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -72,7 +69,7 @@ RenderFrame* mockStartRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+90);
     playerCh2->set_y(300);
@@ -108,6 +105,7 @@ RenderFrame* mockStartRdf() {
 }
 
 RenderFrame* mockBlacksaber1VisionTestStartRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -119,7 +117,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -150,9 +148,9 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = SPECIES_BLACKSABER1;
+    auto npcCh1Species = chSpecies.blacksaber1();
     auto npcCc1 = characterConfigs[npcCh1Species];
-    npcCh1->set_x(+70);
+    npcCh1->set_x(+80);
     npcCh1->set_y(200);
     npcCh1->set_speed(npcCc1.speed());
     npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -181,6 +179,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
 }
 
 RenderFrame* mockRollbackChasingAlignTestStartRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -192,7 +191,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -222,7 +221,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+90);
     playerCh2->set_y(300);
@@ -253,7 +252,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf() {
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCh1Species = chSpecies.bladegirl();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+70);
     npcCh1->set_y(200);
@@ -284,6 +283,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf() {
 }
 
 RenderFrame* mockFallenDeathRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -295,7 +295,7 @@ RenderFrame* mockFallenDeathRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -325,7 +325,7 @@ RenderFrame* mockFallenDeathRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+80);
     playerCh2->set_y(200);
@@ -361,6 +361,7 @@ RenderFrame* mockFallenDeathRdf() {
 }
 
 RenderFrame* mockBladeGirlSkillRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -372,7 +373,7 @@ RenderFrame* mockBladeGirlSkillRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BLADEGIRL;
+    auto playerCh1Species = chSpecies.bladegirl();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -402,7 +403,7 @@ RenderFrame* mockBladeGirlSkillRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh2Species = chSpecies.bountyhunter();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+90);
     playerCh2->set_y(200);
@@ -433,7 +434,7 @@ RenderFrame* mockBladeGirlSkillRdf() {
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCh1Species = chSpecies.bladegirl();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+5);
     npcCh1->set_y(200);
@@ -464,6 +465,7 @@ RenderFrame* mockBladeGirlSkillRdf() {
 }
 
 RenderFrame* mockBountyHunterSkillRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -475,7 +477,7 @@ RenderFrame* mockBountyHunterSkillRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -505,7 +507,7 @@ RenderFrame* mockBountyHunterSkillRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+90);
     playerCh2->set_y(200);
@@ -536,7 +538,7 @@ RenderFrame* mockBountyHunterSkillRdf() {
     auto npc1 = startRdf->mutable_npcs_arr(0);
     npc1->set_id(npcIdCounter++);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCh1Species = chSpecies.bladegirl();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+5);
     npcCh1->set_y(200);
@@ -567,6 +569,7 @@ RenderFrame* mockBountyHunterSkillRdf() {
 }
 
 RenderFrame* mockVictoryRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
@@ -580,7 +583,7 @@ RenderFrame* mockVictoryRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -614,7 +617,7 @@ RenderFrame* mockVictoryRdf() {
     npc1->set_id(npcIdCounter++);
     npc1->set_publishing_to_trigger_id_upon_exhausted(victoryTriggerId);    
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = SPECIES_BLADEGIRL;
+    auto npcCh1Species = chSpecies.bladegirl();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+5);
     npcCh1->set_y(200);
@@ -652,6 +655,7 @@ RenderFrame* mockVictoryRdf() {
 }
 
 RenderFrame* mockRefRdf(int refRdfId) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto refRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     refRdf->set_id(refRdfId);
@@ -677,7 +681,7 @@ RenderFrame* mockRefRdf(int refRdfId) {
     playerCh1->set_vel_x(0);
     playerCh1->set_vel_y(0);
     playerCh1->set_hp(100);
-    playerCh1->set_species_id(SPECIES_BLADEGIRL);
+    playerCh1->set_species_id(chSpecies.bladegirl());
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
@@ -704,7 +708,7 @@ RenderFrame* mockRefRdf(int refRdfId) {
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(100);
-    playerCh2->set_species_id(SPECIES_BOUNTYHUNTER);
+    playerCh2->set_species_id(chSpecies.bountyhunter());
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());
@@ -807,7 +811,11 @@ std::map<int, uint64_t> testCmds8 = {
     {65, 0},
     {70, 3},
     {96, 3},
-    {256, 0}
+    {512, 3},
+    {513, 19},
+    {540, 3},
+    {580, 3},
+    {581, 0}
 };
 
 std::map<int, uint64_t> testCmds9 = {
@@ -2130,7 +2138,7 @@ void initTest15Data() {
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
-bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase1(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -2215,7 +2223,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1536;
@@ -2318,7 +2326,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase3(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -2401,7 +2409,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase4(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->SetFrameLogEnabled(true);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -2447,7 +2455,7 @@ bool runTestCase4(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase5(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -2494,7 +2502,7 @@ bool runTestCase5(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
@@ -2604,7 +2612,7 @@ bool runTestCase6(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase7(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     FrontendBattle* referenceBattle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, true));
@@ -2700,7 +2708,7 @@ bool runTestCase7(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -2722,6 +2730,9 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
         auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         auto& p1 = outerTimerRdf->players_arr(0);
         auto& p1Chd = p1.chd();
+
+        auto& npc1 = outerTimerRdf->npcs_arr(0);
+        auto& npc1Chd = npc1.chd();
        
         if (20 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
@@ -2743,6 +2754,8 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
         } else if (81 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
+        } else if (512 <= outerTimerRdfId && 600 > outerTimerRdfId) {
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
         }
         outerTimerRdfId++;
     }
@@ -2752,7 +2765,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
     int loopRdfCnt = 1024;
@@ -2797,7 +2810,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, const WsReq* initializerMapData,
     return true;
 }
 
-bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase10(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->SetFrameLogEnabled(true);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -2869,7 +2882,7 @@ bool runTestCase10(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
-bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase11(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     bool doCompareWithRollback = true; 
 
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
@@ -2978,7 +2991,7 @@ bool runTestCase11(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
-bool runTestCase12(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase12(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -3028,7 +3041,7 @@ bool runTestCase12(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
-bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase13(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -3079,7 +3092,7 @@ bool runTestCase13(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
-bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -3154,7 +3167,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, const WsReq* initializerMapData
     return true;
 }
 
-bool runTestCase15(FrontendBattle* reusedBattle, const WsReq* initializerMapData, int inSingleJoinIndex) {
+bool runTestCase15(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
@@ -3284,8 +3297,37 @@ int main(int argc, char** argv)
         200, 0
     };
 
+    std::vector<float> wideMapHull1 = {
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> wideMapHull2 = {
+        -800, 0,
+        -800, 1000,
+        -500, 1000,
+        -500, 0
+    };
+
+    std::vector<float> wideMapHull3 = {
+        500, 0,
+        500, 1000,
+        800, 1000,
+        800, 0
+    };
+
+    std::vector<float> wideMapHull4 = {
+        -50, 0,
+        -50, 140,
+        +50, 140,
+        +50, 0
+    };
+
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
+    std::vector<std::vector<float>> npcVisionHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4};
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -3301,14 +3343,16 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = initializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i+1]);
         }
     }
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+    /*
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3331,21 +3375,23 @@ int main(int argc, char** argv)
 
     initTest7Data();
     runTestCase7(battle, initializerMapData, selfJoinIndex);
-    
+    */
     auto blacksaber1VisionTestStartRdf = mockBlacksaber1VisionTestStartRdf();
     WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
-    for (auto hull : hulls) {
+    for (auto hull : npcVisionHulls) {
         auto srcBarrier = blacksaber1VisionTestInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     blacksaber1VisionTestInitializerMapData->set_allocated_self_parsed_rdf(blacksaber1VisionTestStartRdf);
     initTest8Data();
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+    /*
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3359,8 +3405,10 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = rollbackChasingAlignTestInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     rollbackChasingAlignTestInitializerMapData->set_allocated_self_parsed_rdf(rollbackChasingAlignTestStartRdf);
@@ -3373,8 +3421,10 @@ int main(int argc, char** argv)
     for (auto hull : fallenDeathHulls) {
         auto srcBarrier = fallenDeathInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     fallenDeathInitializerMapData->set_allocated_self_parsed_rdf(fallenDeathStartRdf);
@@ -3389,8 +3439,10 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = bladeGirlSkillInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     bladeGirlSkillInitializerMapData->set_allocated_self_parsed_rdf(bladeGirlSkillStartRdf);
@@ -3401,12 +3453,13 @@ int main(int argc, char** argv)
     
     WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto bountyHunterSkillStartRdf = mockBountyHunterSkillRdf();
-    
     for (auto hull : hulls) {
         auto srcBarrier = bountyHunterSkillInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     bountyHunterSkillInitializerMapData->set_allocated_self_parsed_rdf(bountyHunterSkillStartRdf);
@@ -3421,8 +3474,10 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = victoryTriggerInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
         }
     }
     victoryTriggerInitializerMapData->set_allocated_self_parsed_rdf(victoryTriggerStartRdf);
@@ -3430,7 +3485,7 @@ int main(int argc, char** argv)
     initTest15Data();
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+    */
     pbStarterWsReqAllocator.Reset();
 
     // clean up

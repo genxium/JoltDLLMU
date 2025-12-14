@@ -36,18 +36,9 @@ typedef struct VectorFloatHasher {
     }
 } VectorFloatHasher;
 
-typedef struct NonContactConstraintHasher {
-    std::size_t operator()(const NON_CONTACT_CONSTRAINT_KEY_T& k) const {
-        return std::hash<int>()(static_cast<int>(k.first)) + 0x9e3779b9 + std::hash<int>()(static_cast<int>(k.second));
-    }
-} NonContactConstraintHasher;
-
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
 using namespace jtshared;
-
-const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
-const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*3.1415926);
 
 class JOLTC_EXPORT BaseBattle : public JPH::ContactListener, public BaseBattleCollisionFilter {
 public:
@@ -55,6 +46,8 @@ public:
     virtual ~BaseBattle();
 
 public:
+
+
     google::protobuf::Arena pbTempAllocator;
     TempAllocator* globalTempAllocator;
     bool frameLogEnabled = false;
@@ -90,7 +83,11 @@ public:
     MyContactListener contactListener;
     PhysicsSystem* phySys;
     BodyInterface* bi;
+    BodyInterface* biNoLock;
+    const NarrowPhaseQuery* narrowPhaseQueryNoLock;
     JobSystemThreadPool* jobSys;
+    DefaultBroadPhaseLayerFilter defaultBplf; 
+    DefaultObjectLayerFilter defaultOlf;
 
     BL_COLLIDER_Q activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
@@ -112,9 +109,6 @@ public:
     Moreover, by using this approach to manage multi-shape character I dropped the "shared shapes across bodies" feature of Jolt.
     */
     std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, VectorFloatHasher > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
-
-    NON_CONTACT_CONSTRAINT_Q activeNonContactConstraints;
-    std::unordered_map< NON_CONTACT_CONSTRAINT_KEY_T, NON_CONTACT_CONSTRAINT_Q, NonContactConstraintHasher > cachedNonContactConstraints; // Key is "{non-contact-constraint type}"
 
 public:
     static void FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
@@ -183,14 +177,14 @@ public:
         return oldVal;
     }
 
-    void updateChColliderBeforePhysicsUpdate(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd);
+    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd);
 
     virtual RenderFrame* CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
     
     virtual void Clear();
 
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
-    virtual bool ResetStartRdf(const WsReq* initializerMapData);
+    virtual bool ResetStartRdf(WsReq* initializerMapData);
 
     virtual bool initializeTriggerDemandedEvtMask(RenderFrame* startRdf);
 
@@ -383,12 +377,12 @@ protected:
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 
-    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
     // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider_NotThreadSafe" still works
-    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
-    CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
+    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
-    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
+    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
 
 
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
@@ -410,6 +404,11 @@ protected:
 
     std::unordered_map<uint64_t, const Trap*> transientUdToCurrTrap;
     std::unordered_map<uint64_t, Trap*> transientUdToNextTrap;
+
+    
+    // [WARNING] For any "NonContactConstraint", caching doesn't work because the "BodyID"s of both "Character"s and "Bullet"s can be reused
+    std::vector<NON_CONTACT_CONSTRAINT_T*> transientNonContactConstraints;
+    atomic<int> transientNonContactConstraintsCnt;
 
     inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) {
         uint64_t udt = getUDT(ud);
@@ -465,8 +464,6 @@ protected:
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
     void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
-
-    void postStepDeriveNpcVisionReaction(int rdfId, const BodyID& selfBodyID, const uint64_t ud, const NarrowPhaseQuery& narrowPhaseQuery, const NpcCharacterDownsync& currNpc, NpcCharacterDownsync* nextNpc, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
 
     void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill);
 
@@ -529,8 +526,6 @@ protected:
         auto& v = tcs.at(tt);
         return &v;
     }
-
-    inline bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder);
 
     CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc);
 
@@ -617,15 +612,15 @@ protected:
         }
     }
 
-    inline bool isBulletStartingUp(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
+    inline bool isBulletStartingUp(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
         return BulletState::StartUp == bullet->bl_state();
     }
 
-    inline bool isBulletActive(const Bullet* bullet) {
+    inline bool isBulletActive(const Bullet* bullet) const {
         return (BulletState::Active == bullet->bl_state());
     }
 
-    inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
+    inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
         // [WARNING] Practically a bullet might propagate for a few render frames before hitting its visually "VertMovingTrapLocalIdUponActive"!
         int visualBufferRdfCnt = 3;
         if (BulletState::Active == bullet->bl_state()) {
@@ -635,15 +630,15 @@ protected:
         }
     }
 
-    inline bool isTriggerAlive(const Trigger* trigger, int currRdfId) {
+    inline bool isTriggerAlive(const Trigger* trigger, int currRdfId) const {
         return 0 < trigger->demanded_evt_mask() || 0 < trigger->quota();
     }
 
-    inline bool isPickableAlive(const Pickable* pickable, int currRdfId) {
+    inline bool isPickableAlive(const Pickable* pickable, int currRdfId) const {
         return 0 < pickable->remaining_lifetime_rdf_count();
     }
 
-    inline bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) {
+    inline bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const {
         if (BulletState::Vanishing == bullet->bl_state()) {
             return bullet->frames_in_bl_state() < bc->active_frames() + bc->explosion_frames();
         }
@@ -653,11 +648,11 @@ protected:
         return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
     }
 
-    inline bool isNpcJustDead(const CharacterDownsync* chd) {
+    inline bool isNpcJustDead(const CharacterDownsync* chd) const {
         return (0 >= chd->hp() && globalPrimitiveConsts->dying_frames_to_recover() == chd->frames_to_recover());
     }
 
-    inline bool isNpcDeadToDisappear(const CharacterDownsync* chd) {
+    inline bool isNpcDeadToDisappear(const CharacterDownsync* chd) const {
         return (0 >= chd->hp() && 0 >= chd->frames_to_recover());
     }
 
@@ -669,7 +664,7 @@ protected:
         return true;
     }
 
-    inline bool isBattleSettled(const RenderFrame* rdf) {
+    inline bool isBattleSettled(const RenderFrame* rdf) const {
         if (rdf->has_prev_rdf_step_result()) {
             auto& prevRdfStepResult = rdf->prev_rdf_step_result();
             for (int i = 0; i < prevRdfStepResult.fulfilled_triggers_size(); i++) {
@@ -711,7 +706,7 @@ private:
 
 public:
     // BaseBattleCollisionFilter
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) {
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const {
         if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
             return JPH::ValidateResult::RejectContact;
         }
@@ -721,35 +716,39 @@ public:
         return JPH::ValidateResult::AcceptContact;
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) {
-        if (lhsCurrChd->bullet_team_id() == rhsCurrBl->team_id()) {
-            return JPH::ValidateResult::RejectContact;
-        }
-
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const {
         if (!isBulletActive(rhsCurrBl)) {
             return JPH::ValidateResult::RejectContact;
         }
 
+        if (lhsCurrChd->bullet_team_id() == rhsCurrBl->team_id()) {
+            if (!rhsCurrBl->for_ally()) {
+                return JPH::ValidateResult::RejectContact;
+            }
+        }
+
         if (invinsibleSet.count(lhsCurrChd->ch_state())) {
-            return JPH::ValidateResult::RejectContact;
+            if (!rhsCurrBl->for_ally()) {
+                return JPH::ValidateResult::RejectContact;
+            }
         }
         return JPH::ValidateResult::AcceptContact;
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) {
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) const {
         switch (udtRhs) {
         case UDT_PLAYER: {
-            auto rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
+            auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
             auto& rhsCurrChd = rhsCurrPlayer->chd();
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
         case UDT_NPC: {
-            auto rhsCurrNpc = transientUdToCurrNpc[udRhs];
+            auto rhsCurrNpc = transientUdToCurrNpc.at(udRhs);
             auto& rhsCurrChd = rhsCurrNpc->chd();
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
         case UDT_BL: {
-            auto& rhsCurrBl = transientUdToCurrBl[udRhs];
+            auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
         }
         default:
@@ -759,16 +758,16 @@ public:
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const JPH::Body& lhs, // the "Character"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
         switch (udtLhs) {
             case UDT_PLAYER: {
-                auto& lhsCurrPlayer = transientUdToCurrPlayer[udLhs];
+                auto lhsCurrPlayer = transientUdToCurrPlayer.at(udLhs);
                 auto& lhsCurrChd = lhsCurrPlayer->chd();
                 return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
                 break;
             }
             case UDT_NPC: {
-                auto& lhsCurrNpc = transientUdToCurrNpc[udLhs];
+                auto lhsCurrNpc = transientUdToCurrNpc.at(udLhs);
                 auto& lhsCurrChd = lhsCurrNpc->chd();
                 return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
                 break;
@@ -778,10 +777,10 @@ public:
         }
     }
 
-    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) {
+    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) const {
         switch (udtRhs) {
         case UDT_PLAYER: {
-            auto& rhsCurrPlayer = transientUdToCurrPlayer[udRhs];
+            auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
             auto& rhsCurrChd = rhsCurrPlayer->chd();
             if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
                 return JPH::ValidateResult::RejectContact;
@@ -792,7 +791,7 @@ public:
             return JPH::ValidateResult::AcceptContact;
         }
         case UDT_NPC: {
-            auto& rhsCurrNpc = transientUdToCurrNpc[udRhs];
+            auto rhsCurrNpc = transientUdToCurrNpc.at(udRhs);
             auto& rhsCurrChd = rhsCurrNpc->chd();
             if (lhsCurrBl->team_id() == rhsCurrChd.bullet_team_id()) {
                 return JPH::ValidateResult::RejectContact;
@@ -804,7 +803,7 @@ public:
 
         }
         case UDT_BL: {
-            auto& rhsCurrBl = transientUdToCurrBl[udRhs];
+            auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
             if (lhsCurrBl->team_id() == rhsCurrBl->team_id()) {
                 return JPH::ValidateResult::RejectContact;
             }
@@ -823,8 +822,8 @@ public:
 
     virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
-        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) {
-        auto& lhsCurrBl = transientUdToCurrBl[udLhs];
+        const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
+        auto lhsCurrBl = transientUdToCurrBl.at(udLhs);
         return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs);
     }
 
@@ -842,27 +841,6 @@ public:
         const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
         const uint64_t udRhs, const uint64_t udtRhs, 
         const JPH::CollideShapeResult& inResult);
-
-    virtual void handleLhsCharacterVisionCollision(
-        const int currRdfId,
-        const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc,
-        const uint64_t udRhs, const uint64_t udtRhs, 
-        const JPH::CollideShapeResult& inResult,
-        float& ioMinAbsColliderDx,
-        float& ioMinAbsColliderDy,
-        float& ioMinAbsColliderDxForAlly,
-        float& ioMinAbsColliderDyForAlly,
-        float& ioMinAbsColliderDxForMvBlocker,
-        float& ioMinAbsColliderDyForMvBlocker,
-        float& outRhsColliderLeft, 
-        float& outRhsColliderRight, 
-        float& outRhsColliderTop, 
-        float& outRhsColliderBottom,
-        uint64_t& oppoChUd,
-        uint64_t& oppoBlUd,
-        uint64_t& allyChUd,
-        uint64_t& mvBlockerUd
-    );
 
 public:
     // #JPH::ContactListener
