@@ -3,11 +3,52 @@
 
 #include "BaseBattleCollisionFilter.h"
 #include "PbConsts.h"
+#include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
+
+using namespace jtshared;
+using namespace JPH;
+
+class CharacterBodyFilter : public IgnoreSingleBodyFilter {
+public:
+    using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
+
+    virtual bool	ShouldCollideLocked(const Body& inBody) const override
+    {
+        return true; // Don't skip when "inBody" is sensor!
+    }
+};
+
+class VisionBodyFilter : public BodyFilter {
+public:
+    const CharacterDownsync* mSelfNpcChd;
+    BodyID   mSelfNpcBodyID;
+    uint64_t mSelfNpcUd;
+    const BaseBattleCollisionFilter* mBaseBattleFilter;
+
+    VisionBodyFilter(const CharacterDownsync* inSelfNpcChd, const BodyID& inSelfNpcBodyID, const uint64_t inSelfNpcUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfNpcChd(inSelfNpcChd), mSelfNpcBodyID(inSelfNpcBodyID), mSelfNpcUd(inSelfNpcUd), mBaseBattleFilter(baseBattleFilter) {
+
+    }
+
+    virtual bool			ShouldCollide([[maybe_unused]] const BodyID &inBodyID) const {
+        return inBodyID != mSelfNpcBodyID;
+    }
+
+    virtual bool			ShouldCollideLocked([[maybe_unused]] const Body &inBody) const {
+        const uint64_t udRhs = inBody.GetUserData();
+        const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfNpcChd, udRhs, udtRhs);
+        if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
+            return false;
+        }
+        return true;
+    }
+};
 
 class CharacterCollideShapeCollector : public JPH::CollideShapeCollector {
 public:
-    explicit CharacterCollideShapeCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mFilter(filter) {}
+    explicit CharacterCollideShapeCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter) {}
 
     int                     mCurrRdfId;
     RenderFrame*            mNextRdf;
@@ -26,9 +67,9 @@ public:
 
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
-        const uint64_t udtRhs = mFilter->getUDT(udRhs);
-        auto res = mFilter->validateLhsCharacterContact(mCurrChd, udRhs, udtRhs);
-        if (JPH::ValidateResult::AcceptContact != res && JPH::ValidateResult::AcceptAllContactsForThisBodyPair != res) {
+        const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mCurrChd, udRhs, udtRhs);
+        if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return;
         }
         auto normal = -inResult.mPenetrationAxis.Normalized();
@@ -42,7 +83,7 @@ public:
             mBestDot = dot;
         }
 
-        mFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffPushbackVelX, newEffPushbackVelY);
+        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffPushbackVelX, newEffPushbackVelY);
     }
 
 private:
@@ -51,9 +92,9 @@ private:
     const uint64_t                mUdt;
     const CharacterDownsync*      mCurrChd;
     CharacterDownsync*            mNextChd;
-    JPH::Vec3				      mUp;
-    JPH::Vec3                     mBaseOffset;
-    BaseBattleCollisionFilter*    mFilter;
+    Vec3				      mUp;
+    Vec3                     mBaseOffset;
+    BaseBattleCollisionFilter*    mBaseBattleFilter;
     float				          mBestDot = -FLT_MAX;
 };
 

@@ -5,6 +5,11 @@ package jtshared;
 // Providing "csharp_namespace" to force generating lowercase namespace, reference https://protobuf.dev/programming-guides/proto3/#packages 
 option csharp_namespace = "jtshared";
 
+message PbVec2 {
+    float x = 1;
+    float y = 2;
+}
+
 message PbQuat {
     // Quaternion
     float x = 1;
@@ -526,11 +531,11 @@ message NpcCharacterDownsync {
 message InputFrameDecoded {
     int32 dx = 1;
     int32 dy = 2;
-    int32 btn_a_level = 3;
-    int32 btn_b_level = 4;
-    int32 btn_c_level = 5;
-    int32 btn_d_level = 6;
-    int32 btn_e_level = 7;
+    uint64 btn_a_level = 3;
+    uint64 btn_b_level = 4;
+    uint64 btn_c_level = 5;
+    uint64 btn_d_level = 6;
+    uint64 btn_e_level = 7;
 }
 
 message UpsyncSnapshot {
@@ -696,8 +701,7 @@ message BulletConfig {
     bool mh_updates_origin_pos = 50; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
     bool beam_collision = 51; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
 
-    float angular_frame_vel_cos = 52;
-    float angular_frame_vel_sin = 53;
+    bool for_ally = 52;
 
     uint32 elemental_attrs = 59;
 
@@ -813,6 +817,8 @@ message Bullet {
     uint32 id = 27;
 
     int32 team_id = 28;
+    
+    bool for_ally = 29;
 }
 
 message TrapConfig {
@@ -1276,9 +1282,8 @@ message LevelStory {
 }
 
 message SerializableConvexPolygon {
-    float anchor_x = 1;
-    float anchor_y = 2;
-    repeated float points = 3;
+    PbVec2 anchor = 1;
+    repeated PbVec2 points = 2;
 }
 
 message SerializedBarrierCollider {
@@ -1447,6 +1452,16 @@ message RpcEndpointHolder {
     string external_addr_host = 2;
     uint32 external_addr_port = 3;
     string internal_addr_host = 4;
+}
+
+message ChSpeciesConsts {
+    uint32 bladegirl = 1;
+    uint32 bountyhunter = 2;
+
+    uint32 blacksaber1 = 3;
+    uint32 blacksaber_test = 4;
+
+    uint32 none_ch = 2048;
 }
 
 message PrimitiveConsts {
@@ -1663,6 +1678,8 @@ message PrimitiveConsts {
     uint32 tt_victory = 166; 
 
     int32 terminating_lower_part_rdf_cnt = 167;
+
+    ChSpeciesConsts ch_species = 168;
 }
 
 message ConfigConsts {

@@ -8,48 +8,10 @@ namespace JoltCSharp {
 
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
-        public const uint SPECIES_WITCHGIRL = 2;
-        public const uint SPECIES_BRIGHTWITCH = 4;
-        public const uint SPECIES_MAGSWORDGIRL = 6;
         public const uint SPECIES_BOUNTYHUNTER = 7;
-        public const uint SPECIES_SPEARWOMAN = 8;
-        public const uint SPECIES_LIGHTSPEARWOMAN = 9;
-        public const uint SPECIES_YELLOWDOG = 10;
-        public const uint SPECIES_BLACKDOG = 11;
 
         public const uint SPECIES_BLACKSABER1 = 12;
         public const uint SPECIES_BLACKSABER_TEST = 13;
-
-        public const uint SPECIES_EKRAIL = 14;
-        public const uint SPECIES_SWORDMAN = 15;
-        public const uint SPECIES_FIRESWORDMAN = 16;
-        public const uint SPECIES_WANDWITCHGIRL = 17;
-
-        public const uint SPECIES_ANGEL = 18;
-        public const uint SPECIES_GH_WIZARD_MAN_RED = 19;
-
-        public const uint SPECIES_DEMON_FIRE_SLIME = 4096;
-        public const uint SPECIES_GOBLIN = 4097;
-        public const uint SPECIES_SKELEARCHER = 4098;
-        public const uint SPECIES_BAT = 4099;
-        public const uint SPECIES_FIREBAT = 4100;
-        public const uint SPECIES_RIDLEYDRAKE = 4101;
-        public const uint SPECIES_BOARWARRIOR = 4102;
-        public const uint SPECIES_BOAR = 4103;
-        public const uint SPECIES_SWORDMAN_BOSS = 4104;
-        public const uint SPECIES_FIRETOTEM = 4105;
-        public const uint SPECIES_BRICK1 = 4106;
-        public const uint SPECIES_DARKBEAMTOWER = 4107;
-        public const uint SPECIES_LIGHTGUARD_RED = 4108;
-        public const uint SPECIES_HEAVYGUARD_RED = 4109;
-        public const uint SPECIES_RIDERGUARD_RED = 4110;
-        public const uint SPECIES_STONE_GOLEM = 4111;
-        public const uint SPECIES_BOMBERGOBLIN = 4112;
-        public const uint SPECIES_ARCHERGUARD_RED = 4113;
-        public const uint SPECIES_FLYING_DEMON = 4114;
-        public const uint SPECIES_SUCCUBUS = 4115;
-
-        public const uint SPECIES_CMD_TRAINER = 4116;
 
         public const uint TT_NONE = 0;
         public const uint TT_CYCLIC_TIMED = 1;
@@ -61,13 +23,6 @@ namespace JoltCSharp {
         public const uint TT_STORY_POINT_ONLY = 7;
         public const uint TT_SAVE_AND_STORY_POINT = 8;
         public const uint TT_VICTORY = 9;
-
-        // Non-interauctive
-        public const uint SPECIES_VIL_MALE1 = 8192;
-        public const uint SPECIES_VIL_MALE2 = 8193;
-        public const uint SPECIES_VIL_FEMALE1 = 8194;
-        public const uint SPECIES_VIL_FEMALE2 = 8195;
-        public const uint SPECIES_PINK_PIG = 8196;
 
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
         public const float DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE = 8.0f; // Currently only supports rectilinear rectangle shape.
@@ -305,7 +260,17 @@ namespace JoltCSharp {
             TtStoryPointOnly = TT_STORY_POINT_ONLY,
             TtSaveAndStoryPoint = TT_SAVE_AND_STORY_POINT,
 
-            TtVictory = TT_VICTORY, 
+            TtVictory = TT_VICTORY,     
+
+            ChSpecies = new ChSpeciesConsts {
+                Bladegirl = SPECIES_BLADEGIRL,
+                Bountyhunter = SPECIES_BOUNTYHUNTER,
+
+                Blacksaber1 = SPECIES_BLACKSABER1,
+                BlacksaberTest = SPECIES_BLACKSABER_TEST,
+
+                NoneCh = SPECIES_NONE_CH,
+            }
         };
     }
 }

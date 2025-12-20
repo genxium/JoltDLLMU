@@ -2,6 +2,7 @@
 #define CPP_ONLY_CONSTS_H 1
 
 #include "PbConsts.h"
+#include <vector>
 
 /*
 The "const nomenclature" is as follows.
@@ -54,5 +55,25 @@ const float  cLengthEps = 1e-3;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;
 const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
+
+const std::vector<std::vector<int>> DIRECTION_DECODER = {
+    { 0, 0 }, // 0
+    { 0, +2 }, // 1
+    { 0, -2 }, // 2
+    { +2, 0 }, // 3
+    { -2, 0 }, // 4
+    { +1, +1 }, // 5
+    { -1, -1 }, // 6
+    { +1, -1 }, // 7
+    { -1, +1 }, // 8
+    /* The rest is for safe access from malicious inputs */
+    { 0, 0 }, // 9
+    { 0, 0 }, // 10
+    { 0, 0 }, // 11
+    { 0, 0 }, // 12
+    { 0, 0 }, // 13
+    { 0, 0 }, // 14
+    { 0, 0 }, // 15
+};
 
 #endif

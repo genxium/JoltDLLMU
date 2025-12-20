@@ -4,7 +4,7 @@ bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
     return BaseBattle::ResetStartRdf(inBytes, inBytesCnt);
 }
 
-bool BackendBattle::ResetStartRdf(const WsReq* initializerMapData) {
+bool BackendBattle::ResetStartRdf(WsReq* initializerMapData) {
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "BackendBattle::ResetStartRdf starts for deserialized initializerMapData";

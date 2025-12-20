@@ -187,8 +187,10 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = wsReq.add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
-        for (auto xOrY : hull) {
-            srcPolygon->add_points(xOrY);
+        for (int i = 0; i < hull.size(); i += 2) {
+            auto newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i+1]);
         }
     }
     wsReq.set_allocated_self_parsed_rdf(startRdf);

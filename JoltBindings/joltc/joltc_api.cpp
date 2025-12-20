@@ -12,6 +12,7 @@
 
 #include "CppOnlyConsts.h"
 #include "PbConsts.h"
+#include "NpcReactionConsts.h"
 #include "FrontendBattle.h"
 #include "BackendBattle.h"
 
@@ -27,6 +28,7 @@ using namespace JPH;
 
 const PrimitiveConsts* globalPrimitiveConsts = nullptr;
 const ConfigConsts* globalConfigConsts = nullptr;
+std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;
 
 bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     if (nullptr != globalPrimitiveConsts) {
@@ -35,6 +37,9 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     PrimitiveConsts tmp;
     tmp.ParseFromArray(inBytes, inBytesCnt);
     globalPrimitiveConsts = new PrimitiveConsts(tmp);
+
+    auto& chSpecies = globalPrimitiveConsts->ch_species();
+    globalNpcReactionMap[chSpecies.blacksaber1()] = new BlackSaber1NpcReaction();
     return true;
 }
 
