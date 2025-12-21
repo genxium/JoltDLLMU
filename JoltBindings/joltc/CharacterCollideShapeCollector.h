@@ -62,6 +62,7 @@ public:
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
     int                     newEffFramesToRecover = 0;
+    int                     newEffDef1QuotaReduction = 0;
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
@@ -83,7 +84,7 @@ public:
             mBestDot = dot;
         }
 
-        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffPushbackVelX, newEffPushbackVelY);
+        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY);
     }
 
 private:

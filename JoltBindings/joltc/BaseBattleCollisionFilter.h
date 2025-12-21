@@ -58,7 +58,7 @@ public:
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
         const uint64_t udRhs, const uint64_t udtRhs,
         const JPH::CollideShapeResult& inResult,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) = 0;
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outNewEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) = 0;
 
     virtual void handleLhsBulletCollision(
         const int currRdfId,
@@ -197,6 +197,18 @@ public:
 
     inline static uint64_t sanitizeCachedCueCmd(uint64_t origCmd) {
         return (origCmd & 31u); // i.e. Only reserve directions and BtnALevel
+    }
+
+    inline static bool chIsNotDashing(const CharacterDownsync& chd) {
+        return (Dashing != chd.ch_state() && Sliding != chd.ch_state() && BackDashing != chd.ch_state() && InAirDashing != chd.ch_state());
+    }
+
+    inline static bool chCanJumpWithInertia(const CharacterDownsync& currChd, const CharacterConfig* cc, bool notDashing) {
+        if (0 >= cc->jumping_init_vel_y()) return false;
+        if (0 >= currChd.frames_to_recover()) return true;
+        if (!notDashing && cc->proactive_jump_startup_frames() <= currChd.frames_in_ch_state()) return true;
+        if (walkingAtkSet.count(currChd.ch_state()) && cc->proactive_jump_startup_frames() <= currChd.frames_in_ch_state()) return true;
+        return false;
     }
 }; 
 

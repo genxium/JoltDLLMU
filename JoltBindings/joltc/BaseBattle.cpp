@@ -331,7 +331,7 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, con
         */
         auto bodyID = chCollider->GetBodyID();
         const CharacterConfig* cc = getCc(currChd.species_id());
-        bool currNotDashing = isNotDashing(currChd);
+        bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
         bool inJumpStartupOrJustEnded = (isInJumpStartup(nextChd, cc) || isJumpStartupJustEnded(currChd, &nextChd, cc));
         if (currChd.omit_gravity() || nextChd.omit_gravity() || cc->omit_gravity() || inJumpStartupOrJustEnded) {
@@ -412,7 +412,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             if (!noOpSet.count(currChd.ch_state())) {
                 const CharacterConfig* cc = getCc(currChd.species_id());
                 auto currChState = currChd.ch_state();
-                bool currNotDashing = isNotDashing(currChd);
+                bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
                 bool currDashing = !currNotDashing;
                 bool currWalking = walkingSet.count(currChState);
                 bool currEffInAir = isEffInAir(currChd, currNotDashing);
@@ -452,7 +452,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             if (!noOpSet.count(currChd.ch_state())) {
                 const CharacterConfig* cc = getCc(currChd.species_id());
                 auto currChState = currChd.ch_state();
-                bool currNotDashing = isNotDashing(currChd);
+                bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
                 bool currDashing = !currNotDashing;
                 bool currWalking = walkingSet.count(currChState);
                 bool currEffInAir = isEffInAir(currChd, currNotDashing);
@@ -537,9 +537,9 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             bool groundBodyIsChCollider = false, isDead = false; 
             CH_COLLIDER_T* single = transientUdToChCollider[ud];
 
-            bool currNotDashing = isNotDashing(currChd);
+            bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
             bool currEffInAir = isEffInAir(currChd, currNotDashing);
-            bool oldNextNotDashing = isNotDashing(*nextChd);
+            bool oldNextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
             bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
             //bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
 
@@ -611,9 +611,9 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             CH_COLLIDER_T* single = transientUdToChCollider[ud];
             const BodyID& selfNpcBodyID = single->GetBodyID();
 
-            bool currNotDashing = isNotDashing(currChd);
+            bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
             bool currEffInAir = isEffInAir(currChd, currNotDashing);
-            bool oldNextNotDashing = isNotDashing(*nextChd);
+            bool oldNextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
             bool oldNextEffInAir = isEffInAir(*nextChd, oldNextNotDashing);
             //bool isProactivelyJumping = proactiveJumpingSet.count(nextChd->ch_state());
 
@@ -630,7 +630,13 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 if (cc->has_vision_reaction()) {
                     BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
                     if (nullptr != npcReaction) {
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpc, nextNpc, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState);
+                        NpcGoal currNpcGoal = currNpc.goal_as_npc();
+                        uint64_t currNpcCachedCueCmd = currNpc.cached_cue_cmd();
+                        NpcGoal newGoal = currNpcGoal;
+                        uint64_t newCmd = 0;
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd);
+                        nextNpc->set_goal_as_npc(newGoal);
+                        nextNpc->set_cached_cue_cmd(newCmd);
                     }   
                 }
             }
@@ -660,15 +666,6 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 settings.mActiveEdgeMovementDirection = newVel;
                 settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
 
-                class BulletBodyFilter : public IgnoreSingleBodyFilter {
-                public:
-                    using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
-
-                    virtual bool	ShouldCollideLocked(const Body& inBody) const override
-                    {
-                        return !inBody.IsSensor();
-                    }
-                };
                 BulletBodyFilter blBodyFilter(bodyID);
                 BulletCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, UDT_BL, &currBl, nextBl, this);
                 narrowPhaseQueryNoLock->CollideShape(blShape, Vec3::sOne(), blCOMTransform, settings, newPos, collector, defaultBplf, defaultOlf, blBodyFilter);
@@ -2124,8 +2121,7 @@ void BaseBattle::deriveCharacterOpPattern(const int rdfId, const CharacterDownsy
     JPH::Quat currChdQ(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
     Vec3 currChdFacing = currChdQ*Vec3(1, 0, 0);
     int effFrontOrBack = (ifDecoded.dx() * currChdFacing.GetX()); // [WARNING] Deliberately using "ifDecoded.dx()" instead of "effDx (which could be 0 in block stun)" here!
-    bool canJumpWithinInertia = (0 == currChd.frames_to_recover()) || !notDashing;
-    canJumpWithinInertia |= (WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state());
+    bool canJumpWithinInertia = BaseBattleCollisionFilter::chCanJumpWithInertia(currChd, cc, notDashing);
     if (0 < ifDecoded.btn_a_level()) {
         if (0 == currChd.btn_a_holding_rdf_cnt() && canJumpWithinInertia) {
             if ((currChd.primarily_on_slippable_hard_pushback() || (currEffInAir && currChd.omit_gravity() && !cc->omit_gravity())) && (0 > ifDecoded.dy() && 0 == ifDecoded.dx())) {
@@ -2290,7 +2286,7 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
         } else {
             processInertiaFlying(rdfId, dt, currChd, nextChd, effDx, effDy, cc, currParalyzed, currInBlockStun);
         }
-        bool nextNotDashing = isNotDashing(*nextChd);
+        bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
         bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
         processDelayedBulletSelfVel(rdfId, currChd, nextChd, cc, currParalyzed, nextEffInAir);
 
@@ -2524,7 +2520,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     }
 
     // Remove any active skill if not attacking
-    bool notDashing = isNotDashing(*nextChd);
+    bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     if (nonAttackingSet.count(nextChd->ch_state()) && notDashing) {
         nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
         nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
@@ -2651,33 +2647,34 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
     while (candI < nextRdf->npcs_arr_size()) {
         const NpcCharacterDownsync* candidate = &(nextRdf->npcs_arr(candI));
         if (globalPrimitiveConsts->terminating_character_id() == candidate->id()) break;
-        const CharacterDownsync& chd = candidate->chd();
-        const CharacterConfig& candidateConfig = characterConfigs.at(chd.species_id());
+        const CharacterDownsync* chd = &(candidate->chd());
+        const CharacterConfig& candidateConfig = characterConfigs.at(chd->species_id());
 
         /*
         // TODO: Drop pickable
         */
         
-        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(&chd)) {
+        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(chd)) {
             if (globalPrimitiveConsts->terminating_trigger_id() != candidate->publishing_to_trigger_id_upon_exhausted()) {
                 auto triggerUd = calcPublishingToTriggerUd(*candidate);
                 auto targetTriggerInNextFrame = transientUdToNextTrigger[triggerUd];
-                if (0 == chd.last_damaged_by_ud() && globalPrimitiveConsts->terminating_bullet_team_id() == chd.last_damaged_by_bullet_team_id()) {
+                if (0 == chd->last_damaged_by_ud() && globalPrimitiveConsts->terminating_bullet_team_id() == chd->last_damaged_by_bullet_team_id()) {
                     if (1 == playersCnt) {
                         publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), 1, 1, targetTriggerInNextFrame);
                     } else {
 #ifndef  NDEBUG
                         // Debug::Log("@rdfId=" + rdfId + " publishing evtMask=" + candidate.PublishingEvtMaskUponExhausted + " to trigger " + targetTriggerInNextFrame.ToString() + " with no join index and no bullet team id!");
 #endif // ! NDEBUG
-                        publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                        publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
                     }
                 } else {
-                    publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd.last_damaged_by_ud(), chd.last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                    publishNpcExhaustedEvt(currRdfId, candidate->publishing_evt_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
                 }
             }
             candI++;
             if (candI >= nextRdf->npcs_arr_size()) break;
             candidate = &(nextRdf->npcs_arr(candI));
+            chd = &(candidate->chd());
         }
 
         if (candI >= nextRdf->npcs_arr_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs_arr(candI).id()) {
@@ -3629,42 +3626,36 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     }
 
     if (0 < collector.newEffDamage) {
-        if (!noOpSet.count(nextChd->ch_state())) {
-            if (collector.newEffBlownUp) {
-                nextChd->set_ch_state(BlownUp1);
+        if (collector.newEffBlownUp) {
+            nextChd->set_ch_state(BlownUp1);
+        } else {
+            if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
+                nextChd->set_ch_state(InAirAtked1);
             } else {
-                if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
-                    nextChd->set_ch_state(InAirAtked1);
-                } else {
-                    nextChd->set_ch_state(Atked1);
-                }
+                nextChd->set_ch_state(Atked1);
             }
-            nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
-            if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelX) {
-                nextChd->set_vel_x(collector.newEffPushbackVelX);
-            } 
-            if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelY) {
-                nextChd->set_vel_y(collector.newEffPushbackVelY);
-            }
-            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
-        } else if (Atked1 == nextChd->ch_state() || InAirAtked1 == nextChd->ch_state()) {
-            if (collector.newEffBlownUp) {
-                nextChd->set_ch_state(BlownUp1);
-            }
-            if (collector.newEffFramesToRecover > nextChd->frames_to_recover()) {
-                nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
-                if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelX) {
-                    nextChd->set_vel_x(collector.newEffPushbackVelX);
-                } 
-                if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelY) {
-                    nextChd->set_vel_y(collector.newEffPushbackVelY);
-                }
-            }
-            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
-        } else if (BlownUp1 == nextChd->ch_state()){
-            nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
-        } 
+        }
+        nextChd->set_hp(nextChd->hp() - collector.newEffDamage);
         nextChd->set_damaged_hint_rdf_countdown(90); // TODO: Remove this hardcoded constant
+    }  
+
+    if (0 < collector.newEffFramesToRecover) {
+        if (atkedSet.count(currChd.ch_state())) {
+            // If transitting from an "atked ch_state", we'd only extend the existing "frames_to_recover"
+            if (nextChd->frames_to_recover() < collector.newEffFramesToRecover) {
+                nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
+            }
+        } else {
+            nextChd->set_frames_to_recover(collector.newEffFramesToRecover);
+        }
+    }
+
+    if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelX) {
+        nextChd->set_vel_x(collector.newEffPushbackVelX);
+    } 
+
+    if (globalPrimitiveConsts->no_lock_vel() != collector.newEffPushbackVelY) {
+        nextChd->set_vel_y(collector.newEffPushbackVelY);
     }
 }
 
@@ -3982,7 +3973,7 @@ void BaseBattle::handleLhsCharacterCollision(
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const CollideShapeResult& inResult,
-    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) {
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) {
 
     switch (udtRhs) {
     case UDT_BL:
@@ -4134,140 +4125,6 @@ void BaseBattle::handleLhsBulletCollision(
         break;
     }
 }
-
-/*
-void handleLhsCharacterVisionCollision(
-    const int currRdfId,
-    const uint64_t udLhs, const uint64_t udtLhs, const NpcCharacterDownsync* currSelfNpc, NpcCharacterDownsync* nextSelfNpc, const JPH::AABox& lhsSelfNpcWorldSpaceBounds,
-    const uint64_t udRhs, const uint64_t udtRhs, 
-    const JPH::CollideShapeResult& inResult,
-    float& ioMinAbsColliderDx,
-    float& ioMinAbsColliderDy,
-    float& ioMinAbsColliderDxForAlly,
-    float& ioMinAbsColliderDyForAlly,
-    float& ioMinAbsColliderDxForMvBlocker,
-    float& ioMinAbsColliderDyForMvBlocker,
-    uint64_t& oppoChUd,
-    uint64_t& oppoBlUd,
-    uint64_t& allyChUd,
-    uint64_t& mvBlockerUd
-) {
-    auto& currSelfChd = currSelfNpc->chd();
-    Vec3 positionDiff = inResult.mContactPointOn1;
-    float absColliderDx = std::abs(positionDiff.GetX());
-    float absColliderDy = std::abs(positionDiff.GetY());
-    bool isCharacterFlying = false;
-
-    switch (udtRhs) {
-    case UDT_PLAYER:
-    case UDT_NPC: {
-        const CharacterDownsync* currRhsChd = nullptr;
-        if (UDT_PLAYER == udtRhs) {
-            const PlayerCharacterDownsync* currRhsPlayer = transientUdToCurrPlayer[udRhs]; 
-            currRhsChd = &(currRhsPlayer->chd());
-        } else {
-            const NpcCharacterDownsync* currRhsNpc = transientUdToCurrNpc[udRhs]; 
-            currRhsChd = &(currRhsNpc->chd());
-        }
-        if (currRhsChd->bullet_team_id() != currSelfChd.bullet_team_id()) {
-            // different teams
-            if (absColliderDx > ioMinAbsColliderDx) {
-                break;
-            }
-
-            if (absColliderDx == ioMinAbsColliderDx && absColliderDy > ioMinAbsColliderDy) {
-                break;
-            }
-            ioMinAbsColliderDx = absColliderDx;
-            ioMinAbsColliderDy = absColliderDy;
-            oppoChUd = udRhs;
-            oppoBlUd = 0;
-        } else {
-            // same team
-            if (absColliderDx > ioMinAbsColliderDxForAlly) {
-                break;
-            }
-
-            if (absColliderDx == ioMinAbsColliderDxForAlly && absColliderDy > ioMinAbsColliderDyForAlly) {
-                break;
-            }
-            ioMinAbsColliderDxForAlly = absColliderDx;
-            ioMinAbsColliderDyForAlly = absColliderDy;
-            allyChUd = udRhs;
-        }  
-    }
-    break;
-    case UDT_BL: {
-        const Bullet* currRhsBl = transientUdToCurrBl[udRhs];
-        if (currRhsBl->team_id() == currSelfChd.bullet_team_id()) {
-            break;
-        }
-
-        const Skill* currRhsBlSkill = nullptr;
-        const BulletConfig* currRhsBlConfig = nullptr;
-        FindBulletConfig(currRhsBl->skill_id(), currRhsBl->active_skill_hit(), currRhsBlSkill, currRhsBlConfig);
-        if (nullptr == currRhsBlConfig || (0 >= currRhsBlConfig->damage() && !currRhsBlConfig->has_buff_config())) {
-            break; // currRhsBl is not offensive
-        }
-        Vec3 blVel(currRhsBl->vel_x(), currRhsBl->vel_y(), 0);
-        if (0 <= positionDiff.Dot(blVel)) {
-            break; // currRhsBl is not offensive
-        }
-
-        if (absColliderDx > ioMinAbsColliderDx) {
-            break;
-        }
-
-        if (absColliderDx == ioMinAbsColliderDx && absColliderDy > ioMinAbsColliderDy) {
-            break;
-        }
-        ioMinAbsColliderDx = absColliderDx;
-        ioMinAbsColliderDy = absColliderDy;
-        oppoChUd = 0;
-        oppoBlUd = udRhs;
-    }
-    break;
-    case UDT_OBSTACLE: {
-        Vec3 currSelfNpcVel(currSelfChd.vel_x(), currSelfChd.vel_y(), 0);
-        Quat currSelfNpcQ(currSelfChd.q_x(), currSelfChd.q_y(), currSelfChd.q_z(), currSelfChd.q_w());
-        Vec3 currSelfNpcFacing = currSelfNpcQ*Vec3(1, 0, 0);
-
-        const BodyID& rhsBodyID = inResult.mBodyID2;
-
-        bool isAlongForwardMv = (0 < positionDiff.Dot(currSelfNpcVel)) || (0 < positionDiff.Dot(currSelfNpcFacing));
-        if (!isAlongForwardMv) {
-            break;
-        }
-
-        if (!isCharacterFlying) {
-            TransformedShape rhsShapeInWorldSpace = biNoLock->GetTransformedShape(rhsBodyID);
-            AABox rhsAABoxInWorldSpace = rhsShapeInWorldSpace.GetWorldSpaceBounds();
-            bool strictlyUp = (rhsAABoxInWorldSpace.mMin.GetY() >= lhsSelfNpcWorldSpaceBounds.mMax.GetY());
-            bool holdableForRight = (rhsAABoxInWorldSpace.mMax.GetX() > lhsSelfNpcWorldSpaceBounds.mMax.GetX());
-            bool holdableForLeft = (rhsAABoxInWorldSpace.mMin.GetX() < lhsSelfNpcWorldSpaceBounds.mMin.GetX());
-            bool strictlyUpAndHoldableOnBothSides = (strictlyUp && holdableForLeft && holdableForRight);
-            if (strictlyUpAndHoldableOnBothSides) {
-                break;
-            }
-        }
-       
-        if (absColliderDx > ioMinAbsColliderDxForMvBlocker) {
-            break;
-        }
-
-        if (absColliderDx == ioMinAbsColliderDxForMvBlocker && absColliderDy > ioMinAbsColliderDyForMvBlocker) {
-            break;
-        }
-        ioMinAbsColliderDxForMvBlocker = absColliderDx;
-        ioMinAbsColliderDyForMvBlocker = absColliderDy;
-        mvBlockerUd = udRhs;
-    }
-    break;
-    default:
-    break;
-    }
-}
-*/
 
 bool BaseBattle::deallocPhySys() {
     if (nullptr == phySys) return false;
