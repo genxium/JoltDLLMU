@@ -853,16 +853,18 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     for (int i = 0; i < initializerMapData->serialized_barriers_size(); i++) {
         SerializedBarrierCollider* barrier = initializerMapData->mutable_serialized_barriers(i);
         SerializableConvexPolygon* convexPolygon = barrier->mutable_polygon();
-        const PbVec2& anchor = convexPolygon->anchor();
-        const double anchorX = anchor.x();
-        const double anchorY = anchor.y();
+        double recalcAnchorX = 0, recalcAnchorY = 0;
 
         int pointsCnt = convexPolygon->points_size();
         std::vector<PbVec2> effConvexPolygonPoints;
         effConvexPolygonPoints.reserve(pointsCnt);
         for (auto& srcPoint : convexPolygon->points()) {
             effConvexPolygonPoints.push_back(srcPoint);
+            recalcAnchorX += srcPoint.x();
+            recalcAnchorY += srcPoint.y();
         }
+        const double anchorX = (recalcAnchorX/pointsCnt); 
+        const double anchorY = (recalcAnchorY/pointsCnt); 
         std::sort(effConvexPolygonPoints.begin(), effConvexPolygonPoints.end(), [anchorX, anchorY](const PbVec2& a, const PbVec2& b) {
             const double dxA = (a.x() - anchorX);
             const double dyA = (a.y() - anchorY);
@@ -3550,7 +3552,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     settings.mActiveEdgeMovementDirection = newVel;
     settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
     
-    CharacterBodyFilter chBodyFilter(bodyID);
+    IgnoreSingleBodyFilter chBodyFilter(bodyID);
     narrowPhaseQueryNoLock->CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, settings, narrowPhaseInBaseOffset, collector, defaultBplf, defaultOlf, chBodyFilter);
     
     // Copy results

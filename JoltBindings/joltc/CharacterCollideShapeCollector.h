@@ -10,16 +10,6 @@
 using namespace jtshared;
 using namespace JPH;
 
-class CharacterBodyFilter : public IgnoreSingleBodyFilter {
-public:
-    using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
-
-    virtual bool	ShouldCollideLocked(const Body& inBody) const override
-    {
-        return true; // Don't skip when "inBody" is sensor!
-    }
-};
-
 class VisionBodyFilter : public BodyFilter {
 public:
     const CharacterDownsync* mSelfNpcChd;
@@ -75,8 +65,8 @@ public:
         }
         auto normal = -inResult.mPenetrationAxis.Normalized();
         float dot = normal.Dot(mUp);
-        if (dot > mBestDot) // Find the hit that is most aligned with the up vector
-        {
+        if (dot > mBestDot) {
+            // Find the hit that is most aligned with the up vector
             mGroundBodyID = inResult.mBodyID2;
             mGroundBodySubShapeID = inResult.mSubShapeID2;
             mGroundPosition = mBaseOffset + inResult.mContactPointOn2;

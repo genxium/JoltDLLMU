@@ -2790,10 +2790,10 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
 
         auto& npc2 = outerTimerRdf->npcs_arr(1);
         auto& npc2Chd = npc2.chd();
-        if (1 <= outerTimerRdfId && 100 > outerTimerRdfId) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tnpc2Chd hp = " << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+        if (200 <= outerTimerRdfId && 300 > outerTimerRdfId) {
+            std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tnpc2Chd hp = " << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
         } else if (512 <= outerTimerRdfId && 600 > outerTimerRdfId) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
         }
         outerTimerRdfId++;
     }
@@ -3353,6 +3353,7 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull2 = {
+        // Left pillar
         -800, 0,
         -800, 1000,
         -500, 1000,
@@ -3360,10 +3361,11 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull3 = {
-        500, 0,
+        // Right pillar
         500, 1000,
         800, 1000,
-        800, 0
+        800, 0,
+        500, 0,
     };
 
     std::vector<float> wideMapHull4 = {
@@ -3408,16 +3410,24 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = initializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
-            newPt->set_y(hull[i+1]);
+            newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    /*
+    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3440,25 +3450,31 @@ int main(int argc, char** argv)
 
     initTest7Data();
     runTestCase7(battle, initializerMapData, selfJoinIndex);
-    */
 
     auto blacksaber1VisionTestStartRdf = mockBlacksaber1VisionTestStartRdf();
     WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : npcVisionHulls) {
         auto srcBarrier = blacksaber1VisionTestInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     blacksaber1VisionTestInitializerMapData->set_allocated_self_parsed_rdf(blacksaber1VisionTestStartRdf);
     initTest8Data();
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    /*
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3466,35 +3482,49 @@ int main(int argc, char** argv)
     initTest10Data();
     runTestCase10(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    */
     
     auto rollbackChasingAlignTestStartRdf = mockRollbackChasingAlignTestStartRdf();
     WsReq* rollbackChasingAlignTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : hulls) {
         auto srcBarrier = rollbackChasingAlignTestInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     rollbackChasingAlignTestInitializerMapData->set_allocated_self_parsed_rdf(rollbackChasingAlignTestStartRdf);
     initTest11Data();
     runTestCase11(battle, rollbackChasingAlignTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    /*
     WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto fallenDeathStartRdf = mockFallenDeathRdf();
     for (auto hull : fallenDeathHulls) {
         auto srcBarrier = fallenDeathInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     fallenDeathInitializerMapData->set_allocated_self_parsed_rdf(fallenDeathStartRdf);
 
@@ -3508,11 +3538,19 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = bladeGirlSkillInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     bladeGirlSkillInitializerMapData->set_allocated_self_parsed_rdf(bladeGirlSkillStartRdf);
     
@@ -3525,18 +3563,25 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = bountyHunterSkillInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     bountyHunterSkillInitializerMapData->set_allocated_self_parsed_rdf(bountyHunterSkillStartRdf);
 
     initTest14Data();
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    */
  
     WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto victoryTriggerStartRdf = mockVictoryRdf();
@@ -3544,11 +3589,19 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = victoryTriggerInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
             PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
             newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     victoryTriggerInitializerMapData->set_allocated_self_parsed_rdf(victoryTriggerStartRdf);
 
