@@ -133,14 +133,23 @@ public class FrontendTest {
 
             var serializedBarriers = wsReq.SerializedBarriers;
             foreach (var hull in hulls1) {
-                RepeatedField<float> points2 = new RepeatedField<float>();
+                List<PbVec2> points2 = new List<PbVec2>();
+                float anchorX = 0, anchorY = 0;
                 foreach (var point in hull) {
-                    points2.Add(point.X);
-                    points2.Add(point.Y);
+                    points2.Add(new PbVec2 {
+                        X = point.X,
+                        Y = point.Y, 
+                    });
+                    anchorX += point.X;
+                    anchorY += point.Y;
                 }
+                anchorX /= (points2.Count);
+                anchorY /= (points2.Count);
                 var srcPolygon = new SerializableConvexPolygon {
-                    AnchorX = 0f,
-                    AnchorY = 0f,
+                    Anchor = new PbVec2 {
+                        X = anchorX, 
+                        Y = anchorY
+                    },
                 };
                 srcPolygon.Points.AddRange(points2);
                 var srcBarrier = new SerializedBarrierCollider {

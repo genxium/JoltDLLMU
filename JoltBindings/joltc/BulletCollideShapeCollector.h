@@ -3,6 +3,17 @@
 
 #include "BaseBattleCollisionFilter.h"
 #include <Jolt/Physics/Collision/CollideShape.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
+
+class BulletBodyFilter : public IgnoreSingleBodyFilter {
+public:
+    using IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
+
+    virtual bool	ShouldCollideLocked(const Body& inBody) const override
+    {
+        return !inBody.IsSensor();
+    }
+};
 
 class BulletCollideShapeCollector : public JPH::CollideShapeCollector {
 

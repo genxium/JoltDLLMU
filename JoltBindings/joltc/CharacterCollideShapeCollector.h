@@ -10,16 +10,6 @@
 using namespace jtshared;
 using namespace JPH;
 
-class CharacterBodyFilter : public IgnoreSingleBodyFilter {
-public:
-    using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
-
-    virtual bool	ShouldCollideLocked(const Body& inBody) const override
-    {
-        return true; // Don't skip when "inBody" is sensor!
-    }
-};
-
 class VisionBodyFilter : public BodyFilter {
 public:
     const CharacterDownsync* mSelfNpcChd;
@@ -62,6 +52,7 @@ public:
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
     int                     newEffFramesToRecover = 0;
+    int                     newEffDef1QuotaReduction = 0;
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
@@ -74,8 +65,8 @@ public:
         }
         auto normal = -inResult.mPenetrationAxis.Normalized();
         float dot = normal.Dot(mUp);
-        if (dot > mBestDot) // Find the hit that is most aligned with the up vector
-        {
+        if (dot > mBestDot) {
+            // Find the hit that is most aligned with the up vector
             mGroundBodyID = inResult.mBodyID2;
             mGroundBodySubShapeID = inResult.mSubShapeID2;
             mGroundPosition = mBaseOffset + inResult.mContactPointOn2;
@@ -83,7 +74,7 @@ public:
             mBestDot = dot;
         }
 
-        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffPushbackVelX, newEffPushbackVelY);
+        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY);
     }
 
 private:

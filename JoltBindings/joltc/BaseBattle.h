@@ -455,10 +455,6 @@ protected:
         return (CrouchIdle1 == state || CrouchAtk1 == state || CrouchAtked1 == state || (Sliding == state && cc->crouching_enabled()));
     }
 
-    inline bool isNotDashing(const CharacterDownsync& chd) {
-        return (Dashing != chd.ch_state() && Sliding != chd.ch_state() && BackDashing != chd.ch_state() && InAirDashing != chd.ch_state());
-    }
-
     inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing);
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
@@ -833,7 +829,7 @@ public:
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
         const uint64_t udRhs, const uint64_t udtRhs,
         const CollideShapeResult& inResult,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outNewEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
 
     virtual void handleLhsBulletCollision(
         const int currRdfId,

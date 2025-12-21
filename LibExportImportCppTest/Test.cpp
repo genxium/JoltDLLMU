@@ -187,11 +187,19 @@ int main(int argc, char** argv)
     for (auto hull : hulls) {
         auto srcBarrier = wsReq.add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
         for (int i = 0; i < hull.size(); i += 2) {
-            auto newPt = srcPolygon->add_points();
+            PbVec2* newPt = srcPolygon->add_points();
             newPt->set_x(hull[i]);
-            newPt->set_y(hull[i+1]);
+            newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
         }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
     }
     wsReq.set_allocated_self_parsed_rdf(startRdf);
 
