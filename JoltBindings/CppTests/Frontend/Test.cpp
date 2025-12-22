@@ -2765,8 +2765,8 @@ bool runTestCase7(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
 bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
-    int printIntervalRdfCnt = (1 << 4);
+    int loopRdfCnt = 2048;
+    int printIntervalRdfCnt = (1 << 2);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
@@ -2790,10 +2790,10 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
 
         auto& npc2 = outerTimerRdf->npcs_arr(1);
         auto& npc2Chd = npc2.chd();
-        if (200 <= outerTimerRdfId && 300 > outerTimerRdfId) {
-            std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tnpc2Chd hp = " << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
-        } else if (512 <= outerTimerRdfId && 600 > outerTimerRdfId) {
-            std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+        if (640 <= outerTimerRdfId && 1180 > outerTimerRdfId) {
+            if (0 == (outerTimerRdfId & printIntervalRdfCntMinus1)) {
+                std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+            }
         }
         outerTimerRdfId++;
     }
@@ -3385,16 +3385,24 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull6 = {
-        // Upper floor small platform at its left edge
-        -200, 500,
-        -200, 520,
+        // Upper floor small platform that's jumpable
+        100, 500,
         100, 520,
-        100, 500
+        300, 520,
+        300, 500
     };
 
+    std::vector<float> wideMapHull7 = {
+        // Upper floor small platform at its left edge that's not jumpable
+        -200, 500,
+        -200, 600,
+        100, 600,
+        100, 500
+    };
+    
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
-    std::vector<std::vector<float>> npcVisionHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4, wideMapHull5, wideMapHull6};
+    std::vector<std::vector<float>> npcVisionHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4, wideMapHull5, wideMapHull6, wideMapHull7};
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -3427,7 +3435,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+    /*
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3450,7 +3458,7 @@ int main(int argc, char** argv)
 
     initTest7Data();
     runTestCase7(battle, initializerMapData, selfJoinIndex);
-
+    */
     auto blacksaber1VisionTestStartRdf = mockBlacksaber1VisionTestStartRdf();
     WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : npcVisionHulls) {
@@ -3474,7 +3482,7 @@ int main(int argc, char** argv)
     initTest8Data();
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    /*
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3582,7 +3590,7 @@ int main(int argc, char** argv)
     initTest14Data();
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
- 
+    
     WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     auto victoryTriggerStartRdf = mockVictoryRdf();
     
@@ -3608,7 +3616,7 @@ int main(int argc, char** argv)
     initTest15Data();
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+    */
     pbStarterWsReqAllocator.Reset();
 
     // clean up
