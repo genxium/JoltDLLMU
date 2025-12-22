@@ -500,6 +500,10 @@ message PlayerCharacterDownsync {
     int32 revival_q_w = 11;
 
     int32 not_enough_mp_hint_rdf_countdown = 12;
+
+    // The following "NPC" fields are prepared for mocking Player inputs in an online arena when real-player-matching is difficult.
+    uint64 cached_cue_cmd = 13;
+    NpcGoal goal_as_npc = 14;
 }
 
 message NpcCharacterDownsync {

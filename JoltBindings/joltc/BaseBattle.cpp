@@ -1155,6 +1155,10 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
     if (isJumpStartupJustEnded(currChd, nextChd, cc)) {
         nextChd->set_jump_started(true);
     } else if ((nextChd->jump_triggered() || nextChd->slip_jump_triggered()) && (!currChd.jump_started() && !nextChd->jump_started())) {
+        int effProactiveJumpStartupFrames = cc->proactive_jump_startup_frames();
+        if (0 >= effProactiveJumpStartupFrames) {
+            effProactiveJumpStartupFrames = 4; // A default
+        }
         // [WARNING] This assignment blocks a lot of CharacterState transition logic, including "processInertiaWalking"!
         if (OnWallIdle1 == currChd.ch_state()) {
             nextChd->set_frames_to_start_jump(cc->proactive_jump_startup_frames() >> 1);
