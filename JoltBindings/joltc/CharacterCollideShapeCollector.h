@@ -27,6 +27,9 @@ public:
     }
 
     virtual bool			ShouldCollideLocked([[maybe_unused]] const Body &inBody) const {
+        if (nullptr == mBaseBattleFilter) {
+            return true;
+        }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
         auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfNpcChd, udRhs, udtRhs);

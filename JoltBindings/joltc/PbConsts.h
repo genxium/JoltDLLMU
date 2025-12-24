@@ -144,6 +144,12 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     */
 };
 
+const std::unordered_set<NpcGoal> temptingToMoveNpcGoalSet = {
+    NPatrol, 
+    NHuntThenIdle,
+    NHuntThenPatrol,
+    NHuntThenFollowAlly,
+};
 
 typedef struct ChStatePairHasher {
     std::size_t operator()(const std::pair<CharacterState, CharacterState>& v) const {

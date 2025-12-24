@@ -211,6 +211,7 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseNpcReaction.cpp
     ${JOLTC_ROOT}/BlackSaber1NpcReaction.h
     ${JOLTC_ROOT}/BlackSaber1NpcReaction.cpp
+    ${JOLTC_ROOT}/BlackSaberTestWithVisionNpcReaction.h
     ${JOLTC_ROOT}/NpcReactionConsts.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h

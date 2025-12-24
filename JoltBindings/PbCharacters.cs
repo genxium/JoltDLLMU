@@ -127,9 +127,9 @@ namespace JoltCSharp {
             JumpingInitVelY = 6.5f * BATTLE_DYNAMICS_FPS,
             ProactiveJumpStartupFrames = 4,
             AccMag = 3.0f * BATTLE_DYNAMICS_FPS,
-            VisionOffsetX = (10.0f),
+            VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),
-            VisionHalfHeight = (20.0f),
+            VisionHalfHeight = (30.0f),
             VisionTopRadius = (32.0f),
             VisionBottomRadius = (48.0f),
             HasVisionReaction = true,
@@ -152,8 +152,8 @@ namespace JoltCSharp {
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
 
-        public static CharacterConfig BLACKSABER_TEST = new CharacterConfig {
-            SpeciesId = SPECIES_BLACKSABER_TEST,
+        public static CharacterConfig BLACKSABER_TEST_NO_VISION = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKSABER_TEST_NO_VISION,
             SpeciesName = "BlackSaber1",
             Hp = 40,
             LayDownFrames = 12,
@@ -163,6 +163,41 @@ namespace JoltCSharp {
             Speed = 0.8f * BATTLE_DYNAMICS_FPS,
             JumpingInitVelY = 0, 
             AccMag = 6.8f * BATTLE_DYNAMICS_FPS,
+            CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (10.0f),
+            ShrinkedCapsuleRadius = (8.0f),
+            ShrinkedCapsuleHalfHeight = (12.0f),
+            LayDownCapsuleRadius = (16.0f),
+            LayDownCapsuleHalfHeight = (8.0f),
+            DyingCapsuleRadius = (16.0f),
+            DyingCapsuleHalfHeight = (6.0f),
+            HasTurnAroundAnim = false,
+            Hardness = 6,
+            HasDimmedAnim = false,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+            GaugeIncWhenExhausted = 50,
+            Ifc = IfaceCat.Metal,
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+        };
+
+        public static CharacterConfig BLACKSABER_TEST_WITH_VISION = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKSABER_TEST_WITH_VISION,
+            SpeciesName = "BlackSaber1",
+            Hp = 40,
+            LayDownFrames = 12,
+            LayDownFramesToRecover = 12,
+            GetUpInvinsibleFrames = 19,
+            GetUpFramesToRecover = 14,
+            Speed = 0.6f * BATTLE_DYNAMICS_FPS,
+            JumpingInitVelY = 6.5f * BATTLE_DYNAMICS_FPS,
+            ProactiveJumpStartupFrames = 4,
+            AccMag = 3.0f * BATTLE_DYNAMICS_FPS,
+            VisionOffsetX = (16.0f),
+            VisionOffsetY = (10.0f),
+            VisionHalfHeight = (30.0f),
+            VisionTopRadius = (32.0f),
+            VisionBottomRadius = (48.0f),
+            HasVisionReaction = true,
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
             VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
             CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
@@ -212,7 +247,8 @@ namespace JoltCSharp {
             underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
 
             // BLACKSABER_TEST
-            underlying.Add(BLACKSABER_TEST.SpeciesId, BLACKSABER_TEST);
+            underlying.Add(BLACKSABER_TEST_NO_VISION.SpeciesId, BLACKSABER_TEST_NO_VISION);
+            underlying.Add(BLACKSABER_TEST_WITH_VISION.SpeciesId, BLACKSABER_TEST_WITH_VISION);
         }
     }
 }

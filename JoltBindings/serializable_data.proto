@@ -1288,6 +1288,12 @@ message LevelStory {
 message SerializableConvexPolygon {
     PbVec2 anchor = 1;
     repeated PbVec2 points = 2;
+    bool is_box = 3;
+    // The following fields are only meaningful when "is_box == true"
+    float box_q_x = 4;
+    float box_q_y = 5;
+    float box_q_z = 6;
+    float box_q_w = 7;
 }
 
 message SerializedBarrierCollider {
@@ -1461,11 +1467,12 @@ message RpcEndpointHolder {
 message ChSpeciesConsts {
     uint32 bladegirl = 1;
     uint32 bountyhunter = 2;
-
     uint32 blacksaber1 = 3;
-    uint32 blacksaber_test = 4;
 
     uint32 none_ch = 2048;
+    uint32 blacksaber_test_no_vision = 2049;
+    uint32 blacksaber_test_with_vision = 2050;
+
 }
 
 message PrimitiveConsts {

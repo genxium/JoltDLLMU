@@ -53,3 +53,17 @@ As described above, the collision of `Body` instances are done via [Body.GetTran
 Considering that `class Body` is NOT a subclass of `class RefTarget<T>`, we have to manually manage its memory after a `Body` instance is removed from a `PhysicsSystem` (yet before it's destroyed) anyway -- **therefore it's both necessary and convenient to cache by `class Body` with respect to `class XxxShapeSettings`**.
 
 Kindly note that [class Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) DOESN'T hold any reference to `class ShapeSettings` or `class BodyCreationSettings` (the method [Body.GetBodyCreationSettings](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.cpp#L330) creates a temporary one on the fly), hence if reuse of `class ShapeSettings` instance is also preferred, additional cache space might be needed.
+
+# On the uncommon use of QuadTree in 3D space
+A common approach to handle CRUD of 3D objects in a 3D space is an Octree (i.e. 8 children per node) with fixed bounds division, e.g. starting with a RootNode having [-infty, +infty] in all x-/y-/z-axes, then divide the bounds in half in each axis for each child. This common approach has several wellknown cons.
+- Even if we only divide a node when it has more than a threshold of objects, it's still prone to becoming very imbalanced in some crowded sections v.s. some other sparse sections (i.e. deep down the RootNode), resulting in inefficient query.
+- It's inevitable that some objects just straddle across some fixed boundaries, i.e. a same object included in multiple nodes (and even multiple depths), again resulting in inefficient query.     
+
+However the common approach has more pros than cons.
+- Ease of understanding and implementation.
+    - No need to maintain change of bounds of each node.
+- A good (logarithmic) worst-case time-complexity for all CRUD operations.
+
+Now that [in Jolt, a QuadTree whose adjacent children can have overlapping bounds is used](https://jrouwe.github.io/JoltPhysics/index.html#broad-phase). Regardless of the pros mentioned in its document, I hereby note down a few cons or usage reminders for this uncommon approach.
+- Optimal bounds re-evaluation (as well as the actual update) upon adding/removing/updating an object in a node can be expensive, hence **it's better to always batch up objects for fewer count of operations**.
+- Upon removing an object in a node, the bounds of that node NEVER shrinks, according to [comment in code](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/BroadPhase/QuadTree.cpp#L935).
