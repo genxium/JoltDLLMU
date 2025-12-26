@@ -491,73 +491,76 @@ namespace jtshared {
             "ZW5lX25hbWUYAyABKAkigwEKCkxldmVsU3RvcnkSMAoGcG9pbnRzGAEgAygL",
             "MiAuanRzaGFyZWQuTGV2ZWxTdG9yeS5Qb2ludHNFbnRyeRpDCgtQb2ludHNF",
             "bnRyeRILCgNrZXkYASABKAUSIwoFdmFsdWUYAiABKAsyFC5qdHNoYXJlZC5T",
-            "dG9yeVBvaW50OgI4ASJfChlTZXJpYWxpemFibGVDb252ZXhQb2x5Z29uEiAK",
-            "BmFuY2hvchgBIAEoCzIQLmp0c2hhcmVkLlBiVmVjMhIgCgZwb2ludHMYAiAD",
-            "KAsyEC5qdHNoYXJlZC5QYlZlYzIifgoZU2VyaWFsaXplZEJhcnJpZXJDb2xs",
-            "aWRlchIrCgRhdHRyGAEgASgLMh0uanRzaGFyZWQuQmFycmllckNvbGxpZGVy",
-            "QXR0chI0Cgdwb2x5Z29uGAIgASgLMiMuanRzaGFyZWQuU2VyaWFsaXphYmxl",
-            "Q29udmV4UG9seWdvbiKzAQocU2VyaWFsaXplZFN0YXRpY1RyYXBDb2xsaWRl",
-            "chIoCgRhdHRyGAEgASgLMhouanRzaGFyZWQuVHJhcENvbGxpZGVyQXR0chIz",
-            "CgxiYXJyaWVyX2F0dHIYAiABKAsyHS5qdHNoYXJlZC5CYXJyaWVyQ29sbGlk",
-            "ZXJBdHRyEjQKB3BvbHlnb24YAyABKAsyIy5qdHNoYXJlZC5TZXJpYWxpemFi",
-            "bGVDb252ZXhQb2x5Z29uImoKDlBpY2thYmxlQ29uZmlnEikKC3BpY2t1cF90",
-            "eXBlGAEgASgOMhQuanRzaGFyZWQuUGlja3VwVHlwZRIVCg10YWtlc19ncmF2",
-            "aXR5GAIgASgIEhYKDnZmeF9zcGVjaWVzX2lkGAMgASgNIqgBChdQaWNrYWJs",
-            "ZUNvbmZpZ0Zyb21UaWxlZBIpCgtwaWNrdXBfdHlwZRgBIAEoDjIULmp0c2hh",
-            "cmVkLlBpY2t1cFR5cGUSEwoLcmVjdXJfcXVvdGEYAiABKAUSKQohbGlmZXRp",
-            "bWVfcmRmX2NvdW50X3Blcl9vY2N1cnJlbmNlGAMgASgNEiIKGnN0b2NrX3F1",
-            "b3RhX3Blcl9vY2N1cnJlbmNlGAQgASgNIq8CCghQaWNrYWJsZRIKCgJpZBgB",
-            "IAEoDRIpCgtwaWNrdXBfdHlwZRgCIAEoDjIULmp0c2hhcmVkLlBpY2t1cFR5",
-            "cGUSKQoIcGtfc3RhdGUYAyABKA4yFy5qdHNoYXJlZC5QaWNrYWJsZVN0YXRl",
-            "EhoKEmZyYW1lc19pbl9wa19zdGF0ZRgEIAEoBRIJCgF4GAUgASgCEgkKAXkY",
-            "BiABKAISCQoBehgHIAEoAhINCgV2ZWxfeBgIIAEoAhINCgV2ZWxfeRgJIAEo",
-            "AhINCgV2ZWxfehgKIAEoAhIkChxyZW1haW5pbmdfbGlmZXRpbWVfcmRmX2Nv",
-            "dW50GAsgASgFEh0KFXJlbWFpbmluZ19yZWN1cl9xdW90YRgMIAEoBRISCglw",
-            "aWNrZXJfdWQYgAQgASgEIjYKEUluamVjdGVkQ21kQ29uZmlnEhUKDWN1dG9m",
-            "Zl9yZGZfaWQYASABKAUSCgoCb3AYAiABKAQiXgoWQ2hhcmFjdGVyU3Bhd25l",
-            "ckNvbmZpZxIVCg1jdXRvZmZfcmRmX2lkGAEgASgFEhcKD3NwZWNpZXNfaWRf",
-            "bGlzdBgCIAMoDRIUCgxpbml0X29wX2xpc3QYAyADKAQijQEKFVBpY2thYmxl",
-            "U3Bhd25lckNvbmZpZxIVCg1jdXRvZmZfcmRmX2lkGAEgASgFEhcKD3NwZWNp",
-            "ZXNfaWRfbGlzdBgCIAMoDRIUCgxpbml0X29wX2xpc3QYAyADKAQSLgoQcGlj",
-            "a3VwX3R5cGVfbGlzdBgEIAMoDjIULmp0c2hhcmVkLlBpY2t1cFR5cGUiGwoN",
-            "VHJpZ2dlckNvbmZpZxIKCgJ0dBgBIAEoDSKaBgoWVHJpZ2dlckNvbmZpZ0Zy",
-            "b21UaWxlZBIKCgJ0dBgBIAEoDRIWCg5kZWxheWVkX2ZyYW1lcxgDIAEoBRIX",
-            "Cg9yZWNvdmVyeV9mcmFtZXMYBCABKAUSFgoOYnVsbGV0X3RlYW1faWQYBSAB",
-            "KAUSIAoYc3ViX2N5Y2xlX3RyaWdnZXJfZnJhbWVzGAYgASgFEhcKD3N1Yl9j",
-            "eWNsZV9xdW90YRgHIAEoBRIRCglxdW90YV9jYXAYCCABKAUSFQoNbmV3X3Jl",
-            "dml2YWxfeBgLIAEoAhIVCg1uZXdfcmV2aXZhbF95GAwgASgCEg8KB2luaXRf",
-            "cXgYDSABKAISDwoHaW5pdF9xeRgOIAEoAhIPCgdpbml0X3F6GA8gASgCEg8K",
-            "B2luaXRfcXcYECABKAISKgoicHVibGlzaGluZ19ldnRfbWFza191cG9uX2V4",
-            "aGF1c3RlZBgRIAEoBBIvCidwdWJsaXNoaW5nX3RvX3RyaWdnZXJfaWRfdXBv",
-            "bl9leGhhdXN0ZWQYEiABKA0SHAoUZm9yY2VfY3RybF9yZGZfY291bnQYEyAB",
-            "KAUSFgoOZm9yY2VfY3RybF9jbWQYFCABKAQSFwoOc3RvcnlfcG9pbnRfaWQY",
-            "gAQgASgFEg8KBmJnbV9pZBiBBCABKAUSGgoRaXNfYm9zc19zYXZlcG9pbnQY",
-            "ggQgASgIEk8KEGJvc3Nfc3BlY2llc19zZXQYgwQgAygLMjQuanRzaGFyZWQu",
-            "VHJpZ2dlckNvbmZpZ0Zyb21UaWxlZC5Cb3NzU3BlY2llc1NldEVudHJ5EkUK",
-            "GmNoYXJhY3Rlcl9zcGF3bmVyX3RpbWVfc2VxGIAIIAMoCzIgLmp0c2hhcmVk",
-            "LkNoYXJhY3RlclNwYXduZXJDb25maWcSQwoZcGlja2FibGVfc3Bhd25lcl90",
-            "aW1lX3NlcRiBCCADKAsyHy5qdHNoYXJlZC5QaWNrYWJsZVNwYXduZXJDb25m",
-            "aWcaNQoTQm9zc1NwZWNpZXNTZXRFbnRyeRILCgNrZXkYASABKA0SDQoFdmFs",
-            "dWUYAiABKAg6AjgBIvYDCgdUcmlnZ2VyEgoKAmlkGAEgASgNEhYKDmZyYW1l",
-            "c190b19maXJlGAMgASgFEhkKEWZyYW1lc190b19yZWNvdmVyGAQgASgFEg0K",
-            "BXF1b3RhGAUgASgFEhYKDmJ1bGxldF90ZWFtX2lkGAYgASgFEhcKD3N1Yl9j",
-            "eWNsZV9xdW90YRgJIAEoBRIlCgVzdGF0ZRgKIAEoDjIWLmp0c2hhcmVkLlRy",
-            "aWdnZXJTdGF0ZRIXCg9mcmFtZXNfaW5fc3RhdGUYCyABKAUSCQoBeBgMIAEo",
-            "AhIJCgF5GA0gASgCEgkKAXoYDiABKAISGQoRZGVtYW5kZWRfZXZ0X21hc2sY",
-            "DyABKAQSGgoSZnVsZmlsbGVkX2V2dF9tYXNrGBAgASgEEisKI3dhdmVfbnBj",
-            "X2V4aGF1c3RlZF9ldnRfbWFza19jb3VudGVyGBEgASgEEioKInB1Ymxpc2hp",
-            "bmdfZXZ0X21hc2tfdXBvbl9leGhhdXN0ZWQYEiABKAQSLwoncHVibGlzaGlu",
-            "Z190b190cmlnZ2VyX2lkX3Vwb25fZXhoYXVzdGVkGBMgASgNEhMKC29mZmVu",
-            "ZGVyX3VkGBQgASgEEh8KF29mZmVuZGVyX2J1bGxldF90ZWFtX2lkGBUgASgF",
-            "EhQKDHRyaWdnZXJfdHlwZRgWIAEoDSJ0Cg5QbGF5ZXJNZXRhSW5mbxIRCglw",
-            "bGF5ZXJfaWQYASABKAkSEgoKam9pbl9pbmRleBgCIAEoDRIWCg5idWxsZXRf",
-            "dGVhbV9pZBgDIAEoBRISCgpzcGVjaWVzX2lkGAQgASgNEg8KB3Jvb21faWQY",
-            "BSABKAUicwoRUnBjRW5kcG9pbnRIb2xkZXISCgoCaWQYASABKA0SGgoSZXh0",
-            "ZXJuYWxfYWRkcl9ob3N0GAIgASgJEhoKEmV4dGVybmFsX2FkZHJfcG9ydBgD",
-            "IAEoDRIaChJpbnRlcm5hbF9hZGRyX2hvc3QYBCABKAkiegoPQ2hTcGVjaWVz",
-            "Q29uc3RzEhEKCWJsYWRlZ2lybBgBIAEoDRIUCgxib3VudHlodW50ZXIYAiAB",
-            "KA0SEwoLYmxhY2tzYWJlcjEYAyABKA0SFwoPYmxhY2tzYWJlcl90ZXN0GAQg",
-            "ASgNEhAKB25vbmVfY2gYgBAgASgNIr4uCg9QcmltaXRpdmVDb25zdHMSGwoT",
+            "dG9yeVBvaW50OgI4ASKzAQoZU2VyaWFsaXphYmxlQ29udmV4UG9seWdvbhIg",
+            "CgZhbmNob3IYASABKAsyEC5qdHNoYXJlZC5QYlZlYzISIAoGcG9pbnRzGAIg",
+            "AygLMhAuanRzaGFyZWQuUGJWZWMyEg4KBmlzX2JveBgDIAEoCBIPCgdib3hf",
+            "cV94GAQgASgCEg8KB2JveF9xX3kYBSABKAISDwoHYm94X3FfehgGIAEoAhIP",
+            "Cgdib3hfcV93GAcgASgCIn4KGVNlcmlhbGl6ZWRCYXJyaWVyQ29sbGlkZXIS",
+            "KwoEYXR0chgBIAEoCzIdLmp0c2hhcmVkLkJhcnJpZXJDb2xsaWRlckF0dHIS",
+            "NAoHcG9seWdvbhgCIAEoCzIjLmp0c2hhcmVkLlNlcmlhbGl6YWJsZUNvbnZl",
+            "eFBvbHlnb24iswEKHFNlcmlhbGl6ZWRTdGF0aWNUcmFwQ29sbGlkZXISKAoE",
+            "YXR0chgBIAEoCzIaLmp0c2hhcmVkLlRyYXBDb2xsaWRlckF0dHISMwoMYmFy",
+            "cmllcl9hdHRyGAIgASgLMh0uanRzaGFyZWQuQmFycmllckNvbGxpZGVyQXR0",
+            "chI0Cgdwb2x5Z29uGAMgASgLMiMuanRzaGFyZWQuU2VyaWFsaXphYmxlQ29u",
+            "dmV4UG9seWdvbiJqCg5QaWNrYWJsZUNvbmZpZxIpCgtwaWNrdXBfdHlwZRgB",
+            "IAEoDjIULmp0c2hhcmVkLlBpY2t1cFR5cGUSFQoNdGFrZXNfZ3Jhdml0eRgC",
+            "IAEoCBIWCg52Znhfc3BlY2llc19pZBgDIAEoDSKoAQoXUGlja2FibGVDb25m",
+            "aWdGcm9tVGlsZWQSKQoLcGlja3VwX3R5cGUYASABKA4yFC5qdHNoYXJlZC5Q",
+            "aWNrdXBUeXBlEhMKC3JlY3VyX3F1b3RhGAIgASgFEikKIWxpZmV0aW1lX3Jk",
+            "Zl9jb3VudF9wZXJfb2NjdXJyZW5jZRgDIAEoDRIiChpzdG9ja19xdW90YV9w",
+            "ZXJfb2NjdXJyZW5jZRgEIAEoDSKvAgoIUGlja2FibGUSCgoCaWQYASABKA0S",
+            "KQoLcGlja3VwX3R5cGUYAiABKA4yFC5qdHNoYXJlZC5QaWNrdXBUeXBlEikK",
+            "CHBrX3N0YXRlGAMgASgOMhcuanRzaGFyZWQuUGlja2FibGVTdGF0ZRIaChJm",
+            "cmFtZXNfaW5fcGtfc3RhdGUYBCABKAUSCQoBeBgFIAEoAhIJCgF5GAYgASgC",
+            "EgkKAXoYByABKAISDQoFdmVsX3gYCCABKAISDQoFdmVsX3kYCSABKAISDQoF",
+            "dmVsX3oYCiABKAISJAoccmVtYWluaW5nX2xpZmV0aW1lX3JkZl9jb3VudBgL",
+            "IAEoBRIdChVyZW1haW5pbmdfcmVjdXJfcXVvdGEYDCABKAUSEgoJcGlja2Vy",
+            "X3VkGIAEIAEoBCI2ChFJbmplY3RlZENtZENvbmZpZxIVCg1jdXRvZmZfcmRm",
+            "X2lkGAEgASgFEgoKAm9wGAIgASgEIl4KFkNoYXJhY3RlclNwYXduZXJDb25m",
+            "aWcSFQoNY3V0b2ZmX3JkZl9pZBgBIAEoBRIXCg9zcGVjaWVzX2lkX2xpc3QY",
+            "AiADKA0SFAoMaW5pdF9vcF9saXN0GAMgAygEIo0BChVQaWNrYWJsZVNwYXdu",
+            "ZXJDb25maWcSFQoNY3V0b2ZmX3JkZl9pZBgBIAEoBRIXCg9zcGVjaWVzX2lk",
+            "X2xpc3QYAiADKA0SFAoMaW5pdF9vcF9saXN0GAMgAygEEi4KEHBpY2t1cF90",
+            "eXBlX2xpc3QYBCADKA4yFC5qdHNoYXJlZC5QaWNrdXBUeXBlIhsKDVRyaWdn",
+            "ZXJDb25maWcSCgoCdHQYASABKA0imgYKFlRyaWdnZXJDb25maWdGcm9tVGls",
+            "ZWQSCgoCdHQYASABKA0SFgoOZGVsYXllZF9mcmFtZXMYAyABKAUSFwoPcmVj",
+            "b3ZlcnlfZnJhbWVzGAQgASgFEhYKDmJ1bGxldF90ZWFtX2lkGAUgASgFEiAK",
+            "GHN1Yl9jeWNsZV90cmlnZ2VyX2ZyYW1lcxgGIAEoBRIXCg9zdWJfY3ljbGVf",
+            "cXVvdGEYByABKAUSEQoJcXVvdGFfY2FwGAggASgFEhUKDW5ld19yZXZpdmFs",
+            "X3gYCyABKAISFQoNbmV3X3Jldml2YWxfeRgMIAEoAhIPCgdpbml0X3F4GA0g",
+            "ASgCEg8KB2luaXRfcXkYDiABKAISDwoHaW5pdF9xehgPIAEoAhIPCgdpbml0",
+            "X3F3GBAgASgCEioKInB1Ymxpc2hpbmdfZXZ0X21hc2tfdXBvbl9leGhhdXN0",
+            "ZWQYESABKAQSLwoncHVibGlzaGluZ190b190cmlnZ2VyX2lkX3Vwb25fZXho",
+            "YXVzdGVkGBIgASgNEhwKFGZvcmNlX2N0cmxfcmRmX2NvdW50GBMgASgFEhYK",
+            "DmZvcmNlX2N0cmxfY21kGBQgASgEEhcKDnN0b3J5X3BvaW50X2lkGIAEIAEo",
+            "BRIPCgZiZ21faWQYgQQgASgFEhoKEWlzX2Jvc3Nfc2F2ZXBvaW50GIIEIAEo",
+            "CBJPChBib3NzX3NwZWNpZXNfc2V0GIMEIAMoCzI0Lmp0c2hhcmVkLlRyaWdn",
+            "ZXJDb25maWdGcm9tVGlsZWQuQm9zc1NwZWNpZXNTZXRFbnRyeRJFChpjaGFy",
+            "YWN0ZXJfc3Bhd25lcl90aW1lX3NlcRiACCADKAsyIC5qdHNoYXJlZC5DaGFy",
+            "YWN0ZXJTcGF3bmVyQ29uZmlnEkMKGXBpY2thYmxlX3NwYXduZXJfdGltZV9z",
+            "ZXEYgQggAygLMh8uanRzaGFyZWQuUGlja2FibGVTcGF3bmVyQ29uZmlnGjUK",
+            "E0Jvc3NTcGVjaWVzU2V0RW50cnkSCwoDa2V5GAEgASgNEg0KBXZhbHVlGAIg",
+            "ASgIOgI4ASL2AwoHVHJpZ2dlchIKCgJpZBgBIAEoDRIWCg5mcmFtZXNfdG9f",
+            "ZmlyZRgDIAEoBRIZChFmcmFtZXNfdG9fcmVjb3ZlchgEIAEoBRINCgVxdW90",
+            "YRgFIAEoBRIWCg5idWxsZXRfdGVhbV9pZBgGIAEoBRIXCg9zdWJfY3ljbGVf",
+            "cXVvdGEYCSABKAUSJQoFc3RhdGUYCiABKA4yFi5qdHNoYXJlZC5UcmlnZ2Vy",
+            "U3RhdGUSFwoPZnJhbWVzX2luX3N0YXRlGAsgASgFEgkKAXgYDCABKAISCQoB",
+            "eRgNIAEoAhIJCgF6GA4gASgCEhkKEWRlbWFuZGVkX2V2dF9tYXNrGA8gASgE",
+            "EhoKEmZ1bGZpbGxlZF9ldnRfbWFzaxgQIAEoBBIrCiN3YXZlX25wY19leGhh",
+            "dXN0ZWRfZXZ0X21hc2tfY291bnRlchgRIAEoBBIqCiJwdWJsaXNoaW5nX2V2",
+            "dF9tYXNrX3Vwb25fZXhoYXVzdGVkGBIgASgEEi8KJ3B1Ymxpc2hpbmdfdG9f",
+            "dHJpZ2dlcl9pZF91cG9uX2V4aGF1c3RlZBgTIAEoDRITCgtvZmZlbmRlcl91",
+            "ZBgUIAEoBBIfChdvZmZlbmRlcl9idWxsZXRfdGVhbV9pZBgVIAEoBRIUCgx0",
+            "cmlnZ2VyX3R5cGUYFiABKA0idAoOUGxheWVyTWV0YUluZm8SEQoJcGxheWVy",
+            "X2lkGAEgASgJEhIKCmpvaW5faW5kZXgYAiABKA0SFgoOYnVsbGV0X3RlYW1f",
+            "aWQYAyABKAUSEgoKc3BlY2llc19pZBgEIAEoDRIPCgdyb29tX2lkGAUgASgF",
+            "InMKEVJwY0VuZHBvaW50SG9sZGVyEgoKAmlkGAEgASgNEhoKEmV4dGVybmFs",
+            "X2FkZHJfaG9zdBgCIAEoCRIaChJleHRlcm5hbF9hZGRyX3BvcnQYAyABKA0S",
+            "GgoSaW50ZXJuYWxfYWRkcl9ob3N0GAQgASgJIqsBCg9DaFNwZWNpZXNDb25z",
+            "dHMSEQoJYmxhZGVnaXJsGAEgASgNEhQKDGJvdW50eWh1bnRlchgCIAEoDRIT",
+            "CgtibGFja3NhYmVyMRgDIAEoDRIQCgdub25lX2NoGIAQIAEoDRIiChlibGFj",
+            "a3NhYmVyX3Rlc3Rfbm9fdmlzaW9uGIEQIAEoDRIkChtibGFja3NhYmVyX3Rl",
+            "c3Rfd2l0aF92aXNpb24YghAgASgNIr4uCg9QcmltaXRpdmVDb25zdHMSGwoT",
             "YmF0dGxlX2R5bmFtaWNzX2ZwcxgBIAEoBRIyCipkZWZhdWx0X3RpbWVvdXRf",
             "Zm9yX2xhc3RfYWxsX2NvbmZpcm1lZF9pZmQYAiABKAUSFAoMcm9vbV9pZF9u",
             "b25lGAMgASgFEh0KFXJvb21fc3RhdGVfaW1wb3NzaWJsZRgEIAEoBRIXCg9y",
@@ -843,7 +846,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPointStep), global::jtshared.StoryPointStep.Parser, new[]{ "Lines", "NonctrlAliveRdfCount" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StoryPoint), global::jtshared.StoryPoint.Parser, new[]{ "Steps", "Nonctrl", "CutsceneName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.LevelStory), global::jtshared.LevelStory.Parser, new[]{ "Points" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializableConvexPolygon), global::jtshared.SerializableConvexPolygon.Parser, new[]{ "Anchor", "Points" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializableConvexPolygon), global::jtshared.SerializableConvexPolygon.Parser, new[]{ "Anchor", "Points", "IsBox", "BoxQX", "BoxQY", "BoxQZ", "BoxQW" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedBarrierCollider), global::jtshared.SerializedBarrierCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedStaticTrapCollider), global::jtshared.SerializedStaticTrapCollider.Parser, new[]{ "Attr", "BarrierAttr", "Polygon" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfig), global::jtshared.PickableConfig.Parser, new[]{ "PickupType", "TakesGravity", "VfxSpeciesId" }, null, null, null),
@@ -857,7 +860,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "Id", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "SubCycleQuota", "State", "FramesInState", "X", "Y", "Z", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcExhaustedEvtMaskCounter", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "OffenderUd", "OffenderBulletTeamId", "TriggerType" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerMetaInfo), global::jtshared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RpcEndpointHolder), global::jtshared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ChSpeciesConsts), global::jtshared.ChSpeciesConsts.Parser, new[]{ "Bladegirl", "Bountyhunter", "Blacksaber1", "BlacksaberTest", "NoneCh" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ChSpeciesConsts), global::jtshared.ChSpeciesConsts.Parser, new[]{ "Bladegirl", "Bountyhunter", "Blacksaber1", "NoneCh", "BlacksaberTestNoVision", "BlacksaberTestWithVision" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "DefaultTimeoutForLastAllConfirmedIfd", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "NpcFleeGracePeriodRdfCnt", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "NoVfxId", "DefaultPickableHitboxHalfSizeX", "DefaultPickableHitboxHalfSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableNonpickableStartupFrames", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "SpeciesNoneCh", "UpsyncStIfdIdTolerance", "NoLockVel", "DebuffArrIdxElemental", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "SpAtkLookupFrames", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "EleNone", "EleFire", "EleWater", "EleThunder", "EleRock", "EleWind", "EleIce", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId", "TtNone", "TtCyclicTimed", "TtByMovement", "TtByAttack", "TtIndiWaveNpcSpawner", "TtSyncWaveNpcSpawner", "TtSavePointOnly", "TtStoryPointOnly", "TtSaveAndStoryPoint", "TtVictory", "TerminatingLowerPartRdfCnt", "ChSpecies" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConfigConsts), global::jtshared.ConfigConsts.Parser, new[]{ "CharacterConfigs", "SkillConfigs", "BuffConfigs", "DebuffConfigs", "TriggerConfigs", "TrapConfigs" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, })
           }));
@@ -24074,6 +24077,11 @@ namespace jtshared {
     public SerializableConvexPolygon(SerializableConvexPolygon other) : this() {
       anchor_ = other.anchor_ != null ? other.anchor_.Clone() : null;
       points_ = other.points_.Clone();
+      isBox_ = other.isBox_;
+      boxQX_ = other.boxQX_;
+      boxQY_ = other.boxQY_;
+      boxQZ_ = other.boxQZ_;
+      boxQW_ = other.boxQW_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -24103,6 +24111,64 @@ namespace jtshared {
       get { return points_; }
     }
 
+    /// <summary>Field number for the "is_box" field.</summary>
+    public const int IsBoxFieldNumber = 3;
+    private bool isBox_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsBox {
+      get { return isBox_; }
+      set {
+        isBox_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "box_q_x" field.</summary>
+    public const int BoxQXFieldNumber = 4;
+    private float boxQX_;
+    /// <summary>
+    /// The following fields are only meaningful when "is_box == true"
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float BoxQX {
+      get { return boxQX_; }
+      set {
+        boxQX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "box_q_y" field.</summary>
+    public const int BoxQYFieldNumber = 5;
+    private float boxQY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float BoxQY {
+      get { return boxQY_; }
+      set {
+        boxQY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "box_q_z" field.</summary>
+    public const int BoxQZFieldNumber = 6;
+    private float boxQZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float BoxQZ {
+      get { return boxQZ_; }
+      set {
+        boxQZ_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "box_q_w" field.</summary>
+    public const int BoxQWFieldNumber = 7;
+    private float boxQW_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float BoxQW {
+      get { return boxQW_; }
+      set {
+        boxQW_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SerializableConvexPolygon);
@@ -24118,6 +24184,11 @@ namespace jtshared {
       }
       if (!object.Equals(Anchor, other.Anchor)) return false;
       if(!points_.Equals(other.points_)) return false;
+      if (IsBox != other.IsBox) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxQX, other.BoxQX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxQY, other.BoxQY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxQZ, other.BoxQZ)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BoxQW, other.BoxQW)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -24126,6 +24197,11 @@ namespace jtshared {
       int hash = 1;
       if (anchor_ != null) hash ^= Anchor.GetHashCode();
       hash ^= points_.GetHashCode();
+      if (IsBox != false) hash ^= IsBox.GetHashCode();
+      if (BoxQX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxQX);
+      if (BoxQY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxQY);
+      if (BoxQZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxQZ);
+      if (BoxQW != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BoxQW);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -24144,6 +24220,26 @@ namespace jtshared {
         output.WriteMessage(Anchor);
       }
       points_.WriteTo(output, _repeated_points_codec);
+      if (IsBox != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(IsBox);
+      }
+      if (BoxQX != 0F) {
+        output.WriteRawTag(37);
+        output.WriteFloat(BoxQX);
+      }
+      if (BoxQY != 0F) {
+        output.WriteRawTag(45);
+        output.WriteFloat(BoxQY);
+      }
+      if (BoxQZ != 0F) {
+        output.WriteRawTag(53);
+        output.WriteFloat(BoxQZ);
+      }
+      if (BoxQW != 0F) {
+        output.WriteRawTag(61);
+        output.WriteFloat(BoxQW);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -24156,6 +24252,21 @@ namespace jtshared {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Anchor);
       }
       size += points_.CalculateSize(_repeated_points_codec);
+      if (IsBox != false) {
+        size += 1 + 1;
+      }
+      if (BoxQX != 0F) {
+        size += 1 + 4;
+      }
+      if (BoxQY != 0F) {
+        size += 1 + 4;
+      }
+      if (BoxQZ != 0F) {
+        size += 1 + 4;
+      }
+      if (BoxQW != 0F) {
+        size += 1 + 4;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -24174,6 +24285,21 @@ namespace jtshared {
         Anchor.MergeFrom(other.Anchor);
       }
       points_.Add(other.points_);
+      if (other.IsBox != false) {
+        IsBox = other.IsBox;
+      }
+      if (other.BoxQX != 0F) {
+        BoxQX = other.BoxQX;
+      }
+      if (other.BoxQY != 0F) {
+        BoxQY = other.BoxQY;
+      }
+      if (other.BoxQZ != 0F) {
+        BoxQZ = other.BoxQZ;
+      }
+      if (other.BoxQW != 0F) {
+        BoxQW = other.BoxQW;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -24194,6 +24320,26 @@ namespace jtshared {
           }
           case 18: {
             points_.AddEntriesFrom(input, _repeated_points_codec);
+            break;
+          }
+          case 24: {
+            IsBox = input.ReadBool();
+            break;
+          }
+          case 37: {
+            BoxQX = input.ReadFloat();
+            break;
+          }
+          case 45: {
+            BoxQY = input.ReadFloat();
+            break;
+          }
+          case 53: {
+            BoxQZ = input.ReadFloat();
+            break;
+          }
+          case 61: {
+            BoxQW = input.ReadFloat();
             break;
           }
         }
@@ -27957,8 +28103,9 @@ namespace jtshared {
       bladegirl_ = other.bladegirl_;
       bountyhunter_ = other.bountyhunter_;
       blacksaber1_ = other.blacksaber1_;
-      blacksaberTest_ = other.blacksaberTest_;
       noneCh_ = other.noneCh_;
+      blacksaberTestNoVision_ = other.blacksaberTestNoVision_;
+      blacksaberTestWithVision_ = other.blacksaberTestWithVision_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -28000,17 +28147,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "blacksaber_test" field.</summary>
-    public const int BlacksaberTestFieldNumber = 4;
-    private uint blacksaberTest_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint BlacksaberTest {
-      get { return blacksaberTest_; }
-      set {
-        blacksaberTest_ = value;
-      }
-    }
-
     /// <summary>Field number for the "none_ch" field.</summary>
     public const int NoneChFieldNumber = 2048;
     private uint noneCh_;
@@ -28019,6 +28155,28 @@ namespace jtshared {
       get { return noneCh_; }
       set {
         noneCh_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "blacksaber_test_no_vision" field.</summary>
+    public const int BlacksaberTestNoVisionFieldNumber = 2049;
+    private uint blacksaberTestNoVision_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint BlacksaberTestNoVision {
+      get { return blacksaberTestNoVision_; }
+      set {
+        blacksaberTestNoVision_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "blacksaber_test_with_vision" field.</summary>
+    public const int BlacksaberTestWithVisionFieldNumber = 2050;
+    private uint blacksaberTestWithVision_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint BlacksaberTestWithVision {
+      get { return blacksaberTestWithVision_; }
+      set {
+        blacksaberTestWithVision_ = value;
       }
     }
 
@@ -28038,8 +28196,9 @@ namespace jtshared {
       if (Bladegirl != other.Bladegirl) return false;
       if (Bountyhunter != other.Bountyhunter) return false;
       if (Blacksaber1 != other.Blacksaber1) return false;
-      if (BlacksaberTest != other.BlacksaberTest) return false;
       if (NoneCh != other.NoneCh) return false;
+      if (BlacksaberTestNoVision != other.BlacksaberTestNoVision) return false;
+      if (BlacksaberTestWithVision != other.BlacksaberTestWithVision) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -28049,8 +28208,9 @@ namespace jtshared {
       if (Bladegirl != 0) hash ^= Bladegirl.GetHashCode();
       if (Bountyhunter != 0) hash ^= Bountyhunter.GetHashCode();
       if (Blacksaber1 != 0) hash ^= Blacksaber1.GetHashCode();
-      if (BlacksaberTest != 0) hash ^= BlacksaberTest.GetHashCode();
       if (NoneCh != 0) hash ^= NoneCh.GetHashCode();
+      if (BlacksaberTestNoVision != 0) hash ^= BlacksaberTestNoVision.GetHashCode();
+      if (BlacksaberTestWithVision != 0) hash ^= BlacksaberTestWithVision.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -28076,13 +28236,17 @@ namespace jtshared {
         output.WriteRawTag(24);
         output.WriteUInt32(Blacksaber1);
       }
-      if (BlacksaberTest != 0) {
-        output.WriteRawTag(32);
-        output.WriteUInt32(BlacksaberTest);
-      }
       if (NoneCh != 0) {
         output.WriteRawTag(128, 128, 1);
         output.WriteUInt32(NoneCh);
+      }
+      if (BlacksaberTestNoVision != 0) {
+        output.WriteRawTag(136, 128, 1);
+        output.WriteUInt32(BlacksaberTestNoVision);
+      }
+      if (BlacksaberTestWithVision != 0) {
+        output.WriteRawTag(144, 128, 1);
+        output.WriteUInt32(BlacksaberTestWithVision);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -28101,11 +28265,14 @@ namespace jtshared {
       if (Blacksaber1 != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Blacksaber1);
       }
-      if (BlacksaberTest != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(BlacksaberTest);
-      }
       if (NoneCh != 0) {
         size += 3 + pb::CodedOutputStream.ComputeUInt32Size(NoneCh);
+      }
+      if (BlacksaberTestNoVision != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeUInt32Size(BlacksaberTestNoVision);
+      }
+      if (BlacksaberTestWithVision != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeUInt32Size(BlacksaberTestWithVision);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -28127,11 +28294,14 @@ namespace jtshared {
       if (other.Blacksaber1 != 0) {
         Blacksaber1 = other.Blacksaber1;
       }
-      if (other.BlacksaberTest != 0) {
-        BlacksaberTest = other.BlacksaberTest;
-      }
       if (other.NoneCh != 0) {
         NoneCh = other.NoneCh;
+      }
+      if (other.BlacksaberTestNoVision != 0) {
+        BlacksaberTestNoVision = other.BlacksaberTestNoVision;
+      }
+      if (other.BlacksaberTestWithVision != 0) {
+        BlacksaberTestWithVision = other.BlacksaberTestWithVision;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -28156,12 +28326,16 @@ namespace jtshared {
             Blacksaber1 = input.ReadUInt32();
             break;
           }
-          case 32: {
-            BlacksaberTest = input.ReadUInt32();
-            break;
-          }
           case 16384: {
             NoneCh = input.ReadUInt32();
+            break;
+          }
+          case 16392: {
+            BlacksaberTestNoVision = input.ReadUInt32();
+            break;
+          }
+          case 16400: {
+            BlacksaberTestWithVision = input.ReadUInt32();
             break;
           }
         }

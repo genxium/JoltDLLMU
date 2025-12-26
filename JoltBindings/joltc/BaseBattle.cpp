@@ -334,7 +334,7 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, con
         bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
         bool currEffInAir = isEffInAir(currChd, currNotDashing);
         bool inJumpStartupOrJustEnded = (isInJumpStartup(nextChd, cc) || isJumpStartupJustEnded(currChd, &nextChd, cc));
-        if (currChd.omit_gravity() || nextChd.omit_gravity() || cc->omit_gravity() || inJumpStartupOrJustEnded) {
+        if (currChd.omit_gravity() || nextChd.omit_gravity() || cc->omit_gravity()) {
             bi->SetGravityFactor(bodyID, 0);
         } else {
             if (currChd.btn_a_holding_rdf_cnt() > globalPrimitiveConsts->jump_holding_rdf_cnt_threshold_1()) {
@@ -665,10 +665,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                 settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
                 settings.mActiveEdgeMovementDirection = newVel;
                 settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
+                auto scaling = Vec3::sOne();
 
                 BulletBodyFilter blBodyFilter(bodyID);
                 BulletCollideShapeCollector collector(currRdfId, nextRdf, bi, ud, UDT_BL, &currBl, nextBl, this);
-                narrowPhaseQueryNoLock->CollideShape(blShape, Vec3::sOne(), blCOMTransform, settings, newPos, collector, defaultBplf, defaultOlf, blBodyFilter);
+                narrowPhaseQueryNoLock->CollideShape(blShape, scaling, blCOMTransform, settings, newPos, collector, defaultBplf, defaultOlf, blBodyFilter);
 
                 JPH_ASSERT(transientUdToNextBl.count(ud));
                 auto& nextBl = transientUdToNextBl[ud];
@@ -853,82 +854,129 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     for (int i = 0; i < initializerMapData->serialized_barriers_size(); i++) {
         SerializedBarrierCollider* barrier = initializerMapData->mutable_serialized_barriers(i);
         SerializableConvexPolygon* convexPolygon = barrier->mutable_polygon();
-        double recalcAnchorX = 0, recalcAnchorY = 0;
+        const uint64_t staticColliderUd = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
 
+        const BodyID* newBodyID = nullptr;
         int pointsCnt = convexPolygon->points_size();
-        std::vector<PbVec2> effConvexPolygonPoints;
-        effConvexPolygonPoints.reserve(pointsCnt);
-        for (auto& srcPoint : convexPolygon->points()) {
-            effConvexPolygonPoints.push_back(srcPoint);
-            recalcAnchorX += srcPoint.x();
-            recalcAnchorY += srcPoint.y();
+        double recalcAnchorX = 0, recalcAnchorY = 0;
+        if (convexPolygon->is_box()) {
+            // TODO: Support rotation
+            float xExtent = 0.f, yExtent = 0.f;
+            for (int i = 0; i < convexPolygon->points_size(); i++) {
+                auto& pi = convexPolygon->points(i);
+                for (int j = i + 1; j < convexPolygon->points_size(); j++) {
+                    auto& pj = convexPolygon->points(j);
+                    float dxAbs = std::abs(pj.x() - pi.x());
+                    float dyAbs = std::abs(pj.y() - pi.y());
+                    if (dxAbs > xExtent) xExtent = dxAbs;
+                    if (dyAbs > yExtent) yExtent = dyAbs;
+                }
+                recalcAnchorX += pi.x();
+                recalcAnchorY += pi.y();
+
+                if (pi.y() < fallenDeathHeight) {
+                    fallenDeathHeight = pi.y();
+                }
+            }
+            const double anchorX = (recalcAnchorX / pointsCnt);
+            const double anchorY = (recalcAnchorY / pointsCnt);
+            float xHalfExtent = 0.5f * xExtent, yHalfExtent = 0.5f * yExtent;
+            float convexRadius = (xHalfExtent + yHalfExtent) * 0.5;
+            if (cDefaultHalfThickness < convexRadius) {
+                convexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+            }
+            Vec3 halfExtent(xHalfExtent, yHalfExtent, cDefaultHalfThickness);
+            BoxShapeSettings bodyShapeSettings(halfExtent, convexRadius); // transient, to be discarded after creating "body"
+            BoxShapeSettings::ShapeResult shapeResult;
+            /*
+                "Body" and "BodyCreationSettings" will handle lifecycle of the following "bodyShape", i.e.
+                - by "RefConst<Shape> Body::mShape" (note that "Body" does NOT hold a member variable "BodyCreationSettings") or
+                - by "RefConst<ShapeSettings> BodyCreationSettings::mShape".
+
+                See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
+            */
+            const BoxShape* bodyShape = new BoxShape(bodyShapeSettings, shapeResult);
+            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+            bodyCreationSettings.mUserData = staticColliderUd;
+            bodyCreationSettings.mFriction = cDefaultBarrierFriction;
+            Body* body = biNoLock->CreateBody(bodyCreationSettings);
+            newBodyID = &(body->GetID());
+            staticColliderBodyIDs.push_back(*newBodyID);
+        } else {
+            std::vector<PbVec2> effConvexPolygonPoints;
+            effConvexPolygonPoints.reserve(pointsCnt);
+            for (auto& srcPoint : convexPolygon->points()) {
+                effConvexPolygonPoints.push_back(srcPoint);
+                recalcAnchorX += srcPoint.x();
+                recalcAnchorY += srcPoint.y();
+            }
+            const double anchorX = (recalcAnchorX / pointsCnt);
+            const double anchorY = (recalcAnchorY / pointsCnt);
+            std::sort(effConvexPolygonPoints.begin(), effConvexPolygonPoints.end(), [anchorX, anchorY](const PbVec2& a, const PbVec2& b) {
+                const double dxA = (a.x() - anchorX);
+                const double dyA = (a.y() - anchorY);
+                const double dxB = (b.x() - anchorX);
+                const double dyB = (b.y() - anchorY);
+                double crossProduct = dxA * dyB - dyA * dxB;
+
+                if (crossProduct != 0) {
+                    return (crossProduct < 0);
+                } else {
+                    double distA2 = dxA * dxA + dyA * dyA;
+                    double distB2 = dxB * dxB + dyB * dyB;
+                    return (distA2 < distB2);
+                }
+            });
+
+            TriangleList triangles;
+            for (int pi = 0; pi < pointsCnt; pi++) {
+                auto fromI = pi;
+                auto toI = fromI + 1;
+                if (toI >= pointsCnt) {
+                    toI = 0;
+                }
+                auto& p1 = effConvexPolygonPoints[fromI];
+                auto& p2 = effConvexPolygonPoints[toI];
+
+                auto x1 = p1.x() - anchorX;
+                auto y1 = p1.y() - anchorY;
+                auto x2 = p2.x() - anchorX;
+                auto y2 = p2.y() - anchorY;
+                
+                // According to https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/MeshShape.cpp#L440, the surface normal (outward) of a "JPH::Triangle" is "(v3 - v2).Cross(v1 - v2).Normalized()".
+                {
+                    Float3 v1(x1, y1, -cDefaultBarrierHalfThickness);
+                    Float3 v2(x1, y1, +cDefaultBarrierHalfThickness);
+                    Float3 v3(x2, y2, +cDefaultBarrierHalfThickness);
+                    triangles.push_back(Triangle(v1, v2, v3));
+                }
+                {
+                    Float3 v1(x2, y2, +cDefaultBarrierHalfThickness);
+                    Float3 v2(x2, y2, -cDefaultBarrierHalfThickness);
+                    Float3 v3(x1, y1, -cDefaultBarrierHalfThickness);
+                    triangles.push_back(Triangle(v1, v2, v3));
+                }
+
+                if (p1.y() < fallenDeathHeight) {
+                    fallenDeathHeight = p1.y();
+                }
+                if (p2.y() < fallenDeathHeight) {
+                    fallenDeathHeight = p2.y();
+                }
+            }
+            MeshShapeSettings bodyShapeSettings(triangles);
+            MeshShapeSettings::ShapeResult shapeResult;
+            const MeshShape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
+            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+            bodyCreationSettings.mUserData = staticColliderUd;
+            bodyCreationSettings.mFriction = cDefaultBarrierFriction;
+            Body* body = biNoLock->CreateBody(bodyCreationSettings);
+            newBodyID = &(body->GetID());
+            staticColliderBodyIDs.push_back(*newBodyID);
         }
-        const double anchorX = (recalcAnchorX/pointsCnt); 
-        const double anchorY = (recalcAnchorY/pointsCnt); 
-        std::sort(effConvexPolygonPoints.begin(), effConvexPolygonPoints.end(), [anchorX, anchorY](const PbVec2& a, const PbVec2& b) {
-            const double dxA = (a.x() - anchorX);
-            const double dyA = (a.y() - anchorY);
-            const double dxB = (b.x() - anchorX);
-            const double dyB = (b.y() - anchorY);
-            double crossProduct = dxA * dyB - dyA * dxB;
-
-            if (crossProduct != 0) {
-                return (crossProduct < 0);
-            } else {
-                double distA2 = dxA * dxA + dyA * dyA;
-                double distB2 = dxB * dxB + dyB * dyB;
-                return (distA2 < distB2);
-            }
-        });
-
-        TriangleList triangles;
-        for (int pi = 0; pi < pointsCnt; pi++) {
-            auto fromI = pi;
-            auto toI = fromI + 1;
-            if (toI >= pointsCnt) {
-                toI = 0;
-            }
-            auto& p1 = effConvexPolygonPoints[fromI];
-            auto& p2 = effConvexPolygonPoints[toI];
-
-            auto x1 = p1.x();
-            auto y1 = p1.y();
-            auto x2 = p2.x();
-            auto y2 = p2.y();
-
-            Float3 v1 = Float3(x1, y1, +cDefaultBarrierHalfThickness);
-            Float3 v2 = Float3(x1, y1, -cDefaultBarrierHalfThickness);
-            Float3 v3 = Float3(x2, y2, +cDefaultBarrierHalfThickness);
-            Float3 v4 = Float3(x2, y2, -cDefaultBarrierHalfThickness);
-
-            triangles.push_back(Triangle(v2, v1, v3, 0)); // y: -, +, +
-            triangles.push_back(Triangle(v3, v4, v2, 0)); // y: +, -, - 
-
-            if (y1 < fallenDeathHeight) {
-                fallenDeathHeight = y1;
-            } 
-            if (y2 < fallenDeathHeight) {
-                fallenDeathHeight = y2;
-            }
-        }
-        MeshShapeSettings bodyShapeSettings(triangles);
-        MeshShapeSettings::ShapeResult shapeResult;
-        /*
-           "Body" and "BodyCreationSettings" will handle lifecycle of the following "bodyShape", i.e.
-           - by "RefConst<Shape> Body::mShape" (note that "Body" does NOT hold a member variable "BodyCreationSettings") or
-           - by "RefConst<ShapeSettings> BodyCreationSettings::mShape".
-
-           See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
-         */
-        Shape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
-        BodyCreationSettings bodyCreationSettings(bodyShape, RVec3::sZero(), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-        bodyCreationSettings.mUserData = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
-        bodyCreationSettings.mFriction = cDefaultBarrierFriction;
-        Body* body = biNoLock->CreateBody(bodyCreationSettings);
-        staticColliderBodyIDs.push_back(body->GetID());
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with ud=" << bodyCreationSettings.mUserData << ", bodyID=" << body->GetID().GetIndexAndSequenceNumber() << ":\n\t";
+        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
         for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
             auto& p = convexPolygon->points(pi);
             auto x = p.x();
@@ -3530,8 +3578,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     RVec3 newPos;
     Quat newRot;
-    single->GetPositionAndRotation(newPos, newRot);
-    auto newVel = single->GetLinearVelocity();
+    single->GetPositionAndRotation(newPos, newRot, false);
+    auto newVel = single->GetLinearVelocity(false);
 
     /*
     [TODO] For NPCs with more complicated shapes, use an extra collector with a compound shape and specified hurt-box to pick up damage.

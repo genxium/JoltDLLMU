@@ -136,22 +136,6 @@ public:
         return ((inputFrameId << globalPrimitiveConsts->input_scale_frames()) + globalPrimitiveConsts->input_delay_frames() + (1 << globalPrimitiveConsts->input_scale_frames()) - 1);
     }
 
-    inline static float InvSqrt32(float number)
-    {
-        long i;
-        float x2, y;
-        const float threehalfs = 1.5F;
-
-        x2 = number * 0.5F;
-        y = number;
-        i = *(long*)&y;
-        i = 0x5f3759df - (i >> 1);
-        y = *(float*)&i;
-        y = y * (threehalfs - (x2 * y * y));
-
-        return y;
-    }
-
     inline uint64_t SetPlayerActive(uint32_t joinIndex) {
         auto oldVal = inactiveJoinMask.fetch_and(allConfirmedMask ^ CalcJoinIndexMask(joinIndex));
         return inactiveJoinMask;
@@ -230,29 +214,6 @@ public:
             encodedPatternId += (1 << 23);
         }
         return encodedPatternId;
-    }
-
-    inline static bool IsLengthNearZero(float length) {
-        return -cLengthEps < length && length < cLengthEps;
-    }
-
-    inline static bool IsLengthSquaredNearZero(float lengthSquared) {
-        return cLengthEpsSquared > lengthSquared;
-    }
-    
-    inline static bool IsLengthDiffNearlySame(float lengthDiff) {
-        return -cLengthNearlySameEps < lengthDiff && lengthDiff < cLengthNearlySameEps;
-    }
-
-    inline static bool IsLengthDiffSquaredNearlySame(float lengthDiffSquared) {
-        return cLengthNearlySameEpsSquared > lengthDiffSquared;
-    }
-
-    inline static bool isNearlySame(float lhs, float rhs) {
-        /*
-        Floating point calculations are NOT associative, and Jolt uses "warm-start solvers" as well as "multi-threading" extensively, it's reasonable to set some tolerance for "nearly the same".
-        */
-        return IsLengthDiffNearlySame(rhs - lhs);
     }
 
     inline static void AssertNearlySame(const RenderFrame* lhs, const RenderFrame* rhs) {
@@ -339,22 +300,6 @@ public:
         JPH_ASSERT(lhs.skill_id() == rhs.skill_id());
         JPH_ASSERT(lhs.id() == rhs.id());
         JPH_ASSERT(lhs.team_id() == rhs.team_id());
-    }
-
-    inline static bool isNearlySame(Vec3& lhs, Vec3& rhs) {
-        return isNearlySame(lhs.GetX(), lhs.GetY(), lhs.GetZ(), rhs.GetX(), rhs.GetY(), rhs.GetZ());
-    }
-
-    inline static bool isNearlySame(const float lhsX, const float lhsY, const float lhsZ, const float rhsX, const float rhsY, const float rhsZ) {
-        float dx = rhsX - lhsX;
-        float dy = rhsY - lhsY;
-        float dz = rhsZ - lhsZ;
-        return IsLengthDiffSquaredNearlySame(dx*dx + dy*dy + dz*dz);
-    }
-
-    inline static uint64_t CalcJoinIndexMask(uint32_t joinIndex) {
-        if (0 == joinIndex) return 0;
-        return (U64_1 << (joinIndex - 1));
     }
     
 protected:

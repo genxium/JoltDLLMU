@@ -11,7 +11,8 @@ namespace JoltCSharp {
         public const uint SPECIES_BOUNTYHUNTER = 7;
 
         public const uint SPECIES_BLACKSABER1 = 12;
-        public const uint SPECIES_BLACKSABER_TEST = 13;
+        public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
+        public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
 
         public const uint TT_NONE = 0;
         public const uint TT_CYCLIC_TIMED = 1;
@@ -267,7 +268,8 @@ namespace JoltCSharp {
                 Bountyhunter = SPECIES_BOUNTYHUNTER,
 
                 Blacksaber1 = SPECIES_BLACKSABER1,
-                BlacksaberTest = SPECIES_BLACKSABER_TEST,
+                BlacksaberTestNoVision = SPECIES_BLACKSABER_TEST_NO_VISION,
+                BlacksaberTestWithVision = SPECIES_BLACKSABER_TEST_WITH_VISION,
 
                 NoneCh = SPECIES_NONE_CH,
             }

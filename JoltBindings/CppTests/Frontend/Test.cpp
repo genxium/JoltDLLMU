@@ -149,7 +149,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     npc1->set_id(npcIdCounter++);
     npc1->set_goal_as_npc(NpcGoal::NIdle);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.blacksaber1();
+    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+80);
     npcCh1->set_y(100);
@@ -174,7 +174,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     npc2->set_id(npcIdCounter++);
     npc2->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh2 = npc2->mutable_chd();
-    auto npcCh2Species = chSpecies.blacksaber1();
+    auto npcCh2Species = chSpecies.blacksaber_test_with_vision();
     auto npcCc2 = characterConfigs[npcCh2Species];
     npcCh2->set_x(+350);
     npcCh2->set_y(580);
@@ -2790,11 +2790,88 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
 
         auto& npc2 = outerTimerRdf->npcs_arr(1);
         auto& npc2Chd = npc2.chd();
-        if (640 <= outerTimerRdfId && 1180 > outerTimerRdfId) {
+
+        bool shouldPrint = false;
+        if (32 == outerTimerRdfId) {
+            // It has landed on "wideMapHull5" and moving to the right
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(350 < npc2Chd.x() && 400 > npc2Chd.x());
+            JPH_ASSERT(0 < npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (210 == outerTimerRdfId) {
+            // Same as above, this is a relative long walk
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(400 < npc2Chd.x() && 500 > npc2Chd.x());
+            //JPH_ASSERT(0 < npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (320 == outerTimerRdfId) {
+            // It has turned around on "wideMapHull5" and moving to the left due to vision reaction of "wideMapHull3"
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(350 < npc2Chd.x() && 500 > npc2Chd.x());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (470 == outerTimerRdfId) {
+            // Same as above, this is a relative long walk
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (526 == outerTimerRdfId) {
+            // It's proactively jumping towards left onto "wideMapHull6" and moving to the left
+            JPH_ASSERT(CharacterState::InAirIdle1ByJump == npc2Chd.ch_state());
+            JPH_ASSERT(520 < npc2Chd.y());
+            JPH_ASSERT(200 < npc2Chd.x() && 350 > npc2Chd.x());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (800 == outerTimerRdfId) {
+            // It has jumped on "wideMapHull6" and moving to the left
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y()); 
+            JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (1100 == outerTimerRdfId) {
+            // It's still on "wideMapHull6" but turned to move to the right due to vision reaction of "wideMapHull7"
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
+            JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
+            JPH_ASSERT(0 < npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (1300 == outerTimerRdfId) {
+            // When standing on the edge of "wideMapHull6", it should've seen the lower platform  "wideMapHull5" and decided to move to the right and fall onto "wideMapHull5"
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
+            JPH_ASSERT(0 < npc2Chd.vel_x());
+            shouldPrint = true;
+        } else if (1440 == outerTimerRdfId) {
+            // Again it has turned around on "wideMapHull5" and moving to the left due to vision reaction of "wideMapHull3"
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
+            shouldPrint = true;
+        }
+
+        /*
+        if (1 <= outerTimerRdfId && 640 > outerTimerRdfId) {
             if (0 == (outerTimerRdfId & printIntervalRdfCntMinus1)) {
-                std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+                shouldPrint = true;
             }
         }
+        */
+
+        if (1100 < outerTimerRdfId && 1700 > outerTimerRdfId) {
+            shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;
+        }
+        
         outerTimerRdfId++;
     }
 
@@ -3377,17 +3454,17 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull5 = {
-        // Upper floor, only a right wing is provided to hold npc2
+        // Upper floor, only a right wing is provided to hold npc2, intentionally overlapping with "wideMapHull3" to test edge cases
         -200, 400,
         -200, 500,
-        500, 500,
-        500, 400
+        750, 500,
+        750, 400
     };
 
     std::vector<float> wideMapHull6 = {
-        // Upper floor small platform that's jumpable
-        100, 500,
-        100, 520,
+        // Upper floor small platform that's jumpable, intentionally overlapping with "wideMapHull7" to test edge cases
+        -200, 500,
+        -200, 520,
         300, 520,
         300, 500
     };
@@ -3435,11 +3512,11 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    /*
+    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     initTest2Data();
     runTestCase2(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3458,7 +3535,7 @@ int main(int argc, char** argv)
 
     initTest7Data();
     runTestCase7(battle, initializerMapData, selfJoinIndex);
-    */
+    
     auto blacksaber1VisionTestStartRdf = mockBlacksaber1VisionTestStartRdf();
     WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     for (auto hull : npcVisionHulls) {
@@ -3477,12 +3554,13 @@ int main(int argc, char** argv)
         auto anchor = srcPolygon->mutable_anchor();
         anchor->set_x(anchorX);
         anchor->set_y(anchorY);
+        srcPolygon->set_is_box(true);
     }
     blacksaber1VisionTestInitializerMapData->set_allocated_self_parsed_rdf(blacksaber1VisionTestStartRdf);
     initTest8Data();
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    /*
+    
     initTest9Data();
     runTestCase9(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -3616,7 +3694,7 @@ int main(int argc, char** argv)
     initTest15Data();
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    */
+    
     pbStarterWsReqAllocator.Reset();
 
     // clean up
