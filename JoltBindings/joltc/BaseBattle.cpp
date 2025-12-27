@@ -634,7 +634,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
                         uint64_t currNpcCachedCueCmd = currNpc.cached_cue_cmd();
                         NpcGoal newGoal = currNpcGoal;
                         uint64_t newCmd = 0;
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd);
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd);
                         nextNpc->set_goal_as_npc(newGoal);
                         nextNpc->set_cached_cue_cmd(newCmd);
                     }   

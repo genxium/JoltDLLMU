@@ -14,16 +14,15 @@ class VisionBodyFilter : public BodyFilter {
 public:
     const CharacterDownsync* mSelfNpcChd;
     BodyID   mSelfNpcBodyID;
-    BodyID   mSelfNpcGroundBodyID;
     uint64_t mSelfNpcUd;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    VisionBodyFilter(const CharacterDownsync* inSelfNpcChd, const BodyID& inSelfNpcBodyID, const BodyID& inSelfNpcGroundBodyID, const uint64_t inSelfNpcUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfNpcChd(inSelfNpcChd), mSelfNpcBodyID(inSelfNpcBodyID), mSelfNpcGroundBodyID(inSelfNpcGroundBodyID), mSelfNpcUd(inSelfNpcUd), mBaseBattleFilter(baseBattleFilter) {
+    VisionBodyFilter(const CharacterDownsync* inSelfNpcChd, const BodyID& inSelfNpcBodyID, const uint64_t inSelfNpcUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfNpcChd(inSelfNpcChd), mSelfNpcBodyID(inSelfNpcBodyID), mSelfNpcUd(inSelfNpcUd), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
     virtual bool			ShouldCollide([[maybe_unused]] const BodyID &inBodyID) const {
-        return inBodyID != mSelfNpcBodyID && inBodyID != mSelfNpcGroundBodyID;
+        return inBodyID != mSelfNpcBodyID;
     }
 
     virtual bool			ShouldCollideLocked([[maybe_unused]] const Body &inBody) const {

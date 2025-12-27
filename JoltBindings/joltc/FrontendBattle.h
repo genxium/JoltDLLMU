@@ -114,6 +114,9 @@ protected:
         }
       
         phySys->SetPhysicsSettings(clonedPhySettings);
+        antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();
+        gravityMagnitude = phySys->GetGravity().Length();
+
         bi = &(phySys->GetBodyInterface());
         biNoLock = &(phySys->GetBodyInterfaceNoLock());
         narrowPhaseQueryNoLock = &(phySys->GetNarrowPhaseQueryNoLock());
