@@ -2819,7 +2819,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(0 > npc2Chd.vel_x());
             shouldPrint = true;
-        } else if (526 == outerTimerRdfId) {
+        } else if (513 == outerTimerRdfId) {
             // It's proactively jumping towards left onto "wideMapHull6" and moving to the left
             JPH_ASSERT(CharacterState::InAirIdle1ByJump == npc2Chd.ch_state());
             JPH_ASSERT(520 < npc2Chd.y());
@@ -2833,7 +2833,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
             JPH_ASSERT(0 > npc2Chd.vel_x());
             shouldPrint = true;
-        } else if (1100 == outerTimerRdfId) {
+        } else if (900 == outerTimerRdfId) {
             // It's still on "wideMapHull6" but turned to move to the right due to vision reaction of "wideMapHull7"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
@@ -2862,11 +2862,11 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
                 shouldPrint = true;
             }
         }
-        */
-
-        if (1100 < outerTimerRdfId && 1700 > outerTimerRdfId) {
+        
+        if (900 < outerTimerRdfId && 1700 > outerTimerRdfId) {
             shouldPrint = true;
         }
+        */
 
         if (shouldPrint) {
             std::cout << "TestCase8/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", chState = " << npc2Chd.ch_state() << ", framesInChState = " << npc2Chd.frames_in_ch_state() << ", dir = (" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos = (" << npc2Chd.x() << ", " << npc2Chd.y() << ", " << npc2Chd.z() << "), vel = (" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << ", " << npc2Chd.vel_z() << ")" << std::endl;

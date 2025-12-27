@@ -82,6 +82,8 @@ public:
     MyBodyActivationListener bodyActivationListener;
     MyContactListener contactListener;
     PhysicsSystem* phySys;
+    Vec3 antiGravityNorm;
+    float gravityMagnitude;
     BodyInterface* bi;
     BodyInterface* biNoLock;
     const NarrowPhaseQuery* narrowPhaseQueryNoLock;

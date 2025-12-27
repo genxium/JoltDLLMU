@@ -10,14 +10,14 @@
 
 #include <climits>
 
-void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const DefaultBroadPhaseLayerFilter& bplf, const DefaultObjectLayerFilter& olf, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal currNpcGoal, const uint64_t currNpcCachedCueCmd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, NpcGoal& outNextNpcGoal, uint64_t& outCmd) {
+void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3& antiGravityNorm, const float gravityMagnitude, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const DefaultBroadPhaseLayerFilter& bplf, const DefaultObjectLayerFilter& olf, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal currNpcGoal, const uint64_t currNpcCachedCueCmd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, NpcGoal& outNextNpcGoal, uint64_t& outCmd) {
 
     Vec3 initVisionOffset(cc->vision_offset_x(), cc->vision_offset_y(), 0);
     auto visionInitTransform = cTurn90DegsAroundZAxisMat.PostTranslated(initVisionOffset); // Rotate, and then translate
-    Vec3 selfNpcPosition;
-    Quat selfNpcRotation;
-    selfNpcCollider->GetPositionAndRotation(selfNpcPosition, selfNpcRotation, false);
-    auto visionCOMTransform = (JPH::Mat44::sRotation(selfNpcRotation)*visionInitTransform).PostTranslated(selfNpcPosition); //and then rotate again by the NPC's orientation (affecting "initVisionOffset" too), and finally apply the NPC's position as translation
+    Vec3 selfNpcPosition(nextChd->x(), nextChd->y(), nextChd->z());
+    Quat selfNpcRotationQuat(nextChd->q_x(), nextChd->q_y(), nextChd->q_z(), nextChd->q_w()); // [WARNING] Don't use "selfNpcCollider->GetRotation(false)" which DIDN'T respect the input from "npc-pre-physics-update" job!
+
+    auto visionCOMTransform = (JPH::Mat44::sRotation(selfNpcRotationQuat)*visionInitTransform).PostTranslated(selfNpcPosition); //and then rotate again by the NPC's orientation (affecting "initVisionOffset" too), and finally apply the NPC's position as translation
     
     float visionHalfHeight = cc->vision_half_height(), visionTopRadius = cc->vision_top_radius(), visionBottomRadius = cc->vision_bottom_radius();
     float visionConvexRadius = (visionTopRadius < visionBottomRadius ? visionTopRadius : visionBottomRadius)*0.9f; // Must be smaller than the min of these two 
@@ -31,15 +31,15 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
     
     const TaperedCylinderShape* effVisionShape = &initVisionShape; 
 
-    const Vec3 visionNarrowPhaseInBaseOffset = selfNpcPosition + selfNpcRotation * initVisionOffset;
+    const Vec3 effVisionOffsetFromNpcChd = selfNpcRotationQuat * initVisionOffset;
+    const Vec3 visionNarrowPhaseInBaseOffset = selfNpcPosition + effVisionOffsetFromNpcChd;
 
-    const Vec3 visionDirection = Quat(nextChd->q_x(), nextChd->q_y(), nextChd->q_z(), nextChd->q_w())*Vec3::sAxisX(); // [WARNING] Don't use "selfNpcCollider->GetRotation(false)" which DIDN'T respect the input from "npc-pre-physics-update" job!
+    const Vec3 visionDirection = selfNpcRotationQuat*Vec3::sAxisX();
   
-    const BodyID& selfNpcGroundBodyID = cvSupported ? selfNpcCollider->GetGroundBodyID() : BodyID();
-    VisionBodyFilter visionBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcGroundBodyID, selfNpcUd, baseBattleFilter);
+    VisionBodyFilter visionBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, baseBattleFilter);
 
     VISION_HIT_COLLECTOR_T visionHitCollector;
-    auto scaling = Vec3::sOne();
+    const Vec3 scaling = Vec3::sOne();
     
     CollideShapeSettings settings;
     settings.mMaxSeparationDistance = cCollisionTolerance;
@@ -57,11 +57,14 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
     Now that we've got all entities in vision, will start handling each.
     */
     uint64_t toHandleAllyUd = 0, toHandleOppoChUd = 0, toHandleOppoBlUd = 0, toHandleMvBlockerUd = 0;
-    Vec3 selfNpcPositionDiffForAllyUd, selfNpcPositionDiffForOppoChUd, selfNpcPositionDiffForOppoBlUd, outVisionPenetrationAgainstMvBlocker;
+    Vec3 selfNpcPositionDiffForAllyUd, selfNpcPositionDiffForOppoChUd, selfNpcPositionDiffForOppoBlUd;
+    GapToJump currGapToJump; currGapToJump.set_vision_alignment(FLT_MAX); currGapToJump.set_anti_gravity_alignment(FLT_MAX);
+    GapToJump minGapToJump;  minGapToJump.set_vision_alignment(FLT_MAX); currGapToJump.set_anti_gravity_alignment(FLT_MAX);
+    GapToJump currGroundMvTolerance; currGroundMvTolerance.set_vision_alignment(0); currGroundMvTolerance.set_anti_gravity_alignment(0);
 
     BodyID toHandleMvBlockerBodyID;
 
-    extractKeyEntitiesInVision(currRdfId, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfNpcPositionDiffForAllyUd, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, toHandleOppoBlUd, selfNpcPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, outVisionPenetrationAgainstMvBlocker);
+    extractKeyEntitiesInVision(currRdfId, antiGravityNorm, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfNpcPositionDiffForAllyUd, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, toHandleOppoBlUd, selfNpcPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
 
     bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     bool canJumpWithinInertia = BaseBattleCollisionFilter::chCanJumpWithInertia(currChd, cc, notDashing);
@@ -78,6 +81,10 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
         case NpcGoal::NPatrol:
             outNextNpcGoal = NpcGoal::NHuntThenPatrol;
             break;
+        case NpcGoal::NIdleIfGoHuntingThenPathPatrol:
+        case NpcGoal::NPathPatrol:
+            outNextNpcGoal = NpcGoal::NHuntThenPathPatrol;
+            break;
         case NpcGoal::NFollowAlly:
             outNextNpcGoal = NpcGoal::NHuntThenFollowAlly;
             break;
@@ -92,6 +99,10 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
             break;
         case NpcGoal::NHuntThenPatrol:
             outNextNpcGoal = NpcGoal::NPatrol;
+            newVisionReaction = TARGET_CH_REACTION_HUNTING_LOSS;
+            break;
+        case NpcGoal::NHuntThenPathPatrol:
+            outNextNpcGoal = NpcGoal::NPathPatrol;
             newVisionReaction = TARGET_CH_REACTION_HUNTING_LOSS;
             break;
         case NpcGoal::NHuntThenFollowAlly:
@@ -111,7 +122,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
             break;
         case TARGET_CH_REACTION_FOLLOW:
         case TARGET_CH_REACTION_FLEE_OPPO: {
-           int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, biNoLock, selfNpcCollider, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, outVisionPenetrationAgainstMvBlocker, toHandleMvBlockerBodyID, toHandleMvBlockerUd, newVisionReaction);
+           int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, antiGravityNorm, gravityMagnitude, biNoLock, selfNpcCollider, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, toHandleMvBlockerBodyID, toHandleMvBlockerUd, currGapToJump, minGapToJump, currGroundMvTolerance, newVisionReaction);
 
            switch (groundAndMvBlockerReaction) {
                case TARGET_CH_REACTION_STOP_BY_MV_BLOCKER:
@@ -122,7 +133,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
            break;
        }
        default: {
-           int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, biNoLock, selfNpcCollider, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, outVisionPenetrationAgainstMvBlocker, toHandleMvBlockerBodyID, toHandleMvBlockerUd, newVisionReaction);
+           int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, antiGravityNorm, gravityMagnitude, biNoLock, selfNpcCollider, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, toHandleMvBlockerBodyID, toHandleMvBlockerUd, currGapToJump, minGapToJump, currGroundMvTolerance, newVisionReaction);
            newVisionReaction = groundAndMvBlockerReaction;
            break;
         }
@@ -183,12 +194,16 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, std::unorde
     outCmd = newCachedCueCmd;
 }
 
-void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionCastResultCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, Vec3& outVisionPenetrationAgainstMvBlocker) {
+void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionCastResultCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
     if (!visionCastResultCollector.HadHit()) return;
     bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
     const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
-	const AABox& selfNpcWWorldSpaceBounds = selfNpcTransformedShape.GetWorldSpaceBounds();
+	const AABox& selfNpcAABB = selfNpcTransformedShape.GetWorldSpaceBounds();
+    float selfNpcAABBJumpingAxisAlignment1 = selfNpcAABB.mMax.Dot(antiGravityNorm);
+    float selfNpcAABBJumpingAxisAlignment2 = selfNpcAABB.mMin.Dot(antiGravityNorm);
+    float selfNpcAABBVisionAlignment1 = selfNpcAABB.mMax.Dot(visionDirection);
+    float selfNpcAABBVisionAlignment2 = selfNpcAABB.mMin.Dot(visionDirection);
 
     float bestVisionAlignmentForOppo = FLT_MAX;
     float bestVisionAlignmentForAlly = FLT_MAX;
@@ -197,37 +212,45 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, std::unordered_m
     const Vec3 lhsPos = selfNpcCollider->GetPosition(false); 
     int hitsCnt = visionCastResultCollector.mHits.size();
 
-    VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, BodyID(), selfNpcUd, nullptr);
+    const BodyID& selfNpcGroundBodyID = cvSupported ? selfNpcCollider->GetGroundBodyID() : BodyID();
+    float selfNpcGroundAABBJumpingAxisAlignment1 = 0;
+    float selfNpcGroundAABBJumpingAxisAlignment2 = 0;
+    float selfNpcGroundAABBVisionAlignment1 = 0;
+    float selfNpcGroundAABBVisionAlignment2 = 0;
+    if (!selfNpcGroundBodyID.IsInvalid()) {
+        const TransformedShape& selfNpcGroundTransformedShape = biNoLock->GetTransformedShape(selfNpcGroundBodyID);
+        const AABox& selfNpcGroundAABB = selfNpcGroundTransformedShape.GetWorldSpaceBounds();
+        selfNpcGroundAABBJumpingAxisAlignment1 = selfNpcGroundAABB.mMax.Dot(antiGravityNorm);
+        selfNpcGroundAABBJumpingAxisAlignment2 = selfNpcGroundAABB.mMin.Dot(antiGravityNorm);
+        selfNpcGroundAABBVisionAlignment1 = selfNpcGroundAABB.mMax.Dot(visionDirection);
+        selfNpcGroundAABBVisionAlignment2 = selfNpcGroundAABB.mMin.Dot(visionDirection);
+    }
     for (int i = 0; i < hitsCnt; i++) {
         const CollideShapeCollector::ResultType hit = visionCastResultCollector.mHits.at(i);
         const BodyID rhsBodyID = hit.mBodyID2;
-        RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
-        bool rayTestPassed = false;
-        RayCastResult rcResult;
-        narrowPhaseQuery->CastRay(ray, rcResult, {}, {}, visionRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
-        if (!rcResult.mBodyID.IsInvalid() && rcResult.mBodyID != rhsBodyID) {
-            /*
-            [REMINDER] If "selfNpcGroundBodyID" has too much overlapping volume with "rhsBodyID" (which ideally it shouldn't have any), then "rhsBodyID" might fail this RayCast test.  
-            */
-/*
-#ifndef NDEBUG
-            if (selfNpcUd == 8589934593) {
-                std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", vision hit rhsBodyID=" << rhsBodyID.GetIndexAndSequenceNumber() << " is invalid due to being blocked by rcResult.mBodyID=" << rcResult.mBodyID.GetIndexAndSequenceNumber();
-                Debug::Log(oss.str(), DColor::Orange);
-            }
-#endif
-*/
-            continue; 
+        const float rhsVisionAlignmentFromNpcChdPosition = visionDirection.Dot(hit.mContactPointOn1 + effVisionOffsetFromNpcChd);
+        if (!rhsBodyID.IsInvalid() && rhsBodyID == selfNpcGroundBodyID) {
+            // [WARNING] When "selfNpcGroundBody" is of complicated shape, it's too inefficient to traverse all its vertices and find the largest projected value on "visionDirection", instead we can just allow "selfNpcGroundBody" to collide with "effVisionShape" and use the immediately visible distance as "currGroundMvTolerance" to roughly decide whether or not we can move on.
+            outCurrGroundMvTolerance.set_vision_alignment(rhsVisionAlignmentFromNpcChdPosition);
+            continue;
+            // [WARNING] Intentionally NOT proceeding from here even if the "rhsBodyID" refers to an opponent character or bullet.
         }
+        
         const TransformedShape& rhsTransformedShape = biNoLock->GetTransformedShape(rhsBodyID);
         const AABox& rhsAABB = rhsTransformedShape.GetWorldSpaceBounds();
         const uint64_t udRhs = biNoLock->GetUserData(rhsBodyID);
         const uint64_t udtRhs = BaseBattleCollisionFilter::getUDT(udRhs);
-        const float visionAlignment = visionDirection.Dot(hit.mContactPointOn1);
         switch (udtRhs) {
         case UDT_PLAYER: 
         case UDT_NPC: {
+            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, nullptr);
+            RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
+            bool rayTestPassed = false;
+            RayCastResult rcResult;
+            narrowPhaseQuery->CastRay(ray, rcResult, {}, {}, visionRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
+            if (!rcResult.mBodyID.IsInvalid() && rcResult.mBodyID != rhsBodyID) {
+                continue;
+            }
             const CharacterDownsync* rhsCurrChd = nullptr;
             if (UDT_PLAYER == udtRhs) {
                 auto rhsCurrPlayer = currPlayersMap.at(udRhs);
@@ -239,21 +262,21 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, std::unordered_m
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
             const Vec3 selfNpcPositionDiff = rhsPos - lhsPos;
             if (rhsCurrChd->bullet_team_id() != currChd.bullet_team_id()) {
-                if (visionAlignment >= bestVisionAlignmentForOppo) {
+                if (rhsVisionAlignmentFromNpcChdPosition >= bestVisionAlignmentForOppo) {
                     continue;
                 }
-                bestVisionAlignmentForOppo = visionAlignment;
+                bestVisionAlignmentForOppo = rhsVisionAlignmentFromNpcChdPosition;
                  
                 outToHandleOppoChUd = udRhs;
                 outToHandleOppoBlUd = 0;
                 outSelfNpcPositionDiffForOppoChUd = selfNpcPositionDiff;
                 outSelfNpcPositionDiffForOppoBlUd = Vec3::sZero();
             } else {
-                if (visionAlignment >= bestVisionAlignmentForAlly) {
+                if (rhsVisionAlignmentFromNpcChdPosition >= bestVisionAlignmentForAlly) {
                     continue;
                 }
 
-                bestVisionAlignmentForAlly = visionAlignment;
+                bestVisionAlignmentForAlly = rhsVisionAlignmentFromNpcChdPosition;
                 outToHandleAllyUd = udRhs;
                 outSelfNpcPositionDiffForAllyUd = selfNpcPositionDiff;
             }
@@ -269,11 +292,11 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, std::unordered_m
                     continue; // seemingly not offensive
                 }
 
-                if (visionAlignment > bestVisionAlignmentForOppo) {
+                if (rhsVisionAlignmentFromNpcChdPosition > bestVisionAlignmentForOppo) {
                     continue;
                 }
 
-                bestVisionAlignmentForOppo = visionAlignment;
+                bestVisionAlignmentForOppo = rhsVisionAlignmentFromNpcChdPosition;
                 outToHandleOppoBlUd = udRhs;
                 outToHandleOppoChUd = 0;
                 outSelfNpcPositionDiffForOppoChUd = Vec3::sZero();
@@ -284,43 +307,121 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, std::unordered_m
             break;
         }
         case UDT_OBSTACLE: {
-            const Vec3 rhsPos = 0 < visionDirection.GetX() ? rhsAABB.mMax : rhsAABB.mMin;
-            const Vec3 selfNpcPositionDiff = rhsPos - lhsPos;
-            bool isAlongForwardMv = (0 < selfNpcPositionDiff.Dot(visionDirection));
+            bool isAlongForwardMv = (0 < rhsVisionAlignmentFromNpcChdPosition);
+
             if (!isAlongForwardMv) {
                 // Not a "movement blocker candidate" 
                 continue;
             }
+            if (rhsVisionAlignmentFromNpcChdPosition > bestVisionAlignmentForMvBlocker) {
+                continue;
+            }
+            float rhsAABBJumpingAxisAlignment1 = rhsAABB.mMax.Dot(antiGravityNorm);
+            float rhsAABBJumpingAxisAlignment2 = rhsAABB.mMin.Dot(antiGravityNorm);
+            float rhsAABBVisionAlignment1 = rhsAABB.mMax.Dot(visionDirection);
+            float rhsAABBVisionAlignment2 = rhsAABB.mMin.Dot(visionDirection);
+
             if (!isCharacterFlying) {
-                bool strictlyUp = (rhsAABB.mMin.GetY() >= selfNpcWWorldSpaceBounds.mMax.GetY());
-                bool holdableForRight = (rhsAABB.mMax.GetX() > selfNpcWWorldSpaceBounds.mMax.GetX());
-                bool holdableForLeft = (rhsAABB.mMin.GetX() < selfNpcWWorldSpaceBounds.mMin.GetX());
-                bool strictlyUpAndHoldableOnBothSides = (strictlyUp && holdableForLeft && holdableForRight);
-                if (strictlyUpAndHoldableOnBothSides) {
+                bool strictlyUp = false;
+
+                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                    strictlyUp = (rhsAABBJumpingAxisAlignment2 >= selfNpcAABBJumpingAxisAlignment1);
+                } else {    
+                    strictlyUp = (rhsAABBJumpingAxisAlignment1 >= selfNpcAABBJumpingAxisAlignment2);
+                }
+
+                bool holdableBothForwardAndBackward = false;
+                if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
+                    holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 >= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 <= selfNpcAABBVisionAlignment2); 
+                } else {
+                    holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 <= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 >= selfNpcAABBVisionAlignment2);
+                }
+                if (strictlyUp && holdableBothForwardAndBackward) {
                     // Not a "movement blocker candidate" 
                     continue;
                 }
             }
-            if (visionAlignment > bestVisionAlignmentForMvBlocker) {
-                continue;
+            bool rayTestPassed = false, rayTestCanIgnoreSelfNpcGround = false;
+
+            if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2 && rhsAABBVisionAlignment1 > selfNpcGroundAABBVisionAlignment1) {
+                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2 ) {
+                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
+                } else {
+                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
+                }
+            } else if (rhsAABBVisionAlignment2 > rhsAABBVisionAlignment1 && rhsAABBVisionAlignment2 > selfNpcGroundAABBVisionAlignment2) {
+                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
+                } else {
+                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
+                }
             }
-            bestVisionAlignmentForMvBlocker = visionAlignment;
+
+            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, nullptr);
+            RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
+            RayCastResult rcResult;
+            narrowPhaseQuery->CastRay(ray, rcResult, {}, {}, visionRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
+            if (!rcResult.mBodyID.IsInvalid() && rcResult.mBodyID != rhsBodyID) {
+
+                if (!rayTestCanIgnoreSelfNpcGround && rcResult.mBodyID == selfNpcGroundBodyID) {
+                    /* 
+                    // [REMINDER] If "selfNpcGroundBodyID" has too much overlapping volume with "rhsBodyID" (which ideally it shouldn't have any), then "rhsBodyID" might fail this RayCast test.
+#ifndef NDEBUG
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", vision hit rhsBodyID=" << rhsBodyID.GetIndexAndSequenceNumber() << " is invalid due to being blocked by rcResult.mBodyID=" << rcResult.mBodyID.GetIndexAndSequenceNumber();
+                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+                */
+                    continue;
+                }
+            }
+            
+            bestVisionAlignmentForMvBlocker = rhsVisionAlignmentFromNpcChdPosition;
             outToHandleMvBlockerUd = udRhs;
             outToHandleMvBlockerBodyID = rhsBodyID;
-            outVisionPenetrationAgainstMvBlocker = hit.mPenetrationDepth*hit.mPenetrationAxis.Normalized();
+
+            // Calc "outCurrGapToJump"
+            if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
+                outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment2 - selfNpcAABBVisionAlignment1);
+            } else {    
+                outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment1 - selfNpcAABBVisionAlignment2);
+            }
+
+            if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                outCurrGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment1 - selfNpcAABBJumpingAxisAlignment2);
+            } else {    
+                outCurrGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment2 - selfNpcAABBJumpingAxisAlignment1);
+            }
+
+            if (!selfNpcGroundBodyID.IsInvalid()) {
+                // Calc "minGapToJump"
+                if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
+                    outMinGapToJump.set_vision_alignment(rhsAABBVisionAlignment2 - selfNpcGroundAABBVisionAlignment1);
+                } else {    
+                    outMinGapToJump.set_vision_alignment(rhsAABBVisionAlignment1 - selfNpcGroundAABBVisionAlignment2);
+                }
+
+                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                    outMinGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment1 - selfNpcGroundAABBJumpingAxisAlignment1);
+                } else {    
+                    outMinGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment2 - selfNpcGroundAABBJumpingAxisAlignment2);
+                }
+            }
             break;
         }
         default:
             break;
         }
     }
+
+    // In case there's some unintentional drawing overlap.
+    if (FLT_MAX != outCurrGroundMvTolerance.vision_alignment() && outCurrGroundMvTolerance.vision_alignment() > outCurrGapToJump.vision_alignment()) {
+        outCurrGroundMvTolerance.set_vision_alignment(outCurrGapToJump.vision_alignment());
+    }
 }
 
 int BaseNpcReaction::deriveNpcVisionReactionAgainstOppoChUd(int currRdfId, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, bool canJumpWithinInertia, const Vec3& visionDirection, const uint64_t toHandleOppoChUd, const Vec3& selfNpcPositionDiffForOppoChUd) {
     int ret = TARGET_CH_REACTION_UNCHANGED;
-    const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
-	const AABox& selfNpcWWorldSpaceBounds = selfNpcTransformedShape.GetWorldSpaceBounds();
-
     bool opponentBehindMe = (0 > (selfNpcPositionDiffForOppoChUd.GetX() * visionDirection.GetX()));
     bool opponentAboveMe = cc->capsule_half_height() < selfNpcPositionDiffForOppoChUd.GetY();
     const CharacterDownsync* rhsCurrChd = nullptr;
@@ -356,62 +457,29 @@ int BaseNpcReaction::deriveNpcVisionReactionAgainstOppoChUd(int currRdfId, std::
     return ret;
 }
 
-int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, const BodyInterface* biNoLock, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal inNpcGoal, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, bool canJumpWithinInertia, const AABox& visionAABB, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3& visionDirection, const Vec3& visionPenetrationAgainstRhs, const BodyID& toHandleMvBlockerBodyID, const uint64_t toHandleMvBlockerUd, const int visionReactionByFar) {
+int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, const Vec3& antiGravityNorm, const float gravityMagnitude, const BodyInterface* biNoLock, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal inNpcGoal, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, bool canJumpWithinInertia, const AABox& visionAABB, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3& visionDirection, const BodyID& toHandleMvBlockerBodyID, const uint64_t toHandleMvBlockerUd, const GapToJump& currGapToJump, const GapToJump& minGapToJump, const GapToJump& currGroundMvTolerance, const int visionReactionByFar) {
     
-    if (NpcGoal::NIdle == inNpcGoal) {
+    if (NpcGoal::NIdle == inNpcGoal || NpcGoal::NIdleIfGoHuntingThenPatrol == inNpcGoal || NpcGoal::NIdleIfGoHuntingThenPathPatrol == inNpcGoal) {
         return visionReactionByFar;
     }
 
     int newVisionReaction = visionReactionByFar;
 
     const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
-	const AABox& selfNpcWorldSpaceBounds = selfNpcTransformedShape.GetWorldSpaceBounds();
+	const AABox& selfNpcAABB = selfNpcTransformedShape.GetWorldSpaceBounds();
     bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
     
     bool temptingToMove = (temptingToMoveNpcGoalSet.count(inNpcGoal)) && (canJumpWithinInertia || isCharacterFlying);
 
     /*
-    [WARNING] DON'T use "selfNpcCollider->GetLinearVelocity()" to evaluate "potentialMvDx" (and thus "currGroundCanHoldMeIfWalkOn"). 
+    [WARNING] DON'T use "selfNpcCollider->GetLinearVelocity()" to evaluate "currGroundCanHoldMeIfWalkOn". 
 
     When a jumping character touches the vertical-side-edge of a higher platform, its velocity might be calculated by the ContactManager to an opposite direction than the vision direction.  
     */
-    float potentialMvSpeed = cc->speed();
-    switch (inNpcGoal) {
-        case NIdle: {
-            potentialMvSpeed = 0;
-            break;
-        }
-        case NIdleIfGoHuntingThenPatrol: {
-            if (globalPrimitiveConsts->npc_flee_grace_period_rdf_cnt() >= currChd.frames_in_ch_state()) {
-                potentialMvSpeed = 0;
-            }
-            break;
-        }
-        default:
-            break;
-    }
-    const Vec3 potentialMvVel = potentialMvSpeed*visionDirection;
-     
-    float potentialMvDx = potentialMvVel.GetX()*globalPrimitiveConsts->estimated_seconds_per_rdf();
+    const float potentialMv = cc->speed()*globalPrimitiveConsts->estimated_seconds_per_rdf();
 
-    bool currGroundCanHoldMeIfWalkOn = false, currGapCanHoldMeIfWalkOn = false;
-    const AABox* selfNpcGroundAABB = nullptr;
-
-    float effGroundMaxX = FLT_MIN, effGroundMinX = FLT_MAX;
-    if (cvSupported) {
-        const TransformedShape& selfNpcGroundTransformedShape = biNoLock->GetTransformedShape(selfNpcCollider->GetGroundBodyID());
-        selfNpcGroundAABB = &(selfNpcGroundTransformedShape.GetWorldSpaceBounds());
-        effGroundMaxX = selfNpcGroundAABB->mMax.GetX(); 
-        effGroundMinX = selfNpcGroundAABB->mMin.GetX();
-
-        if (!isCharacterFlying) {
-            bool holdableForRight = 0 < visionDirection.GetX() ? (effGroundMaxX > selfNpcWorldSpaceBounds.mMax.GetX()+potentialMvDx ) : true;
-            bool holdableForLeft = 0 > visionDirection.GetX() ? (effGroundMinX < selfNpcWorldSpaceBounds.mMin.GetX()+potentialMvDx ) : true;;
-            
-            currGroundCanHoldMeIfWalkOn = (holdableForLeft && holdableForRight);
-        }
-    }
-
+    bool currGroundCanHoldMeIfWalkOn = (currGroundMvTolerance.vision_alignment() >= potentialMv);
+    bool toHandleMvBlockerCanHoldMeIfWalkOn = false;
     const Vec3& chColliderVel = selfNpcCollider->GetLinearVelocity(false);
     const float constraintVelXDiff = chColliderVel.GetX() - nextChd->vel_x();
     bool hasEffectiveMvBlocker = (0 > constraintVelXDiff*nextChd->vel_x()) && !BaseBattleCollisionFilter::IsLengthNearZero(constraintVelXDiff) && walkingSet.count(currChd.ch_state());
@@ -442,106 +510,50 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     }
 
     if (0 == toHandleMvBlockerUd) {
-/* 
 #ifndef NDEBUG
         if (selfNpcUd == 8589934593 && TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
             if (TARGET_CH_REACTION_WALK_ALONG != newVisionReaction || (currRdfId % 16 == 0)) {
                 std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", there's no toHandleMvBlockerBodyID, canJumpWithinInertia=" << canJumpWithinInertia << "; potentialMvVel=(" << potentialMvVel.GetX() << ", " << potentialMvVel.GetY()<< "), hasEffectiveMvBlocker=" << hasEffectiveMvBlocker << ", returning newVisionReaction=" << newVisionReaction;
+                oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", there's no toHandleMvBlockerBodyID, canJumpWithinInertia=" << canJumpWithinInertia << ", hasEffectiveMvBlocker=" << hasEffectiveMvBlocker << ", currGroundMvTolerance=" << currGroundMvTolerance.vision_alignment() << ", returning newVisionReaction = " << newVisionReaction;
                 Debug::Log(oss.str(), DColor::Orange);
             } 
         }
 #endif
-*/
         return newVisionReaction;
     }
 
-    bool hasBlockerInXForward = false;
-
-    float mvBlockerColliderLeft = FLT_MAX;
-    float mvBlockerColliderRight = -FLT_MAX;
-    float mvBlockerColliderBottom = FLT_MAX;
-    float mvBlockerColliderTop = -FLT_MAX;
-
-    bool mvBlockerHoldableForRight = false;
-    bool mvBlockerHoldableForLeft = false;
-    bool mvBlockerStrictlyToTheRight = false;
-    bool mvBlockerStrictlyToTheLeft = false;
-
-    bool mvBlockerStrictlyDown = false;
-    bool mvBlockerStrictlyUp = false;
-
-    const TransformedShape& mvBlockerTransformedShape = biNoLock->GetTransformedShape(toHandleMvBlockerBodyID);
-    const AABox& mvBlockerAABB = mvBlockerTransformedShape.GetWorldSpaceBounds();
-   
-    mvBlockerHoldableForRight = 0 < visionDirection.GetX() ? (mvBlockerAABB.mMax.GetX() > selfNpcWorldSpaceBounds.mMax.GetX()+potentialMvDx ) : true;
-    mvBlockerHoldableForLeft  = 0 > visionDirection.GetX() ? (mvBlockerAABB.mMin.GetX() < selfNpcWorldSpaceBounds.mMin.GetX()+potentialMvDx ) : true;
-
-    float selfNpcCentralXApprox = 0.5f*(selfNpcWorldSpaceBounds.mMax.GetX() + selfNpcWorldSpaceBounds.mMin.GetX());
-
-    mvBlockerStrictlyToTheRight = mvBlockerAABB.mMin.GetX() > selfNpcCentralXApprox + potentialMvDx;
-    mvBlockerStrictlyToTheLeft = mvBlockerAABB.mMax.GetX() <= selfNpcCentralXApprox + potentialMvDx;
-
-    mvBlockerStrictlyDown = (mvBlockerAABB.mMax.GetY() <= selfNpcWorldSpaceBounds.mMin.GetY());
-    mvBlockerStrictlyUp = (mvBlockerAABB.mMin.GetY() >= selfNpcWorldSpaceBounds.mMax.GetY()); 
-    
-    hasBlockerInXForward = (0 < visionDirection.GetX() && (mvBlockerStrictlyToTheRight || (mvBlockerHoldableForRight && mvBlockerStrictlyDown))) || (0 > visionDirection.GetX() && (mvBlockerStrictlyToTheLeft || (mvBlockerHoldableForLeft && mvBlockerStrictlyDown)));
-    hasBlockerInXForward &= (mvBlockerAABB.mMin.GetY() <= selfNpcWorldSpaceBounds.mMax.GetY() || mvBlockerAABB.mMax.GetY() >= selfNpcWorldSpaceBounds.mMin.GetY());
-
     bool isMinGapJumpable = false, isCurrGapJumpable = false;
-    float currGapToJumpDxAbs = FLT_MAX, currGapToJumpDy = FLT_MAX, currGapEstimatedSpeedX = BaseBattleCollisionFilter::IsLengthNearZero(currChd.vel_x()) ? 0.5f * cc->speed() : 0.6f * std::abs(currChd.vel_x());
-    float minGapToJumpDxAbs = FLT_MAX, minGapToJumpDy = FLT_MAX, minGapEstimatedSpeedX = 0.8f * cc->speed();
-    float currDxAbsToGroundEdge = FLT_MAX;
+    float currGapEstimatedSpeedX = BaseBattleCollisionFilter::IsLengthNearZero(currChd.vel_x()) ? 0.5f * cc->speed() : 0.6f * std::abs(currChd.vel_x());
+    float minGapEstimatedSpeedX = 0.8f * cc->speed();
+    float currGapToJumpVisionAlignment = currGapToJump.vision_alignment(), currGapToJumpAntiGravityAlignment = currGapToJump.anti_gravity_alignment();
 
-    if (hasBlockerInXForward && cvSupported) {
+    if (FLT_MAX != currGapToJumpVisionAlignment && cvSupported) {
         /*
         [TODO] Handle the following 2 cases.
         - "selfNpcGroundBodyID" being a slope that I can just walk along.
         - "toHandleMvBlockerBodyID" being a slope that I can just walk onto.
         */
-        if (!mvBlockerStrictlyDown && !mvBlockerStrictlyUp && hasBlockerInXForward) {
-            // Handle "overlapping cutoff"
-            effGroundMaxX = 0 < visionDirection.GetX() ? std::min(selfNpcGroundAABB->mMax.GetX(), mvBlockerAABB.mMin.GetX()) : selfNpcGroundAABB->mMax.GetX();
-            effGroundMinX = 0 > visionDirection.GetX() ? std::max(selfNpcGroundAABB->mMin.GetX(), mvBlockerAABB.mMax.GetX()) : selfNpcGroundAABB->mMin.GetX();
-            bool holdableForRight = 0 < visionDirection.GetX() ? (effGroundMaxX > selfNpcWorldSpaceBounds.mMax.GetX() + potentialMvDx) : true;
-            bool holdableForLeft = 0 > visionDirection.GetX() ? (effGroundMinX < selfNpcWorldSpaceBounds.mMin.GetX() + potentialMvDx) : true;;
-
-            currGroundCanHoldMeIfWalkOn = (holdableForLeft && holdableForRight);
-        }
-
-        minGapToJumpDy = (mvBlockerAABB.mMax.GetY() - selfNpcGroundAABB->mMax.GetY());
-        currGapToJumpDy = (mvBlockerAABB.mMax.GetY() - selfNpcWorldSpaceBounds.mMin.GetY());
-
-        if (0 < visionDirection.GetX()) {
-            currGapToJumpDxAbs = (mvBlockerAABB.mMin.GetX() - selfNpcCentralXApprox);
-            currDxAbsToGroundEdge = effGroundMaxX - selfNpcWorldSpaceBounds.mMax.GetX();
-            minGapToJumpDxAbs = (mvBlockerAABB.mMin.GetX() - effGroundMaxX);
-        } else {
-            currGapToJumpDxAbs = (selfNpcCentralXApprox - mvBlockerAABB.mMax.GetX());
-            currDxAbsToGroundEdge = selfNpcWorldSpaceBounds.mMin.GetX() - effGroundMinX;
-            minGapToJumpDxAbs = (effGroundMinX - mvBlockerAABB.mMax.GetX());
-        }
-        isMinGapJumpable = isGapJumpable(minGapToJumpDxAbs, minGapToJumpDy, minGapEstimatedSpeedX, cc->jumping_init_vel_y());
-        isCurrGapJumpable = isGapJumpable(currGapToJumpDxAbs, currGapToJumpDy, currGapEstimatedSpeedX, cc->jumping_init_vel_y());
-        currGapCanHoldMeIfWalkOn = isCurrGapJumpable && (0 >= currGapToJumpDxAbs && 0 >= currGapToJumpDy);
+        isMinGapJumpable = isGapJumpable(gravityMagnitude, minGapToJump.vision_alignment(), minGapToJump.anti_gravity_alignment(), minGapEstimatedSpeedX, cc->jumping_init_vel_y());
+        isCurrGapJumpable = isGapJumpable(gravityMagnitude, currGapToJumpVisionAlignment, currGapToJumpAntiGravityAlignment, currGapEstimatedSpeedX, cc->jumping_init_vel_y());
+        toHandleMvBlockerCanHoldMeIfWalkOn = isCurrGapJumpable && (0 >= currGapToJumpVisionAlignment && 0 >= currGapToJumpAntiGravityAlignment);
     }
 
-    newVisionReaction = deriveReactionAgainstMvBlockerAfterApproximation(currRdfId, selfNpcUd, currChd, cvSupported, canJumpWithinInertia, isMinGapJumpable, isCurrGapJumpable, currGroundCanHoldMeIfWalkOn, currGapCanHoldMeIfWalkOn, currDxAbsToGroundEdge, temptingToMove, newVisionReaction);
-/*
+    newVisionReaction = deriveReactionAgainstMvBlockerAfterApproximation(currRdfId, antiGravityNorm, selfNpcUd, currChd, cvSupported, canJumpWithinInertia, isMinGapJumpable, isCurrGapJumpable, currGroundCanHoldMeIfWalkOn, toHandleMvBlockerCanHoldMeIfWalkOn, currGapToJumpVisionAlignment, temptingToMove, newVisionReaction);
+
 #ifndef NDEBUG
     if (selfNpcUd == 8589934593 && TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
         if (TARGET_CH_REACTION_WALK_ALONG != newVisionReaction || (currRdfId % 16 == 0)) {
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionDir=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", toHandleMvBlockerBodyID=" << toHandleMvBlockerBodyID.GetIndexAndSequenceNumber() << ", canJumpWithinInertia=" << canJumpWithinInertia << ", isMinGapJumpable=" << isMinGapJumpable << ", isCurrGapJumpable=" << isCurrGapJumpable << ", currGroundCanHoldMeIfWalkOn=" << currGroundCanHoldMeIfWalkOn << ", currGapCanHoldMeIfWalkOn=" << currGapCanHoldMeIfWalkOn << ", currDxAbsToGroundEdge=" << currDxAbsToGroundEdge << "(effGroundMinX=" << effGroundMinX << ", effGroundMaxX=" << effGroundMaxX << "), temptingToMove=" << temptingToMove << "; minGapToJumpDxAbs=" << minGapToJumpDxAbs << ", minGapToJumpDy=" << minGapToJumpDy << ", currGapToJumpDxAbs=" << currGapToJumpDxAbs << ", currGapToJumpDy=" << currGapToJumpDy << "; returning newVisionReaction=" << newVisionReaction;
+            oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionDir=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", toHandleMvBlockerBodyID=" << toHandleMvBlockerBodyID.GetIndexAndSequenceNumber() << ", canJumpWithinInertia=" << canJumpWithinInertia << ", isMinGapJumpable=" << isMinGapJumpable << ", isCurrGapJumpable=" << isCurrGapJumpable << ", currGroundCanHoldMeIfWalkOn=" << currGroundCanHoldMeIfWalkOn << ", toHandleMvBlockerCanHoldMeIfWalkOn=" << toHandleMvBlockerCanHoldMeIfWalkOn << ", currGapToJumpVisionAlignment=" << currGapToJumpVisionAlignment << ", temptingToMove=" << temptingToMove << "; currGroundMvTolerance=" << currGroundMvTolerance.vision_alignment() << ", minGapToJump=(" << minGapToJump.vision_alignment() << ", " << minGapToJump.anti_gravity_alignment() << "), currGapToJump=(" <<  currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << "); returning newVisionReaction = " << newVisionReaction;
             Debug::Log(oss.str(), DColor::Orange);
         } 
     }
 #endif
-*/
+
     return newVisionReaction;
 }
 
-int BaseNpcReaction::deriveReactionAgainstMvBlockerAfterApproximation(int currRdfId, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const bool cvSupported, const bool canJumpWithinInertia, const bool isMinGapJumpable, const bool isCurrGapJumpable, const bool currGroundCanHoldMeIfWalkOn, const bool currGapCanHoldMeIfWalkOn, const float currDxAbsToGroundEdge, const bool temptingToMove, const int visionReactionByFar) {
+int BaseNpcReaction::deriveReactionAgainstMvBlockerAfterApproximation(int currRdfId, const Vec3& antiGravityNorm, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const bool cvSupported, const bool canJumpWithinInertia, const bool isMinGapJumpable, const bool isCurrGapJumpable, const bool currGroundCanHoldMeIfWalkOn, const bool toHandleMvBlockerCanHoldMeIfWalkOn, const float currGapToJumpVisionAlignment, const bool temptingToMove, const int visionReactionByFar) {
     int newVisionReaction = visionReactionByFar;
     if (!cvSupported) {
         if (temptingToMove) {
@@ -551,7 +563,7 @@ int BaseNpcReaction::deriveReactionAgainstMvBlockerAfterApproximation(int currRd
         }
     } else if (canJumpWithinInertia && isCurrGapJumpable) {
         if (temptingToMove) {
-            if (currGapCanHoldMeIfWalkOn) {
+            if (toHandleMvBlockerCanHoldMeIfWalkOn) {
                 newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
             } else {
                 newVisionReaction = TARGET_CH_REACTION_JUMP_TOWARDS_MV_BLOCKER;
@@ -562,7 +574,7 @@ int BaseNpcReaction::deriveReactionAgainstMvBlockerAfterApproximation(int currRd
     } else {
         if (temptingToMove) {
             if (currGroundCanHoldMeIfWalkOn) {
-                if (TURNAROUND_FROM_MV_BLOCKER_DX_THRESHOLD < currDxAbsToGroundEdge) {
+                if (TURNAROUND_FROM_MV_BLOCKER_DX_THRESHOLD < currGapToJumpVisionAlignment) {
                     newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
                 } else {
                     if (isMinGapJumpable) {
@@ -583,20 +595,20 @@ int BaseNpcReaction::deriveReactionAgainstMvBlockerAfterApproximation(int currRd
     return newVisionReaction;
 }
 
-bool BaseNpcReaction::isGapJumpable(const float toJumpDxAbs, const float toJumpDy, const float avgVelXAbs, const float chJumpInitVelY) {
-    if (0 >= avgVelXAbs) return false;
-    if (0 >= toJumpDxAbs) {
-        // Only need evaluate if we can jump vertically first and then slowly move over onto the new platform.
-        float airingTimeSingleTrip = chJumpInitVelY / (-globalPrimitiveConsts->gravity_y());
-        float estimatedYHighestInTrajectory = 0.5f*chJumpInitVelY*airingTimeSingleTrip;
-        return  estimatedYHighestInTrajectory > toJumpDy;
-    }
+bool BaseNpcReaction::isGapJumpable(const float gravityMagnitude, const float forwardDistanceAbs, const float jumpingAxisDistance, const float forwardSpeed, const float chJumpInitSpeed) {
     /*
-    When a character jumps at (x=0, y=0) with "avgVelXAbs" and "chJumpInitVelY" (in ISO units), the trajectory is 
-    - x(t) = avgVelXAbs*t
-    - y(t) = chJumpInitVelY*t + 0.5*g*t where "g < 0"
+    When a character jumps at (x=0, y=0) with "forwardSpeed (in the re-aligned x-axis)" and "chJumpInitSpeed" (in the re-aligned y-axis), the trajectory (in ISO units) is 
+    - x(t) = forwardSpeed*t
+    - y(t) = chJumpInitSpeed*t - 0.5*gravityMagnitude*t where "gravityMagnitude > 0"
     */
-    float estimatedTSeconds = toJumpDxAbs / avgVelXAbs;
-    float estimatedYInTrajectory = chJumpInitVelY * estimatedTSeconds + 0.5f * globalPrimitiveConsts->gravity_y() * estimatedTSeconds * estimatedTSeconds;
-    return estimatedYInTrajectory > toJumpDy;
+    if (0 >= forwardSpeed) return false;
+    if (0 >= forwardDistanceAbs) {
+        // Only need evaluate if we can jump vertically first and then slowly move over onto the new platform.
+        float airingTimeSingleTrip = chJumpInitSpeed / gravityMagnitude;
+        float estimatedYHighestInTrajectory = 0.5f*chJumpInitSpeed*airingTimeSingleTrip;
+        return estimatedYHighestInTrajectory > jumpingAxisDistance;
+    }
+    float estimatedTSeconds = forwardDistanceAbs / forwardSpeed;
+    float estimatedYInTrajectory = chJumpInitSpeed * estimatedTSeconds - 0.5f * gravityMagnitude * estimatedTSeconds * estimatedTSeconds;
+    return estimatedYInTrajectory > jumpingAxisDistance;
 }
