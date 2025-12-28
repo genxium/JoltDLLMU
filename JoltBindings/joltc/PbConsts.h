@@ -146,8 +146,10 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
 
 const std::unordered_set<NpcGoal> temptingToMoveNpcGoalSet = {
     NPatrol, 
+    NPathPatrol, 
     NHuntThenIdle,
     NHuntThenPatrol,
+    NHuntThenPathPatrol,
     NHuntThenFollowAlly,
 };
 

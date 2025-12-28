@@ -10,6 +10,11 @@ message PbVec2 {
     float y = 2;
 }
 
+message GapToJump {
+    float vision_alignment = 1;
+    float anti_gravity_alignment = 2;
+}
+
 message PbQuat {
     // Quaternion
     float x = 1;
@@ -211,6 +216,9 @@ enum NpcGoal {
     NHuntThenPatrol = 4;
     NHuntThenFollowAlly = 5;
     NIdleIfGoHuntingThenPatrol = 6;
+    NPathPatrol = 7;
+    NHuntThenPathPatrol = 8;
+    NIdleIfGoHuntingThenPathPatrol = 9;
 }
 
 enum TrapState {
