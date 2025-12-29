@@ -52,6 +52,13 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
         install(FILES $<TARGET_PDB_FILE:FrontendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
     endif()
 
+    if (USE_STATIC_PB) 
+    else()
+        install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
+    endif()
+
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/ConfigConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
 endforeach()

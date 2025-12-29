@@ -47,6 +47,7 @@ elif [[ "LinuxDynamicPb" == $2 ]]; then
     fi
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && ./build_and_install_joltc.sh $1 linux64"
 else
+    # export USE_STATIC_PB=true # I don't have static protobuf lib in Windows yet 
     $JoltBindings_basedir/build_and_install_joltc.sh $1 win64 # My vcpkg installation of protobuf doesn't support static pb yet
 fi
 
@@ -62,5 +63,6 @@ if [[ "Linux" == $2 ]]; then
 elif [[ "LinuxDynamicPb" == $2 ]]; then
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1 linux64"
 else
+    # export USE_STATIC_PB=true # I don't have static protobuf lib in Windows yet 
     $basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 # My vcpkg installation of protobuf doesn't support static pb yet
 fi
