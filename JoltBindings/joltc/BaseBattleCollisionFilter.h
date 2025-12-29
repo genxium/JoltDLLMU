@@ -10,6 +10,8 @@
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Math/Vec3.h>
+#include <Jolt/Math/Quat.h>
+#include <Jolt/Math/Mat44.h>
 
 #include "CppOnlyConsts.h"
 #include "PbConsts.h"
@@ -26,10 +28,9 @@ using namespace JPH;
 
 #define NON_CONTACT_CONSTRAINT_T JPH::Constraint
 
-const Quat  cTurnbackAroundYAxis = Quat(0, 1, 0, 0);
-const Quat  cTurn90DegsAroundZAxis = Quat::sRotation(Vec3::sAxisZ(), 0.5f*3.1415926);
-const Mat44 cTurn90DegsAroundZAxisMat = Mat44::sRotation(cTurn90DegsAroundZAxis);
-
+static const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
+static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
+static const JPH::Mat44 cTurn90DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn90DegsAroundZAxis);
 
 class BaseBattleCollisionFilter {
 public:

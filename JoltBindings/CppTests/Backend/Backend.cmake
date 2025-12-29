@@ -12,7 +12,7 @@ add_executable(BackendTest ${BACKEND_TEST_SRC_FILES})
 #target_link_options(BackendTest PRIVATE "/VERBOSE")
 
 target_compile_definitions(BackendTest PRIVATE JPH_SHARED_LIBRARY) # [IMPORTANT] For correctly define the macro "JPH_EXPORT" as "__declspec(dllimport)"
-target_compile_definitions(BackendTest PRIVATE JPH_ENABLE_ASSERTS)
+#target_compile_definitions(BackendTest PRIVATE JPH_ENABLE_ASSERTS)
 target_link_libraries(BackendTest LINK_PUBLIC ${TARGET_NAME})
 if(USE_STATIC_PB) 
     target_link_libraries(BackendTest PRIVATE 
@@ -51,13 +51,6 @@ set(MY_RUNTIME_DEPS_DESTINATIONS "${OVERRIDE_BINARY_DESTINATION}") # [WARNING] I
 foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS}) 
     if (MSVC)
         install(FILES $<TARGET_PDB_FILE:BackendTest> DESTINATION ${_rt_deps_destination} OPTIONAL)
-    endif()
-
-    if (USE_STATIC_PB) 
-    else()
-        install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
-            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
-        )
     endif()
 
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
