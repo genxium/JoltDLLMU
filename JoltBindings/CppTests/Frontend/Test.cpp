@@ -98,6 +98,8 @@ RenderFrame* mockStartRdf() {
     player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
 
     startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
     startRdf->set_bullet_id_counter(bulletIdCounter);
     startRdf->set_pickable_id_counter(pickableIdCounter);
 

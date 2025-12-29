@@ -16,14 +16,12 @@ google::protobuf::Arena pbTestCaseDataAllocator;
 using namespace jtshared;
 using namespace std::filesystem;
 
-const uint32_t SPECIES_BLADEGIRL = 1;
-const uint32_t SPECIES_BOUNTYHUNTER = 7;
-
 const int pbBufferSizeLimit = (1 << 14);
 char pbByteBuffer[pbBufferSizeLimit];
 char downsyncSnapshotByteBuffer[pbBufferSizeLimit];
 
 RenderFrame* mockStartRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(1);
@@ -34,7 +32,7 @@ RenderFrame* mockStartRdf() {
 
     auto player1 = startRdf->mutable_players_arr(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = SPECIES_BOUNTYHUNTER;
+    auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-85);
     playerCh1->set_y(200);
@@ -59,7 +57,7 @@ RenderFrame* mockStartRdf() {
 
     auto player2 = startRdf->mutable_players_arr(1);
     auto playerCh2 = player2->mutable_chd();
-    auto playerCh2Species = SPECIES_BLADEGIRL;
+    auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
     playerCh2->set_x(+90);
     playerCh2->set_y(300);
@@ -77,7 +75,7 @@ RenderFrame* mockStartRdf() {
     playerCh2->set_vel_x(0);
     playerCh2->set_vel_y(0);
     playerCh2->set_hp(cc2.hp());
-    playerCh2->set_species_id(SPECIES_BOUNTYHUNTER);
+    playerCh2->set_species_id(playerCh2Species);
     player2->set_join_index(2);
     player2->set_revival_x(playerCh2->x());
     player2->set_revival_y(playerCh2->y());

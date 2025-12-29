@@ -49,6 +49,8 @@ static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
 BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer(renderBufferSize << 1), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING) {
     inactiveJoinMask = 0u;
     battleDurationFrames = 0;
+    transientNonContactConstraintsCnt = 0;
+    transientNonContactConstraints.reserve(128);
 
     ////////////////////////////////////////////// 2
     bodyIDsToClear.reserve(cMaxBodies);
