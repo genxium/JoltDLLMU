@@ -95,7 +95,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             RecoveryFramesOnBlock = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             RecoveryFramesOnHit = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.OnWallAtk1
         }.AddHit(new BulletConfig(BasicPistolBulletAir)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
@@ -106,7 +106,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.Atk1
         }
         .AddHit(new BulletConfig(BasicPistolBulletGround)
@@ -121,7 +121,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.InAirAtk1
         }
         .AddHit(new BulletConfig(BasicPistolBulletAir)
@@ -133,7 +133,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.WalkingAtk1
         }
         .AddHit(new BulletConfig(BasicPistolBulletWalking)
@@ -148,7 +148,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.CrouchAtk1
         }
         .AddHit(new BulletConfig(BasicPistolBulletCrouch)
@@ -292,7 +292,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
             RecoveryFramesOnBlock = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
             RecoveryFramesOnHit = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.Atk1
         }.AddHit(
             new BulletConfig(BasicBladeHit1)
@@ -305,7 +305,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
             RecoveryFramesOnBlock = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
             RecoveryFramesOnHit = BasicBladeHit2.StartupFrames+BasicBladeHit2.ActiveFrames+BasicBladeHit2.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.Atk2
         }.AddHit(
             new BulletConfig(BasicBladeHit2)
@@ -318,7 +318,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
             RecoveryFramesOnBlock = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
             RecoveryFramesOnHit = BasicBladeHit3.StartupFrames+BasicBladeHit3.ActiveFrames+BasicBladeHit3.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.Atk3
         }.AddHit(BasicBladeHit3);
 
@@ -327,7 +327,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
             RecoveryFramesOnBlock = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
             RecoveryFramesOnHit = BasicBladeCrouchHit1.StartupFrames+BasicBladeCrouchHit1.ActiveFrames+BasicBladeCrouchHit1.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.CrouchAtk1
         }.AddHit(BasicBladeCrouchHit1);
 
@@ -336,7 +336,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
             RecoveryFramesOnBlock = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
             RecoveryFramesOnHit = BasicBladeAirHit1.StartupFrames+BasicBladeAirHit1.ActiveFrames+BasicBladeAirHit1.CooldownFrames,
-            TriggerType = SkillTriggerType.RisingEdge,
+            InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.InAirAtk1
         }.AddHit(BasicBladeAirHit1);
 

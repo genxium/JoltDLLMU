@@ -2770,4 +2770,8 @@ void PhysicsSystem::ClearBodyManagerFreeList() {
 	mBodyManager.ClearFreeList();
 }
 
+void PhysicsSystem::ValidateBodyManagerContactCacheForAllBodies() {
+	mBodyManager.ValidateContactCacheForAllBodies();
+}
+
 JPH_NAMESPACE_END

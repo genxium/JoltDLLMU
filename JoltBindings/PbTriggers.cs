@@ -6,13 +6,13 @@ namespace JoltCSharp {
     public class PbTriggers {
 
         private static TriggerConfig VictoryTrigger = new TriggerConfig {
-            Tt = PbPrimitives.underlying.TtVictory
+            Trt = PbPrimitives.underlying.TrtVictory
         };
 
         public static MapField<uint, TriggerConfig> underlying = new MapField<uint, TriggerConfig>() { };
 
         static PbTriggers() {
-            underlying.Add(PbPrimitives.underlying.TtVictory, VictoryTrigger);
+            underlying.Add(PbPrimitives.underlying.TrtVictory, VictoryTrigger);
         }
     }
 }

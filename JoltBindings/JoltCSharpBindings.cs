@@ -244,12 +244,12 @@ namespace JoltCSharp {
 
             for (int i = 0; i < roomCapacity; i++) {
                 var single = NewPreallocatedPlayerCharacterDownsync(primitives.DefaultPerCharacterBuffCapacity, primitives.DefaultPerCharacterDebuffCapacity, primitives.DefaultPerCharacterInventoryCapacity, primitives.DefaultPerCharacterImmuneBulletRecordCapacity, primitives);
-                ret.PlayersArr.Add(single);
+                ret.Players.Add(single);
             }
 
             for (int i = 0; i < preallocNpcCount; i++) {
                 var single = NewPreallocatedNpcCharacterDownsync(primitives.DefaultPerCharacterBuffCapacity, primitives.DefaultPerCharacterDebuffCapacity, 1, primitives.DefaultPerCharacterImmuneBulletRecordCapacity, primitives);
-                ret.NpcsArr.Add(single);
+                ret.Npcs.Add(single);
             }
 
             for (int i = 0; i < preallocBulletCount; i++) {
@@ -380,22 +380,21 @@ namespace JoltCSharp {
 
         public static void PreemptRenderFrameBeforeMerge(RenderFrame rdf, PrimitiveConsts primitives) {
             rdf.Id = primitives.TerminatingRenderFrameId;
-            rdf.PlayersArr.Clear();
-            rdf.NpcsArr.Clear();
+            rdf.Players.Clear();
+            rdf.Npcs.Clear();
             rdf.Bullets.Clear();
-            rdf.DynamicTrapsArr.Clear();
-            rdf.TriggersArr.Clear();
+            rdf.DynamicTraps.Clear();
+            rdf.Triggers.Clear();
             rdf.Pickables.Clear();
-
-            rdf.BulletIdCounter = primitives.TerminatingBulletId;
-            rdf.NpcIdCounter = primitives.TerminatingCharacterId;
-            rdf.DynamicTrapIdCounter = primitives.TerminatingTrapId;
-            rdf.PickableIdCounter = primitives.TerminatingPickableId;
 
             rdf.BulletCount = 0;
             rdf.NpcCount = 0;
             rdf.DynamicTrapCount = 0;
             rdf.PickableCount = 0;
+
+            rdf.BulletIdCounter = primitives.TerminatingBulletId;
+            rdf.NpcIdCounter = primitives.TerminatingCharacterId;
+            rdf.PickableIdCounter = primitives.TerminatingPickableId;
 
             rdf.CountdownNanos = 0;
         }

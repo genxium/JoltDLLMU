@@ -14,6 +14,8 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
+#include <Jolt/Physics/Constraints/SliderConstraint.h>
+
 // STL includes
 #include <cstdarg>
 #include <thread>
@@ -45,12 +47,11 @@ const bool   cOtherCharactersCanPushPlayer = true;
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 static CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
 static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
+static TP_CACHE_KEY_T tpCacheKeyHolder = { 0, 0 };
 
 BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer(renderBufferSize << 1), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING) {
     inactiveJoinMask = 0u;
     battleDurationFrames = 0;
-    transientNonContactConstraintsCnt = 0;
-    transientNonContactConstraints.reserve(128);
 
     ////////////////////////////////////////////// 2
     bodyIDsToClear.reserve(cMaxBodies);
@@ -62,9 +63,11 @@ BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator*
     safeDeactiviatedPosition = Vec3::sZero();
     
     phySys = nullptr;
+    bi = nullptr;
     biNoLock = nullptr;
     jobSys = nullptr;
     blStockCache = nullptr;
+    tpStockCache = nullptr;
 }
 
 BaseBattle::~BaseBattle() {
@@ -144,6 +147,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
         }
     }
 
+    auto chBodyID = chCollider->GetBodyID();
     const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(chCollider->GetShape());
     const CapsuleShape* innerShape = static_cast<const CapsuleShape*>(shape->GetInnerShape());
     JPH_ASSERT(nullptr != innerShape);
@@ -156,7 +160,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
         2. This function "getOrCreateCachedCharacterCollider_NotThreadSafe" is only used in a single-threaded context (i.e. as a preparation before the multi-threaded "PhysicsSystem::Update").
         3. Operator "=" for "RefConst<Shape>" would NOT call "Release()" when the new pointer address is the same as the old one.
         */
-        Vec3Arg previousShapeCom = shape->GetCenterOfMass();
+        const Vec3Arg previousShapeCom = shape->GetCenterOfMass();
 
         int oldShapeRefCnt = shape->GetRefCount();
         int oldInnerShapeRefCnt = innerShape->GetRefCount();
@@ -170,9 +174,12 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
         int newInnerShapeRefCnt = nullptr == newShape->GetInnerShape() ? 0 : newShape->GetInnerShape()->GetRefCount();
         JPH_ASSERT(oldInnerShapeRefCnt == newInnerShapeRefCnt);
 
-        chCollider->SetShape(newShape,
-            FLT_MAX, // Setting FLX_MAX here avoids updating active contacts immediately  
-            true);
+        /* [WARNING] 
+        I've read the implementation of "JPH::Character::SetShape(...)" and carefully chosen to replace it with the following calls instead.
+        
+        Kindly note that the heap-memory of BOTH "chCollider->GetShape()" and "chBody->GetShape()" have already been refreshed by the placement-new of "newShape", hence we've already updated "chCollider->mShape" and "chBody->mShape" by far -- when assigned in [Character::Character](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/Character.cpp#L44) -> [BodyManager::AllocateBody(const BodyCreationSettings& settings)](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L197), the "RefConst<Shape> Character.mShape" is shared to "RefConst<Shape> Body.mShape".
+        */
+        biNoLock->NotifyShapeChanged(chBodyID, previousShapeCom, true, EActivation::DontActivate); // See comments in "getOrCreateCachedBulletCollider_NotThreadSafe". 
 
         while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
@@ -181,21 +188,20 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
     }
 
     // must be active when called by "getOrCreateCachedCharacterCollider_NotThreadSafe"
-    auto bodyID = chCollider->GetBodyID();
     transientUdToChCollider[ud] = chCollider;
     activeChColliders.push_back(chCollider);
-    biNoLock->SetUserData(bodyID, ud);
+    biNoLock->SetUserData(chBodyID, ud);
 
     return chCollider;
 }
 
-JPH::Body* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType) {
+BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType) {
     calcBlCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, blCacheKeyHolder);
     EMotionType immediateMotionType = calcBlMotionType(blType);
     bool immediateIsSensor = calcBlIsSensor(blType);
     Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
     float newConvexRadius = 0;
-    Body* blCollider = nullptr;
+    BL_COLLIDER_T* blCollider = nullptr;
     auto it = cachedBlColliders.find(blCacheKeyHolder);
     if (it == cachedBlColliders.end() || it->second.empty()) {
         if (blStockCache->empty()) {
@@ -221,17 +227,34 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint6
     auto existingConvexRadius = shape->GetConvexRadius();
     auto existingIsSensor = blCollider->IsSensor();
     if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType || existingIsSensor != immediateIsSensor) {
-        Vec3Arg previousShapeCom = shape->GetCenterOfMass();
-
+        const Vec3Arg previousShapeCom = shape->GetCenterOfMass();
         int oldShapeRefCnt = shape->GetRefCount();
         
         void* newShapeBuffer = (void*)shape;
         BoxShape* newShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
 
-        blCollider->SetShapeInternal(newShape, true);
         blCollider->SetIsSensor(immediateIsSensor);
         blCollider->SetMotionType(immediateMotionType);
-        biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
+
+        /*
+        [WARNING] 
+        Just for calling 
+        - "UpdateCenterOfMassInternal", and 
+        - "CalculateWorldSpaceBoundsInternal", and 
+        - "BroadPhase::NotifyBodiesAABBChanged" (this is necessary because we're only deactivating/activating cached bodies in "CalcSingleStep", i.e. NOT removing/adding), and   
+        - "BodyManager::InvalidateContactCache", with a slight loss of performance in "BodyManager::InvalidateContactCache" because of the use of unnecessary "BodyManager.mBodiesCacheInvalidMutex" in my case.
+
+        Moreover, [the only spot "Body::IsCollisionCacheInvalid()" is used in Jolt Physics engine is together with "PhysicsSettings.mUseBodyPairContactCache"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1016).
+        */
+        if (biNoLock->IsAdded(bodyID)) {
+            biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
+        }
+        /*
+        [REMINDER] 
+
+        The following calls are intentionally avoided.
+        - "BodyInterface::SetShape(...)"/"Body::SetShapeInternal(...)" because the placement-new of "newShape" has already updated "blCollider->mShape", and "BodyInterface::NotifyShapeChanged" has taken care of the rest.
+        */
 
         while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
@@ -246,6 +269,116 @@ JPH::Body* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint6
     activeBlColliders.push_back(blCollider);
 
     return blCollider;
+}
+
+TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody) {
+    calcTpCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpCacheKeyHolder);
+    EMotionType immediateMotionType = EMotionType::Kinematic;
+    bool immediateIsSensor = false;
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    float newConvexRadius = 0;
+    TP_COLLIDER_T* tpCollider = nullptr;
+    auto it = cachedTpColliders.find(tpCacheKeyHolder);
+    if (it == cachedTpColliders.end() || it->second.empty()) {
+        if (tpStockCache->empty()) {
+            tpCollider = createDefaultTrapCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType, immediateIsSensor);
+            JPH_ASSERT(nullptr != tpCollider);
+        } else {
+            tpCollider = tpStockCache->back();
+            tpStockCache->pop_back();
+            JPH_ASSERT(nullptr != tpCollider);
+        }
+    } else {
+        auto& q = it->second;
+        JPH_ASSERT(!q.empty());
+        tpCollider = q.back();
+        q.pop_back();
+        JPH_ASSERT(nullptr != tpCollider);
+    }
+
+    const BodyID& bodyID = tpCollider->GetID();
+    const BoxShape* shape = static_cast<const BoxShape*>(tpCollider->GetShape());
+    auto existingHalfExtent = shape->GetHalfExtent();
+    auto existingConvexRadius = shape->GetConvexRadius();
+    if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius) {
+        Vec3Arg previousShapeCom = shape->GetCenterOfMass();
+
+        int oldShapeRefCnt = shape->GetRefCount();
+        
+        void* newShapeBuffer = (void*)shape;
+        BoxShape* newShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
+        if (biNoLock->IsAdded(bodyID)) {
+            biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate); // See comments in "getOrCreateCachedBulletCollider_NotThreadSafe". 
+        }
+        while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
+        while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
+        int newShapeRefCnt = newShape->GetRefCount();
+        JPH_ASSERT(oldShapeRefCnt == newShapeRefCnt);
+    }
+
+    if (forConstraintHelperBody) {
+        transientUdToConstraintHelperBodyID[ud] = &bodyID;
+    } else {
+        transientUdToBodyID[ud] = &bodyID;
+    }
+
+    tpCollider->SetUserData(ud);
+
+    // must be active when called by "getOrCreateCachedTrapCollider_NotThreadSafe"
+    activeTpColliders.push_back(tpCollider);
+
+    return tpCollider;
+}
+
+NON_CONTACT_CONSTRAINT_T* BaseBattle::getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2) {
+    JPH_ASSERT(nullptr != body1);
+    uint64_t ud1 = body1->GetUserData();
+    uint64_t ud2 = 0; // TODO
+    NON_CONTACT_CONSTRAINT_CACHE_KEY_T k(nonContactConstraintType, nonContactConstraintSubType, ud1, ud2);
+    NON_CONTACT_CONSTRAINT_T* nonContactConstraint = nullptr;
+    auto it = cachedNonContactConstraints.find(k);
+    if (it == cachedNonContactConstraints.end() || it->second.empty()) {
+        nonContactConstraint = createDefaultNonContactConstraint(nonContactConstraintType, nonContactConstraintSubType, body1, body2);
+        JPH_ASSERT(nullptr != nonContactConstraint);
+    } else {
+        auto& q = it->second;
+        JPH_ASSERT(!q.empty());
+        nonContactConstraint = q.back();
+        q.pop_back();
+        JPH_ASSERT(nullptr != nonContactConstraint);
+    }
+    
+    const BodyID& newBodyID1 = body1->GetID();
+    switch (nonContactConstraintType) {
+    case EConstraintType::TwoBodyConstraint: {
+        JPH_ASSERT(nullptr != body2);
+        const BodyID& newBodyID2 = body2->GetID();
+        switch (nonContactConstraintSubType) {
+        case EConstraintSubType::Slider: {
+            SliderConstraint* castedConstraint = static_cast<SliderConstraint*>(nonContactConstraint);
+            Ref<ConstraintSettings> existingSliderSettings = castedConstraint->GetConstraintSettings();
+            SliderConstraintSettings* castedExistingSliderSettings = static_cast<SliderConstraintSettings*>(existingSliderSettings.GetPtr());
+            void* newNonContactConstraintBuffer = (void*)nonContactConstraint;
+            SliderConstraint* newNonContactConstraint = new (newNonContactConstraintBuffer) SliderConstraint(*body1, *body2, *(castedExistingSliderSettings));
+            // [WARNING] No need to call ["SliderConstraint::NotifyShapeChanged(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/Constraint.h#L161 ) here because "getOrCreateCachedNonContactConstraint_NotThreadSafe" is always called after the creation and update of "Body"s.
+            nonContactConstraint = newNonContactConstraint;
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    nonContactConstraint->SetUserData(body1->GetUserData());
+
+    // must be active when called by "getOrCreateCachedNonContactConstraint_NotThreadSafe"
+    activeNonContactConstraints.push_back(nonContactConstraint);
+
+    return nonContactConstraint;
 }
 
 void BaseBattle::processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded) {
@@ -372,10 +505,10 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
 
     auto stepResult = nextRdf->mutable_prev_rdf_step_result();
     stepResult->clear_fulfilled_triggers();
-    for (int i = 0; i < currRdf->triggers_arr_size(); i++) {
-        const Trigger& currTrigger = currRdf->triggers_arr(i);
+    for (int i = 0; i < currRdf->triggers_size(); i++) {
+        const Trigger& currTrigger = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
-        Trigger* nextTrigger = nextRdf->mutable_triggers_arr(i);
+        Trigger* nextTrigger = nextRdf->mutable_triggers(i);
         auto ud = calcUserData(currTrigger);
         transientUdToCurrTrigger[ud] = &currTrigger;
         transientUdToNextTrigger[ud] = nextTrigger;
@@ -393,7 +526,7 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
             nextTrigger->set_frames_in_state(0);
 
             // TODO: Reset "demanded_evt_mask" for certain "TriggerType"s 
-            auto triggerConfig = getTriggerConfig(currTrigger.trigger_type());
+            auto triggerConfig = getTriggerConfig(currTrigger.trt());
             if (triggerConfigFromTileDict.count(currTrigger.id())) {
                 auto triggerConfigFromTiled = triggerConfigFromTileDict[currTrigger.id()];
                 int newFramesToRecover = triggerConfigFromTiled->recovery_frames();
@@ -406,8 +539,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     for (int i = 0; i < playersCnt; i++) {
         uint64_t singleInput = delayedIfd->input_list(i);
         auto handle = jobSys->CreateJob("player-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, singleInput, dt]() {
-            const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
-            PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
+            const PlayerCharacterDownsync& currPlayer = currRdf->players(i);
+            PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players(i); // [WARNING] The indices of "currRdf->players" and "nextRdf->players" are ALWAYS FULLY ALIGNED.
             auto ud = calcUserData(currPlayer);
             const CharacterDownsync& currChd = currPlayer.chd();
             CharacterDownsync* nextChd = nextPlayer->mutable_chd();
@@ -443,11 +576,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-        if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
+    for (int i = 0; i < currRdf->npcs_size(); i++) {
+        if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs(i).id()) break;
         auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
-            NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+            const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
+            NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs" and "nextRdf->npcs" are FULLY ALIGNED.
             auto ud = calcUserData(currNpc);
             const CharacterDownsync& currChd = currNpc.chd();
             CharacterDownsync* nextChd = nextNpc->mutable_chd();
@@ -527,8 +660,8 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
     const BaseBattle* battle = this;
     for (int i = 0; i < playersCnt; i++) {
         auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            auto currPlayer = currRdf->players_arr(i);
-            auto nextPlayer = nextRdf->mutable_players_arr(i); // [WARNING] The indices of "currRdf->players_arr" and "nextRdf->players_arr" are ALWAYS FULLY ALIGNED.
+            auto currPlayer = currRdf->players(i);
+            auto nextPlayer = nextRdf->mutable_players(i); // [WARNING] The indices of "currRdf->players" and "nextRdf->players" are ALWAYS FULLY ALIGNED.
             const CharacterDownsync& currChd = currPlayer.chd();
             auto nextChd = nextPlayer->mutable_chd();
 
@@ -597,11 +730,11 @@ RenderFrame* BaseBattle::CalcSingleStep(int currRdfId, int delayedIfdId, InputFr
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-        if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs_arr(i).id()) break;
+    for (int i = 0; i < currRdf->npcs_size(); i++) {
+        if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs(i).id()) break;
         auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
-            auto nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+            const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
+            auto nextNpc = nextRdf->mutable_npcs(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs" and "nextRdf->npcs" are FULLY ALIGNED.
 
             const CharacterDownsync& currChd = currNpc.chd();
             auto nextChd = nextNpc->mutable_chd();
@@ -750,6 +883,7 @@ void BaseBattle::Clear() {
     }
 
     while (!cachedBlColliders.empty()) {
+        // [REMINDER] "blStockCache" will be collected into "bodyIDsToClear" here.
         for (auto it = cachedBlColliders.begin(); it != cachedBlColliders.end(); ) {
             auto& q = it->second;
             while (!q.empty()) {
@@ -761,6 +895,28 @@ void BaseBattle::Clear() {
             it = cachedBlColliders.erase(it);
         }
     }
+
+    while (!activeTpColliders.empty()) { 
+        TP_COLLIDER_T* single = activeTpColliders.back();
+        activeTpColliders.pop_back();
+        auto bodyID = single->GetID();
+        bodyIDsToClear.push_back(bodyID);
+    }
+
+    while (!cachedTpColliders.empty()) {
+        // [REMINDER] "tpStockCache" will be collected into "bodyIDsToClear" here.
+        for (auto it = cachedTpColliders.begin(); it != cachedTpColliders.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                TP_COLLIDER_T* single = q.back();
+                q.pop_back();
+                auto bodyID = single->GetID();
+                bodyIDsToClear.push_back(bodyID);
+            }
+            it = cachedTpColliders.erase(it);
+        }
+    }
+
     if (!bodyIDsToClear.empty()) {
         biNoLock->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
         biNoLock->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
@@ -768,6 +924,25 @@ void BaseBattle::Clear() {
     }
 
     blStockCache = nullptr;
+    tpStockCache = nullptr;
+
+    while (!activeNonContactConstraints.empty()) { 
+        NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
+        activeNonContactConstraints.pop_back();
+        delete single;
+    }
+
+    while (!cachedNonContactConstraints.empty()) {
+        for (auto it = cachedNonContactConstraints.begin(); it != cachedNonContactConstraints.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                NON_CONTACT_CONSTRAINT_T* single = q.back();
+                q.pop_back();
+                delete single;
+            }
+            it = cachedNonContactConstraints.erase(it);
+        }
+    }
 
     // Deallocate temp variables in Pb arena
     pbTempAllocator.Reset();
@@ -781,6 +956,7 @@ void BaseBattle::Clear() {
     playersCnt = 0;
 
     phySys->ClearBodyManagerFreeList();
+    phySys->ValidateBodyManagerContactCacheForAllBodies();
 
     frameLogEnabled = false;
 }
@@ -824,7 +1000,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     fallenDeathHeight = initializerMapData->fallen_death_height();
     auto startRdf = initializerMapData->self_parsed_rdf();
 
-    playersCnt = startRdf.players_arr_size();
+    playersCnt = startRdf.players_size();
     allConfirmedMask = (U64_1 << playersCnt) - 1;
 
     auto stRdfId = startRdf.id();
@@ -998,6 +1174,14 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     transientUdToNextPlayer.reserve(playersCnt);
     transientUdToCurrNpc.reserve(globalPrimitiveConsts->default_prealloc_npc_capacity());
     transientUdToNextNpc.reserve(globalPrimitiveConsts->default_prealloc_npc_capacity());
+    transientUdToCurrBl.reserve(globalPrimitiveConsts->default_prealloc_bullet_capacity());
+    transientUdToNextBl.reserve(globalPrimitiveConsts->default_prealloc_bullet_capacity());
+    transientUdToCurrTrap.reserve(globalPrimitiveConsts->default_prealloc_trap_capacity());
+    transientUdToNextTrap.reserve(globalPrimitiveConsts->default_prealloc_trap_capacity());
+    transientUdToCurrTrigger.reserve(globalPrimitiveConsts->default_prealloc_trigger_capacity());
+    transientUdToNextTrigger.reserve(globalPrimitiveConsts->default_prealloc_trigger_capacity());
+    transientUdToCurrPickable.reserve(globalPrimitiveConsts->default_prealloc_pickable_capacity());
+    transientUdToNextPickable.reserve(globalPrimitiveConsts->default_prealloc_pickable_capacity());
 
     safeDeactiviatedPosition = Vec3(65535.0, -65535.0, 0);
 
@@ -1010,8 +1194,8 @@ bool BaseBattle::initializeTriggerDemandedEvtMask(RenderFrame* startRdf) {
     std::unordered_map<uint32_t, uint64_t> collectedPublishingEvtMaskUponExhausted;
     std::unordered_map<uint32_t, uint64_t> collectedDemandedEvtMask;
 
-    for (int i = 0; i < startRdf->npcs_arr_size(); ++i) {
-        NpcCharacterDownsync* npc = startRdf->mutable_npcs_arr(i);
+    for (int i = 0; i < startRdf->npcs_size(); ++i) {
+        NpcCharacterDownsync* npc = startRdf->mutable_npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
         auto targetTriggerId = npc->publishing_to_trigger_id_upon_exhausted();
         if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) continue;
@@ -1026,8 +1210,8 @@ bool BaseBattle::initializeTriggerDemandedEvtMask(RenderFrame* startRdf) {
         collectedDemandedEvtMask[targetTriggerId] |= collectedPublishingEvtMaskUponExhausted[targetTriggerId];
     }
 
-    for (int i = 0; i < startRdf->triggers_arr_size(); ++i) {
-        Trigger* tr = startRdf->mutable_triggers_arr(i);
+    for (int i = 0; i < startRdf->triggers_size(); ++i) {
+        Trigger* tr = startRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
         auto targetTriggerId = tr->publishing_to_trigger_id_upon_exhausted();
         if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) continue;
@@ -1042,8 +1226,8 @@ bool BaseBattle::initializeTriggerDemandedEvtMask(RenderFrame* startRdf) {
         collectedDemandedEvtMask[targetTriggerId] |= collectedPublishingEvtMaskUponExhausted[targetTriggerId];
     }
     
-    for (int i = 0; i < startRdf->triggers_arr_size(); ++i) {
-        Trigger* tr = startRdf->mutable_triggers_arr(i);
+    for (int i = 0; i < startRdf->triggers_size(); ++i) {
+        Trigger* tr = startRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
         if (!collectedDemandedEvtMask.count(tr->id())) {
             // For "TtByMovement" or "TtByAttack"
@@ -1653,13 +1837,13 @@ bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync&
 
 void BaseBattle::elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf) {
     for (int i = 0; i < playersCnt; i++) {
-        auto player = nextRdf->mutable_players_arr(i);
+        auto player = nextRdf->mutable_players(i);
         const CharacterConfig* cc = getCc(player->chd().species_id());
         elapse1RdfForPlayerChd(currRdfId, player, cc);
     }
 
-    for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
-        auto npc = nextRdf->mutable_npcs_arr(i);
+    for (int i = 0; i < nextRdf->npcs_size(); i++) {
+        auto npc = nextRdf->mutable_npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
         const CharacterConfig* cc = getCc(npc->chd().species_id());
         elapse1RdfForNpcChd(currRdfId, npc, cc);
@@ -1677,8 +1861,8 @@ void BaseBattle::elapse1RdfForRdf(int currRdfId, RenderFrame* nextRdf) {
         elapse1RdfForBl(currRdfId, bl, skill, bulletConfig);
     }
 
-    for (int i = 0; i < nextRdf->triggers_arr_size(); i++) {
-        auto tr = nextRdf->mutable_triggers_arr(i);
+    for (int i = 0; i < nextRdf->triggers_size(); i++) {
+        auto tr = nextRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
         elapse1RdfForTrigger(tr);
     }
@@ -1970,10 +2154,10 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
 void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf) {
     bodyIDsToActivate.clear();
     for (int i = 0; i < playersCnt; i++) {
-        const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
+        const PlayerCharacterDownsync& currPlayer = currRdf->players(i);
         const CharacterDownsync& currChd = currPlayer.chd();
 
-        PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players_arr(i);
+        PlayerCharacterDownsync* nextPlayer = nextRdf->mutable_players(i);
 
         const CharacterConfig* cc = getCc(currChd.species_id());
         auto ud = calcUserData(currPlayer);
@@ -1984,10 +2168,10 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
     }
 
-    for (int i = 0; i < currRdf->npcs_arr_size(); i++) {
-        const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
+    for (int i = 0; i < currRdf->npcs_size(); i++) {
+        const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-        NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs_arr(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs_arr" and "nextRdf->npcs_arr" are FULLY ALIGNED.
+        NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs" and "nextRdf->npcs" are FULLY ALIGNED.
         const CharacterDownsync& currChd = currNpc.chd();
         auto ud = calcUserData(currNpc);
 
@@ -2035,6 +2219,44 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 */
     }
 
+    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+        const Trap& currTp = currRdf->dynamic_traps(i);
+        if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
+        Trap* nextTp = nextRdf->mutable_dynamic_traps(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadDynamicTraps", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+        auto ud = calcUserData(currTp);
+        const TrapConfig* tpConfig = nullptr;
+        const TrapConfigFromTiled* tpConfigFromTile = nullptr;
+        const uint32_t tpt = currTp.tpt();
+        FindTrapConfig(tpt, currTp.id(), tpConfig, tpConfigFromTile);
+        JPH_ASSERT(nullptr != tpConfig);
+        const float immediateBoxHalfSizeX = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_x() : tpConfigFromTile->box_half_size_x());
+        const float immediateBoxHalfSizeY = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_y() : tpConfigFromTile->box_half_size_y()); 
+        TP_COLLIDER_T* tpCollider = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile);
+        auto bodyID = tpCollider->GetID();
+        transientUdToCurrTrap[ud] = &currTp;
+        transientUdToNextTrap[ud] = nextTp;
+        if (!tpCollider->IsInBroadPhase()) {
+            bodyIDsToAdd.push_back(bodyID);
+        }
+        
+        bodyIDsToActivate.push_back(bodyID);  
+
+        if (globalPrimitiveConsts->tpt_sliding_platform() == currTp.tpt()) {
+            // [WARNING] The "constraintHelperBody" is added into "activeTpColliders", hence it will be deactivated by "BaseBattle::batchRemoveFromPhySysAndCache" and deallocated by "BaseBattle::Clear" too.
+            TP_COLLIDER_T* constraintHelperBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, true);
+            auto constraintHelperBodyID = constraintHelperBody->GetID();
+            if (!constraintHelperBody->IsInBroadPhase()) {
+                bodyIDsToAdd.push_back(constraintHelperBodyID);
+            }
+            
+            bodyIDsToActivate.push_back(constraintHelperBodyID);  
+
+            NON_CONTACT_CONSTRAINT_T* sliderConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Slider, tpCollider, constraintHelperBody);
+
+            JPH_ASSERT(nullptr != sliderConstraint);
+        }
+    }
+
     if (!bodyIDsToAdd.empty()) {
         auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
         biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
@@ -2043,11 +2265,43 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
     if (!bodyIDsToActivate.empty()) {
         biNoLock->ActivateBodies(bodyIDsToActivate.data(), bodyIDsToActivate.size());
     }
+
+    if (!activeNonContactConstraints.empty()) {
+        phySys->AddConstraints(activeNonContactConstraints.data(), activeNonContactConstraints.size());
+    }
 }
 
 static JPH::BodyID invalidBodyID;
 static JPH::SubShapeID emptySubShapeID;
 void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf) {
+    // Remove "NonContactConstraint"s first, just like what we do in databases :)
+    if (!activeNonContactConstraints.empty()) {
+        /* [REMINDER]
+
+        ["ConstraintManager.Remove(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintManager.cpp#L51) is very efficient due to the use of "Constraint.mConstraintIndex & swapping to tail & pop_back" trick, therefore unlike "Body"s, it's totally OK if we choose to call "phySys->RemoveConstraint(...)" on each single "activeNonContactConstraints.back()", yet I still do it in batch due to personal preference. 
+        */
+        phySys->RemoveConstraints(activeNonContactConstraints.data(), activeNonContactConstraints.size());
+
+        while (!activeNonContactConstraints.empty()) {
+            NON_CONTACT_CONSTRAINT_T* single = activeNonContactConstraints.back();
+            activeNonContactConstraints.pop_back();
+            auto nonContactConstraintType = single->GetType();
+            auto nonContactConstraintSubType = single->GetSubType();
+            auto ud1 = single->GetUserData();
+            auto ud2 = 0; // TODO
+            NON_CONTACT_CONSTRAINT_CACHE_KEY_T k(nonContactConstraintType, nonContactConstraintSubType, ud1, ud2);
+
+            auto it = cachedNonContactConstraints.find(k);
+            if (it == cachedNonContactConstraints.end()) {
+                NON_CONTACT_CONSTRAINT_Q q = { single };
+                cachedNonContactConstraints.emplace(k, q);
+            } else {
+                auto& cacheQue = it->second;
+                cacheQue.push_back(single);
+            }
+        }
+    }
+
     bodyIDsToClear.clear();
     while (!activeChColliders.empty()) {
         CH_COLLIDER_T* single = activeChColliders.back();
@@ -2108,6 +2362,40 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         bodyIDsToClear.push_back(single->GetID());
     }
 
+    while (!activeTpColliders.empty()) { 
+        TP_COLLIDER_T* single = activeTpColliders.back();
+        activeTpColliders.pop_back();
+        auto ud = single->GetUserData();
+        JPH_ASSERT(0 < transientUdToCurrTrap.count(ud));
+        const Trap& tp = *(transientUdToCurrTrap[ud]);
+        JPH_ASSERT(globalPrimitiveConsts->terminating_trap_id() != tp.id());
+        const TrapConfig* tpConfig = nullptr;
+        const TrapConfigFromTiled* tpConfigFromTile = nullptr;
+        FindTrapConfig(tp.tpt(), tp.id(), tpConfig, tpConfigFromTile);
+        JPH_ASSERT(nullptr != tpConfig);
+        if (nullptr != tpConfigFromTile) {
+            calcTpCacheKey(tpConfig->default_box_half_size_x(), tpConfig->default_box_half_size_y(), tpCacheKeyHolder);
+        } else {
+            calcTpCacheKey(tpConfigFromTile->box_half_size_x(), tpConfigFromTile->box_half_size_y(), tpCacheKeyHolder);
+        }
+        auto it = cachedTpColliders.find(tpCacheKeyHolder);
+
+        if (it == cachedTpColliders.end()) {
+            TP_COLLIDER_Q q = { single };
+            cachedTpColliders.emplace(tpCacheKeyHolder, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
+
+        biNoLock->SetPositionAndRotation(single->GetID()
+            , safeDeactiviatedPosition // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
+            , Quat::sIdentity()
+            , EActivation::DontActivate);
+        biNoLock->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
+        bodyIDsToClear.push_back(single->GetID());
+    }
+
     /*
     [WARNING]
 
@@ -2127,6 +2415,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     // This function will remove or deactivate all bodies attached to "phySys", so this mapping cache will certainly become invalid.
     transientUdToChCollider.clear();
     transientUdToBodyID.clear();
+    transientUdToConstraintHelperBodyID.clear();
 
     transientUdToCurrPlayer.clear();
     transientUdToNextPlayer.clear();
@@ -2137,17 +2426,14 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     transientUdToCurrBl.clear();
     transientUdToNextBl.clear();
 
-    transientUdToCurrTrigger.clear();
-    transientUdToNextTrigger.clear();
-
     transientUdToCurrTrap.clear();
     transientUdToNextTrap.clear();
 
-    if (0 < transientNonContactConstraintsCnt) {
-        phySys->RemoveConstraints(transientNonContactConstraints.data(), transientNonContactConstraintsCnt);
-        transientNonContactConstraints.clear();
-        transientNonContactConstraintsCnt = 0;
-    }
+    transientUdToCurrTrigger.clear();
+    transientUdToNextTrigger.clear();
+
+    transientUdToCurrPickable.clear();
+    transientUdToNextPickable.clear();
 }
 
 void BaseBattle::deriveCharacterOpPattern(const int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
@@ -2282,7 +2568,7 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
     }
 
     if (0 < currChd.debuff_list_size()) {
-        auto existingDebuff = currChd.debuff_list(globalPrimitiveConsts->debuff_arr_idx_elemental());
+        auto existingDebuff = currChd.debuff_list(globalPrimitiveConsts->debuff_array_idx_elemental());
         if (globalPrimitiveConsts->terminating_debuff_species_id() != existingDebuff.species_id()) {
             auto existingDebufConfig = globalConfigConsts->debuff_configs().at(existingDebuff.species_id());
             currParalyzed = (globalPrimitiveConsts->terminating_debuff_species_id() != existingDebuff.species_id() && 0 < existingDebuff.stock() && DebuffType::PositionLockedOnly == existingDebufConfig.type());
@@ -2362,7 +2648,7 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
 
 }
 
-void BaseBattle::FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig) {
+void BaseBattle::FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig) {
     if (globalPrimitiveConsts->no_skill() == skillId) return;
     if (globalPrimitiveConsts->no_skill_hit() == skillHit) return;
     auto& skillConfigs = globalConfigConsts->skill_configs();
@@ -2376,6 +2662,14 @@ void BaseBattle::FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Ski
     }
     const BulletConfig& targetBlConfig = outSkill->hits(skillHit - 1);
     outBulletConfig = &targetBlConfig;
+}
+
+void BaseBattle::FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled) {
+    if (globalPrimitiveConsts->terminating_trap_id() == trapId) return;
+    auto& trapConfigs = globalConfigConsts->trap_configs();
+    if (!trapConfigs.count(trapSpeciesId)) return;
+    const TrapConfig& outTpConfigVal = trapConfigs.at(trapSpeciesId);
+    outTpConfig = &(outTpConfigVal);
 }
 
 void BaseBattle::processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir) {
@@ -2700,8 +2994,8 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
     auto& characterConfigs = globalConfigConsts->character_configs();
-    while (candI < nextRdf->npcs_arr_size()) {
-        const NpcCharacterDownsync* candidate = &(nextRdf->npcs_arr(candI));
+    while (candI < nextRdf->npcs_size()) {
+        const NpcCharacterDownsync* candidate = &(nextRdf->npcs(candI));
         if (globalPrimitiveConsts->terminating_character_id() == candidate->id()) break;
         const CharacterDownsync* chd = &(candidate->chd());
         const CharacterConfig& candidateConfig = characterConfigs.at(chd->species_id());
@@ -2710,7 +3004,7 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
         // TODO: Drop pickable
         */
         
-        while (candI < nextRdf->npcs_arr_size() && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(chd)) {
+        while (candI < nextRdf->npcs_size() && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(chd)) {
             if (globalPrimitiveConsts->terminating_trigger_id() != candidate->publishing_to_trigger_id_upon_exhausted()) {
                 auto triggerUd = calcPublishingToTriggerUd(*candidate);
                 auto targetTriggerInNextFrame = transientUdToNextTrigger[triggerUd];
@@ -2728,18 +3022,18 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
                 }
             }
             candI++;
-            if (candI >= nextRdf->npcs_arr_size()) break;
-            candidate = &(nextRdf->npcs_arr(candI));
+            if (candI >= nextRdf->npcs_size()) break;
+            candidate = &(nextRdf->npcs(candI));
             chd = &(candidate->chd());
         }
 
-        if (candI >= nextRdf->npcs_arr_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs_arr(candI).id()) {
+        if (candI >= nextRdf->npcs_size() || globalPrimitiveConsts->terminating_character_id() == nextRdf->npcs(candI).id()) {
             break;
         }
 
         if (candI != aliveI) {
-            const NpcCharacterDownsync& src = nextRdf->npcs_arr(candI);
-            auto dst = nextRdf->mutable_npcs_arr(aliveI);
+            const NpcCharacterDownsync& src = nextRdf->npcs(candI);
+            auto dst = nextRdf->mutable_npcs(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
@@ -2747,8 +3041,8 @@ void BaseBattle::leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf) {
         candI++;
         aliveI++;
     }
-    if (aliveI < nextRdf->npcs_arr_size()) {
-        auto terminatingCand = nextRdf->mutable_npcs_arr(aliveI);
+    if (aliveI < nextRdf->npcs_size()) {
+        auto terminatingCand = nextRdf->mutable_npcs(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_character_id());
     }
     nextRdf->set_npc_count(aliveI);
@@ -2758,9 +3052,9 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     auto& chConfigs = globalConfigConsts->character_configs();
 
     int currRdfId = currRdf->id();
-    for (int i = 0; i < nextRdf->players_arr_size(); i++) {
-        const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
-        auto nextPlayer = nextRdf->mutable_players_arr(i);
+    for (int i = 0; i < nextRdf->players_size(); i++) {
+        const PlayerCharacterDownsync& currPlayer = currRdf->players(i);
+        auto nextPlayer = nextRdf->mutable_players(i);
         auto chd = nextPlayer->mutable_chd();
         auto chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2*chConfig.capsule_half_height();
@@ -2769,10 +3063,10 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         }
     }
 
-    for (int i = 0; i < nextRdf->npcs_arr_size(); i++) {
-        const NpcCharacterDownsync& currNpc = currRdf->npcs_arr(i);
+    for (int i = 0; i < nextRdf->npcs_size(); i++) {
+        const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
-        auto nextNpc = nextRdf->mutable_npcs_arr(i);
+        auto nextNpc = nextRdf->mutable_npcs(i);
         auto chd = nextNpc->mutable_chd();
         const CharacterConfig& chConfig = chConfigs.at(chd->species_id());
         float chTop = chd->y() + 2 * chConfig.capsule_half_height();
@@ -2784,7 +3078,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     for (int i = 0; i < nextRdf->pickables_size(); i++) {
         auto nextPickable = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == nextPickable->id()) break;
-        auto pickableTop = nextPickable->y() + globalPrimitiveConsts->default_pickable_hitbox_half_size_y();
+        auto pickableTop = nextPickable->y() + globalPrimitiveConsts->default_pickable_hurtbox_half_size_y();
         if (fallenDeathHeight > pickableTop && PickableState::PIdle == nextPickable->pk_state()) {
             nextPickable->set_pk_state(PickableState::PDisappearing);
             nextPickable->set_frames_in_pk_state(0);
@@ -2869,26 +3163,26 @@ void BaseBattle::leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf) {
     nextRdf->set_pickable_count(aliveI);
 }
 
-void BaseBattle::leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf) {
+void BaseBattle::leftShiftDeadDynamicTraps(int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
-    while (candI < nextRdf->triggers_arr_size()) {
-        const Trigger* cand = &(nextRdf->triggers_arr(candI));
-        if (globalPrimitiveConsts->terminating_trigger_id() == cand->id()) {
+    while (candI < nextRdf->dynamic_traps_size()) {
+        const Trap* cand = &(nextRdf->dynamic_traps(candI));
+        if (globalPrimitiveConsts->terminating_trap_id() == cand->id()) {
             break;
         }
-        while (candI < nextRdf->triggers_arr_size() && globalPrimitiveConsts->terminating_trigger_id() != cand->id() && !isTriggerAlive(cand, currRdfId)) {
+        while (candI < nextRdf->dynamic_traps_size() && globalPrimitiveConsts->terminating_trap_id() != cand->id() && !isTrapAlive(cand, currRdfId)) {
             candI++;
-            if (candI >= nextRdf->triggers_arr_size()) break;
-            cand = &(nextRdf->triggers_arr(candI));
+            if (candI >= nextRdf->dynamic_traps_size()) break;
+            cand = &(nextRdf->dynamic_traps(candI));
         }
 
-        if (candI >= nextRdf->triggers_arr_size() || globalPrimitiveConsts->terminating_trigger_id() == nextRdf->triggers_arr(candI).id()) {
+        if (candI >= nextRdf->dynamic_traps_size() || globalPrimitiveConsts->terminating_trap_id() == nextRdf->dynamic_traps(candI).id()) {
             break;
         }
 
         if (candI != aliveI) {
-            const Trigger& src = nextRdf->triggers_arr(candI);
-            auto dst = nextRdf->mutable_triggers_arr(aliveI);
+            const Trap& src = nextRdf->dynamic_traps(candI);
+            auto dst = nextRdf->mutable_dynamic_traps(aliveI);
             dst->Clear();
             dst->CopyFrom(src);
         }
@@ -2896,8 +3190,42 @@ void BaseBattle::leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf) {
         candI++;
         aliveI++;
     }
-    if (aliveI < nextRdf->triggers_arr_size()) {
-        auto terminatingCand = nextRdf->mutable_triggers_arr(aliveI);
+    if (aliveI < nextRdf->dynamic_traps_size()) {
+        auto terminatingCand = nextRdf->mutable_dynamic_traps(aliveI);
+        terminatingCand->set_id(globalPrimitiveConsts->terminating_trap_id());
+    }
+    nextRdf->set_dynamic_trap_count(aliveI);
+}
+
+void BaseBattle::leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf) {
+    int aliveI = 0, candI = 0;
+    while (candI < nextRdf->triggers_size()) {
+        const Trigger* cand = &(nextRdf->triggers(candI));
+        if (globalPrimitiveConsts->terminating_trigger_id() == cand->id()) {
+            break;
+        }
+        while (candI < nextRdf->triggers_size() && globalPrimitiveConsts->terminating_trigger_id() != cand->id() && !isTriggerAlive(cand, currRdfId)) {
+            candI++;
+            if (candI >= nextRdf->triggers_size()) break;
+            cand = &(nextRdf->triggers(candI));
+        }
+
+        if (candI >= nextRdf->triggers_size() || globalPrimitiveConsts->terminating_trigger_id() == nextRdf->triggers(candI).id()) {
+            break;
+        }
+
+        if (candI != aliveI) {
+            const Trigger& src = nextRdf->triggers(candI);
+            auto dst = nextRdf->mutable_triggers(aliveI);
+            dst->Clear();
+            dst->CopyFrom(src);
+        }
+
+        candI++;
+        aliveI++;
+    }
+    if (aliveI < nextRdf->triggers_size()) {
+        auto terminatingCand = nextRdf->mutable_triggers(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_trigger_id());
     }
     nextRdf->set_trigger_count(aliveI);
@@ -3369,7 +3697,7 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mGravityFactor = 0; // TODO
-    bodyCreationSettings.mIsSensor = isSensor; // TODO
+    bodyCreationSettings.mIsSensor = isSensor;
     Body* body = biNoLock->CreateBody(bodyCreationSettings);
     JPH_ASSERT(nullptr != body);
     blStockCache->push_back(body);
@@ -3377,9 +3705,60 @@ Body* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX,
     return body;
 }
 
+Body* BaseBattle::createDefaultTrapCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType immediateMotionType, bool isSensor) {
+    outConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
+    if (cDefaultHalfThickness < outConvexRadius) {
+        outConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+    }
+    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, outConvexRadius); // transient, to be discarded after creating "body"
+    settings->mDensity = cDefaultBlDensity;
+    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
+    bodyCreationSettings.mAllowDynamicOrKinematic = false; // Unlike "Bullet", the motion type of traps are ALWAYS "Kinematic" 
+    bodyCreationSettings.mGravityFactor = 0; // TODO
+    bodyCreationSettings.mIsSensor = isSensor;
+    Body* body = biNoLock->CreateBody(bodyCreationSettings);
+    JPH_ASSERT(nullptr != body);
+    tpStockCache->push_back(body);
+
+    return body;
+}
+
+NON_CONTACT_CONSTRAINT_T* BaseBattle::createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2) {
+    JPH_ASSERT(nullptr != inBody1);
+    JPH_ASSERT(nullptr != inBody2);
+    switch (nonContactConstraintType) {
+    case EConstraintType::TwoBodyConstraint: {
+        switch (nonContactConstraintSubType) {
+        case EConstraintSubType::Slider: {
+            SliderConstraintSettings sliderSettings;
+            sliderSettings.mAutoDetectPoint = true;
+            const Vec3 sliderAxis = inBody2->GetRotation() * Vec3::sAxisX();
+            sliderSettings.SetSliderAxis(Vec3::sAxisX());
+            sliderSettings.mLimitsMin = 0.0f;
+            sliderSettings.mLimitsMax = 2.0f;
+            sliderSettings.mLimitsSpringSettings.mFrequency = 1.0f;
+            sliderSettings.mLimitsSpringSettings.mDamping = 0.5f;
+            sliderSettings.SetEmbedded();
+            SliderConstraint* sliderConstraint = new SliderConstraint(*inBody1, *inBody2, sliderSettings);
+            sliderSettings.Release();
+            return sliderConstraint;
+        }
+        default:
+            break;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return nullptr;
+}
+
+
 void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict) {
     for (int i = 0; i < playersCnt; i++) {
-        const PlayerCharacterDownsync& currPlayer = currRdf->players_arr(i);
+        const PlayerCharacterDownsync& currPlayer = currRdf->players(i);
         const CharacterDownsync& currChd = currPlayer.chd();
         uint64_t ud = calcUserData(currPlayer);
 #ifndef NDEBUG
@@ -3429,6 +3808,20 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const ::google::p
         auto preallocatedBlCollider = createDefaultBulletCollider(cDefaultBlHalfLength, cDefaultBlHalfLength, dummyNewConvexRadius);
         bodyIDsToAdd.push_back(preallocatedBlCollider->GetID());
     }
+
+    calcTpCacheKey(cDefaultTpHalfLength, cDefaultTpHalfLength, tpCacheKeyHolder);
+    if (!cachedTpColliders.count(tpCacheKeyHolder)) {
+        TP_COLLIDER_Q q = { };
+        cachedTpColliders.emplace(tpCacheKeyHolder, q);
+    }
+    tpStockCache = &cachedTpColliders[tpCacheKeyHolder];
+    JPH_ASSERT(nullptr != tpStockCache);
+    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+        float dummyNewConvexRadius = 0;
+        auto preallocatedTpCollider = createDefaultTrapCollider(cDefaultTpHalfLength, cDefaultTpHalfLength, dummyNewConvexRadius);
+        bodyIDsToAdd.push_back(preallocatedTpCollider->GetID());
+    }
+
     auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
     biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
 
@@ -3549,12 +3942,12 @@ RenderFrame* BaseBattle::NewPreallocatedRdf(int roomCapacity, int preallocNpcCou
     ret->set_bullet_id_counter(0);
 
     for (int i = 0; i < roomCapacity; i++) {
-        auto single = ret->add_players_arr();
+        auto single = ret->add_players();
         NewPreallocatedPlayerCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), globalPrimitiveConsts->default_per_character_inventory_capacity(), globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
     }
 
     for (int i = 0; i < preallocNpcCount; i++) {
-        auto single = ret->add_npcs_arr();
+        auto single = ret->add_npcs();
         NewPreallocatedNpcCharacterDownsync(single, globalPrimitiveConsts->default_per_character_buff_capacity(), globalPrimitiveConsts->default_per_character_debuff_capacity(), 1, globalPrimitiveConsts->default_per_character_immune_bullet_record_capacity());
     }
 

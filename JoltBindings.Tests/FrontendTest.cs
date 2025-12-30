@@ -44,7 +44,7 @@ public class FrontendTest {
         uint npcIdCounter = 1;
         uint bulletIdCounter = 1;
 
-        var player1 = startRdf.PlayersArr[0];
+        var player1 = startRdf.Players[0];
         var ch1 = player1.Chd;
         player1.JoinIndex = 1;
         ch1.X = 50f;
@@ -71,7 +71,7 @@ public class FrontendTest {
         ch1.Hp = 100;
         ch1.SpeciesId = PbPrimitives.SPECIES_BLADEGIRL;
 
-        var player2 = startRdf.PlayersArr[1];
+        var player2 = startRdf.Players[1];
         var ch2 = player2.Chd;
         player2.JoinIndex = 2;
         ch2.X = -50f;

@@ -30,7 +30,7 @@ RenderFrame* mockStartRdf() {
     int bulletIdCounter = 1;
     auto characterConfigs = globalConfigConsts->character_configs();
 
-    auto player1 = startRdf->mutable_players_arr(0);
+    auto player1 = startRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
     auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
@@ -55,7 +55,7 @@ RenderFrame* mockStartRdf() {
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
 
-    auto player2 = startRdf->mutable_players_arr(1);
+    auto player2 = startRdf->mutable_players(1);
     auto playerCh2 = player2->mutable_chd();
     auto playerCh2Species = chSpecies.bladegirl();
     auto cc2 = characterConfigs[playerCh2Species];
