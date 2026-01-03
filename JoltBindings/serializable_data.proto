@@ -566,7 +566,8 @@ message WsReq {
     repeated SerializedBarrierCollider serialized_barriers = 8;
     repeated SerializedStaticTrapCollider serialized_static_traps = 10;
     map<uint32, uint32> preallocate_npc_species_dict = 11;
-    map<uint32, TriggerConfigFromTiled> trigger_config_from_tile_dict = 12;
+    map<uint32, TrapConfigFromTiled> trap_config_from_tile_dict = 12;
+    map<uint32, TriggerConfigFromTiled> trigger_config_from_tile_dict = 13;
     float fallen_death_height = 14;
 }
 
@@ -615,7 +616,7 @@ enum MultiHitType {
     FromEmissionJustActive = 8;
 }
 
-enum SkillTriggerType {
+enum SkillInvocation {
     RisingEdge = 0;
     FallingEdge = 1;
 }
@@ -834,7 +835,7 @@ message Bullet {
 }
 
 message TrapConfig {
-    uint32 species_id = 1;
+    uint32 tpt = 1; // short for "trap type"
     uint32 explosion_species_id = 2; 
     int32 explosion_frames = 3;
     bool blow_up = 4;
@@ -857,21 +858,35 @@ message TrapConfig {
     bool is_rotary = 24;
     bool no_x_flip_rendering = 25;
 
+    float default_box_half_size_x = 26;
+    float default_box_half_size_y = 27;
+    float default_linear_speed = 28;
+    float default_angular_speed = 29; // in "radians/second" 
+
     string species_name = 1024;
 }
 
 message TrapConfigFromTiled {
-    uint32 species_id = 1; // Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
-    int32 quota = 2;
+    uint32 id = 1; 
+    uint32 tpt = 2; // Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
+    int32 quota = 3;
 
-    float speed = 3; // For speed varying bullets, this is the initial speed
-    int32 dir_x = 4; // the initial direction indicator for X-axis
-    int32 dir_y = 5; // the initial direction indicator for Y-axis
+    float box_half_size_x = 4;
+    float box_half_size_y = 5;
 
-    float box_cw = 10;
-    float box_ch = 11;
-    
-    float init_no_angular_vel = 12;
+    float linear_speed = 6;
+    float angular_speed = 7; // in "radians/second"
+
+    float init_x = 8;
+    float init_y = 9;
+    float init_z = 10;
+
+    float init_q_x = 11;
+    float init_q_y = 12;
+    float init_q_z = 13;
+    float init_q_w = 14;
+
+    float init_not_moving = 512; // thus only moves or rotates after triggered
 }
 
 message BarrierColliderAttr {
@@ -895,7 +910,7 @@ message TrapColliderAttr {
  */
 message Trap {
     uint32 id = 1; 
-    int32 patrol_cue_angular_vel_flip_mark = 2;
+    uint32 tpt = 2; 
 
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
@@ -906,7 +921,7 @@ message Trap {
     bool waiving_spontaneous_patrol = 10;
     
     uint32 subscribes_to_trigger_id = 11;
-    uint32 subscribes_to_trigger_id_alt = 12;
+    uint32 subscribes_to_trigger_group_id = 12;
 
     float x = 13; 
     float y = 14;
@@ -941,12 +956,12 @@ message StepResult {
 
 message RenderFrame {
     int32 id = 1;
-    repeated PlayerCharacterDownsync players_arr = 2;
+    repeated PlayerCharacterDownsync players = 2;
     int64 countdown_nanos = 3;
     repeated Bullet bullets = 4;  
-    repeated NpcCharacterDownsync npcs_arr = 5;
-    repeated Trap dynamic_traps_arr = 6;
-    repeated Trigger triggers_arr = 7;
+    repeated NpcCharacterDownsync npcs = 5;
+    repeated Trap dynamic_traps = 6;
+    repeated Trigger triggers = 7;
     repeated Pickable pickables = 8;  
 
     uint32 bullet_id_counter = 9;
@@ -961,8 +976,8 @@ message RenderFrame {
     uint32 pickable_id_counter = 15;
     uint32 pickable_count = 16;
 
-    uint32 dynamic_trap_id_counter = 17;
-    uint32 dynamic_trap_count = 18;
+    // [WARNING] There's no "dynamic_trap_id_counter" by design, every "Trap.id" is assigned in UI almost arbitrarily.
+    uint32 dynamic_trap_count = 17;
 
     StepResult prev_rdf_step_result = 512;
 }
@@ -1037,7 +1052,7 @@ message Skill {
     int32 recovery_frames = 2;
     int32 recovery_frames_on_block = 3; 
     int32 recovery_frames_on_hit = 4; 
-    SkillTriggerType trigger_type = 5;
+    SkillInvocation invocation_type = 5;
     CharacterState bound_ch_state = 6;
     CharacterState bound_ch_state_on_hit = 7; 
     int32 mp_delta = 8; // Usually used as "mp consumption"
@@ -1384,11 +1399,11 @@ message PickableSpawnerConfig {
 }
 
 message TriggerConfig {
-    uint32 tt = 1;
+    uint32 trt = 1; // Short for "trigger type" 
 }
 
 message TriggerConfigFromTiled {
-    uint32 tt = 1;
+    uint32 trt = 1; 
     int32 delayed_frames = 3;  
     int32 recovery_frames = 4;
     int32 bullet_team_id = 5; 
@@ -1454,7 +1469,7 @@ message Trigger {
     uint64 offender_ud = 20; 
     int32 offender_bullet_team_id = 21; 
 
-    uint32 trigger_type = 22;
+    uint32 trt = 22;
 }
 
 message PlayerMetaInfo {
@@ -1565,8 +1580,8 @@ message PrimitiveConsts {
     int32 no_patrol_cue_id = 66;
     int32 no_vfx_id = 67;
 
-    float default_pickable_hitbox_half_size_x = 68;
-    float default_pickable_hitbox_half_size_y = 69;
+    float default_pickable_hurtbox_half_size_x = 68;
+    float default_pickable_hurtbox_half_size_y = 69;
     int32 default_pickable_disappearing_anim_frames = 70;
     int32 default_pickable_consumed_anim_frames = 71;
     float default_pickable_rising_vel_y = 72;
@@ -1600,7 +1615,7 @@ message PrimitiveConsts {
     uint32 species_none_ch = 92;
     uint32 upsync_st_ifd_id_tolerance = 93;
     float no_lock_vel = 94;
-    int32 debuff_arr_idx_elemental = 95;
+    int32 debuff_array_idx_elemental = 95;
 
     int32 terminating_render_frame_id = 96;
     int32 terminating_input_frame_id = 97;
@@ -1608,34 +1623,33 @@ message PrimitiveConsts {
     uint32 terminating_character_id = 98;
     uint32 terminating_trap_id = 99;
     uint32 terminating_trigger_id = 100;
-    uint32 terminating_pickable_id = 101;
-    uint32 terminating_bullet_id = 102;
-    int32 terminating_bullet_team_id = 103; // Default for proto int32 to save space
-    uint32 terminating_buff_species_id = 104; // Default for proto int32 to save space
-    uint32 terminating_debuff_species_id = 105;
-    uint32 terminating_consumable_species_id = 106; // Default for proto int32 to save space
+    uint32 terminating_trigger_group_id = 101;
+    uint32 terminating_pickable_id = 102;
+    uint32 terminating_bullet_id = 103;
+    int32  terminating_bullet_team_id = 104; 
+    uint32 terminating_buff_species_id = 105; 
+    uint32 terminating_debuff_species_id = 106;
+    uint32 terminating_consumable_species_id = 107; 
 
-    int32 frontend_ws_recv_bytelength = 107; // Expirically enough and not too big to have a graphic smoothness impact when receiving
-    int32 backend_ws_recv_bytelength = 108; // Slightly larger than FRONTEND_WS_RECV_BYTELENGTH because it has to receive some initial collider information
+    int32 frontend_ws_recv_bytelength = 108; // Expirically enough and not too big to have a graphic smoothness impact when receiving
+    int32 backend_ws_recv_bytelength = 109; // Slightly larger than FRONTEND_WS_RECV_BYTELENGTH because it has to receive some initial collider information
 
-    int32 jammed_btn_holding_rdf_cnt = 109;
+    int32 jammed_btn_holding_rdf_cnt = 110;
 
-    int32 btn_b_holding_rdf_cnt_threshold_2 = 110;
-    int32 btn_b_holding_rdf_cnt_threshold_1 = 111;
+    int32 btn_b_holding_rdf_cnt_threshold_2 = 111;
+    int32 btn_b_holding_rdf_cnt_threshold_1 = 112;
 
-    int32 jump_holding_rdf_cnt_threshold_1 = 112;  
-    int32 jump_holding_ifd_cnt_threshold_1 = 113;  
+    int32 jump_holding_rdf_cnt_threshold_1 = 113;  
+    int32 jump_holding_ifd_cnt_threshold_1 = 114;  
 
-    int32 jump_holding_rdf_cnt_threshold_2 = 114;  
-    int32 jump_holding_ifd_cnt_threshold_2 = 115;  
+    int32 jump_holding_rdf_cnt_threshold_2 = 115;  
+    int32 jump_holding_ifd_cnt_threshold_2 = 116;  
 
-    int32 in_air_dash_grace_period_rdf_cnt = 116;
-    int32 in_air_jump_grace_period_rdf_cnt = 117;
+    int32 in_air_dash_grace_period_rdf_cnt = 117;
+    int32 in_air_jump_grace_period_rdf_cnt = 118;
 
-    int32 btn_e_holding_rdf_cnt_threshold_1 = 118;  
-    int32 btn_e_holding_ifd_cnt_threshold_1 = 119;  
-
-    int32 sp_atk_lookup_frames = 120;
+    int32 btn_e_holding_rdf_cnt_threshold_1 = 119;  
+    int32 btn_e_holding_ifd_cnt_threshold_1 = 120;  
 
     int32 pattern_id_unable_to_op = 121;
     int32 pattern_id_no_op = 122;
@@ -1681,24 +1695,30 @@ message PrimitiveConsts {
     int32 starting_render_frame_id = 155;
     int32 starting_input_frame_id = 156;
 
-    uint32 tt_none = 157; 
+    uint32 trt_none = 157; 
 
-    uint32 tt_cyclic_timed = 158;
-    uint32 tt_by_movement = 159;
-    uint32 tt_by_attack = 160;
+    uint32 trt_cyclic_timed = 158;
+    uint32 trt_by_movement = 159;
+    uint32 trt_by_attack = 160;
 
-    uint32 tt_indi_wave_npc_spawner = 161;
-    uint32 tt_sync_wave_npc_spawner = 162;
+    uint32 trt_indi_wave_npc_spawner = 161;
+    uint32 trt_sync_wave_npc_spawner = 162;
 
-    uint32 tt_save_point_only = 163;
-    uint32 tt_story_point_only = 164;
-    uint32 tt_save_and_story_point = 165;
+    uint32 trt_save_point_only = 163;
+    uint32 trt_story_point_only = 164;
+    uint32 trt_save_and_story_point = 165;
 
-    uint32 tt_victory = 166; 
+    uint32 trt_victory = 166; 
 
     int32 terminating_lower_part_rdf_cnt = 167;
 
-    ChSpeciesConsts ch_species = 168;
+    uint32 tpt_none = 168; 
+
+    uint32 tpt_sliding_platform = 169; 
+
+    int32 sp_atk_lookup_frames = 512;
+
+    ChSpeciesConsts ch_species = 1024;
 }
 
 message ConfigConsts {
@@ -1706,6 +1726,6 @@ message ConfigConsts {
     map<uint32, Skill> skill_configs = 2;
     map<uint32, BuffConfig> buff_configs = 3;
     map<uint32, DebuffConfig> debuff_configs = 4;
-    map<uint32, TriggerConfig> trigger_configs = 5;
-    map<uint32, TrapConfig> trap_configs = 6;
+    map<uint32, TrapConfig> trap_configs = 5;
+    map<uint32, TriggerConfig> trigger_configs = 6;
 }

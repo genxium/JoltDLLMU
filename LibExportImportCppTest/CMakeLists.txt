@@ -22,6 +22,8 @@ else()
     set(CMAKE_CXX_COMPILER "/usr/bin/c++")
 endif()
 
+set(BUILD_TYPE $ENV{BUILD_TYPE})
+
 set(JOLT_BINDINGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../JoltBindings)
 set(PHYSICS_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../joltphysics_v5.3.0)
 set(PREBUILT_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins)
@@ -95,8 +97,6 @@ endif()
 target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 
 # ---------------------------- Installation ----------------------------
-set(BUILD_TYPE $ENV{BUILD_TYPE})
-
 set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
 
 if (MSVC)

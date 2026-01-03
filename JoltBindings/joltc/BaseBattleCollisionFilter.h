@@ -9,6 +9,7 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Constraints/Constraint.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Math/Quat.h>
 #include <Jolt/Math/Mat44.h>
@@ -26,7 +27,45 @@ using namespace JPH;
 #define CH_COLLIDER_T JPH::Character
 #define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
 
+#define TP_COLLIDER_T JPH::Body
+#define TP_CACHE_KEY_T std::vector<float>
+#define TP_COLLIDER_Q std::vector<TP_COLLIDER_T*>
+
 #define NON_CONTACT_CONSTRAINT_T JPH::Constraint
+typedef struct NonContactConstraintCacheKey {
+    /*
+    [WARNING]
+
+    For any "NonContactConstraint", caching isn't trivial because the "BodyID"s of both "Character"s and "Bullet"s can be reused.
+
+    However it's impossible to declare "std::vector<NON_CONTACT_CONSTRAINT_T>  transientNonContactConstraints" to hold them on stack-memory either because such elements are of different sizes, e.g. "SliderConstraint" doesn't have the same size as "PathConstraint" and two different "PathConstraint"s may also have different sizes due to difference in length. Therefore, assignments like "transientNonContactConstraints[idxWithExistingElement] = newElementWithDifferentByteSize" would be quite inefficient -- most importantly, C++ prohibits "vector<AbstractClass>".
+
+    Finally, it's not perfect to use "UserData" of "Character"s, "Bullet"s and "Trap"s either, because some constraints might be reused between different "Pair<UserData1, UserData2>"s, e.g. different instances of a same type of trap with different characters -- however it's still a good choice to include "UserData" in "NonContactConstraintCacheKey" because unlike "BodyID"s, the "UserData"s would NOT be reused (i.e. not re-assignable to new instances), hence matching "UserData"s implies a big part of the constraint can be reused.
+    */
+    EConstraintType theType;
+    EConstraintSubType theSubType;
+    uint64_t ud1;
+    uint64_t ud2;
+
+    NonContactConstraintCacheKey(const EConstraintType inType, const EConstraintSubType inSubType, const uint64_t inUd1, const uint64_t inUd2) : theType(inType), theSubType(inSubType), ud1(inUd1), ud2(inUd2) {}
+
+    bool operator==(const NonContactConstraintCacheKey& other) const {
+        return theType == other.theType && theSubType == other.theSubType && ud1 == other.ud1 && ud2 == other.ud2;
+    }
+} NON_CONTACT_CONSTRAINT_CACHE_KEY_T;
+
+typedef struct NonContactConstraintCacheKeyHasher {
+    std::size_t operator()(const NonContactConstraintCacheKey& v) const {
+        std::size_t seed = 4;
+        seed ^= std::hash<EConstraintType>()(v.theType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<EConstraintSubType>()(v.theSubType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<uint64_t>()(v.ud1) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<uint64_t>()(v.ud2) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} NonContactConstraintCacheKeyHasher;
+
+#define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
 static const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
 static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
@@ -97,12 +136,12 @@ public:
         return calcBulletUserData(bl.id());
     }
 
-    inline const uint64_t calcUserData(const Trigger& trigger) const {
-        return calcTriggerUserData(trigger.id());
-    }
-
     inline const uint64_t calcUserData(const Trap& trap) const {
         return calcTrapUserData(trap.id());
+    }
+
+    inline const uint64_t calcUserData(const Trigger& trigger) const {
+        return calcTriggerUserData(trigger.id());
     }
 
     inline const uint64_t calcUserData(const Pickable& pk) const {
@@ -134,12 +173,12 @@ public:
         return UDT_BL + bulletId;
     }
 
-    inline static const uint64_t calcTriggerUserData(const uint32_t triggerId) {
-        return UDT_TRIGGER + triggerId;
-    }
-
     inline static const uint64_t calcTrapUserData(const uint32_t trapId) {
         return UDT_TRAP + trapId;
+    }
+
+    inline static const uint64_t calcTriggerUserData(const uint32_t triggerId) {
+        return UDT_TRIGGER + triggerId;
     }
 
     inline static const uint64_t calcPickableUserData(const uint32_t pickableId) {

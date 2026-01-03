@@ -14,16 +14,19 @@ namespace JoltCSharp {
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
 
-        public const uint TT_NONE = 0;
-        public const uint TT_CYCLIC_TIMED = 1;
-        public const uint TT_BY_MOVEMENT = 2;
-        public const uint TT_BY_ATTACK = 3;
-        public const uint TT_INDI_WAVE_NPC_SPAWNER = 4;
-        public const uint TT_SYNC_WAVE_NPC_SPAWNER = 5;
-        public const uint TT_SAVE_POINT_ONLY = 6;
-        public const uint TT_STORY_POINT_ONLY = 7;
-        public const uint TT_SAVE_AND_STORY_POINT = 8;
-        public const uint TT_VICTORY = 9;
+        public const uint TRT_NONE = 0;
+        public const uint TRT_CYCLIC_TIMED = 1;
+        public const uint TRT_BY_MOVEMENT = 2;
+        public const uint TRT_BY_ATTACK = 3;
+        public const uint TRT_INDI_WAVE_NPC_SPAWNER = 4;
+        public const uint TRT_SYNC_WAVE_NPC_SPAWNER = 5;
+        public const uint TRT_SAVE_POINT_ONLY = 6;
+        public const uint TRT_STORY_POINT_ONLY = 7;
+        public const uint TRT_SAVE_AND_STORY_POINT = 8;
+        public const uint TRT_VICTORY = 9;
+
+        public const uint TPT_NONE = 0;
+        public const uint TPT_SLIDING_PLATFORM = 1;
 
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
         public const float DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE = 8.0f; // Currently only supports rectilinear rectangle shape.
@@ -132,8 +135,8 @@ namespace JoltCSharp {
             NoPatrolCueId = 0,
             NoVfxId = 0,
 
-            DefaultPickableHitboxHalfSizeX = 10f,
-            DefaultPickableHitboxHalfSizeY = 12f,
+            DefaultPickableHurtboxHalfSizeX = 10f,
+            DefaultPickableHurtboxHalfSizeY = 12f,
             DefaultPickableDisappearingAnimFrames = 10,
             DefaultPickableConsumedAnimFrames = 30,
             DefaultPickableRisingVelY = 8f,
@@ -165,6 +168,7 @@ namespace JoltCSharp {
             TerminatingCharacterId = 0,
             TerminatingTrapId = 0,
             TerminatingTriggerId = 0,
+            TerminatingTriggerGroupId = 0,
             TerminatingPickableId = 0,
             TerminatingBulletId = 0,
             TerminatingBulletTeamId = 0, // Default for proto int32 to save space
@@ -222,7 +226,7 @@ namespace JoltCSharp {
             EleWeaknessDefaultYield = 1.5f,
             EleResistanceDefaultYield = 0.5f,
 
-            DebuffArrIdxElemental = 0,
+            DebuffArrayIdxElemental = 0,
 
             EstimatedSecondsPerRdf = (1.0f / BATTLE_DYNAMICS_FPS),
             InputScale = INPUT_SCALE,
@@ -248,20 +252,24 @@ namespace JoltCSharp {
             StartingRenderFrameId = 1,
             StartingInputFrameId = 1,
 
-            TtNone = TT_NONE,
+            TrtNone = TRT_NONE,
 
-            TtCyclicTimed = TT_CYCLIC_TIMED,
-            TtByMovement = TT_BY_MOVEMENT,
-            TtByAttack = TT_BY_ATTACK,
+            TrtCyclicTimed = TRT_CYCLIC_TIMED,
+            TrtByMovement = TRT_BY_MOVEMENT,
+            TrtByAttack = TRT_BY_ATTACK,
 
-            TtIndiWaveNpcSpawner = TT_INDI_WAVE_NPC_SPAWNER,
-            TtSyncWaveNpcSpawner = TT_SYNC_WAVE_NPC_SPAWNER,
+            TrtIndiWaveNpcSpawner = TRT_INDI_WAVE_NPC_SPAWNER,
+            TrtSyncWaveNpcSpawner = TRT_SYNC_WAVE_NPC_SPAWNER,
 
-            TtSavePointOnly = TT_SAVE_POINT_ONLY,
-            TtStoryPointOnly = TT_STORY_POINT_ONLY,
-            TtSaveAndStoryPoint = TT_SAVE_AND_STORY_POINT,
+            TrtSavePointOnly = TRT_SAVE_POINT_ONLY,
+            TrtStoryPointOnly = TRT_STORY_POINT_ONLY,
+            TrtSaveAndStoryPoint = TRT_SAVE_AND_STORY_POINT,
 
-            TtVictory = TT_VICTORY,     
+            TrtVictory = TRT_VICTORY,     
+
+            TptNone = TPT_NONE,
+
+            TptSlidingPlatform = TPT_SLIDING_PLATFORM,
 
             ChSpecies = new ChSpeciesConsts {
                 Bladegirl = SPECIES_BLADEGIRL,

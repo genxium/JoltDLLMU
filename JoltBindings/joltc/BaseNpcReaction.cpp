@@ -510,6 +510,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     }
 
     if (0 == toHandleMvBlockerUd) {
+/*
 #ifndef NDEBUG
         if (selfNpcUd == 8589934593 && TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
             if (TARGET_CH_REACTION_WALK_ALONG != newVisionReaction || (currRdfId % 16 == 0)) {
@@ -519,6 +520,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
             } 
         }
 #endif
+*/
         return newVisionReaction;
     }
 
@@ -539,7 +541,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     }
 
     newVisionReaction = deriveReactionAgainstMvBlockerAfterApproximation(currRdfId, antiGravityNorm, selfNpcUd, currChd, cvSupported, canJumpWithinInertia, isMinGapJumpable, isCurrGapJumpable, currGroundCanHoldMeIfWalkOn, toHandleMvBlockerCanHoldMeIfWalkOn, currGapToJumpVisionAlignment, temptingToMove, newVisionReaction);
-
+/*
 #ifndef NDEBUG
     if (selfNpcUd == 8589934593 && TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
         if (TARGET_CH_REACTION_WALK_ALONG != newVisionReaction || (currRdfId % 16 == 0)) {
@@ -549,7 +551,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
         } 
     }
 #endif
-
+*/
     return newVisionReaction;
 }
 

@@ -492,7 +492,7 @@ void FrontendBattle::regulateCmdBeforeRender() {
         }
         uint64_t newVal = delayedIfd->input_list(i);
         uint64_t joinMask = (U64_1 << i);
-        auto& playerChd = currRdf->players_arr(i);
+        auto& playerChd = currRdf->players(i);
         auto& chd = playerChd.chd();
         // [WARNING] Remove any predicted "rising edge" or a "falling edge" of any critical button before rendering.
         bool shouldPredictBtnAHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_a_holding_rdf_cnt()) || (0 < chd.btn_a_holding_rdf_cnt());

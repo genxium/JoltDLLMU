@@ -5,6 +5,7 @@
 #include "FrameRingBuffer.h"
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
+#include <Jolt//Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 
@@ -46,8 +47,6 @@ public:
     virtual ~BaseBattle();
 
 public:
-
-
     google::protobuf::Arena pbTempAllocator;
     TempAllocator* globalTempAllocator;
     bool frameLogEnabled = false;
@@ -91,10 +90,12 @@ public:
     DefaultBroadPhaseLayerFilter defaultBplf; 
     DefaultObjectLayerFilter defaultOlf;
 
+    /////////////////////////////////////////////////////Bullet Collider Cache/////////////////////////////////////////////////////
     BL_COLLIDER_Q activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
     std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, VectorFloatHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
+    /////////////////////////////////////////////////////Character Collider Cache/////////////////////////////////////////////////////
     /*
     [WARNING] The use of "activeChColliders" in "BaseBattle::batchRemoveFromPhySysAndCache" is order-sensitive, i.e. the removal order of "activeChColliders" MUST BE "reverse-order w.r.t. BaseBattle::batchPutIntoPhySysFromCache" (including Player and Npc), any other removal order there results in failure of "FrontendTest/runTestCase11" when checking rollback-chasing alignment of characters. 
 
@@ -112,8 +113,27 @@ public:
     */
     std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, VectorFloatHasher > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
 
+    /////////////////////////////////////////////////////Trap Collider Cache/////////////////////////////////////////////////////
+    TP_COLLIDER_Q activeTpColliders;
+    TP_COLLIDER_Q* tpStockCache;
+    std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, VectorFloatHasher > cachedTpColliders; // Like bullets, key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+
+    /////////////////////////////////////////////////////Trigger Collider Cache/////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////Pickable Collider Cache/////////////////////////////////////////////////////
+    /*
+    [WARNING] By the time of writing, it's by design that there's no "activeTrColliders/cachedTrColliders" or "activePkColliders/cachedPkColliders" with reasons.
+    - Not all triggers have geometric shapes, and for those who do, we use "multithreaded-NarrowPhaseQuery + custom collector for min/max recognition" to handle their collisions (just like "vision handling"), because "who best hits the trigger" is a critical information that must be deterministic in rollback netcode.  
+    - Similarly "who best picks the pickable" is a critical information that must be deterministic in rollback netcode too.  
+    */
+
+    /////////////////////////////////////////////////////NonContactConstraint Cache/////////////////////////////////////////////////////
+    NON_CONTACT_CONSTRAINT_Q activeNonContactConstraints;
+    std::unordered_map< NON_CONTACT_CONSTRAINT_CACHE_KEY_T, NON_CONTACT_CONSTRAINT_Q, NonContactConstraintCacheKeyHasher > cachedNonContactConstraints;
+
 public:
-    static void FindBulletConfig(uint32_t skillId, uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
+    static void FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled);
+
+    static void FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
 
     inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
         if (rdfId < delayRdfCnt) {
@@ -219,19 +239,19 @@ public:
     }
 
     inline static void AssertNearlySame(const RenderFrame* lhs, const RenderFrame* rhs) {
-        JPH_ASSERT(lhs->players_arr_size() == rhs->players_arr_size());
-        for (int i = 0; i < lhs->players_arr_size(); i++) {
-            auto lhsCh = lhs->players_arr(i);
-            auto rhsCh = rhs->players_arr(i);
+        JPH_ASSERT(lhs->players_size() == rhs->players_size());
+        for (int i = 0; i < lhs->players_size(); i++) {
+            auto lhsCh = lhs->players(i);
+            auto rhsCh = rhs->players(i);
             BaseBattle::AssertNearlySame(lhsCh, rhsCh);
         }
-        JPH_ASSERT(lhs->npcs_arr_size() == rhs->npcs_arr_size());
+        JPH_ASSERT(lhs->npcs_size() == rhs->npcs_size());
         JPH_ASSERT(lhs->npc_count() == rhs->npc_count());
         JPH_ASSERT(lhs->npc_id_counter() == rhs->npc_id_counter());
-        for (int i = 0; i < lhs->npcs_arr_size(); i++) {
-            auto lhsCh = lhs->npcs_arr(i);
+        for (int i = 0; i < lhs->npcs_size(); i++) {
+            auto lhsCh = lhs->npcs(i);
             if (globalPrimitiveConsts->terminating_character_id() == lhsCh.id()) break;
-            auto rhsCh = rhs->npcs_arr(i);
+            auto rhsCh = rhs->npcs(i);
             BaseBattle::AssertNearlySame(lhsCh, rhsCh);
         }
         JPH_ASSERT(lhs->bullets_size() == rhs->bullets_size());
@@ -330,12 +350,15 @@ protected:
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
     BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
+    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody=false);
 
+    NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2);
 
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
+    std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintHelperBodyID;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
     std::unordered_map<uint64_t, PlayerCharacterDownsync*> transientUdToNextPlayer;
@@ -346,16 +369,14 @@ protected:
     std::unordered_map<uint64_t, const Bullet*> transientUdToCurrBl;
     std::unordered_map<uint64_t, Bullet*> transientUdToNextBl;
 
-    std::unordered_map<uint64_t, const Trigger*> transientUdToCurrTrigger;
-    std::unordered_map<uint64_t, Trigger*> transientUdToNextTrigger;
-
     std::unordered_map<uint64_t, const Trap*> transientUdToCurrTrap;
     std::unordered_map<uint64_t, Trap*> transientUdToNextTrap;
 
-    
-    // [WARNING] For any "NonContactConstraint", caching doesn't work because the "BodyID"s of both "Character"s and "Bullet"s can be reused
-    std::vector<NON_CONTACT_CONSTRAINT_T*> transientNonContactConstraints;
-    atomic<int> transientNonContactConstraintsCnt;
+    std::unordered_map<uint64_t, const Trigger*> transientUdToCurrTrigger;
+    std::unordered_map<uint64_t, Trigger*> transientUdToNextTrigger;
+
+    std::unordered_map<uint64_t, const Pickable*> transientUdToCurrPickable;
+    std::unordered_map<uint64_t, Pickable*> transientUdToNextPickable;
 
     inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) {
         uint64_t udt = getUDT(ud);
@@ -381,6 +402,11 @@ protected:
     }
 
     inline void calcBlCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, BL_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey[0] = immediateBoxHalfSizeX;
+        ioCacheKey[1] = immediateBoxHalfSizeY;
+    }
+
+    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, TP_CACHE_KEY_T& ioCacheKey) {
         ioCacheKey[0] = immediateBoxHalfSizeX;
         ioCacheKey[1] = immediateBoxHalfSizeY;
     }
@@ -441,6 +467,7 @@ protected:
 
     void leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadDynamicTraps(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf);
 
@@ -501,7 +528,11 @@ protected:
         }
     }
 
-    Body*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
+    BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
+
+    TP_COLLIDER_T*             createDefaultTrapCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Kinematic, const bool isSensor = false);
+
+    NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2);
 
     void preallocateBodies(const RenderFrame* startRdf, const ::google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict);
 
@@ -573,6 +604,11 @@ protected:
         }
     }
 
+    inline bool isTrapAlive(const Trap* trap, int currRdfId) const {
+        // TODO
+        return true;
+    }
+
     inline bool isTriggerAlive(const Trigger* trigger, int currRdfId) const {
         return 0 < trigger->demanded_evt_mask() || 0 < trigger->quota();
     }
@@ -612,7 +648,7 @@ protected:
             auto& prevRdfStepResult = rdf->prev_rdf_step_result();
             for (int i = 0; i < prevRdfStepResult.fulfilled_triggers_size(); i++) {
                 auto& fulfilledTrigger = prevRdfStepResult.fulfilled_triggers(i);
-                if (globalPrimitiveConsts->tt_victory() == fulfilledTrigger.trigger_type()) {
+                if (globalPrimitiveConsts->trt_victory() == fulfilledTrigger.trt()) {
                     return true;
                 }
             }
@@ -804,7 +840,7 @@ public:
     /*
     On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" or "handleLhsBulletCollision" within "OnContactCommon" -- take "Character" as an example,  
     - during broadphase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
-    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-narrowphase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,

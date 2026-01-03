@@ -26,7 +26,7 @@ RenderFrame* mockStartRdf() {
     int npcIdCounter = 1;
     int bulletIdCounter = 1;
 
-    auto player1 = startRdf->mutable_players_arr(0);
+    auto player1 = startRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
     playerCh1->set_x(-85);
     playerCh1->set_y(300);
@@ -53,7 +53,7 @@ RenderFrame* mockStartRdf() {
     player1->set_revival_q_z(0);
     player1->set_revival_q_w(1);
 
-    auto player2 = startRdf->mutable_players_arr(1);
+    auto player2 = startRdf->mutable_players(1);
     auto playerCh2 = player2->mutable_chd();
     playerCh2->set_x(+90);
     playerCh2->set_y(300);
@@ -252,7 +252,7 @@ int main(int argc, char** argv)
         }
         /*
         if (300 >= timerRdfId) {
-            auto& p1 = outRdf.players_arr(0);
+            auto& p1 = outRdf.players(0);
             auto& p1Chd = p1.chd();
             std::cout << "@timerRdfId=" << timerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
         }

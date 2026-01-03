@@ -173,7 +173,8 @@ public:
 	/// Restoring state of a single body.
 	void						RestoreBodyState(Body &ioBody, StateRecorder &inStream);
 
-	void                        ClearBodyManagerFreeList();                                 
+	void                        ClearBodyManagerFreeList();
+	void                        ValidateBodyManagerContactCacheForAllBodies();
 
 #ifdef JPH_DEBUG_RENDERER
 	// Drawing properties
