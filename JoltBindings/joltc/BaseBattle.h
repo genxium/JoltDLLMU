@@ -131,7 +131,7 @@ public:
     std::unordered_map< NON_CONTACT_CONSTRAINT_CACHE_KEY_T, NON_CONTACT_CONSTRAINT_Q, NonContactConstraintCacheKeyHasher > cachedNonContactConstraints;
 
 public:
-    static void FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled);
+    static void FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const std::unordered_map<uint32_t, const TrapConfigFromTiled*> inTrapConfigFromTileDict, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled);
 
     static void FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
 
@@ -338,6 +338,7 @@ protected:
     inline void elapse1RdfForPlayerChd(const int currRdfId, PlayerCharacterDownsync* playerChd, const CharacterConfig* cc);
     inline void elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* npcChd, const CharacterConfig* cc);
     inline void elapse1RdfForChd(const int currRdfId, CharacterDownsync* cd, const CharacterConfig* cc);
+    inline void elapse1RdfForTrap(Trap* tp);
     inline void elapse1RdfForTrigger(Trigger* tr);
     inline void elapse1RdfForPickable(Pickable* pk);
     inline void elapse1RdfForIvSlot(InventorySlot* ivs, const InventorySlotConfig* ivsConfig);
@@ -354,6 +355,7 @@ protected:
 
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2);
 
+    std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
@@ -530,7 +532,7 @@ protected:
 
     BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
 
-    TP_COLLIDER_T*             createDefaultTrapCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Kinematic, const bool isSensor = false);
+    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType = EMotionType::Kinematic, const bool isSensor = false);
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2);
 
