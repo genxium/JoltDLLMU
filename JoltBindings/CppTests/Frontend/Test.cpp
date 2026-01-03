@@ -31,9 +31,9 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -111,9 +111,9 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     const int roomCapacity = 1;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -206,14 +206,108 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     return startRdf;
 }
 
+RenderFrame* mockSliderTrapTestStartRdf() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 2;
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto player2 = startRdf->mutable_players(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = chSpecies.bladegirl();
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+90);
+    playerCh2->set_y(300);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpt_sliding_platform());
+    dynamicTrap1->set_x(0);
+    dynamicTrap1->set_y(750);
+    dynamicTrap1->set_q_x(0);
+    dynamicTrap1->set_q_y(0);
+    dynamicTrap1->set_q_z(0);
+    dynamicTrap1->set_q_w(1);
+    ++dynamicTrapCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRollbackChasingAlignTestStartRdf() {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -315,9 +409,9 @@ RenderFrame* mockFallenDeathRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -393,9 +487,9 @@ RenderFrame* mockBladeGirlSkillRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -497,9 +591,9 @@ RenderFrame* mockBountyHunterSkillRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto characterConfigs = globalConfigConsts->character_configs();
 
@@ -601,9 +695,9 @@ RenderFrame* mockVictoryRdf() {
     const int roomCapacity = 1;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     int triggerCount = 0;
 
@@ -712,9 +806,9 @@ RenderFrame* mockRefRdf(int refRdfId) {
     const int roomCapacity = 2;
     auto refRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     refRdf->set_id(refRdfId);
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
 
     auto player1 = refRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
@@ -2929,7 +3023,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase9\n" << std::endl;
+    std::cout << "Passed TestCase9: Slider Trap\n" << std::endl;
     reusedBattle->Clear();
     return true;
 }
@@ -3582,8 +3676,29 @@ int main(int argc, char** argv)
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
+    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf();
+    WsReq* sliderTrapTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
+    for (auto hull : hulls) {
+        auto srcBarrier = sliderTrapTestInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
+        }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
+        srcPolygon->set_is_box(true);
+    }
+    sliderTrapTestInitializerMapData->set_allocated_self_parsed_rdf(sliderTrapTestStartRdf);
     initTest9Data();
-    runTestCase9(battle, initializerMapData, selfJoinIndex);
+    runTestCase9(battle, sliderTrapTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
     initTest10Data();

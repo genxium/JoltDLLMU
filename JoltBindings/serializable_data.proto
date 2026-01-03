@@ -529,15 +529,16 @@ message NpcCharacterDownsync {
     uint32 publishing_to_trigger_id_upon_exhausted = 8;
 
     uint32 subscribes_to_trigger_id = 9; 
+    uint32 subscribes_to_trigger_group_id = 10; 
 
-    bool captured_by_patrol_cue = 10;
-    int32 frames_in_patrol_cue = 11;
+    bool captured_by_patrol_cue = 11;
+    int32 frames_in_patrol_cue = 12;
 
-    uint32 exhausted_to_drop_consumable_species_id = 12;
-    uint32 exhausted_to_drop_buff_species_id = 13;
-    uint32 exhausted_to_drop_pickup_skill_id = 14;
+    uint32 exhausted_to_drop_consumable_species_id = 13;
+    uint32 exhausted_to_drop_buff_species_id = 14;
+    uint32 exhausted_to_drop_pickup_skill_id = 15;
 
-    bool is_main_tower_of_team = 15;
+    bool is_main_tower_of_team = 16;
 }
 
 message InputFrameDecoded {
@@ -914,11 +915,6 @@ message Trap {
 
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
-    bool is_static = 6;
-    bool captured_by_patrol_cue = 7;
-    int32 frames_in_patrol_cue = 8;
-    int32 waiving_patrol_cue_id = 9;
-    bool waiving_spontaneous_patrol = 10;
     
     uint32 subscribes_to_trigger_id = 11;
     uint32 subscribes_to_trigger_group_id = 12;
