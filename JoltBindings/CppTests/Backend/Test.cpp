@@ -25,9 +25,9 @@ RenderFrame* mockStartRdf() {
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
     startRdf->set_id(1);
-    int pickableIdCounter = 1;
-    int npcIdCounter = 1;
-    int bulletIdCounter = 1;
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
     auto characterConfigs = globalConfigConsts->character_configs();
 
     auto player1 = startRdf->mutable_players(0);

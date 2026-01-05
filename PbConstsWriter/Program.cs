@@ -13,6 +13,7 @@ var configConsts = new ConfigConsts {};
 configConsts.CharacterConfigs.Add(PbCharacters.underlying);
 configConsts.SkillConfigs.Add(PbSkills.underlying);
 configConsts.TriggerConfigs.Add(PbTriggers.underlying);
+configConsts.TrapConfigs.Add(PbTraps.underlying);
 
 CharacterConfig bladeGirl;
 configConsts.CharacterConfigs.TryGetValue(PbPrimitives.SPECIES_BLADEGIRL, out bladeGirl);

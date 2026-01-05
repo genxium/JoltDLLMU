@@ -31,7 +31,40 @@ using namespace JPH;
 #define TP_CACHE_KEY_T std::vector<float>
 #define TP_COLLIDER_Q std::vector<TP_COLLIDER_T*>
 
-#define NON_CONTACT_CONSTRAINT_T JPH::Constraint
+typedef struct NonContactConstraint {
+    /* 
+    [WARNING]
+       
+    "JPH::Array<Constraint*> ConstraintManager.mConstraints.pop_back()" might call the destructor on "JPH::Constraint" if "RefCount" is not carefully managed.
+    */
+    JPH::EConstraintType theType = EConstraintType::Constraint;
+    JPH::EConstraintSubType theSubType = EConstraintSubType::Fixed;
+    Ref<JPH::Constraint> c = nullptr;
+    JPH::ConstraintSettings* s = nullptr; // NOT managed by "JPH::Array<Constraint*> ConstraintManager.mConstraints", thus no need to manage its "RefCount".
+    uint64_t ud1 = 0;
+    uint64_t ud2 = 0;
+
+    NonContactConstraint(JPH::Constraint* inC, JPH::ConstraintSettings* inS, const uint64_t inUd1, const uint64_t inUd2) {
+        c = inC;
+        s = inS;
+        theType = inC->GetType();
+        theSubType = inC->GetSubType();
+        ud1 = inUd1;
+        ud2 = inUd2;
+    }
+
+    ~NonContactConstraint() {
+        ud1 = 0; 
+        ud2 = 0;
+        theType = EConstraintType::Constraint;
+        theSubType = EConstraintSubType::Fixed;
+        if (nullptr != s) {
+            delete s;
+        }
+        // [WARNING] "c" will be automatically deleted by the destructor of "Ref<JPH::Constraint>"
+    }
+} NON_CONTACT_CONSTRAINT_T;
+
 typedef struct NonContactConstraintCacheKey {
     /*
     [WARNING]

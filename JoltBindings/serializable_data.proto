@@ -529,15 +529,16 @@ message NpcCharacterDownsync {
     uint32 publishing_to_trigger_id_upon_exhausted = 8;
 
     uint32 subscribes_to_trigger_id = 9; 
+    uint32 subscribes_to_trigger_group_id = 10; 
 
-    bool captured_by_patrol_cue = 10;
-    int32 frames_in_patrol_cue = 11;
+    bool captured_by_patrol_cue = 11;
+    int32 frames_in_patrol_cue = 12;
 
-    uint32 exhausted_to_drop_consumable_species_id = 12;
-    uint32 exhausted_to_drop_buff_species_id = 13;
-    uint32 exhausted_to_drop_pickup_skill_id = 14;
+    uint32 exhausted_to_drop_consumable_species_id = 13;
+    uint32 exhausted_to_drop_buff_species_id = 14;
+    uint32 exhausted_to_drop_pickup_skill_id = 15;
 
-    bool is_main_tower_of_team = 15;
+    bool is_main_tower_of_team = 16;
 }
 
 message InputFrameDecoded {
@@ -566,8 +567,8 @@ message WsReq {
     repeated SerializedBarrierCollider serialized_barriers = 8;
     repeated SerializedStaticTrapCollider serialized_static_traps = 10;
     map<uint32, uint32> preallocate_npc_species_dict = 11;
-    map<uint32, TrapConfigFromTiled> trap_config_from_tile_dict = 12;
-    map<uint32, TriggerConfigFromTiled> trigger_config_from_tile_dict = 13;
+    repeated TrapConfigFromTiled trap_config_from_tile_list = 12;
+    repeated TriggerConfigFromTiled trigger_config_from_tile_list = 13;
     float fallen_death_height = 14;
 }
 
@@ -862,6 +863,7 @@ message TrapConfig {
     float default_box_half_size_y = 27;
     float default_linear_speed = 28;
     float default_angular_speed = 29; // in "radians/second" 
+    int32 default_cooldown_rdf_count = 30;
 
     string species_name = 1024;
 }
@@ -886,7 +888,21 @@ message TrapConfigFromTiled {
     float init_q_z = 13;
     float init_q_w = 14;
 
+    // "init_vel" is allowed to have different direction than "init_q" 
+    float init_vel_x = 15;
+    float init_vel_y = 16;
+    float init_vel_z = 17;
+
+    int32 cooldown_rdf_count = 18;
+
+    // Used for constraint limit assignment
+    float limit_1 = 128;  
+    float limit_2 = 129;  
+    float limit_3 = 130;  
+    float limit_4 = 131;  
+
     float init_not_moving = 512; // thus only moves or rotates after triggered
+
 }
 
 message BarrierColliderAttr {
@@ -914,11 +930,6 @@ message Trap {
 
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
-    bool is_static = 6;
-    bool captured_by_patrol_cue = 7;
-    int32 frames_in_patrol_cue = 8;
-    int32 waiving_patrol_cue_id = 9;
-    bool waiving_spontaneous_patrol = 10;
     
     uint32 subscribes_to_trigger_id = 11;
     uint32 subscribes_to_trigger_group_id = 12;
@@ -1403,7 +1414,8 @@ message TriggerConfig {
 }
 
 message TriggerConfigFromTiled {
-    uint32 trt = 1; 
+    uint32 id = 1;
+    uint32 trt = 2; 
     int32 delayed_frames = 3;  
     int32 recovery_frames = 4;
     int32 bullet_team_id = 5; 
