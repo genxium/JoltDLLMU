@@ -116,7 +116,8 @@ public:
     /////////////////////////////////////////////////////Trap Collider Cache/////////////////////////////////////////////////////
     TP_COLLIDER_Q activeTpColliders;
     TP_COLLIDER_Q* tpStockCache;
-    std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, VectorFloatHasher > cachedTpColliders; // Like bullets, key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+    TP_COLLIDER_Q* tpHelperStockCache;
+    std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, TrapCacheKeyHasher > cachedTpColliders;
 
     /////////////////////////////////////////////////////Trigger Collider Cache/////////////////////////////////////////////////////
     /////////////////////////////////////////////////////Pickable Collider Cache/////////////////////////////////////////////////////
@@ -353,14 +354,16 @@ protected:
     BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
     TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody=false);
 
-    NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2);
+    NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
 
     std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
+    std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintHelperBodyID;
+    std::unordered_map<uint64_t, Body*> transientUdToConstraintHelperBody;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
     std::unordered_map<uint64_t, PlayerCharacterDownsync*> transientUdToNextPlayer;
@@ -408,14 +411,17 @@ protected:
         ioCacheKey[1] = immediateBoxHalfSizeY;
     }
 
-    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, TP_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey[0] = immediateBoxHalfSizeX;
-        ioCacheKey[1] = immediateBoxHalfSizeY;
+    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const EMotionType immediateMotionType, const bool immediateIsSensor, TP_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
+        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+        ioCacheKey.motionType = immediateMotionType;
+        ioCacheKey.isSensor = immediateIsSensor;
     }
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
 
     void batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
+    void batchNonContactConstraintsSetupFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
     void batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf);
 
     inline bool isInBlockStun(const CharacterDownsync& currChd) {
@@ -534,7 +540,7 @@ protected:
 
     TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType = EMotionType::Kinematic, const bool isSensor = false);
 
-    NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2);
+    NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 
     void preallocateBodies(const RenderFrame* startRdf, const ::google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict);
 

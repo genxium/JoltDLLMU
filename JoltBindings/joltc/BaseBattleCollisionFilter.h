@@ -28,7 +28,29 @@ using namespace JPH;
 #define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
 
 #define TP_COLLIDER_T JPH::Body
-#define TP_CACHE_KEY_T std::vector<float>
+typedef struct TrapCacheKey {
+    float boxHalfExtentX;
+    float boxHalfExtentY;
+    EMotionType motionType;
+    bool isSensor;
+
+    TrapCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY, const EMotionType inMotionType, const bool inIsSensor) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY), motionType(inMotionType), isSensor(inIsSensor) {}
+
+    bool operator==(const TrapCacheKey& other) const {
+        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY && motionType == other.motionType && isSensor == other.isSensor;
+    }
+} TP_CACHE_KEY_T;
+
+typedef struct TrapCacheKeyHasher {
+    std::size_t operator()(const TrapCacheKey& v) const {
+        std::size_t seed = 4;
+        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} TrapCacheKeyHasher;
 #define TP_COLLIDER_Q std::vector<TP_COLLIDER_T*>
 
 typedef struct NonContactConstraint {
@@ -40,13 +62,11 @@ typedef struct NonContactConstraint {
     JPH::EConstraintType theType = EConstraintType::Constraint;
     JPH::EConstraintSubType theSubType = EConstraintSubType::Fixed;
     Ref<JPH::Constraint> c = nullptr;
-    JPH::ConstraintSettings* s = nullptr; // NOT managed by "JPH::Array<Constraint*> ConstraintManager.mConstraints", thus no need to manage its "RefCount".
     uint64_t ud1 = 0;
     uint64_t ud2 = 0;
 
-    NonContactConstraint(JPH::Constraint* inC, JPH::ConstraintSettings* inS, const uint64_t inUd1, const uint64_t inUd2) {
+    NonContactConstraint(JPH::Constraint* inC, const uint64_t inUd1, const uint64_t inUd2) {
         c = inC;
-        s = inS;
         theType = inC->GetType();
         theSubType = inC->GetSubType();
         ud1 = inUd1;
@@ -58,9 +78,6 @@ typedef struct NonContactConstraint {
         ud2 = 0;
         theType = EConstraintType::Constraint;
         theSubType = EConstraintSubType::Fixed;
-        if (nullptr != s) {
-            delete s;
-        }
         // [WARNING] "c" will be automatically deleted by the destructor of "Ref<JPH::Constraint>"
     }
 } NON_CONTACT_CONSTRAINT_T;
