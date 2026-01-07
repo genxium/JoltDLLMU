@@ -88,7 +88,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distributio
 if(BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Turning on JPH_ASSERT for BUILD_TYPE=Debug")
     if(MSVC)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Z7") # See https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
     else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
     endif()
