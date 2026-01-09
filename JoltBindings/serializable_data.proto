@@ -565,7 +565,6 @@ message WsReq {
     RenderFrame self_parsed_rdf = 6;
     int32 battle_duration_seconds = 7;
     repeated SerializedBarrierCollider serialized_barriers = 8;
-    repeated SerializedStaticTrapCollider serialized_static_traps = 10;
     map<uint32, uint32> preallocate_npc_species_dict = 11;
     repeated TrapConfigFromTiled trap_config_from_tile_list = 12;
     repeated TriggerConfigFromTiled trigger_config_from_tile_list = 13;
@@ -905,7 +904,7 @@ message TrapConfigFromTiled {
     float limit_3 = 130;  
     float limit_4 = 131;  
 
-    float init_not_moving = 512; // thus only moves or rotates after triggered
+    bool init_not_moving = 512; // thus only moves or rotates after triggered
 
 }
 
@@ -916,13 +915,6 @@ message BarrierColliderAttr {
     bool forces_crouching = 4;
     int32 only_allows_aligned_vel_x = 5;
     int32 only_allows_aligned_vel_y = 6;
-}
-
-message TrapColliderAttr {
-    bool provides_damage = 1;
-
-    bool as_patrol_cue = 2;
-    PatrolCue tc_pc = 3;
 }
 
 /*
@@ -1337,12 +1329,6 @@ message SerializableConvexPolygon {
 message SerializedBarrierCollider {
     BarrierColliderAttr attr = 1;  
     SerializableConvexPolygon polygon = 2;
-}
-
-message SerializedStaticTrapCollider {
-    TrapColliderAttr attr = 1;  
-    BarrierColliderAttr barrier_attr = 2;  
-    SerializableConvexPolygon polygon = 3;
 }
 
 enum PickupType {
