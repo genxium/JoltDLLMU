@@ -2354,14 +2354,14 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
         Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
         auto ud = calcUserData(currBl);
+        transientUdToCurrBl[ud] = &currBl;
+        transientUdToNextBl[ud] = nextBl;
         const Skill* skill = nullptr;
         const BulletConfig* bulletConfig = nullptr;
         FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
         if (isBulletActive(&currBl)) {
             auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), bulletConfig->b_type());
             auto bodyID = blCollider->GetID();
-            transientUdToCurrBl[ud] = &currBl;
-            transientUdToNextBl[ud] = nextBl;
             if (!blCollider->IsInBroadPhase()) {
                 bodyIDsToAdd.push_back(bodyID);
             }

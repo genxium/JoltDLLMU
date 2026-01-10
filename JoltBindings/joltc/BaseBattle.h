@@ -743,6 +743,15 @@ public:
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
         case UDT_BL: {
+            if (!transientUdToCurrBl.count(udRhs)) {
+#ifndef NDEBUG
+                std::ostringstream oss;
+                auto bulletId = getUDPayload(udRhs);
+                oss << "validateLhsCharacterContact/currBl with udRhs=" << udRhs << ", id=" << bulletId << " is NOT FOUND";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+                return JPH::ValidateResult::RejectContact;
+            }
             auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
         }
