@@ -435,9 +435,6 @@ namespace JoltCSharp {
             if (null != req.SerializedBarriers) {
                 req.SerializedBarriers.Clear();
             }
-            if (null != req.SerializedStaticTraps) {
-                req.SerializedStaticTraps.Clear();
-            }
         }
 
         public static void PreemptFrameLog(FrameLog log, PrimitiveConsts primitives) {

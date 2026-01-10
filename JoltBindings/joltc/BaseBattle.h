@@ -420,6 +420,14 @@ protected:
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
 
+    /* [WARNING] The following functions "batchPutIntoPhySysFromCache & batchNonContactConstraintsSetupFromCache & batchRemoveFromPhySysAndCache" are all single-threaded, using "getOrCreateCachedXxx_NotThreadSafe" extensively. Why are they NOT made multi-threaded? Here're a few concerns.
+    
+    - C++11 (or any later version) "new" used in "createDefaultXxx" is thread-safe, but thread-safe "new/delete" will have "lock contention" for the non-thread-safe "sbrk" anyway regardless of thread-local-cache optimization, see https://app.yinxiang.com/fx/b5affa04-b7d0-412f-9c74-6cf5f2bc6def for more information 
+    - Operation "activeXxxColliders.push_back(...)" is not thread-safe, and we can use preallocated vector with an atomic counter to solve this
+    - Operation "transientUdToXxx[]" is not thread-safe either, espectially the setter "transientUdToXxx[ud] = Xxx", we have to choose a map class which is built thread-safe instead (like ConcurrentHashMap in Java)
+    - Failure of "FrontendTest/runTestCase11" might occurr due to multi-threaded randomness of vector traversal of "activeXxxColliders" even if all the above succeeded
+    - Single-threaded traversals in "batchXxx" for just setting positions, activating/deactivating "BodyID"s in batch is already very efficient -- same big-O time comlexity as just dispatching the jobs -- while multi-threaded overhead and the use of "bi" instead of "biNoLock" might be slower when there's no heavy workload like "BroadPhase/NarrowPhaseQuery"
+    */
     void batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
     void batchNonContactConstraintsSetupFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
     void batchRemoveFromPhySysAndCache(const int currRdfId, const RenderFrame* currRdf);
