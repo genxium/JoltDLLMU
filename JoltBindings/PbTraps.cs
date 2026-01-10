@@ -7,7 +7,9 @@ namespace JoltCSharp {
 
         private static TrapConfig SlidingPlatformTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptSlidingPlatform,
+            TptName = "SlidingPlatform",
             NoXFlipRendering = true,
+            UseKinematic = true,
             DefaultBoxHalfSizeX = 100.0f,
             DefaultBoxHalfSizeY = 100.0f,
             DefaultLinearSpeed = 7.0f*BATTLE_DYNAMICS_FPS, 

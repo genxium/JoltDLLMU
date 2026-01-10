@@ -50,15 +50,7 @@ public:
     JPH::SubShapeID			mGroundBodySubShapeID;
     JPH::RVec3				mGroundPosition = JPH::RVec3::sZero();
     JPH::Vec3				mGroundNormal = JPH::Vec3::sZero();
-
-    uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
-    int                     newEffDamage = 0;
-    bool                    newEffBlownUp = false;
-    int                     newEffFramesToRecover = 0;
-    int                     newEffDef1QuotaReduction = 0;
-    float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
-    float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
-
+    
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
@@ -76,8 +68,6 @@ public:
             mGroundNormal = normal;
             mBestDot = dot;
         }
-
-        mBaseBattleFilter->handleLhsCharacterCollision(mCurrRdfId, mNextRdf, mUd, mUdt, mCurrChd, mNextChd, udRhs, udtRhs, inResult, newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY);
     }
 
 private:

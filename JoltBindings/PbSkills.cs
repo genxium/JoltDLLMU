@@ -54,40 +54,36 @@ namespace JoltCSharp {
             SelfLockVelX = PbPrimitives.underlying.NoLockVel,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 11f,
+            HitboxOffsetX = 16f,
             HitboxOffsetY = 20f,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
-            SpeciesId = 1,
-            ExplosionSpeciesId = 1,
+            AnimName = "Fireball1",
             Speed = 6.0f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
-            ExplosionFrames = 25,
+            VanishingAnimRdfCnt = 25,
             // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
             BType = BulletType.MechanicalCartridge,
             CharacterEmitSfxName = "PistolEmit",
-            ActiveVfxSpeciesId = 0, // TODO
-            IsPixelatedActiveVfx = true,
-            ExplosionSfxName = "Piercing",
-            ExplosionOnRockSfxName = "Explosion8",
+            HitSfxName = "Piercing",
+            HitOnRockSfxName = "Vanishing8",
             CancellableStFrame = 11,
             CancellableEdFrame = 19,
             CollisionTypeMask = 0, // TODO
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(10f, 24f)
+                                                                .SetHitboxOffsets(16f, 32f)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
         private static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(11f, 20f)
-                                                                .SetSelfLockVel(0, 0, 0);
+                                                                .SetSelfLockVel(0, 0, 0)
+                                                                .SetHitboxOffsets(11f, 20f);
 
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(14f, 24f)
+                                                                .SetHitboxOffsets(22f, 32f)
                                                                 .SetAllowsWalking(true)
-                                                                .SetAnimLoopingRdfOffset(0)
                                                                 .SetAllowsCrouching(true);
 
         public static Skill HunterPistolWall = new Skill {
@@ -174,17 +170,15 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 18f,
             CancellableStFrame = 10,
             CancellableEdFrame = 21,
-            SpeciesId = 2,
-            ExplosionSpeciesId = 2,
-            ExplosionFrames = 25,
+            AnimName = "MeleeSlash2",
+            HitAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 5,
             GuardBreakerExtraHitCnt = 1,
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd1",
-            ExplosionSfxName="Melee_Explosion2",
+            HitSfxName="Melee_Vanishing2",
             RemainsUponHit = true,
-            ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
 
@@ -207,17 +201,15 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 18f,
             CancellableStFrame = 11,
             CancellableEdFrame = 24,
-            SpeciesId = 2,
-            ExplosionSpeciesId = 2,
-            ExplosionFrames = 25,
+            AnimName = "MeleeSlash2",
+            HitAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 6,
             GuardBreakerExtraHitCnt = 1,
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd2",
-            ExplosionSfxName="Melee_Explosion2",
+            HitSfxName="Melee_Vanishing2",
             RemainsUponHit = true,
-            ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
 
@@ -238,17 +230,15 @@ namespace JoltCSharp {
             HitboxOffsetY = 17f,
             HitboxHalfSizeX = 22f,
             HitboxHalfSizeY = 18f,
-            SpeciesId = 2,
-            ExplosionSpeciesId = 2,
-            ExplosionFrames = 25,
+            AnimName = "MeleeSlash2",
+            HitAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 7,
             GuardBreakerExtraHitCnt = 1,
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd3",
-            ExplosionSfxName="Melee_Explosion2",
+            HitSfxName="Melee_Vanishing2",
             RemainsUponHit = true,
-            ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
 
@@ -271,17 +261,15 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 6f,
             CancellableStFrame = 10,
             CancellableEdFrame = 24,
-            SpeciesId = 2,
-            ExplosionSpeciesId = 2,
-            ExplosionFrames = 25,
+            AnimName = "MeleeSlash2",
+            HitAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 4,
             GuardBreakerExtraHitCnt = 1,
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd1",
-            ExplosionSfxName="Melee_Explosion2",
+            HitSfxName="Melee_Vanishing2",
             RemainsUponHit = true,
-            ActiveVfxSpeciesId = 0, // TODO
             CollisionTypeMask = 0, // TODO
         };
 

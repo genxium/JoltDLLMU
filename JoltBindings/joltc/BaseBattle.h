@@ -37,6 +37,101 @@ typedef struct VectorFloatHasher {
     }
 } VectorFloatHasher;
 
+using ContactPoints = StaticArray<Vec3, 64>;
+class CollisionUdHolder_ThreadSafe {
+private:
+    std::vector<uint64_t> uds; 
+    std::vector<ContactPoints> contactPointsPerUd;
+    atomic<int> cnt;
+    int size;
+
+    std::unordered_set<uint64_t> seenUdsDuringReading_NotThreadSafe;
+
+public:
+    CollisionUdHolder_ThreadSafe(const int inSize) {
+        size = inSize;
+        uds.reserve(inSize);
+        contactPointsPerUd.reserve(inSize);
+        for (int i = 0; i < inSize; ++i) {
+            uds.push_back(0);
+            contactPointsPerUd.push_back(ContactPoints());
+        }
+        cnt = 0;
+    }
+
+    // [WARNING] All fields, including "contactPointsPerUd", will be destructed implicitly when "delete holder" is called in "~CollisionUdHolderStockCache_ThreadSafe". See https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L44 for more information.
+
+    bool Add_ThreadSafe(const uint64_t inUd, const ContactPoints& inContactPoints) {
+        int idx = cnt.fetch_add(1);
+        if (idx >= size) {
+            --cnt;
+            return false;
+        }
+        uds[idx] = inUd;
+        contactPointsPerUd[idx] = inContactPoints; // It does work this way, see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L225.
+        return true;
+    }
+
+
+    int GetCnt_Realtime() const {
+        return cnt;
+    }
+
+    bool GetUd_NotThreadSafe(const int idx, uint64_t& outUd, ContactPoints& outContactPoints) {
+        uint64_t cand = uds[idx];
+        if (seenUdsDuringReading_NotThreadSafe.count(cand)) return false;
+        outUd = cand;
+        outContactPoints = contactPointsPerUd[idx];
+        seenUdsDuringReading_NotThreadSafe.insert(cand);
+        return true;
+    }
+
+    void Clear_ThreadSafe() {
+        cnt = 0;
+        seenUdsDuringReading_NotThreadSafe.clear();
+    }
+};
+
+class CollisionUdHolderStockCache_ThreadSafe {
+private:
+    std::vector<CollisionUdHolder_ThreadSafe*> holders; 
+    atomic<int> cnt;
+    int size;
+
+public:
+    CollisionUdHolderStockCache_ThreadSafe(const int inSize, const int holderSize) {
+        size = inSize;
+        holders.reserve(inSize);
+        for (int i = 0; i < inSize; ++i) {
+            holders.push_back(new CollisionUdHolder_ThreadSafe(holderSize));
+        }
+        cnt = 0;
+    }
+
+    CollisionUdHolder_ThreadSafe* Take_ThreadSafe() {
+        int idx = cnt.fetch_add(1);
+        if (idx >= size) {
+            --cnt;
+            return nullptr;
+        }
+        CollisionUdHolder_ThreadSafe* holder = holders[idx];   
+        holder->Clear_ThreadSafe();
+        return holder; 
+    }
+
+    void Clear_ThreadSafe() {
+        cnt = 0;
+    }
+
+    ~CollisionUdHolderStockCache_ThreadSafe() {
+        while (!holders.empty()) {
+            CollisionUdHolder_ThreadSafe* holder = holders.back();
+            holders.pop_back();
+            delete holder;
+        }
+    }
+};
+
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
 using namespace jtshared;
@@ -90,6 +185,10 @@ public:
     DefaultBroadPhaseLayerFilter defaultBplf; 
     DefaultObjectLayerFilter defaultOlf;
 
+    /*
+    [WARNING] Unlike "AbstractCacheableAnimNodeTemplate", the "activeXxx & cachedXxx" have little to none shared features compared to their GUI counterparts (e.g. handling of "cachedChColliders" is significantly different from that of "cachedTpColliders", and handling of "activeNonContactConstraints & cachedNonContactConstraints" is totally different from all the others), hence NOT suitable for abstracting a shared interface or wrapper class -- at least by the time of writing. 
+    */
+
     /////////////////////////////////////////////////////Bullet Collider Cache/////////////////////////////////////////////////////
     BL_COLLIDER_Q activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
@@ -115,8 +214,10 @@ public:
 
     /////////////////////////////////////////////////////Trap Collider Cache/////////////////////////////////////////////////////
     TP_COLLIDER_Q activeTpColliders;
-    TP_COLLIDER_Q* tpStockCache;
-    TP_COLLIDER_Q* tpHelperStockCache;
+    TP_COLLIDER_Q* tpDynamicStockCache;    // (Dynamic,   MyObjectLayers::MOVING)
+    TP_COLLIDER_Q* tpKinematicStockCache;  // (Kinematic, MyObjectLayers::MOVING)
+    TP_COLLIDER_Q* tpObsIfaceStockCache;   // (Dynamic,   MyObjectLayers::TRAP_OBSTACLE_INTERFACE)
+    TP_COLLIDER_Q* tpHelperStockCache;     // (Static,    MyObjectLayers::TRAP_HELPER)
     std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, TrapCacheKeyHasher > cachedTpColliders;
 
     /////////////////////////////////////////////////////Trigger Collider Cache/////////////////////////////////////////////////////
@@ -297,6 +398,7 @@ public:
         JPH_ASSERT(lhs.jump_triggered() == rhs.jump_triggered());
         JPH_ASSERT(lhs.jump_started() == rhs.jump_started());
         JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
+        JPH_ASSERT(isNearlySame(lhs.ground_vel_x(), lhs.ground_vel_y(), lhs.ground_vel_z(), rhs.ground_vel_x(), rhs.ground_vel_y(), rhs.ground_vel_z()));
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
         JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
         JPH_ASSERT(lhsQ.IsClose(rhsQ));
@@ -310,6 +412,7 @@ public:
         JPH_ASSERT(lhs.offender_ud() == rhs.offender_ud());
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
         JPH_ASSERT(isNearlySame(lhs.originated_x(), lhs.originated_y(), lhs.originated_z(), rhs.originated_x(), rhs.originated_y(), rhs.originated_z()));
+        JPH_ASSERT(isNearlySame(lhs.ground_vel_x(), lhs.ground_vel_y(), lhs.ground_vel_z(), rhs.ground_vel_x(), rhs.ground_vel_y(), rhs.ground_vel_z()));
         JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
         JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
         JPH_ASSERT(lhsQ.IsClose(rhsQ));
@@ -318,7 +421,7 @@ public:
         JPH_ASSERT(lhs.target_ud() == rhs.target_ud());
         JPH_ASSERT(lhs.damage_dealed() == rhs.damage_dealed());
 
-        JPH_ASSERT(lhs.exploded_on_ifc() == rhs.exploded_on_ifc());
+        JPH_ASSERT(lhs.hit_on_ifc() == rhs.hit_on_ifc());
         JPH_ASSERT(lhs.active_skill_hit() == rhs.active_skill_hit());
         JPH_ASSERT(lhs.skill_id() == rhs.skill_id());
         JPH_ASSERT(lhs.id() == rhs.id());
@@ -352,18 +455,24 @@ protected:
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
 
     BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
-    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody=false);
+    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody);
 
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
 
     std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
+    CollisionUdHolderStockCache_ThreadSafe collisionUdHolderStockCache;
+
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintHelperBodyID;
     std::unordered_map<uint64_t, Body*> transientUdToConstraintHelperBody;
+    std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintObsIfaceBodyID;
+    std::unordered_map<uint64_t, Body*> transientUdToConstraintObsIfaceBody;
+
+    std::unordered_map<uint64_t, CollisionUdHolder_ThreadSafe*> transientUdToCollisionUdHolder;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
     std::unordered_map<uint64_t, PlayerCharacterDownsync*> transientUdToNextPlayer;
@@ -411,11 +520,12 @@ protected:
         ioCacheKey[1] = immediateBoxHalfSizeY;
     }
 
-    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const EMotionType immediateMotionType, const bool immediateIsSensor, TP_CACHE_KEY_T& ioCacheKey) {
+    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, TP_CACHE_KEY_T& ioCacheKey) {
         ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
         ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
         ioCacheKey.motionType = immediateMotionType;
         ioCacheKey.isSensor = immediateIsSensor;
+        ioCacheKey.objLayer = immediateObjLayer;
     }
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
@@ -462,7 +572,14 @@ protected:
     void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
     void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
     void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
-    bool addNewExplosionToNextFrame(int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const CollideShapeResult& inResult);
+    void handleLhsCharacterCollisionWithRhsBullet(
+        const int currRdfId,
+        RenderFrame* nextRdf,
+        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
+        const uint64_t udRhs, const uint64_t udtRhs,
+        const ContactPoints& inContactPoints,
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
+    bool addBlHitToNextFrame(int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos);
     bool addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
     void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool currParalyzed);
@@ -546,7 +663,7 @@ protected:
 
     BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
 
-    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType = EMotionType::Kinematic, const bool isSensor = false);
+    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer);
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 
@@ -585,39 +702,23 @@ protected:
         return true;
     }
 
-    inline bool isBulletVanishing(const Bullet* bullet, const BulletConfig* bc) {
-        return BulletState::Vanishing == bullet->bl_state();
-    }
-
-    inline bool isBulletExploding(const Bullet* bullet, const BulletConfig* bc) {
-        switch (bc->b_type()) {
-        case BulletType::Melee:
-            return ((BulletState::Exploding == bullet->bl_state() || BulletState::Vanishing == bullet->bl_state()) && bullet->frames_in_bl_state() < bc->explosion_frames());
-        case BulletType::MechanicalCartridge:
-        case BulletType::MagicalFireball:
-        case BulletType::GroundWave:
-            return (BulletState::Exploding == bullet->bl_state() || BulletState::Vanishing == bullet->bl_state());
-        default:
-            return false;
-        }
-    }
-
-    inline bool isBulletStartingUp(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
-        return BulletState::StartUp == bullet->bl_state();
-    }
-
-    inline bool isBulletActive(const Bullet* bullet) const {
-        return (BulletState::Active == bullet->bl_state());
-    }
-
     inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
         // [WARNING] Practically a bullet might propagate for a few render frames before hitting its visually "VertMovingTrapLocalIdUponActive"!
-        int visualBufferRdfCnt = 3;
-        if (BulletState::Active == bullet->bl_state()) {
-            return visualBufferRdfCnt >= bullet->frames_in_bl_state();
-        } else {
+        if (BulletState::Active != bullet->bl_state()) {
             return false;
         }
+        int visualBufferRdfCnt = 3;
+        return visualBufferRdfCnt >= bullet->frames_in_bl_state();
+    }
+
+    inline bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const {
+        if (BulletState::Vanishing == bullet->bl_state()) {
+            return bullet->frames_in_bl_state() < bc->vanishing_anim_rdf_cnt();
+        }
+        if (BulletState::Hit == bullet->bl_state()) {
+            return bullet->frames_in_bl_state() < bc->hit_anim_rdf_cnt();
+        }
+        return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
     }
 
     inline bool isTrapAlive(const Trap* trap, int currRdfId) const {
@@ -631,16 +732,6 @@ protected:
 
     inline bool isPickableAlive(const Pickable* pickable, int currRdfId) const {
         return 0 < pickable->remaining_lifetime_rdf_count();
-    }
-
-    inline bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const {
-        if (BulletState::Vanishing == bullet->bl_state()) {
-            return bullet->frames_in_bl_state() < bc->active_frames() + bc->explosion_frames();
-        }
-        if (BulletState::Exploding == bullet->bl_state() && MultiHitType::FromEmission != bc->mh_type()) {
-            return bullet->frames_in_bl_state() < bc->active_frames();
-        }
-        return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
     }
 
     inline bool isNpcJustDead(const CharacterDownsync* chd) const {
@@ -712,7 +803,7 @@ public:
     }
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const {
-        if (!isBulletActive(rhsCurrBl)) {
+        if (BulletState::Active != rhsCurrBl->bl_state()) {
             return JPH::ValidateResult::RejectContact;
         }
 
@@ -730,6 +821,10 @@ public:
         return JPH::ValidateResult::AcceptContact;
     }
 
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trap* rhsCurrTrap) const {
+        return JPH::ValidateResult::AcceptContact;
+    }
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) const {
         switch (udtRhs) {
         case UDT_PLAYER: {
@@ -743,8 +838,21 @@ public:
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
         case UDT_BL: {
+            if (!transientUdToCurrBl.count(udRhs)) {
+#ifndef NDEBUG
+                std::ostringstream oss;
+                auto bulletId = getUDPayload(udRhs);
+                oss << "validateLhsCharacterContact/currBl with udRhs=" << udRhs << ", id=" << bulletId << " is NOT FOUND";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+                return JPH::ValidateResult::RejectContact;
+            }
             auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
+        }
+        case UDT_TRAP: {
+            auto rhsCurrTp = transientUdToCurrTrap.at(udRhs);
+            return validateLhsCharacterContact(lhsCurrChd, rhsCurrTp);
         }
         default:
             return JPH::ValidateResult::AcceptContact;
@@ -802,10 +910,11 @@ public:
             if (lhsCurrBl->team_id() == rhsCurrBl->team_id()) {
                 return JPH::ValidateResult::RejectContact;
             }
-            if (!isBulletActive(lhsCurrBl)) {
+            if (BulletState::Active != lhsCurrBl->bl_state()) {
                 return JPH::ValidateResult::RejectContact;
             }
-            if (!isBulletActive(rhsCurrBl)) {
+
+            if (BulletState::Active != rhsCurrBl->bl_state()) {
                 return JPH::ValidateResult::RejectContact;
             }
             return JPH::ValidateResult::AcceptContact;
@@ -821,21 +930,6 @@ public:
         auto lhsCurrBl = transientUdToCurrBl.at(udLhs);
         return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs);
     }
-
-    virtual void handleLhsCharacterCollision(
-        const int currRdfId,
-        RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
-        const uint64_t udRhs, const uint64_t udtRhs,
-        const CollideShapeResult& inResult,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outNewEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
-
-    virtual void handleLhsBulletCollision(
-        const int currRdfId,
-        RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
-        const uint64_t udRhs, const uint64_t udtRhs, 
-        const JPH::CollideShapeResult& inResult);
 
 public:
     // #JPH::ContactListener
@@ -854,14 +948,28 @@ public:
     */
 
     /*
-    On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" or "handleLhsBulletCollision" within "OnContactCommon" -- take "Character" as an example,  
-    - during broadphase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
-    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of broadphase multithreading to solve constraints (including regular "Constraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" within "OnContactCommon" -- take "Character" as an example,  
+    - during BroadPhase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of BroadPhase multithreading to solve constraints (including "regular NonContactConstraint" and "ContactConstraint") we balance both efficiency and simplicity.  
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold,
-        const JPH::ContactSettings& ioSettings);
+        const JPH::ContactSettings& ioSettings) {
+
+        uint64_t ud1 = inBody1.GetUserData();
+        uint64_t ud2 = inBody2.GetUserData();
+
+        if (transientUdToCollisionUdHolder.count(ud1)) {
+            CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder[ud1];
+            udHolder->Add_ThreadSafe(ud2, inManifold.mRelativeContactPointsOn1);
+        }
+        if (transientUdToCollisionUdHolder.count(ud2)) {
+            CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder[ud2];
+            udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2);
+        }
+        // Others are intentionally left blank by the time of writing.
+    }
 
     virtual void OnContactAdded(
         const JPH::Body& inBody1,
@@ -898,6 +1006,9 @@ public:
 
         uint64_t udt1 = getUDT(ud1);
         uint64_t udt2 = getUDT(ud2);
+
+        if (transientUdToConstraintHelperBodyID.count(ud2) && inBody2.IsSensor()) return JPH::ValidateResult::RejectContact;
+        if (transientUdToConstraintHelperBodyID.count(ud1) && inBody1.IsSensor()) return JPH::ValidateResult::RejectContact;
 
         switch (udt1)
         {
