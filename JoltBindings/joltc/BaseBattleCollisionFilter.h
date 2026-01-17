@@ -7,6 +7,7 @@
 #include <utility> // for "std::pair"
 
 #include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Constraints/Constraint.h>
@@ -33,11 +34,12 @@ typedef struct TrapCacheKey {
     float boxHalfExtentY;
     EMotionType motionType;
     bool isSensor;
+    ObjectLayer objLayer;
 
-    TrapCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY, const EMotionType inMotionType, const bool inIsSensor) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY), motionType(inMotionType), isSensor(inIsSensor) {}
+    TrapCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
 
     bool operator==(const TrapCacheKey& other) const {
-        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY && motionType == other.motionType && isSensor == other.isSensor;
+        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
     }
 } TP_CACHE_KEY_T;
 
@@ -48,6 +50,7 @@ typedef struct TrapCacheKeyHasher {
         seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<ObjectLayer>()(v.objLayer) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         return seed;
     }
 } TrapCacheKeyHasher;
@@ -142,26 +145,6 @@ public:
         const Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
     
-    /*
-    [WARNING] Per thread-safety concerns, for any collision pair in "handleLhsXxxCollision", only the impact to the lhs instance in "nextRdf" should be calculated and updated.
-
-    For example, for a same "character-bullet" collision, in "handleLhsCharacterCollision" we calculate damage and update hp, in "handleLhsBulletCollision" we calculate and update explosion status.
-    */
-    virtual void handleLhsCharacterCollision(
-        const int currRdfId,
-        RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
-        const uint64_t udRhs, const uint64_t udtRhs,
-        const CollideShapeResult& inResult,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outNewEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) = 0;
-
-    virtual void handleLhsBulletCollision(
-        const int currRdfId,
-        RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const Bullet* currBl, Bullet* nextBl,
-        const uint64_t udRhs, const uint64_t udtRhs, 
-        const CollideShapeResult& inResult) = 0;
-
     virtual ~BaseBattleCollisionFilter() {
 
     }

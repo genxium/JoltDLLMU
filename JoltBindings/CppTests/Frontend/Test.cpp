@@ -206,7 +206,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf() {
     return startRdf;
 }
 
-RenderFrame* mockSliderTrapTestStartRdf() {
+RenderFrame* mockSliderTrapTestStartRdf1() {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
     auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
@@ -373,6 +373,94 @@ RenderFrame* mockSliderTrapTestStartRdf2() {
 
     startRdf->set_npc_id_counter(npcIdCounter);
     startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
+RenderFrame* mockSliderTrapTestStartRdf3() {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 2;
+    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-400);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto player2 = startRdf->mutable_players(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = chSpecies.bladegirl();
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+100);
+    playerCh2->set_y(200);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpt_sliding_platform());
+    ++dynamicTrapCount;
+    
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
 
     startRdf->set_bullet_id_counter(bulletIdCounter);
     startRdf->set_pickable_id_counter(pickableIdCounter);
@@ -1126,7 +1214,9 @@ std::map<int, uint64_t> testCmds12 = {
 };
 
 std::map<int, uint64_t> testCmds13 = {
-    {0, 3},
+    {8, 32},
+    {9, 0},
+    {16, 3},
     {58, 3}, 
     {59, 0}, 
     {60, 32}, 
@@ -1237,6 +1327,17 @@ std::map<int, uint64_t> testCmds16 = {
     {910, 4},
     {1100, 4},
     {1200, 0}
+};
+
+std::map<int, uint64_t> testCmds17 = {
+    {0, 0},
+    {23, 0},
+    {24, 19},
+    {64, 19},
+    {65, 3},
+    {108, 3},
+    {109, 0},
+    {1024, 0},
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -1898,7 +1999,7 @@ void initTest8Data(WsReq* blacksaber1VisionTestInitializerMapData, std::vector<s
 }
 
 void initTest9Data(WsReq* sliderTrapTestInitializerMapData, std::vector<std::vector<float>>& hulls) {
-    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf();
+    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf1();
     for (auto hull : hulls) {
         auto srcBarrier = sliderTrapTestInitializerMapData->add_serialized_barriers();
         auto srcPolygon = srcBarrier->mutable_polygon();
@@ -2615,6 +2716,57 @@ void initTest16Data(WsReq* sliderTrapTestInitializerMapData, std::vector<std::ve
     trapConfigFromTiled2->set_limit_2(+100.0f);
 }
 
+void initTest17Data(WsReq* sliderTrapTestInitializerMapData, std::vector<std::vector<float>>& hulls) {
+    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf3();
+    for (auto hull : hulls) {
+        auto srcBarrier = sliderTrapTestInitializerMapData->add_serialized_barriers();
+        auto srcPolygon = srcBarrier->mutable_polygon();
+        float anchorX = 0, anchorY = 0;
+        for (int i = 0; i < hull.size(); i += 2) {
+            PbVec2* newPt = srcPolygon->add_points();
+            newPt->set_x(hull[i]);
+            newPt->set_y(hull[i + 1]);
+            anchorX += hull[i];
+            anchorY += hull[i + 1];
+        }
+        anchorX /= (hull.size() >> 1);
+        anchorY /= (hull.size() >> 1);
+        auto anchor = srcPolygon->mutable_anchor();
+        anchor->set_x(anchorX);
+        anchor->set_y(anchorY);
+        srcPolygon->set_is_box(true);
+    }
+
+    sliderTrapTestInitializerMapData->set_allocated_self_parsed_rdf(sliderTrapTestStartRdf);
+    auto trapConfigFromTiled1 = sliderTrapTestInitializerMapData->add_trap_config_from_tile_list();
+    Vec3 initVel(-2.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
+    trapConfigFromTiled1->set_id(sliderTrapTestStartRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(sliderTrapTestStartRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_linear_speed(initVel.Length());
+    trapConfigFromTiled1->set_box_half_size_x(50.f);
+    trapConfigFromTiled1->set_box_half_size_y(20.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+
+    trapConfigFromTiled1->set_init_vel_x(initVel.GetX());
+    trapConfigFromTiled1->set_init_vel_y(initVel.GetY());
+    trapConfigFromTiled1->set_init_vel_z(initVel.GetZ());
+
+    trapConfigFromTiled1->set_slider_axis_x(1);
+    trapConfigFromTiled1->set_slider_axis_y(0);
+    trapConfigFromTiled1->set_slider_axis_z(0);
+
+    trapConfigFromTiled1->set_init_x(0);
+    trapConfigFromTiled1->set_init_y(105);
+    trapConfigFromTiled1->set_init_z(0);
+
+    trapConfigFromTiled1->set_cooldown_rdf_count(120);
+    trapConfigFromTiled1->set_limit_1(-300.0f);
+    trapConfigFromTiled1->set_limit_2(+300.0f);
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -3219,7 +3371,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
 
         bool shouldPrint = false;
         if (32 == outerTimerRdfId) {
-            // It has landed on "wideMapHull5" and moving to the right
+            // It has landed on "npcVisionHull5" and moving to the right
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(350 < npc2Chd.x() && 400 > npc2Chd.x());
@@ -3233,7 +3385,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             //JPH_ASSERT(0 < npc2Chd.vel_x());
             shouldPrint = true;
         } else if (320 == outerTimerRdfId) {
-            // It has turned around on "wideMapHull5" and moving to the left due to vision reaction of "wideMapHull3"
+            // It has turned around on "npcVisionHull5" and moving to the left due to vision reaction of "npcVisionHull3"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(350 < npc2Chd.x() && 500 > npc2Chd.x());
@@ -3246,35 +3398,35 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(0 > npc2Chd.vel_x());
             shouldPrint = true;
         } else if (513 == outerTimerRdfId) {
-            // It's proactively jumping towards left onto "wideMapHull6" and moving to the left
+            // It's proactively jumping towards left onto "npcVisionHull6" and moving to the left
             JPH_ASSERT(CharacterState::InAirIdle1ByJump == npc2Chd.ch_state());
             JPH_ASSERT(520 < npc2Chd.y());
             JPH_ASSERT(200 < npc2Chd.x() && 350 > npc2Chd.x());
             JPH_ASSERT(0 > npc2Chd.vel_x());
             shouldPrint = true;
         } else if (800 == outerTimerRdfId) {
-            // It has jumped on "wideMapHull6" and moving to the left
+            // It has jumped on "npcVisionHull6" and moving to the left
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y()); 
             JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
             JPH_ASSERT(0 > npc2Chd.vel_x());
             shouldPrint = true;
         } else if (900 == outerTimerRdfId) {
-            // It's still on "wideMapHull6" but turned to move to the right due to vision reaction of "wideMapHull7"
+            // It's still on "npcVisionHull6" but turned to move to the right due to vision reaction of "npcVisionHull7"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
             JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
             JPH_ASSERT(0 < npc2Chd.vel_x());
             shouldPrint = true;
         } else if (1300 == outerTimerRdfId) {
-            // When standing on the edge of "wideMapHull6", it should've seen the lower platform  "wideMapHull5" and decided to move to the right and fall onto "wideMapHull5"
+            // When standing on the edge of "npcVisionHull6", it should've seen the lower platform  "npcVisionHull5" and decided to move to the right and fall onto "npcVisionHull5"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
             JPH_ASSERT(0 < npc2Chd.vel_x());
             shouldPrint = true;
         } else if (1440 == outerTimerRdfId) {
-            // Again it has turned around on "wideMapHull5" and moving to the left due to vision reaction of "wideMapHull3"
+            // Again it has turned around on "npcVisionHull5" and moving to the left due to vision reaction of "npcVisionHull3"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
@@ -3335,7 +3487,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         if (50 <= outerTimerRdfId && outerTimerRdfId <= 100) {
             JPH_ASSERT(0 < tp1.x() && tp1.x() < 500);
             JPH_ASSERT(750 == tp1.y());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
             int p1ExpectedFramesInChState = outerTimerRdfId - 231;
             const Skill* skill = nullptr;
@@ -3350,10 +3502,10 @@ bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
             JPH_ASSERT(500 <= tp1.x());
             JPH_ASSERT(750 == tp1.y());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (249 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (303 < outerTimerRdfId && outerTimerRdfId <= 420) {
             JPH_ASSERT(0 < tp1.x() && tp1.x() < 501);
             JPH_ASSERT(750 == tp1.y());
@@ -3850,23 +4002,19 @@ bool runTestCase16(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         if (100 < outerTimerRdfId && outerTimerRdfId < 150) {
             JPH_ASSERT(-70 < tp1.x() && tp1.x() < -40);
             JPH_ASSERT(0 > tp1.vel_x() && 0 > tp1.vel_y() && 0 == tp1.vel_z());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (205 < outerTimerRdfId && outerTimerRdfId <= 210) {
             JPH_ASSERT(-81 < tp1.x() && tp1.x() < -79);
             JPH_ASSERT(0 == tp1.vel_x() && 0 == tp1.vel_y() && 0 == tp1.vel_z());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (490 < outerTimerRdfId && outerTimerRdfId < 520) {
             JPH_ASSERT(30 < tp1.x() && tp1.x() < 50);
             JPH_ASSERT(0 < tp1.vel_x() && 0 < tp1.vel_y() && 0 == tp1.vel_z());
-            shouldPrint = true;
-        } else if (613 < outerTimerRdfId && outerTimerRdfId < 521) {
-            JPH_ASSERT(79 < tp1.x() && tp1.x() < 81);
-            JPH_ASSERT(0 == tp1.vel_x() && 0 == tp1.vel_y() && 0 == tp1.vel_z());
-            shouldPrint = true;
+            //shouldPrint = true;
         } else if (700 < outerTimerRdfId && outerTimerRdfId < 750) {
             JPH_ASSERT(20 < tp1.x() && tp1.x() < 50);
             JPH_ASSERT(0 > tp1.vel_x() && 0 > tp1.vel_y() && 0 == tp1.vel_z());
-            shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (shouldPrint) {
@@ -3877,6 +4025,62 @@ bool runTestCase16(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     }
 
     std::cout << "Passed TestCase16: Skewed Slider Trap\n" << std::endl;
+    reusedBattle->Clear();
+    return true;
+}
+
+bool runTestCase17(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 2048;
+    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
+        
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds17, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto& tp1 = outerTimerRdf->dynamic_traps(0);
+
+        if (10 < outerTimerRdfId && outerTimerRdfId < 150) {
+            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
+            JPH_ASSERT(0 > tp1.x() && -300 < tp1.x());
+            //shouldPrint = true;
+        } else if (150 <= outerTimerRdfId && outerTimerRdfId <= 248) {
+            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
+            //shouldPrint = true;
+        } else if (249 == outerTimerRdfId) {
+            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
+            //shouldPrint = true;
+        } else if (303 < outerTimerRdfId && outerTimerRdfId <= 420) {
+            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
+            //shouldPrint = true;
+        } else {
+            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
+            //shouldPrint = true;
+        }
+        
+        if (shouldPrint) {
+            std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 ch_state=" << (int)p1Chd.ch_state() << ", frames_in_ch_state=" << p1Chd.frames_in_ch_state() << ", pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\ttp1 pos = (" << tp1.x() << ", " << tp1.y() << ", " << tp1.z() << "), dir = (" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel = (" << tp1.vel_x() << ", " << tp1.vel_y() << ", " << tp1.vel_z() << ")" << std::endl;
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase17: Slider Trap and character interaction\n" << std::endl;
     reusedBattle->Clear();
     return true;
 }
@@ -3947,6 +4151,62 @@ int main(int argc, char** argv)
         200, 0
     };
 
+    std::vector<float> npcVisionHull1 = {
+        // Lower floor
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> npcVisionHull2 = {
+        // Left pillar
+        -800, 0,
+        -800, 1000,
+        -500, 1000,
+        -500, 0
+    };
+
+    std::vector<float> npcVisionHull3 = {
+        // Right pillar
+        500, 1000,
+        800, 1000,
+        800, 0,
+        500, 0,
+    };
+
+    std::vector<float> npcVisionHull4 = {
+        // Lower floor small platform
+        -50, 0,
+        -50, 140,
+        +50, 140,
+        +50, 0
+    };
+
+    std::vector<float> npcVisionHull5 = {
+        // Upper floor, only a right wing is provided to hold npc2, intentionally overlapping with "npcVisionHull3" to test edge cases
+        -200, 400,
+        -200, 500,
+        750, 500,
+        750, 400
+    };
+
+    std::vector<float> npcVisionHull6 = {
+        // Upper floor small platform that's jumpable, intentionally overlapping with "npcVisionHull7" to test edge cases
+        -200, 500,
+        -200, 520,
+        300, 520,
+        300, 500
+    };
+
+    std::vector<float> npcVisionHull7 = {
+        // Upper floor small platform at its left edge that's not jumpable
+        -200, 500,
+        -200, 600,
+        100, 600,
+        100, 500
+    };
+
     std::vector<float> wideMapHull1 = {
         // Lower floor
         -500, 0,
@@ -3972,40 +4232,17 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull4 = {
-        // Lower floor small platform
-        -50, 0,
-        -50, 140,
-        +50, 140,
-        +50, 0
-    };
-
-    std::vector<float> wideMapHull5 = {
-        // Upper floor, only a right wing is provided to hold npc2, intentionally overlapping with "wideMapHull3" to test edge cases
-        -200, 400,
-        -200, 500,
-        750, 500,
-        750, 400
-    };
-
-    std::vector<float> wideMapHull6 = {
-        // Upper floor small platform that's jumpable, intentionally overlapping with "wideMapHull7" to test edge cases
-        -200, 500,
-        -200, 520,
-        300, 520,
-        300, 500
-    };
-
-    std::vector<float> wideMapHull7 = {
-        // Upper floor small platform at its left edge that's not jumpable
-        -200, 500,
-        -200, 600,
-        100, 600,
-        100, 500
+        // Upper-Left  pillar
+        -300, 100,
+        -300, 300,
+        -320, 300,
+        -320, 100
     };
     
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
-    std::vector<std::vector<float>> npcVisionHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4, wideMapHull5, wideMapHull6, wideMapHull7};
+    std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
+    std::vector<std::vector<float>> wideMapHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4};
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -4038,7 +4275,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-    
+     
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -4085,12 +4322,12 @@ int main(int argc, char** argv)
     initTest12Data(fallenDeathInitializerMapData, fallenDeathHulls);
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
     WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator); 
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
     WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     initTest14Data(bountyHunterSkillInitializerMapData, hulls);
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
@@ -4105,7 +4342,12 @@ int main(int argc, char** argv)
     initTest16Data(sliderTrapTestInitializerMapData2, hulls);
     runTestCase16(battle, sliderTrapTestInitializerMapData2, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
+    WsReq* sliderTrapTestInitializerMapData3 = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
+    initTest17Data(sliderTrapTestInitializerMapData3, wideMapHulls);
+    runTestCase17(battle, sliderTrapTestInitializerMapData3, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
+     
     pbStarterWsReqAllocator.Reset();
 
     // clean up

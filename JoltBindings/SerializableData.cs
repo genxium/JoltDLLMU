@@ -134,669 +134,659 @@ namespace jtshared {
             "Q2hTdGF0ZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgB",
             "GjYKFExvb3BpbmdDaFN0YXRlc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1",
             "ZRgCIAEoBToCOAEaNwoVSW5pdFNraWxsVHJhbnNpdEVudHJ5EgsKA2tleRgB",
-            "IAEoBRINCgV2YWx1ZRgCIAEoDToCOAEi5wwKEUNoYXJhY3RlckRvd25zeW5j",
+            "IAEoBRINCgV2YWx1ZRgCIAEoDToCOAEiqQ0KEUNoYXJhY3RlckRvd25zeW5j",
             "EgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6GAMgASgCEgsKA3FfeBgEIAEo",
             "AhILCgNxX3kYBSABKAISCwoDcV96GAYgASgCEgsKA3FfdxgHIAEoAhINCgV2",
-            "ZWxfeBgIIAEoAhINCgV2ZWxfeRgJIAEoAhINCgV2ZWxfehgKIAEoAhISCgph",
-            "aW1pbmdfcV94GAsgASgCEhIKCmFpbWluZ19xX3kYDCABKAISEgoKYWltaW5n",
-            "X3FfehgNIAEoAhISCgphaW1pbmdfcV93GA4gASgCEgoKAmhwGA8gASgFEgoK",
-            "Am1wGBAgASgFEioKCGNoX3N0YXRlGBEgASgOMhguanRzaGFyZWQuQ2hhcmFj",
-            "dGVyU3RhdGUSGgoSZnJhbWVzX2luX2NoX3N0YXRlGBIgASgFEhoKEmxvd2Vy",
-            "X3BhcnRfcmRmX2NudBgTIAEoBRIWCg5qdW1wX3RyaWdnZXJlZBgUIAEoCBIU",
-            "CgxvbWl0X2dyYXZpdHkYFSABKAgSEgoKc3BlY2llc19pZBgWIAEoDRIYChBm",
-            "b3JjZWRfY3JvdWNoaW5nGBcgASgIEhsKE3NsaXBfanVtcF90cmlnZ2VyZWQY",
-            "GCABKAgSLAokcHJpbWFyaWx5X29uX3NsaXBwYWJsZV9oYXJkX3B1c2hiYWNr",
-            "GBkgASgIEhkKEWZyYW1lc190b19yZWNvdmVyGBogASgFEh8KF25ld19iaXJ0",
-            "aF9yZGZfY291bnRkb3duGBsgASgFEhkKEWZyYW1lc19pbnZpbnNpYmxlGBwg",
-            "ASgFEhQKDGp1bXBfc3RhcnRlZBgdIAEoCBIcChRmcmFtZXNfdG9fc3RhcnRf",
-            "anVtcBgeIAEoBRIWCg5idWxsZXRfdGVhbV9pZBgfIAEoBRIgChhyZW1haW5p",
-            "bmdfYWlyX2p1bXBfcXVvdGEYICABKA0SIAoYcmVtYWluaW5nX2Fpcl9kYXNo",
-            "X3F1b3RhGCEgASgNEiIKGmRhbWFnZWRfaGludF9yZGZfY291bnRkb3duGCIg",
-            "ASgFEh8KF2RhbWFnZWRfZWxlbWVudGFsX2F0dHJzGCMgASgNEhwKFHJlbWFp",
-            "bmluZ19kZWYxX3F1b3RhGCQgASgNEhUKDWNvbWJvX2hpdF9jbnQYJSABKA0S",
-            "HQoVY29tYm9fZnJhbWVzX3JlbWFpbmVkGCYgASgFEhoKEmxhc3RfZGFtYWdl",
-            "ZF9ieV91ZBgnIAEoBBImCh5sYXN0X2RhbWFnZWRfYnlfYnVsbGV0X3RlYW1f",
-            "aWQYKCABKAUSFwoPYWN0aXZlX3NraWxsX2lkGCkgASgNEhgKEGFjdGl2ZV9z",
-            "a2lsbF9oaXQYKiABKAUSHQoVYnRuX2FfaG9sZGluZ19yZGZfY250GCsgASgF",
-            "Eh0KFWJ0bl9iX2hvbGRpbmdfcmRmX2NudBgsIAEoBRIdChVidG5fY19ob2xk",
-            "aW5nX3JkZl9jbnQYLSABKAUSHQoVYnRuX2RfaG9sZGluZ19yZGZfY250GC4g",
-            "ASgFEh0KFWJ0bl9lX2hvbGRpbmdfcmRmX2NudBgvIAEoBRIfChdwYXJyeV9w",
-            "cmVwX3JkZl9jbnRfZG93bhgwIAEoBRIeChZtcF9yZWdlbl9yZGZfY291bnRk",
-            "b3duGDEgASgFEhwKFGZseWluZ19yZGZfY291bnRkb3duGDIgASgFEhUKDWxv",
-            "Y2tpbmdfb25fdWQYMyABKAQSHAoUY2hfY29sbGlzaW9uX3RlYW1faWQYNCAB",
-            "KAUSDQoFc3BlZWQYNSABKAISIQoJYnVmZl9saXN0GDYgAygLMg4uanRzaGFy",
-            "ZWQuQnVmZhIlCgtkZWJ1ZmZfbGlzdBg3IAMoCzIQLmp0c2hhcmVkLkRlYnVm",
-            "ZhIuCg1hdGsxX21hZ2F6aW5lGDggASgLMhcuanRzaGFyZWQuSW52ZW50b3J5",
-            "U2xvdBIwCg9zdXBlcl9hdGtfZ2F1Z2UYOSABKAsyFy5qdHNoYXJlZC5JbnZl",
-            "bnRvcnlTbG90EiYKCWludmVudG9yeRg6IAEoCzITLmp0c2hhcmVkLkludmVu",
-            "dG9yeRI7ChVidWxsZXRfaW1tdW5lX3JlY29yZHMYOyADKAsyHC5qdHNoYXJl",
-            "ZC5CdWxsZXRJbW11bmVSZWNvcmQSFwoPa2luZW1hdGljX2tub2JzGDwgAygC",
-            "IvUCChdQbGF5ZXJDaGFyYWN0ZXJEb3duc3luYxIoCgNjaGQYASABKAsyGy5q",
-            "dHNoYXJlZC5DaGFyYWN0ZXJEb3duc3luYxISCgpqb2luX2luZGV4GAIgASgN",
-            "EhEKCWJlYXRzX2NudBgDIAEoDRISCgpiZWF0ZW5fY250GAQgASgNEhEKCXJl",
-            "dml2YWxfeBgFIAEoAhIRCglyZXZpdmFsX3kYBiABKAISEQoJcmV2aXZhbF96",
-            "GAcgASgCEhMKC3Jldml2YWxfcV94GAggASgFEhMKC3Jldml2YWxfcV95GAkg",
-            "ASgFEhMKC3Jldml2YWxfcV96GAogASgFEhMKC3Jldml2YWxfcV93GAsgASgF",
-            "EigKIG5vdF9lbm91Z2hfbXBfaGludF9yZGZfY291bnRkb3duGAwgASgFEhYK",
-            "DmNhY2hlZF9jdWVfY21kGA0gASgEEiYKC2dvYWxfYXNfbnBjGA4gASgOMhEu",
-            "anRzaGFyZWQuTnBjR29hbCLQBAoUTnBjQ2hhcmFjdGVyRG93bnN5bmMSKAoD",
-            "Y2hkGAEgASgLMhsuanRzaGFyZWQuQ2hhcmFjdGVyRG93bnN5bmMSCgoCaWQY",
-            "AiABKA0SGAoQYWN0aXZhdGVkX3JkZl9pZBgDIAEoBRIWCg5jYWNoZWRfY3Vl",
-            "X2NtZBgEIAEoBBIdChV3YWl2aW5nX3BhdHJvbF9jdWVfaWQYBSABKAUSJgoL",
-            "Z29hbF9hc19ucGMYBiABKA4yES5qdHNoYXJlZC5OcGNHb2FsEioKInB1Ymxp",
-            "c2hpbmdfZXZ0X21hc2tfdXBvbl9leGhhdXN0ZWQYByABKAQSLwoncHVibGlz",
-            "aGluZ190b190cmlnZ2VyX2lkX3Vwb25fZXhoYXVzdGVkGAggASgNEiAKGHN1",
-            "YnNjcmliZXNfdG9fdHJpZ2dlcl9pZBgJIAEoDRImCh5zdWJzY3JpYmVzX3Rv",
-            "X3RyaWdnZXJfZ3JvdXBfaWQYCiABKA0SHgoWY2FwdHVyZWRfYnlfcGF0cm9s",
-            "X2N1ZRgLIAEoCBIcChRmcmFtZXNfaW5fcGF0cm9sX2N1ZRgMIAEoBRIvCidl",
-            "eGhhdXN0ZWRfdG9fZHJvcF9jb25zdW1hYmxlX3NwZWNpZXNfaWQYDSABKA0S",
-            "KQohZXhoYXVzdGVkX3RvX2Ryb3BfYnVmZl9zcGVjaWVzX2lkGA4gASgNEikK",
-            "IWV4aGF1c3RlZF90b19kcm9wX3BpY2t1cF9za2lsbF9pZBgPIAEoDRIdChVp",
-            "c19tYWluX3Rvd2VyX29mX3RlYW0YECABKAgilAEKEUlucHV0RnJhbWVEZWNv",
-            "ZGVkEgoKAmR4GAEgASgFEgoKAmR5GAIgASgFEhMKC2J0bl9hX2xldmVsGAMg",
-            "ASgEEhMKC2J0bl9iX2xldmVsGAQgASgEEhMKC2J0bl9jX2xldmVsGAUgASgE",
-            "EhMKC2J0bl9kX2xldmVsGAYgASgEEhMKC2J0bl9lX2xldmVsGAcgASgEIjUK",
-            "DlVwc3luY1NuYXBzaG90EhEKCXN0X2lmZF9pZBgBIAEoBRIQCghjbWRfbGlz",
-            "dBgCIAMoBCLmBAoFV3NSZXESDgoGc2VxX25vGAEgASgNEhIKCmpvaW5faW5k",
-            "ZXgYAiABKA0SIAoDYWN0GAMgASgOMhMuanRzaGFyZWQuVXBzeW5jQWN0EhAK",
-            "CGF1dGhfa2V5GAQgASgFEjEKD3Vwc3luY19zbmFwc2hvdBgFIAEoCzIYLmp0",
-            "c2hhcmVkLlVwc3luY1NuYXBzaG90Ei4KD3NlbGZfcGFyc2VkX3JkZhgGIAEo",
-            "CzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEh8KF2JhdHRsZV9kdXJhdGlvbl9z",
-            "ZWNvbmRzGAcgASgFEkAKE3NlcmlhbGl6ZWRfYmFycmllcnMYCCADKAsyIy5q",
-            "dHNoYXJlZC5TZXJpYWxpemVkQmFycmllckNvbGxpZGVyElQKHHByZWFsbG9j",
-            "YXRlX25wY19zcGVjaWVzX2RpY3QYCyADKAsyLi5qdHNoYXJlZC5Xc1JlcS5Q",
-            "cmVhbGxvY2F0ZU5wY1NwZWNpZXNEaWN0RW50cnkSQQoadHJhcF9jb25maWdf",
-            "ZnJvbV90aWxlX2xpc3QYDCADKAsyHS5qdHNoYXJlZC5UcmFwQ29uZmlnRnJv",
-            "bVRpbGVkEkcKHXRyaWdnZXJfY29uZmlnX2Zyb21fdGlsZV9saXN0GA0gAygL",
-            "MiAuanRzaGFyZWQuVHJpZ2dlckNvbmZpZ0Zyb21UaWxlZBIbChNmYWxsZW5f",
-            "ZGVhdGhfaGVpZ2h0GA4gASgCGkAKHlByZWFsbG9jYXRlTnBjU3BlY2llc0Rp",
-            "Y3RFbnRyeRILCgNrZXkYASABKA0SDQoFdmFsdWUYAiABKA06AjgBIuEBCglQ",
-            "YXRyb2xDdWUSCgoCaWQYASABKAUSDgoGZmxfYWN0GAIgASgEEg4KBmZyX2Fj",
-            "dBgDIAEoBBIZChFmbF9jYXB0dXJlX2ZyYW1lcxgEIAEoBRIZChFmcl9jYXB0",
-            "dXJlX2ZyYW1lcxgFIAEoBRIOCgZmZF9hY3QYBiABKAQSDgoGZnVfYWN0GAcg",
-            "ASgEEhkKEWZkX2NhcHR1cmVfZnJhbWVzGAggASgFEhkKEWZ1X2NhcHR1cmVf",
-            "ZnJhbWVzGAkgASgFEhwKE2NvbGxpc2lvbl90eXBlX21hc2sYhQggASgEIuMB",
-            "CglWZnhDb25maWcSEgoKc3BlY2llc19pZBgBIAEoDRIsCgttb3Rpb25fdHlw",
-            "ZRgCIAEoDjIXLmp0c2hhcmVkLlZmeE1vdGlvblR5cGUSMAoNZHVyYXRpb25f",
-            "dHlwZRgDIAEoDjIZLmp0c2hhcmVkLlZmeER1cmF0aW9uVHlwZRIUCgxvbl9j",
-            "aGFyYWN0ZXIYBCABKAgSEQoJb25fYnVsbGV0GAUgASgIEg8KB29uX3RyYXAY",
-            "BiABKAgSGQoRdXNlX3BpeGVsYXRlZF92ZXIYByABKAgSDQoEbmFtZRiACCAB",
-            "KAkimxkKDEJ1bGxldENvbmZpZxIWCg5zdGFydHVwX2ZyYW1lcxgBIAEoBRIc",
-            "ChRjYW5jZWxsYWJsZV9zdF9mcmFtZRgCIAEoBRIcChRjYW5jZWxsYWJsZV9l",
-            "ZF9mcmFtZRgDIAEoBRIVCg1hY3RpdmVfZnJhbWVzGAQgASgFEhcKD2Nvb2xk",
-            "b3duX2ZyYW1lcxgFIAEoBRIXCg9oaXRfc3R1bl9mcmFtZXMYBiABKAUSGQoR",
-            "YmxvY2tfc3R1bl9mcmFtZXMYByABKAUSFgoOcHVzaGJhY2tfdmVsX3gYCCAB",
-            "KAISFgoOcHVzaGJhY2tfdmVsX3kYCSABKAISDgoGZGFtYWdlGAogASgFEhcK",
-            "D3NlbGZfbG9ja192ZWxfeBgLIAEoAhIXCg9zZWxmX2xvY2tfdmVsX3kYDCAB",
-            "KAISIwobc2VsZl9sb2NrX3ZlbF95X3doZW5fZmx5aW5nGA0gASgCEhcKD2hp",
-            "dGJveF9vZmZzZXRfeBgOIAEoAhIXCg9oaXRib3hfb2Zmc2V0X3kYDyABKAIS",
-            "GgoSaGl0Ym94X2hhbGZfc2l6ZV94GBAgASgCEhoKEmhpdGJveF9oYWxmX3Np",
-            "emVfeRgRIAEoAhIPCgdibG93X3VwGBIgASgIEhIKCnNwZWNpZXNfaWQYEyAB",
-            "KA0SGAoQZXhwbG9zaW9uX2ZyYW1lcxgUIAEoBRIkCgZiX3R5cGUYFSABKA4y",
-            "FC5qdHNoYXJlZC5CdWxsZXRUeXBlEicKB21oX3R5cGUYFiABKA4yFi5qdHNo",
-            "YXJlZC5NdWx0aUhpdFR5cGUSIgoac2ltdWx0YW5lb3VzX211bHRpX2hpdF9j",
-            "bnQYFyABKA0SDQoFc3BlZWQYGCABKAISQQoOY2FuY2VsX3RyYW5zaXQYGSAD",
-            "KAsyKS5qdHNoYXJlZC5CdWxsZXRDb25maWcuQ2FuY2VsVHJhbnNpdEVudHJ5",
-            "EhQKDHJlcGVhdF9xdW90YRgaIAEoBRIdChVhY3RpdmVfdmZ4X3NwZWNpZXNf",
-            "aWQYGyABKA0SIAoYZXhwbG9zaW9uX3ZmeF9zcGVjaWVzX2lkGBwgASgNEhYK",
-            "DmFsbG93c193YWxraW5nGB0gASgIEhgKEGFsbG93c19jcm91Y2hpbmcYHiAB",
-            "KAgSEAoIaGFyZG5lc3MYHyABKAUSIQoZc3RhcnR1cF9pbnZpbnNpYmxlX2Zy",
-            "YW1lcxggIAEoBRIdChVoaXRfaW52aW5zaWJsZV9mcmFtZXMYISABKAUSHAoU",
-            "ZXhwbG9zaW9uX3NwZWNpZXNfaWQYIiABKA0SFAoMcGVycF9hY2NfbWFnGCMg",
-            "ASgFEiAKGGRlbGF5X3NlbGZfdmVsX3RvX2FjdGl2ZRgkIAEoCBIYChBzcGVl",
-            "ZF9pZl9ub3RfaGl0GCUgASgCEhoKEm9taXRfc29mdF9wdXNoYmFjaxgmIAEo",
-            "CBIZChFoaXRib3hfc2l6ZV9pbmNfeBgnIAEoAhIZChFoaXRib3hfc2l6ZV9p",
-            "bmNfeRgoIAEoAhIYChByZW1haW5zX3Vwb25faGl0GCkgASgIEh4KFnJvdGF0",
-            "ZXNfYWxvbmdfdmVsb2NpdHkYKiABKAgSKgoiZGVmYXVsdF9oYXJkX3B1c2hi",
-            "YWNrX2JvdW5jZV9xdW90YRgrIAEoBRIoCiBoYXJkX3B1c2hiYWNrX2JvdW5j",
-            "ZV9ub3JtX2ZhY3RvchgsIAEoAhIpCiFoYXJkX3B1c2hiYWNrX2JvdW5jZV9z",
-            "aGVlcl9mYWN0b3IYLSABKAISHwoXaXNfcGl4ZWxhdGVkX2FjdGl2ZV92ZngY",
-            "LiABKAgSIwobaXNfcGl4ZWxhdGVkX2V4cGxvc3Rpb25fdmZ4GC8gASgIEh4K",
-            "Fm1oX3ZhbmlzaF9vbl9tZWxlZV9oaXQYMCABKAgSHQoVbWhfdXBkYXRlc19v",
-            "cmlnaW5fcG9zGDIgASgIEhYKDmJlYW1fY29sbGlzaW9uGDMgASgIEhAKCGZv",
-            "cl9hbGx5GDQgASgIEhcKD2VsZW1lbnRhbF9hdHRycxg7IAEoDRInCh9jYW5j",
-            "ZWxsYWJsZV9ieV9pbnZlbnRvcnlfc2xvdF9jGDwgASgIEicKH2NhbmNlbGxh",
-            "YmxlX2J5X2ludmVudG9yeV9zbG90X2QYPSABKAgSGgoSYmVhbV92aXN1YWxf",
-            "c2l6ZV95GEAgASgCEiYKHnRvdWNoX2V4cGxvc2lvbl9ib21iX2NvbGxpc2lv",
-            "bhhBIAEoCBIeChZhaXJfcmlkaW5nX2dyb3VuZF93YXZlGEIgASgIEiUKHWdy",
-            "b3VuZF9pbXBhY3RfbWVsZWVfY29sbGlzaW9uGEMgASgIEiMKG3dhbGxfaW1w",
-            "YWN0X21lbGVlX2NvbGxpc2lvbhhEIAEoCBIYChBtaF9pbmhlcml0c19zcGlu",
-            "GEUgASgIEiAKBmluaXRfcRhGIAEoCzIQLmp0c2hhcmVkLlBiUXVhdBIeChZz",
-            "dGFydHVwX3ZmeF9zcGVjaWVzX2lkGEogASgNEh8KA2lmYxhLIAEoDjISLmp0",
-            "c2hhcmVkLklmYWNlQ2F0EigKIHJlZmxlY3RfZmlyZWJhbGxfeF9pZl9ub3Rf",
-            "aGFyZGVyGEwgASgIEi0KJXJlamVjdF9yZWZsZWN0aW9uX2Zyb21fYW5vdGhl",
-            "cl9idWxsZXQYTSABKAgSHwoXcHJvdmlkZXNfeEhhcmRfcHVzaGJhY2sYTiAB",
-            "KAgSIwobcHJvdmlkZXNfeUhhcmRfcHVzaGJhY2tfdG9wGE8gASgIEiYKHnBy",
-            "b3ZpZGVzX3lIYXJkX3B1c2hiYWNrX2JvdHRvbRhQIAEoCBIhChlpZ25vcmVf",
-            "c2xvcGVfZGVjZWxlcmF0aW9uGFEgASgIEiEKGXJvdGF0ZV9vZmZlbmRlcl93",
-            "aXRoX3NwaW4YUiABKAgSIAoYbWhfbm90X3RyaWdnZXJfb25fY2hfaGl0GFMg",
-            "ASgIEisKI21oX25vdF90cmlnZ2VyX29uX2hhcmRlcl9idWxsZXRfaGl0GFQg",
-            "ASgIEisKI21oX25vdF90cmlnZ2VyX29uX2hhcmRfcHVzaGJhY2tfaGl0GFUg",
-            "ASgIEhYKDmhvcHBlcl9taXNzaWxlGFYgASgIEhYKDmJlYW1fcmVuZGVyaW5n",
-            "GFcgASgIEioKIm1pc3NpbGVfc2VhcmNoX2ludGVydmFsX3BvdzJNaW51czEY",
-            "WCABKA0SLwondXNlX2NoX29mZnNldF9yZWdhcmRsZXNzX29mX2VtaXNzaW9u",
-            "X21oGFkgASgIEisKI2lucGxhY2VfdmFuaXNoX2V4cGxvc2lvbl9zcGVjaWVz",
-            "X2lkGFogASgNEh8KF2FuaW1fbG9vcGluZ19yZGZfb2Zmc2V0GFsgASgFEikK",
-            "IWV4cGxvc2lvbl9hbmltX2xvb3BpbmdfcmRmX29mZnNldBhcIAEoBRIhChln",
-            "YXVnZV9pbmNfcmVkdWN0aW9uX3JhdGlvGF0gASgCEiYKHm1oX2luaGVyaXRz",
-            "X2ZyYW1lc19pbl9ibF9zdGF0ZRheIAEoCBIjChtndWFyZF9icmVha2VyX2V4",
-            "dHJhX2hpdF9jbnQYXyABKA0SIwobdGFrZXNfZGVmMV9hc19oYXJkX3B1c2hi",
-            "YWNrGGAgASgIEhgKEGZpbmlzaGluZ19mcmFtZXMYYSABKAUSJQodbm9fZXhw",
-            "bG9zaW9uX29uX2hhcmRfcHVzaGJhY2sYYiABKAgSIAoYZXhwbG9kZV9vbl9t",
-            "dWx0aV9jb250YWN0GGMgASgIEhwKE2NvbGxpc2lvbl90eXBlX21hc2sYhQgg",
-            "ASgEEhYKDXRha2VzX2dyYXZpdHkYhgggASgIEioKC2J1ZmZfY29uZmlnGIcI",
-            "IAEoCzIULmp0c2hhcmVkLkJ1ZmZDb25maWcSIAoXY2hhcmFjdGVyX2VtaXRf",
-            "c2Z4X25hbWUYgBAgASgJEh8KFmZpcmViYWxsX2VtaXRfc2Z4X25hbWUYgRAg",
-            "ASgJEhsKEmV4cGxvc2lvbl9zZnhfbmFtZRiCECABKAkSGAoPYWN0aXZlX3Nm",
-            "eF9uYW1lGIMQIAEoCRIkChtleHBsb3Npb25fb25fZmxlc2hfc2Z4X25hbWUY",
-            "hBAgASgJEiMKGmV4cGxvc2lvbl9vbl9yb2NrX3NmeF9uYW1lGIUQIAEoCRIk",
-            "ChtleHBsb3Npb25fb25fbWV0YWxfc2Z4X25hbWUYhhAgASgJEiMKGmV4cGxv",
-            "c2lvbl9vbl93b29kX3NmeF9uYW1lGIcQIAEoCRo0ChJDYW5jZWxUcmFuc2l0",
-            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgNOgI4ASLRBAoGQnVs",
-            "bGV0EicKCGJsX3N0YXRlGAEgASgOMhUuanRzaGFyZWQuQnVsbGV0U3RhdGUS",
-            "GgoSZnJhbWVzX2luX2JsX3N0YXRlGAIgASgFEgoKAnVkGAMgASgEEiIKGm9y",
-            "aWdpbmF0ZWRfcmVuZGVyX2ZyYW1lX2lkGAQgASgFEhMKC29mZmVuZGVyX3Vk",
-            "GAUgASgEEgkKAXgYBiABKAISCQoBeRgHIAEoAhIJCgF6GAggASgCEgsKA3Ff",
-            "eBgJIAEoAhILCgNxX3kYCiABKAISCwoDcV96GAsgASgCEgsKA3FfdxgMIAEo",
-            "AhINCgV2ZWxfeBgNIAEoAhINCgV2ZWxfeRgOIAEoAhINCgV2ZWxfehgPIAEo",
-            "AhIUCgxvcmlnaW5hdGVkX3gYECABKAISFAoMb3JpZ2luYXRlZF95GBEgASgC",
-            "EhQKDG9yaWdpbmF0ZWRfehgSIAEoAhIZChFyZXBlYXRfcXVvdGFfbGVmdBgT",
-            "IAEoBRIsCiRyZW1haW5pbmdfaGFyZF9wdXNoYmFja19ib3VuY2VfcXVvdGEY",
-            "FCABKAUSEQoJdGFyZ2V0X3VkGBUgASgEEhUKDWRhbWFnZV9kZWFsZWQYFiAB",
-            "KAUSKwoPZXhwbG9kZWRfb25faWZjGBcgASgOMhIuanRzaGFyZWQuSWZhY2VD",
-            "YXQSGAoQYWN0aXZlX3NraWxsX2hpdBgZIAEoBRIQCghza2lsbF9pZBgaIAEo",
-            "DRIKCgJpZBgbIAEoDRIPCgd0ZWFtX2lkGBwgASgFEhAKCGZvcl9hbGx5GB0g",
-            "ASgIItgECgpUcmFwQ29uZmlnEgsKA3RwdBgBIAEoDRIcChRleHBsb3Npb25f",
-            "c3BlY2llc19pZBgCIAEoDRIYChBleHBsb3Npb25fZnJhbWVzGAMgASgFEg8K",
-            "B2Jsb3dfdXAYBCABKAgSDgoGZGFtYWdlGAUgASgFEhcKD2hpdF9zdHVuX2Zy",
-            "YW1lcxgGIAEoBRIdChVoaXRfaW52aW5zaWJsZV9mcmFtZXMYByABKAUSFQoN",
-            "ZGVhY3RpdmF0YWJsZRgIIAEoCBIQCghoYXJkbmVzcxgJIAEoBRIhChlkZWFj",
-            "dGl2YXRlX3Vwb25fdHJpZ2dlcmVkGAogASgIEhgKEHN1cmZhY2VfZnJpY3Rp",
-            "b24YCyABKAISKAogcGF0cm9sX2N1ZV9yZXF1aXJlc19mdWxsX2NvbnRhaW4Y",
-            "DyABKAgSGwoTYXRrMV91cG9uX3RyaWdnZXJlZBgWIAEoCBIVCg1hdGsxX3Nr",
-            "aWxsX2lkGBcgASgNEhEKCWlzX3JvdGFyeRgYIAEoCBIbChNub194X2ZsaXBf",
-            "cmVuZGVyaW5nGBkgASgIEh8KF2RlZmF1bHRfYm94X2hhbGZfc2l6ZV94GBog",
-            "ASgCEh8KF2RlZmF1bHRfYm94X2hhbGZfc2l6ZV95GBsgASgCEhwKFGRlZmF1",
-            "bHRfbGluZWFyX3NwZWVkGBwgASgCEh0KFWRlZmF1bHRfYW5ndWxhcl9zcGVl",
-            "ZBgdIAEoAhIiChpkZWZhdWx0X2Nvb2xkb3duX3JkZl9jb3VudBgeIAEoBRIV",
-            "CgxzcGVjaWVzX25hbWUYgAggASgJIpMEChNUcmFwQ29uZmlnRnJvbVRpbGVk",
-            "EgoKAmlkGAEgASgNEgsKA3RwdBgCIAEoDRINCgVxdW90YRgDIAEoBRIXCg9i",
-            "b3hfaGFsZl9zaXplX3gYBCABKAISFwoPYm94X2hhbGZfc2l6ZV95GAUgASgC",
-            "EhQKDGxpbmVhcl9zcGVlZBgGIAEoAhIVCg1hbmd1bGFyX3NwZWVkGAcgASgC",
-            "Eg4KBmluaXRfeBgIIAEoAhIOCgZpbml0X3kYCSABKAISDgoGaW5pdF96GAog",
-            "ASgCEhAKCGluaXRfcV94GAsgASgCEhAKCGluaXRfcV95GAwgASgCEhAKCGlu",
-            "aXRfcV96GA0gASgCEhAKCGluaXRfcV93GA4gASgCEhIKCmluaXRfdmVsX3gY",
-            "DyABKAISEgoKaW5pdF92ZWxfeRgQIAEoAhISCgppbml0X3ZlbF96GBEgASgC",
-            "EhoKEmNvb2xkb3duX3JkZl9jb3VudBgSIAEoBRIVCg1zbGlkZXJfYXhpc194",
-            "GBMgASgCEhUKDXNsaWRlcl9heGlzX3kYFCABKAISFQoNc2xpZGVyX2F4aXNf",
-            "ehgVIAEoAhIQCgdsaW1pdF8xGIABIAEoAhIQCgdsaW1pdF8yGIEBIAEoAhIQ",
-            "CgdsaW1pdF8zGIIBIAEoAhIQCgdsaW1pdF80GIMBIAEoAhIYCg9pbml0X25v",
-            "dF9tb3ZpbmcYgAQgASgIItIBChNCYXJyaWVyQ29sbGlkZXJBdHRyEh4KFnBy",
-            "b3ZpZGVzX2hhcmRfcHVzaGJhY2sYASABKAgSGgoScHJvdmlkZXNfc2xpcF9q",
-            "dW1wGAIgASgIEh8KF3Byb2hpYml0c193YWxsX2dyYWJiaW5nGAMgASgIEhgK",
-            "EGZvcmNlc19jcm91Y2hpbmcYBCABKAgSIQoZb25seV9hbGxvd3NfYWxpZ25l",
-            "ZF92ZWxfeBgFIAEoBRIhChlvbmx5X2FsbG93c19hbGlnbmVkX3ZlbF95GAYg",
-            "ASgFIusCCgRUcmFwEgoKAmlkGAEgASgNEgsKA3RwdBgCIAEoDRInCgp0cmFw",
-            "X3N0YXRlGAQgASgOMhMuanRzaGFyZWQuVHJhcFN0YXRlEhwKFGZyYW1lc19p",
-            "bl90cmFwX3N0YXRlGAUgASgFEiAKGHN1YnNjcmliZXNfdG9fdHJpZ2dlcl9p",
-            "ZBgLIAEoDRImCh5zdWJzY3JpYmVzX3RvX3RyaWdnZXJfZ3JvdXBfaWQYDCAB",
-            "KA0SCQoBeBgNIAEoAhIJCgF5GA4gASgCEgkKAXoYDyABKAISCwoDcV94GBAg",
-            "ASgCEgsKA3FfeRgRIAEoAhILCgNxX3oYEiABKAISCwoDcV93GBMgASgCEg0K",
-            "BXZlbF94GBQgASgCEg0KBXZlbF95GBUgASgCEg0KBXZlbF96GBYgASgCEhEK",
-            "CWFuZ192ZWxfeBgXIAEoAhIRCglhbmdfdmVsX3kYGCABKAISEQoJYW5nX3Zl",
-            "bF96GBkgASgCIkkKC1BlZXJVZHBBZGRyEgoKAmlwGAEgASgJEgwKBHBvcnQY",
-            "AiABKAUSEAoIYXV0aF9rZXkYAyABKAUSDgoGc2VxX25vGAQgASgNIjsKClN0",
-            "ZXBSZXN1bHQSLQoSZnVsZmlsbGVkX3RyaWdnZXJzGAEgAygLMhEuanRzaGFy",
-            "ZWQuVHJpZ2dlciKjBAoLUmVuZGVyRnJhbWUSCgoCaWQYASABKAUSMgoHcGxh",
-            "eWVycxgCIAMoCzIhLmp0c2hhcmVkLlBsYXllckNoYXJhY3RlckRvd25zeW5j",
-            "EhcKD2NvdW50ZG93bl9uYW5vcxgDIAEoAxIhCgdidWxsZXRzGAQgAygLMhAu",
-            "anRzaGFyZWQuQnVsbGV0EiwKBG5wY3MYBSADKAsyHi5qdHNoYXJlZC5OcGND",
-            "aGFyYWN0ZXJEb3duc3luYxIlCg1keW5hbWljX3RyYXBzGAYgAygLMg4uanRz",
-            "aGFyZWQuVHJhcBIjCgh0cmlnZ2VycxgHIAMoCzIRLmp0c2hhcmVkLlRyaWdn",
-            "ZXISJQoJcGlja2FibGVzGAggAygLMhIuanRzaGFyZWQuUGlja2FibGUSGQoR",
-            "YnVsbGV0X2lkX2NvdW50ZXIYCSABKA0SFAoMYnVsbGV0X2NvdW50GAogASgN",
-            "EhYKDm5wY19pZF9jb3VudGVyGAsgASgNEhEKCW5wY19jb3VudBgMIAEoDRIV",
-            "Cg10cmlnZ2VyX2NvdW50GA0gASgNEhsKE3BpY2thYmxlX2lkX2NvdW50ZXIY",
-            "DyABKA0SFgoOcGlja2FibGVfY291bnQYECABKA0SGgoSZHluYW1pY190cmFw",
-            "X2NvdW50GBEgASgNEjMKFHByZXZfcmRmX3N0ZXBfcmVzdWx0GIAEIAEoCzIU",
-            "Lmp0c2hhcmVkLlN0ZXBSZXN1bHQilwEKEUJhdHRsZVByZXBhcmVJbmZvEhIK",
-            "CnN0YWdlX25hbWUYASABKAkSFQoNYm91bmRfcm9vbV9pZBgCIAEoBRIeChZi",
-            "YXR0bGVfZHVyYXRpb25fZnJhbWVzGAMgASgDEhsKE2JvdW5kX3Jvb21fY2Fw",
-            "YWNpdHkYBCABKAUSGgoRZnJhbWVfbG9nX2VuYWJsZWQYgQggASgIIlwKEklu",
-            "cHV0RnJhbWVEb3duc3luYxISCgppbnB1dF9saXN0GAEgAygEEhYKDmNvbmZp",
-            "cm1lZF9saXN0GAIgASgEEhoKEnVkcF9jb25maXJtZWRfbGlzdBgDIAEoBCLt",
-            "AwoQRG93bnN5bmNTbmFwc2hvdBISCgpyZWZfcmRmX2lkGAEgASgFEiYKB3Jl",
-            "Zl9yZGYYAiABKAsyFS5qdHNoYXJlZC5SZW5kZXJGcmFtZRIYChB1bmNvbmZp",
-            "cm1lZF9tYXNrGAMgASgEEhEKCXN0X2lmZF9pZBgEIAEoBRIvCglpZmRfYmF0",
-            "Y2gYBSADKAsyHC5qdHNoYXJlZC5JbnB1dEZyYW1lRG93bnN5bmMSIgoDYWN0",
-            "GAcgASgOMhUuanRzaGFyZWQuRG93bnN5bmNBY3QSMQoMcHJlcGFyZV9pbmZv",
-            "GAggASgLMhsuanRzaGFyZWQuQmF0dGxlUHJlcGFyZUluZm8SMgoTYXNzaWdu",
-            "ZWRfdWRwX3R1bm5lbBgJIAEoCzIVLmp0c2hhcmVkLlBlZXJVZHBBZGRyEjEK",
-            "EnBlZXJfdWRwX2FkZHJfbGlzdBgKIAMoCzIVLmp0c2hhcmVkLlBlZXJVZHBB",
-            "ZGRyEh0KFXBhcnRpY2lwYW50X2NoYW5nZV9pZBgLIAEoBRIaChJpbmFjdGl2",
-            "ZV9qb2luX21hc2sYDCABKAQSFwoPcGVlcl9qb2luX2luZGV4GA0gASgNEhsK",
-            "E3BlZXJfYnVsbGV0X3RlYW1faWQYDiABKAUSEAoHZXJyX21zZxiABCABKAki",
-            "+gIKBVNraWxsEhcKD3JlY292ZXJ5X2ZyYW1lcxgCIAEoBRIgChhyZWNvdmVy",
-            "eV9mcmFtZXNfb25fYmxvY2sYAyABKAUSHgoWcmVjb3ZlcnlfZnJhbWVzX29u",
-            "X2hpdBgEIAEoBRIyCg9pbnZvY2F0aW9uX3R5cGUYBSABKA4yGS5qdHNoYXJl",
-            "ZC5Ta2lsbEludm9jYXRpb24SMAoOYm91bmRfY2hfc3RhdGUYBiABKA4yGC5q",
-            "dHNoYXJlZC5DaGFyYWN0ZXJTdGF0ZRI3ChVib3VuZF9jaF9zdGF0ZV9vbl9o",
-            "aXQYByABKA4yGC5qdHNoYXJlZC5DaGFyYWN0ZXJTdGF0ZRIQCghtcF9kZWx0",
-            "YRgIIAEoBRIKCgJpZBgJIAEoDRIlCgRoaXRzGIAIIAMoCzIWLmp0c2hhcmVk",
-            "LkJ1bGxldENvbmZpZxIyChNzZWxmX25vbl9zdG9ja19idWZmGIEIIAEoCzIU",
-            "Lmp0c2hhcmVkLkJ1ZmZDb25maWci9AIKCEZyYW1lTG9nEiIKA3JkZhgBIAEo",
-            "CzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEhwKFGFjdHVhbGx5X3VzZWRfaWZk",
-            "X2lkGAIgASgFEhsKE3VzZWRfaWZkX2lucHV0X2xpc3QYAyADKAQSHwoXdXNl",
-            "ZF9pZmRfY29uZmlybWVkX2xpc3QYBCABKAQSIwobdXNlZF9pZmRfdWRwX2Nv",
-            "bmZpcm1lZF9saXN0GAUgASgEEhQKDHRpbWVyX3JkZl9pZBgGIAEoBRITCgts",
-            "Y2FjX2lmZF9pZBgHIAEoBRIVCg1jaGFzZXJfcmRmX2lkGAggASgFEiEKGWNo",
-            "YXNlcl9yZGZfaWRfbG93ZXJfYm91bmQYCSABKAUSGAoQY2hhc2VyX3N0X3Jk",
-            "Zl9pZBgKIAEoBRIYChBjaGFzZXJfZWRfcmRmX2lkGAsgASgFEioKImNoYXNl",
-            "cl9yZGZfaWRfbG93ZXJfYm91bmRfc25hdGNoZWQYDCABKAgiSAoMQmF0dGxl",
-            "UmVzdWx0EhkKEXdpbm5lcl9qb2luX2luZGV4GAEgASgNEh0KFXdpbm5lcl9i",
-            "dWxsZXRfdGVhbV9pZBgCIAEoBSLJAQoMRGVidWZmQ29uZmlnEhIKCnNwZWNp",
-            "ZXNfaWQYASABKA0SKwoKc3RvY2tfdHlwZRgCIAEoDjIXLmp0c2hhcmVkLkJ1",
-            "ZmZTdG9ja1R5cGUSDQoFc3RvY2sYAyABKAUSIgoEdHlwZRgEIAEoDjIULmp0",
-            "c2hhcmVkLkRlYnVmZlR5cGUSDwoHYXJyX2lkeBgFIAEoBRIbChNpbXBhY3Rf",
-            "cGVyX2ludGVydmFsGAYgASgFEhcKD2ltcGFjdF9pbnRlcnZhbBgHIAEoBSKs",
-            "BAoKQnVmZkNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgNEisKCnN0b2NrX3R5",
-            "cGUYAiABKA4yFy5qdHNoYXJlZC5CdWZmU3RvY2tUeXBlEg0KBXN0b2NrGAMg",
-            "ASgFEhMKC3NwZWVkX2RlbHRhGAQgASgCEiAKGGhpdGJveF9oYWxmX3NpemVf",
-            "eF9kZWx0YRgFIAEoAhIgChhoaXRib3hfaGFsZl9zaXplX3lfZGVsdGEYBiAB",
-            "KAISFAoMZGFtYWdlX2RlbHRhGAcgASgFEiIKGmRhbWFnZV9kZWx0YV9ieV9w",
-            "ZXJjZW50YWdlGAggASgFEiAKGGNoYXJhY3Rlcl9oYXJkbmVzc19kZWx0YRgJ",
-            "IAEoBRIcChRtZWxlZV9oYXJkbmVzc19kZWx0YRgKIAEoBRIfChdmaXJlYmFs",
-            "bF9oYXJkbmVzc19kZWx0YRgLIAEoBRISCgppbnZpbnNpYmxlGAwgASgIEhsK",
-            "E3hmb3JtX2NoX3NwZWNpZXNfaWQYDSABKA0SGwoTcmVwZWxfc29mdF9wdXNo",
-            "YmFjaxgOIAEoCBIUCgxvbWl0X2dyYXZpdHkYDyABKAgSEQoJYXV0b19kZWYx",
-            "GBAgASgIEhoKEmFzc29jaWF0ZWRfZGVidWZmcxgRIAMoDRIgChhjaGFyYWN0",
-            "ZXJfdmZ4X3NwZWNpZXNfaWQYEiABKA0SJQodaXNfcGl4ZWxhdGVkX3ZmeF9v",
-            "bl9jaGFyYWN0ZXIYEyABKAgipgEKBEJ1ZmYSEgoKc3BlY2llc19pZBgBIAEo",
-            "DRINCgVzdG9jaxgCIAEoBRIiChpvcmlnaW5hdGVkX3JlbmRlcl9mcmFtZV9p",
-            "ZBgDIAEoBRIaChJvcmlnX2NoX3NwZWNpZXNfaWQYBCABKA0SIAoYb3JpZ19y",
-            "ZXBlbF9zb2Z0X3B1c2hiYWNrGAUgASgIEhkKEW9yaWdfb21pdF9ncmF2aXR5",
-            "GAYgASgIIisKBkRlYnVmZhISCgpzcGVjaWVzX2lkGAEgASgNEg0KBXN0b2Nr",
-            "GAIgASgFIk0KEkJ1bGxldEltbXVuZVJlY29yZBIRCglidWxsZXRfaWQYASAB",
-            "KA0SJAoccmVtYWluaW5nX2xpZmV0aW1lX3JkZl9jb3VudBgCIAEoBSJ6ChBD",
-            "b25zdW1hYmxlQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SFAoMcmVmaWxs",
-            "X2RlbHRhGAIgASgFEhgKEHZmeF9pZF9vbl9waWNrZXIYAyABKAUSIgoaaXNf",
-            "cGl4ZWxhdGVkX3ZmeF9vbl9waWNrZXIYBCABKAgiZQoTUGlja2FibGVTa2ls",
-            "bENvbmZpZxIQCghza2lsbF9pZBgBIAEoDRIYChB2ZnhfaWRfb25fcGlja2Vy",
-            "GAIgASgFEiIKGmlzX3BpeGVsYXRlZF92Znhfb25fcGlja2VyGAMgASgIIpEC",
-            "ChNJbnZlbnRvcnlTbG90Q29uZmlnEjQKCnN0b2NrX3R5cGUYASABKA4yIC5q",
-            "dHNoYXJlZC5JbnZlbnRvcnlTbG90U3RvY2tUeXBlEg0KBXF1b3RhGAIgASgN",
-            "EhkKEWZyYW1lc190b19yZWNvdmVyGAMgASgFEhcKD2J1ZmZfc3BlY2llc19p",
-            "ZBgEIAEoDRIQCghza2lsbF9pZBgFIAEoDRIUCgxza2lsbF9pZF9haXIYBiAB",
-            "KA0SFgoOZ2F1Z2VfcmVxdWlyZWQYByABKAUSIwobZnVsbF9jaGFyZ2VfYnVm",
-            "Zl9zcGVjaWVzX2lkGAggASgNEhwKFGZ1bGxfY2hhcmdlX3NraWxsX2lkGAkg",
-            "ASgNIoYBCg1JbnZlbnRvcnlTbG90EjQKCnN0b2NrX3R5cGUYASABKA4yIC5q",
-            "dHNoYXJlZC5JbnZlbnRvcnlTbG90U3RvY2tUeXBlEg0KBXF1b3RhGAIgASgN",
-            "EhkKEWZyYW1lc190b19yZWNvdmVyGAMgASgFEhUKDWdhdWdlX2NoYXJnZWQY",
-            "BCABKAUiMwoJSW52ZW50b3J5EiYKBXNsb3RzGAEgAygLMhcuanRzaGFyZWQu",
-            "SW52ZW50b3J5U2xvdCIlCg9CYXR0bGVFcXVpcG1lbnQSEgoKc3BlY2llc19p",
-            "ZBgBIAEoDSImCg5QbGF5ZXJTZXR0aW5ncxIUCgxzb3VuZF92b2x1bWUYASAB",
-            "KAUi9AIKFFBsYXllclJlZ2lvblByb2dyZXNzEhEKCXJlZ2lvbl9pZBgBIAEo",
-            "BRIdChVjb21wbGV0ZWRfbGV2ZWxfY291bnQYAiABKAUSWQoWcmVtYWluaW5n",
-            "X2RlcGVuZGVuY2llcxgDIAMoCzI5Lmp0c2hhcmVkLlBsYXllclJlZ2lvblBy",
-            "b2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5ElUKFHJlbW92ZWRf",
-            "ZGVwZW5kZW5jaWVzGAQgAygLMjcuanRzaGFyZWQuUGxheWVyUmVnaW9uUHJv",
-            "Z3Jlc3MuUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5GjwKGlJlbWFpbmluZ0Rl",
-            "cGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoC",
-            "OAEaOgoYUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRIN",
-            "CgV2YWx1ZRgCIAEoCDoCOAEi1AQKE1BsYXllckxldmVsUHJvZ3Jlc3MSEQoJ",
-            "cmVnaW9uX2lkGAEgASgFEhAKCGxldmVsX2lkGAIgASgFEhUKDWhpZ2hlc3Rf",
-            "c2NvcmUYAyABKAUSLQolc2hvcnRlc3RfZmluaXNoX3RpbWVfYXRfaGlnaGVz",
-            "dF9zY29yZRgEIAEoBRItCiVjaGFyYWN0ZXJfc3BlY2llc19pZF9hdF9oaWdo",
-            "ZXN0X3Njb3JlGAUgASgNEhwKFHNob3J0ZXN0X2ZpbmlzaF90aW1lGAYgASgF",
-            "EiUKHXNjb3JlX2F0X3Nob3J0ZXN0X2ZpbmlzaF90aW1lGAcgASgFEjQKLGNo",
-            "YXJhY3Rlcl9zcGVjaWVzX2lkX2F0X3Nob3J0ZXN0X2ZpbmlzaF90aW1lGAgg",
-            "ASgNElgKFnJlbWFpbmluZ19kZXBlbmRlbmNpZXMYCSADKAsyOC5qdHNoYXJl",
-            "ZC5QbGF5ZXJMZXZlbFByb2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0Vu",
-            "dHJ5ElQKFHJlbW92ZWRfZGVwZW5kZW5jaWVzGAogAygLMjYuanRzaGFyZWQu",
-            "UGxheWVyTGV2ZWxQcm9ncmVzcy5SZW1vdmVkRGVwZW5kZW5jaWVzRW50cnka",
-            "PAoaUmVtYWluaW5nRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0K",
-            "BXZhbHVlGAIgASgIOgI4ARo6ChhSZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkS",
-            "CwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASLcAgoWUGxheWVyQ2hV",
-            "bmxvY2tQcm9ncmVzcxISCgpzcGVjaWVzX2lkGAEgASgNElsKFnJlbWFpbmlu",
-            "Z19kZXBlbmRlbmNpZXMYAiADKAsyOy5qdHNoYXJlZC5QbGF5ZXJDaFVubG9j",
-            "a1Byb2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5ElcKFHJlbW92",
-            "ZWRfZGVwZW5kZW5jaWVzGAMgAygLMjkuanRzaGFyZWQuUGxheWVyQ2hVbmxv",
-            "Y2tQcm9ncmVzcy5SZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkaPAoaUmVtYWlu",
-            "aW5nRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIg",
-            "ASgIOgI4ARo6ChhSZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEg",
-            "ASgFEg0KBXZhbHVlGAIgASgIOgI4ASKtBQoTUGxheWVyU3RvcnlQcm9ncmVz",
-            "cxJTChRyZWdpb25fcHJvZ3Jlc3NfZGljdBgBIAMoCzI1Lmp0c2hhcmVkLlBs",
-            "YXllclN0b3J5UHJvZ3Jlc3MuUmVnaW9uUHJvZ3Jlc3NEaWN0RW50cnkSUQoT",
-            "bGV2ZWxfcHJvZ3Jlc3NfZGljdBgCIAMoCzI0Lmp0c2hhcmVkLlBsYXllclN0",
-            "b3J5UHJvZ3Jlc3MuTGV2ZWxQcm9ncmVzc0RpY3RFbnRyeRIYChBjdXJzb3Jf",
-            "cmVnaW9uX2lkGAMgASgFEhcKD2N1cnNvcl9sZXZlbF9pZBgEIAEoBRIxCgR2",
-            "aWV3GAUgASgOMiMuanRzaGFyZWQuUGxheWVyU3RvcnlNb2RlU2VsZWN0Vmll",
-            "dxIbChNzYXZlZF9hdF9nbXRfbWlsbGlzGAYgASgEElgKF2NoX3VubG9ja19w",
-            "cm9ncmVzc19kaWN0GAcgAygLMjcuanRzaGFyZWQuUGxheWVyU3RvcnlQcm9n",
-            "cmVzcy5DaFVubG9ja1Byb2dyZXNzRGljdEVudHJ5GlkKF1JlZ2lvblByb2dy",
-            "ZXNzRGljdEVudHJ5EgsKA2tleRgBIAEoBRItCgV2YWx1ZRgCIAEoCzIeLmp0",
-            "c2hhcmVkLlBsYXllclJlZ2lvblByb2dyZXNzOgI4ARpXChZMZXZlbFByb2dy",
-            "ZXNzRGljdEVudHJ5EgsKA2tleRgBIAEoBRIsCgV2YWx1ZRgCIAEoCzIdLmp0",
-            "c2hhcmVkLlBsYXllckxldmVsUHJvZ3Jlc3M6AjgBGl0KGUNoVW5sb2NrUHJv",
-            "Z3Jlc3NEaWN0RW50cnkSCwoDa2V5GAEgASgNEi8KBXZhbHVlGAIgASgLMiAu",
-            "anRzaGFyZWQuUGxheWVyQ2hVbmxvY2tQcm9ncmVzczoCOAEiigIKGVBsYXll",
-            "ck9ubGluZUFyZW5hUHJvZ3Jlc3MSGwoTc2F2ZWRfYXRfZ210X21pbGxpcxgB",
-            "IAEoBBIRCglwbGF5ZXJfaWQYAiABKAkSXgoXY2hfdW5sb2NrX3Byb2dyZXNz",
-            "X2RpY3QYAyADKAsyPS5qdHNoYXJlZC5QbGF5ZXJPbmxpbmVBcmVuYVByb2dy",
-            "ZXNzLkNoVW5sb2NrUHJvZ3Jlc3NEaWN0RW50cnkaXQoZQ2hVbmxvY2tQcm9n",
-            "cmVzc0RpY3RFbnRyeRILCgNrZXkYASABKA0SLwoFdmFsdWUYAiABKAsyIC5q",
-            "dHNoYXJlZC5QbGF5ZXJDaFVubG9ja1Byb2dyZXNzOgI4ASJuChRTdG9yeVBv",
-            "aW50RGlhbG9nTGluZRITCgtuYXJyYXRvcl91ZBgBIAEoBBIbChNuYXJyYXRv",
-            "cl9zcGVjaWVzX2lkGAIgASgNEg8KB2NvbnRlbnQYAyABKAkSEwoLZG93bl9v",
-            "cl9ub3QYBCABKAgiYAoOU3RvcnlQb2ludFN0ZXASLQoFbGluZXMYASADKAsy",
-            "Hi5qdHNoYXJlZC5TdG9yeVBvaW50RGlhbG9nTGluZRIfChdub25jdHJsX2Fs",
-            "aXZlX3JkZl9jb3VudBgCIAEoBSJdCgpTdG9yeVBvaW50EicKBXN0ZXBzGAEg",
-            "AygLMhguanRzaGFyZWQuU3RvcnlQb2ludFN0ZXASDwoHbm9uY3RybBgCIAEo",
-            "CBIVCg1jdXRzY2VuZV9uYW1lGAMgASgJIoMBCgpMZXZlbFN0b3J5EjAKBnBv",
-            "aW50cxgBIAMoCzIgLmp0c2hhcmVkLkxldmVsU3RvcnkuUG9pbnRzRW50cnka",
-            "QwoLUG9pbnRzRW50cnkSCwoDa2V5GAEgASgFEiMKBXZhbHVlGAIgASgLMhQu",
-            "anRzaGFyZWQuU3RvcnlQb2ludDoCOAEiswEKGVNlcmlhbGl6YWJsZUNvbnZl",
-            "eFBvbHlnb24SIAoGYW5jaG9yGAEgASgLMhAuanRzaGFyZWQuUGJWZWMyEiAK",
-            "BnBvaW50cxgCIAMoCzIQLmp0c2hhcmVkLlBiVmVjMhIOCgZpc19ib3gYAyAB",
-            "KAgSDwoHYm94X3FfeBgEIAEoAhIPCgdib3hfcV95GAUgASgCEg8KB2JveF9x",
-            "X3oYBiABKAISDwoHYm94X3FfdxgHIAEoAiJ+ChlTZXJpYWxpemVkQmFycmll",
-            "ckNvbGxpZGVyEisKBGF0dHIYASABKAsyHS5qdHNoYXJlZC5CYXJyaWVyQ29s",
-            "bGlkZXJBdHRyEjQKB3BvbHlnb24YAiABKAsyIy5qdHNoYXJlZC5TZXJpYWxp",
-            "emFibGVDb252ZXhQb2x5Z29uImoKDlBpY2thYmxlQ29uZmlnEikKC3BpY2t1",
-            "cF90eXBlGAEgASgOMhQuanRzaGFyZWQuUGlja3VwVHlwZRIVCg10YWtlc19n",
-            "cmF2aXR5GAIgASgIEhYKDnZmeF9zcGVjaWVzX2lkGAMgASgNIqgBChdQaWNr",
-            "YWJsZUNvbmZpZ0Zyb21UaWxlZBIpCgtwaWNrdXBfdHlwZRgBIAEoDjIULmp0",
-            "c2hhcmVkLlBpY2t1cFR5cGUSEwoLcmVjdXJfcXVvdGEYAiABKAUSKQohbGlm",
-            "ZXRpbWVfcmRmX2NvdW50X3Blcl9vY2N1cnJlbmNlGAMgASgNEiIKGnN0b2Nr",
-            "X3F1b3RhX3Blcl9vY2N1cnJlbmNlGAQgASgNIq8CCghQaWNrYWJsZRIKCgJp",
-            "ZBgBIAEoDRIpCgtwaWNrdXBfdHlwZRgCIAEoDjIULmp0c2hhcmVkLlBpY2t1",
-            "cFR5cGUSKQoIcGtfc3RhdGUYAyABKA4yFy5qdHNoYXJlZC5QaWNrYWJsZVN0",
-            "YXRlEhoKEmZyYW1lc19pbl9wa19zdGF0ZRgEIAEoBRIJCgF4GAUgASgCEgkK",
-            "AXkYBiABKAISCQoBehgHIAEoAhINCgV2ZWxfeBgIIAEoAhINCgV2ZWxfeRgJ",
-            "IAEoAhINCgV2ZWxfehgKIAEoAhIkChxyZW1haW5pbmdfbGlmZXRpbWVfcmRm",
-            "X2NvdW50GAsgASgFEh0KFXJlbWFpbmluZ19yZWN1cl9xdW90YRgMIAEoBRIS",
-            "CglwaWNrZXJfdWQYgAQgASgEIjYKEUluamVjdGVkQ21kQ29uZmlnEhUKDWN1",
-            "dG9mZl9yZGZfaWQYASABKAUSCgoCb3AYAiABKAQiXgoWQ2hhcmFjdGVyU3Bh",
-            "d25lckNvbmZpZxIVCg1jdXRvZmZfcmRmX2lkGAEgASgFEhcKD3NwZWNpZXNf",
-            "aWRfbGlzdBgCIAMoDRIUCgxpbml0X29wX2xpc3QYAyADKAQijQEKFVBpY2th",
-            "YmxlU3Bhd25lckNvbmZpZxIVCg1jdXRvZmZfcmRmX2lkGAEgASgFEhcKD3Nw",
-            "ZWNpZXNfaWRfbGlzdBgCIAMoDRIUCgxpbml0X29wX2xpc3QYAyADKAQSLgoQ",
-            "cGlja3VwX3R5cGVfbGlzdBgEIAMoDjIULmp0c2hhcmVkLlBpY2t1cFR5cGUi",
-            "HAoNVHJpZ2dlckNvbmZpZxILCgN0cnQYASABKA0ipwYKFlRyaWdnZXJDb25m",
-            "aWdGcm9tVGlsZWQSCgoCaWQYASABKA0SCwoDdHJ0GAIgASgNEhYKDmRlbGF5",
-            "ZWRfZnJhbWVzGAMgASgFEhcKD3JlY292ZXJ5X2ZyYW1lcxgEIAEoBRIWCg5i",
-            "dWxsZXRfdGVhbV9pZBgFIAEoBRIgChhzdWJfY3ljbGVfdHJpZ2dlcl9mcmFt",
-            "ZXMYBiABKAUSFwoPc3ViX2N5Y2xlX3F1b3RhGAcgASgFEhEKCXF1b3RhX2Nh",
-            "cBgIIAEoBRIVCg1uZXdfcmV2aXZhbF94GAsgASgCEhUKDW5ld19yZXZpdmFs",
-            "X3kYDCABKAISDwoHaW5pdF9xeBgNIAEoAhIPCgdpbml0X3F5GA4gASgCEg8K",
-            "B2luaXRfcXoYDyABKAISDwoHaW5pdF9xdxgQIAEoAhIqCiJwdWJsaXNoaW5n",
-            "X2V2dF9tYXNrX3Vwb25fZXhoYXVzdGVkGBEgASgEEi8KJ3B1Ymxpc2hpbmdf",
-            "dG9fdHJpZ2dlcl9pZF91cG9uX2V4aGF1c3RlZBgSIAEoDRIcChRmb3JjZV9j",
-            "dHJsX3JkZl9jb3VudBgTIAEoBRIWCg5mb3JjZV9jdHJsX2NtZBgUIAEoBBIX",
-            "Cg5zdG9yeV9wb2ludF9pZBiABCABKAUSDwoGYmdtX2lkGIEEIAEoBRIaChFp",
-            "c19ib3NzX3NhdmVwb2ludBiCBCABKAgSTwoQYm9zc19zcGVjaWVzX3NldBiD",
-            "BCADKAsyNC5qdHNoYXJlZC5UcmlnZ2VyQ29uZmlnRnJvbVRpbGVkLkJvc3NT",
-            "cGVjaWVzU2V0RW50cnkSRQoaY2hhcmFjdGVyX3NwYXduZXJfdGltZV9zZXEY",
-            "gAggAygLMiAuanRzaGFyZWQuQ2hhcmFjdGVyU3Bhd25lckNvbmZpZxJDChlw",
-            "aWNrYWJsZV9zcGF3bmVyX3RpbWVfc2VxGIEIIAMoCzIfLmp0c2hhcmVkLlBp",
-            "Y2thYmxlU3Bhd25lckNvbmZpZxo1ChNCb3NzU3BlY2llc1NldEVudHJ5EgsK",
-            "A2tleRgBIAEoDRINCgV2YWx1ZRgCIAEoCDoCOAEi7QMKB1RyaWdnZXISCgoC",
-            "aWQYASABKA0SFgoOZnJhbWVzX3RvX2ZpcmUYAyABKAUSGQoRZnJhbWVzX3Rv",
-            "X3JlY292ZXIYBCABKAUSDQoFcXVvdGEYBSABKAUSFgoOYnVsbGV0X3RlYW1f",
-            "aWQYBiABKAUSFwoPc3ViX2N5Y2xlX3F1b3RhGAkgASgFEiUKBXN0YXRlGAog",
-            "ASgOMhYuanRzaGFyZWQuVHJpZ2dlclN0YXRlEhcKD2ZyYW1lc19pbl9zdGF0",
-            "ZRgLIAEoBRIJCgF4GAwgASgCEgkKAXkYDSABKAISCQoBehgOIAEoAhIZChFk",
-            "ZW1hbmRlZF9ldnRfbWFzaxgPIAEoBBIaChJmdWxmaWxsZWRfZXZ0X21hc2sY",
-            "ECABKAQSKwojd2F2ZV9ucGNfZXhoYXVzdGVkX2V2dF9tYXNrX2NvdW50ZXIY",
-            "ESABKAQSKgoicHVibGlzaGluZ19ldnRfbWFza191cG9uX2V4aGF1c3RlZBgS",
-            "IAEoBBIvCidwdWJsaXNoaW5nX3RvX3RyaWdnZXJfaWRfdXBvbl9leGhhdXN0",
-            "ZWQYEyABKA0SEwoLb2ZmZW5kZXJfdWQYFCABKAQSHwoXb2ZmZW5kZXJfYnVs",
-            "bGV0X3RlYW1faWQYFSABKAUSCwoDdHJ0GBYgASgNInQKDlBsYXllck1ldGFJ",
-            "bmZvEhEKCXBsYXllcl9pZBgBIAEoCRISCgpqb2luX2luZGV4GAIgASgNEhYK",
-            "DmJ1bGxldF90ZWFtX2lkGAMgASgFEhIKCnNwZWNpZXNfaWQYBCABKA0SDwoH",
-            "cm9vbV9pZBgFIAEoBSJzChFScGNFbmRwb2ludEhvbGRlchIKCgJpZBgBIAEo",
-            "DRIaChJleHRlcm5hbF9hZGRyX2hvc3QYAiABKAkSGgoSZXh0ZXJuYWxfYWRk",
-            "cl9wb3J0GAMgASgNEhoKEmludGVybmFsX2FkZHJfaG9zdBgEIAEoCSKrAQoP",
-            "Q2hTcGVjaWVzQ29uc3RzEhEKCWJsYWRlZ2lybBgBIAEoDRIUCgxib3VudHlo",
-            "dW50ZXIYAiABKA0SEwoLYmxhY2tzYWJlcjEYAyABKA0SEAoHbm9uZV9jaBiA",
-            "ECABKA0SIgoZYmxhY2tzYWJlcl90ZXN0X25vX3Zpc2lvbhiBECABKA0SJAob",
-            "YmxhY2tzYWJlcl90ZXN0X3dpdGhfdmlzaW9uGIIQIAEoDSKlLwoPUHJpbWl0",
-            "aXZlQ29uc3RzEhsKE2JhdHRsZV9keW5hbWljc19mcHMYASABKAUSMgoqZGVm",
-            "YXVsdF90aW1lb3V0X2Zvcl9sYXN0X2FsbF9jb25maXJtZWRfaWZkGAIgASgF",
-            "EhQKDHJvb21faWRfbm9uZRgDIAEoBRIdChVyb29tX3N0YXRlX2ltcG9zc2li",
-            "bGUYBCABKAUSFwoPcm9vbV9zdGF0ZV9pZGxlGAUgASgFEhoKEnJvb21fc3Rh",
-            "dGVfd2FpdGluZxgGIAEoBRIaChJyb29tX3N0YXRlX3ByZXBhcmUYByABKAUS",
-            "HAoUcm9vbV9zdGF0ZV9pbl9iYXR0bGUYCCABKAUSIAoYcm9vbV9zdGF0ZV9p",
-            "bl9zZXR0bGVtZW50GAkgASgFEhoKEnJvb21fc3RhdGVfc3RvcHBlZBgKIAEo",
-            "BRIwCihyb29tX3N0YXRlX2Zyb250ZW5kX2F3YWl0aW5nX2F1dG9fcmVqb2lu",
-            "GAsgASgFEjIKKnJvb21fc3RhdGVfZnJvbnRlbmRfYXdhaXRpbmdfbWFudWFs",
-            "X3Jlam9pbhgMIAEoBRIlCh1yb29tX3N0YXRlX2Zyb250ZW5kX3Jlam9pbmlu",
-            "ZxgNIAEoBRImCh5wbGF5ZXJfYmF0dGxlX3N0YXRlX2ltcG9zc2libGUYDiAB",
-            "KAUSPQo1cGxheWVyX2JhdHRsZV9zdGF0ZV9hZGRlZF9wZW5kaW5nX2JhdHRs",
-            "ZV9jb2xsaWRlcl9hY2sYDyABKAUSOAowcGxheWVyX2JhdHRsZV9zdGF0ZV9y",
-            "ZWFkZGVkX3BlbmRpbmdfZm9yY2VfcmVzeW5jGBAgASgFEiIKGnBsYXllcl9i",
-            "YXR0bGVfc3RhdGVfYWN0aXZlGBEgASgFEigKIHBsYXllcl9iYXR0bGVfc3Rh",
-            "dGVfZGlzY29ubmVjdGVkGBIgASgFEiAKGHBsYXllcl9iYXR0bGVfc3RhdGVf",
-            "bG9zdBgTIAEoBRIwCihwbGF5ZXJfYmF0dGxlX3N0YXRlX2V4cGVsbGVkX2R1",
-            "cmluZ19nYW1lGBQgASgFEjEKKXBsYXllcl9iYXR0bGVfc3RhdGVfZXhwZWxs",
-            "ZWRfaW5fZGlzbWlzc2FsGBUgASgFEioKInVwc3luY19tc2dfYWN0X3BsYXll",
-            "cl9jb2xsaWRlcl9hY2sYFiABKAUSIQoZdXBzeW5jX21zZ19hY3RfcGxheWVy",
-            "X2NtZBgXIAEoBRIzCit1cHN5bmNfbXNnX2FjdF9ob2xlcHVuY2hfYmFja2Vu",
-            "ZF91ZHBfdHVubmVsGBggASgFEi4KJnVwc3luY19tc2dfYWN0X2hvbGVwdW5j",
-            "aF9wZWVyX3VkcF9hZGRyGBkgASgFEi0KJWRvd25zeW5jX21zZ19hY3RfYmF0",
-            "dGxlX2NvbGxpZGVyX2luZm8YGiABKAUSJAocZG93bnN5bmNfbXNnX2FjdF9p",
-            "bnB1dF9iYXRjaBgbIAEoBRInCh9kb3duc3luY19tc2dfYWN0X2JhdHRsZV9z",
-            "dG9wcGVkGBwgASgFEiYKHmRvd25zeW5jX21zZ19hY3RfZm9yY2VkX3Jlc3lu",
-            "YxgdIAEoBRIpCiFkb3duc3luY19tc2dfYWN0X3BlZXJfaW5wdXRfYmF0Y2gY",
-            "HiABKAUSJgoeZG93bnN5bmNfbXNnX2FjdF9wZWVyX3VkcF9hZGRyGB8gASgF",
-            "Ei4KJmRvd25zeW5jX21zZ19hY3RfYmF0dGxlX3JlYWR5X3RvX3N0YXJ0GCAg",
-            "ASgFEiUKHWRvd25zeW5jX21zZ19hY3RfYmF0dGxlX3N0YXJ0GCEgASgFEiwK",
-            "JGRvd25zeW5jX21zZ19hY3RfcGxheWVyX2Rpc2Nvbm5lY3RlZBgiIAEoBRIx",
-            "Cilkb3duc3luY19tc2dfYWN0X3BsYXllcl9yZWFkZGVkX2FuZF9hY2tlZBgj",
-            "IAEoBRIvCidkb3duc3luY19tc2dfYWN0X3BsYXllcl9hZGRlZF9hbmRfYWNr",
-            "ZWQYJCABKAUSHgoWZG93bnN5bmNfbXNnX3dzX2Nsb3NlZBglIAEoBRIcChRk",
-            "b3duc3luY19tc2dfd3Nfb3BlbhgmIAEoBRIgChhtYWdpY19qb2luX2luZGV4",
-            "X2ludmFsaWQYJyABKA0SJwofbWFnaWNfam9pbl9pbmRleF9zcnZfdWRwX3R1",
-            "bm5lbBgoIAEoDRIcChRtYWdpY19xdW90YV9pbmZpbml0ZRgpIAEoBRIlCh1u",
-            "cGNfZmxlZV9ncmFjZV9wZXJpb2RfcmRmX2NudBgqIAEoBRIzCittYWdpY19s",
-            "YXN0X3NlbnRfaW5wdXRfZnJhbWVfaWRfbm9ybWFsX2FkZGVkGCsgASgFEi4K",
-            "Jm1hZ2ljX2xhc3Rfc2VudF9pbnB1dF9mcmFtZV9pZF9yZWFkZGVkGCwgASgF",
-            "EhUKDWJnbV9ub19jaGFuZ2UYLSABKAUSIQoZaW52YWxpZF9kZWZhdWx0X3Bs",
-            "YXllcl9pZBguIAEoBRIhChllc3RpbWF0ZWRfc2Vjb25kc19wZXJfcmRmGC8g",
-            "ASgCEh8KF21heF9idG5faG9sZGluZ19yZGZfY250GDAgASgFEhoKEm1heF9m",
-            "bHlpbmdfcmRmX2NudBgxIAEoBRIuCiZtYXhfcmV2ZXJzZV9wdXNoYmFja19m",
-            "cmFtZXNfdG9fcmVjb3ZlchgyIAEoBRIjChtzcGVlZF9ub3RfaGl0X25vdF9z",
-            "cGVjaWZpZWQYNSABKAUSJQodZGVmYXVsdF9wcmVhbGxvY19ucGNfY2FwYWNp",
-            "dHkYNiABKAUSKAogZGVmYXVsdF9wcmVhbGxvY19idWxsZXRfY2FwYWNpdHkY",
-            "NyABKAUSJgoeZGVmYXVsdF9wcmVhbGxvY190cmFwX2NhcGFjaXR5GDggASgF",
-            "EikKIWRlZmF1bHRfcHJlYWxsb2NfdHJpZ2dlcl9jYXBhY2l0eRg5IAEoBRIq",
-            "CiJkZWZhdWx0X3ByZWFsbG9jX3BpY2thYmxlX2NhcGFjaXR5GDogASgFEisK",
-            "I2RlZmF1bHRfcGVyX2NoYXJhY3Rlcl9idWZmX2NhcGFjaXR5GDsgASgFEi0K",
-            "JWRlZmF1bHRfcGVyX2NoYXJhY3Rlcl9kZWJ1ZmZfY2FwYWNpdHkYPCABKAUS",
-            "MAooZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2ludmVudG9yeV9jYXBhY2l0eRg9",
-            "IAEoBRI7CjNkZWZhdWx0X3Blcl9jaGFyYWN0ZXJfaW1tdW5lX2J1bGxldF9y",
-            "ZWNvcmRfY2FwYWNpdHkYPiABKAUSEQoJZ3Jhdml0eV95GD8gASgCEh4KFmdy",
-            "YXZpdHlfeV9qdW1wX2hvbGRpbmcYQCABKAISKQohZGVmYXVsdF9wYXRyb2xf",
-            "Y3VlX3dhaXZpbmdfZnJhbWVzGEEgASgFEhgKEG5vX3BhdHJvbF9jdWVfaWQY",
-            "QiABKAUSEQoJbm9fdmZ4X2lkGEMgASgFEiwKJGRlZmF1bHRfcGlja2FibGVf",
-            "aHVydGJveF9oYWxmX3NpemVfeBhEIAEoAhIsCiRkZWZhdWx0X3BpY2thYmxl",
-            "X2h1cnRib3hfaGFsZl9zaXplX3kYRSABKAISMQopZGVmYXVsdF9waWNrYWJs",
-            "ZV9kaXNhcHBlYXJpbmdfYW5pbV9mcmFtZXMYRiABKAUSLQolZGVmYXVsdF9w",
-            "aWNrYWJsZV9jb25zdW1lZF9hbmltX2ZyYW1lcxhHIAEoBRIlCh1kZWZhdWx0",
-            "X3BpY2thYmxlX3Jpc2luZ192ZWxfeRhIIAEoAhIzCitkZWZhdWx0X3BpY2th",
-            "YmxlX25vbnBpY2thYmxlX3N0YXJ0dXBfZnJhbWVzGEkgASgFEiYKHmRlZmF1",
-            "bHRfZnJhbWVzX3RvX3Nob3dfZGFtYWdlZBhKIAEoBRIoCiBkZWZhdWx0X2Zy",
-            "YW1lc190b19jb250aW51ZV9jb21ibxhLIAEoBRIhChlkZWZhdWx0X2Jsb2Nr",
-            "X3N0dW5fZnJhbWVzGEwgASgFEikKIWRlZmF1bHRfYmxvd251cF9mcmFtZXNf",
-            "Zm9yX2ZseWluZxhNIAEoBRIgChhkZWZhdWx0X2dhdWdlX2luY19ieV9oaXQY",
-            "TiABKAUSMAooZGVmYXVsdF9mcmFtZXNfZGVsYXllZF9vZl9ib3NzX3NhdmVw",
-            "b2ludBhPIAEoBRIaChJpbnB1dF9zY2FsZV9mcmFtZXMYUCABKAUSEwoLaW5w",
-            "dXRfc2NhbGUYUSABKAUSGgoSaW5wdXRfZGVsYXlfZnJhbWVzGFIgASgFEikK",
-            "IWRlZmF1bHRfYmFja2VuZF9pbnB1dF9idWZmZXJfc2l6ZRhTIAEoBRIsCiRt",
-            "YXhfY2hhc2luZ19yZW5kZXJfZnJhbWVzX3Blcl91cGRhdGUYVCABKAUSIgoa",
-            "bWFnaWNfZnJhbWVzX3RvX2JlX29uX3dhbGwYVSABKAUSKwojbWFnaWNfZnJh",
-            "bWVzX3RvX2JlX29uX3dhbGxfYWlyX2p1bXAYViABKAUSHwoXZHlpbmdfZnJh",
-            "bWVzX3RvX3JlY292ZXIYVyABKAUSIQoZcGFycmllZF9mcmFtZXNfdG9fcmVj",
-            "b3ZlchhYIAEoBRIrCiNwYXJyaWVkX2ZyYW1lc190b19zdGFydF9jYW5jZWxs",
-            "YWJsZRhZIAEoBRIQCghub19za2lsbBhaIAEoDRIUCgxub19za2lsbF9oaXQY",
-            "WyABKAUSFwoPc3BlY2llc19ub25lX2NoGFwgASgNEiIKGnVwc3luY19zdF9p",
-            "ZmRfaWRfdG9sZXJhbmNlGF0gASgNEhMKC25vX2xvY2tfdmVsGF4gASgCEiIK",
-            "GmRlYnVmZl9hcnJheV9pZHhfZWxlbWVudGFsGF8gASgFEiMKG3Rlcm1pbmF0",
-            "aW5nX3JlbmRlcl9mcmFtZV9pZBhgIAEoBRIiChp0ZXJtaW5hdGluZ19pbnB1",
-            "dF9mcmFtZV9pZBhhIAEoBRIgChh0ZXJtaW5hdGluZ19jaGFyYWN0ZXJfaWQY",
-            "YiABKA0SGwoTdGVybWluYXRpbmdfdHJhcF9pZBhjIAEoDRIeChZ0ZXJtaW5h",
-            "dGluZ190cmlnZ2VyX2lkGGQgASgNEiQKHHRlcm1pbmF0aW5nX3RyaWdnZXJf",
-            "Z3JvdXBfaWQYZSABKA0SHwoXdGVybWluYXRpbmdfcGlja2FibGVfaWQYZiAB",
-            "KA0SHQoVdGVybWluYXRpbmdfYnVsbGV0X2lkGGcgASgNEiIKGnRlcm1pbmF0",
-            "aW5nX2J1bGxldF90ZWFtX2lkGGggASgFEiMKG3Rlcm1pbmF0aW5nX2J1ZmZf",
-            "c3BlY2llc19pZBhpIAEoDRIlCh10ZXJtaW5hdGluZ19kZWJ1ZmZfc3BlY2ll",
-            "c19pZBhqIAEoDRIpCiF0ZXJtaW5hdGluZ19jb25zdW1hYmxlX3NwZWNpZXNf",
-            "aWQYayABKA0SIwobZnJvbnRlbmRfd3NfcmVjdl9ieXRlbGVuZ3RoGGwgASgF",
-            "EiIKGmJhY2tlbmRfd3NfcmVjdl9ieXRlbGVuZ3RoGG0gASgFEiIKGmphbW1l",
-            "ZF9idG5faG9sZGluZ19yZGZfY250GG4gASgFEikKIWJ0bl9iX2hvbGRpbmdf",
-            "cmRmX2NudF90aHJlc2hvbGRfMhhvIAEoBRIpCiFidG5fYl9ob2xkaW5nX3Jk",
-            "Zl9jbnRfdGhyZXNob2xkXzEYcCABKAUSKAoganVtcF9ob2xkaW5nX3JkZl9j",
-            "bnRfdGhyZXNob2xkXzEYcSABKAUSKAoganVtcF9ob2xkaW5nX2lmZF9jbnRf",
-            "dGhyZXNob2xkXzEYciABKAUSKAoganVtcF9ob2xkaW5nX3JkZl9jbnRfdGhy",
-            "ZXNob2xkXzIYcyABKAUSKAoganVtcF9ob2xkaW5nX2lmZF9jbnRfdGhyZXNo",
-            "b2xkXzIYdCABKAUSKAogaW5fYWlyX2Rhc2hfZ3JhY2VfcGVyaW9kX3JkZl9j",
-            "bnQYdSABKAUSKAogaW5fYWlyX2p1bXBfZ3JhY2VfcGVyaW9kX3JkZl9jbnQY",
-            "diABKAUSKQohYnRuX2VfaG9sZGluZ19yZGZfY250X3RocmVzaG9sZF8xGHcg",
-            "ASgFEikKIWJ0bl9lX2hvbGRpbmdfaWZkX2NudF90aHJlc2hvbGRfMRh4IAEo",
-            "BRIfChdwYXR0ZXJuX2lkX3VuYWJsZV90b19vcBh5IAEoBRIYChBwYXR0ZXJu",
-            "X2lkX25vX29wGHogASgFEhEKCXBhdHRlcm5fYhh7IAEoBRIUCgxwYXR0ZXJu",
-            "X3VwX2IYfCABKAUSFgoOcGF0dGVybl9kb3duX2IYfSABKAUSFgoOcGF0dGVy",
-            "bl9ob2xkX2IYfiABKAUSFgoOcGF0dGVybl9kb3duX2EYfyABKAUSGwoScGF0",
-            "dGVybl9yZWxlYXNlZF9iGIABIAEoBRISCglwYXR0ZXJuX2UYgQEgASgFEhgK",
-            "D3BhdHRlcm5fZnJvbnRfZRiCASABKAUSFwoOcGF0dGVybl9iYWNrX2UYgwEg",
-            "ASgFEhUKDHBhdHRlcm5fdXBfZRiEASABKAUSFwoOcGF0dGVybl9kb3duX2UY",
-            "hQEgASgFEhcKDnBhdHRlcm5faG9sZF9lGIYBIAEoBRIZChBwYXR0ZXJuX2Vf",
-            "aG9sZF9iGIcBIAEoBRIfChZwYXR0ZXJuX2Zyb250X2VfaG9sZF9iGIgBIAEo",
-            "BRIeChVwYXR0ZXJuX2JhY2tfZV9ob2xkX2IYiQEgASgFEhwKE3BhdHRlcm5f",
-            "dXBfZV9ob2xkX2IYigEgASgFEh4KFXBhdHRlcm5fZG93bl9lX2hvbGRfYhiL",
-            "ASABKAUSHgoVcGF0dGVybl9ob2xkX2VfaG9sZF9iGIwBIAEoBRIhChhwYXR0",
-            "ZXJuX2ludmVudG9yeV9zbG90X2MYjQEgASgFEiEKGHBhdHRlcm5faW52ZW50",
-            "b3J5X3Nsb3RfZBiOASABKAUSIgoZcGF0dGVybl9pbnZlbnRvcnlfc2xvdF9i",
-            "YxiPASABKAUSJgodcGF0dGVybl9ob2xkX2ludmVudG9yeV9zbG90X2MYkAEg",
-            "ASgFEiYKHXBhdHRlcm5faG9sZF9pbnZlbnRvcnlfc2xvdF9kGJEBIAEoBRIR",
-            "CghlbGVfbm9uZRiSASABKA0SEQoIZWxlX2ZpcmUYkwEgASgNEhIKCWVsZV93",
-            "YXRlchiUASABKA0SFAoLZWxlX3RodW5kZXIYlQEgASgNEhEKCGVsZV9yb2Nr",
-            "GJYBIAEoDRIRCghlbGVfd2luZBiXASABKA0SEAoHZWxlX2ljZRiYASABKA0S",
-            "IwoaZWxlX3dlYWtuZXNzX2RlZmF1bHRfeWllbGQYmQEgASgCEiUKHGVsZV9y",
-            "ZXNpc3RhbmNlX2RlZmF1bHRfeWllbGQYmgEgASgCEiEKGHN0YXJ0aW5nX3Jl",
-            "bmRlcl9mcmFtZV9pZBibASABKAUSIAoXc3RhcnRpbmdfaW5wdXRfZnJhbWVf",
-            "aWQYnAEgASgFEhEKCHRydF9ub25lGJ0BIAEoDRIZChB0cnRfY3ljbGljX3Rp",
-            "bWVkGJ4BIAEoDRIYCg90cnRfYnlfbW92ZW1lbnQYnwEgASgNEhYKDXRydF9i",
-            "eV9hdHRhY2sYoAEgASgNEiIKGXRydF9pbmRpX3dhdmVfbnBjX3NwYXduZXIY",
-            "oQEgASgNEiIKGXRydF9zeW5jX3dhdmVfbnBjX3NwYXduZXIYogEgASgNEhwK",
-            "E3RydF9zYXZlX3BvaW50X29ubHkYowEgASgNEh0KFHRydF9zdG9yeV9wb2lu",
-            "dF9vbmx5GKQBIAEoDRIhChh0cnRfc2F2ZV9hbmRfc3RvcnlfcG9pbnQYpQEg",
-            "ASgNEhQKC3RydF92aWN0b3J5GKYBIAEoDRInCh50ZXJtaW5hdGluZ19sb3dl",
-            "cl9wYXJ0X3JkZl9jbnQYpwEgASgFEhEKCHRwdF9ub25lGKgBIAEoDRIdChR0",
-            "cHRfc2xpZGluZ19wbGF0Zm9ybRipASABKA0SHQoUc3BfYXRrX2xvb2t1cF9m",
-            "cmFtZXMYgAQgASgFEi4KCmNoX3NwZWNpZXMYgAggASgLMhkuanRzaGFyZWQu",
-            "Q2hTcGVjaWVzQ29uc3RzIn0KCUFpbWluZ1JheRITCgtvZmZlbmRlcl91ZBgB",
-            "IAEoBBIOCgZvcmlnX3gYAiABKAISDgoGb3JpZ195GAMgASgCEg4KBm9yaWdf",
-            "ehgEIAEoAhINCgVkaXJfeBgFIAEoAhINCgVkaXJfeRgGIAEoAhINCgVkaXJf",
-            "ehgHIAEoAiLqBgoMQ29uZmlnQ29uc3RzEkcKEWNoYXJhY3Rlcl9jb25maWdz",
-            "GAEgAygLMiwuanRzaGFyZWQuQ29uZmlnQ29uc3RzLkNoYXJhY3RlckNvbmZp",
-            "Z3NFbnRyeRI/Cg1za2lsbF9jb25maWdzGAIgAygLMiguanRzaGFyZWQuQ29u",
-            "ZmlnQ29uc3RzLlNraWxsQ29uZmlnc0VudHJ5Ej0KDGJ1ZmZfY29uZmlncxgD",
-            "IAMoCzInLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5CdWZmQ29uZmlnc0VudHJ5",
-            "EkEKDmRlYnVmZl9jb25maWdzGAQgAygLMikuanRzaGFyZWQuQ29uZmlnQ29u",
-            "c3RzLkRlYnVmZkNvbmZpZ3NFbnRyeRI9Cgx0cmFwX2NvbmZpZ3MYBSADKAsy",
-            "Jy5qdHNoYXJlZC5Db25maWdDb25zdHMuVHJhcENvbmZpZ3NFbnRyeRJDCg90",
-            "cmlnZ2VyX2NvbmZpZ3MYBiADKAsyKi5qdHNoYXJlZC5Db25maWdDb25zdHMu",
-            "VHJpZ2dlckNvbmZpZ3NFbnRyeRpSChVDaGFyYWN0ZXJDb25maWdzRW50cnkS",
-            "CwoDa2V5GAEgASgNEigKBXZhbHVlGAIgASgLMhkuanRzaGFyZWQuQ2hhcmFj",
-            "dGVyQ29uZmlnOgI4ARpEChFTa2lsbENvbmZpZ3NFbnRyeRILCgNrZXkYASAB",
-            "KA0SHgoFdmFsdWUYAiABKAsyDy5qdHNoYXJlZC5Ta2lsbDoCOAEaSAoQQnVm",
-            "ZkNvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SIwoFdmFsdWUYAiABKAsyFC5q",
-            "dHNoYXJlZC5CdWZmQ29uZmlnOgI4ARpMChJEZWJ1ZmZDb25maWdzRW50cnkS",
-            "CwoDa2V5GAEgASgNEiUKBXZhbHVlGAIgASgLMhYuanRzaGFyZWQuRGVidWZm",
-            "Q29uZmlnOgI4ARpIChBUcmFwQ29uZmlnc0VudHJ5EgsKA2tleRgBIAEoDRIj",
-            "CgV2YWx1ZRgCIAEoCzIULmp0c2hhcmVkLlRyYXBDb25maWc6AjgBGk4KE1Ry",
-            "aWdnZXJDb25maWdzRW50cnkSCwoDa2V5GAEgASgNEiYKBXZhbHVlGAIgASgL",
-            "MhcuanRzaGFyZWQuVHJpZ2dlckNvbmZpZzoCOAEqNAoUQm94SW50ZXJwb2xh",
-            "dGlvblR5cGUSCwoHVXNlUHJldhAAEg8KC0ludGVycG9sYXRlEAEqVQoISWZh",
-            "Y2VDYXQSCQoFRU1QVFkQABIJCgVGTEVTSBABEgkKBU1FVEFMEAISCQoFRkxV",
-            "SUQQAxIICgRST0NLEAQSCQoFR1JBU1MQBRIICgRXT09EEAYqRAoLQnVsbGV0",
-            "U3RhdGUSCwoHU3RhcnRVcBAAEgoKBkFjdGl2ZRABEg0KCUV4cGxvZGluZxAC",
-            "Eg0KCVZhbmlzaGluZxADKogICg5DaGFyYWN0ZXJTdGF0ZRISCg5JbnZhbGlk",
-            "Q2hTdGF0ZRAAEgkKBUlkbGUxEAESCwoHV2Fsa2luZxACEg4KClR1cm5Bcm91",
-            "bmQQAxIKCgZBdGtlZDEQBBIUChBJbkFpcklkbGUxTm9KdW1wEAUSFAoQSW5B",
-            "aXJJZGxlMUJ5SnVtcBAGEhQKEEluQWlySWRsZTJCeUp1bXAQBxIYChRJbkFp",
-            "cklkbGUxQnlXYWxsSnVtcBAIEg8KC0luQWlyQXRrZWQxEAkSDAoIQmxvd25V",
-            "cDEQChIMCghMYXlEb3duMRALEgoKBkdldFVwMRAMEgkKBUR5aW5nEA0SCwoH",
-            "RGFzaGluZxAOEgsKB1NsaWRpbmcQDxIKCgZEaW1tZWQQEBIUChBUcmFuc2Zv",
-            "cm1pbmdJbnRvEBESDwoLQmFja0Rhc2hpbmcQEhIQCgxJbkFpcldhbGtpbmcQ",
-            "ExIdChlUcmFuc2Zvcm1pbmdJbnRvRnJvbURlYXRoEBQSEAoMV2Fsa1N0b3Bw",
-            "aW5nEBUSFQoRSW5BaXJXYWxrU3RvcHBpbmcQFhILCgdQYXJyaWVkEBcSCwoH",
-            "QXdha2luZxAYEhAKDEdyb3VuZERvZGdlZBAZEg8KC0JhY2tXYWxraW5nEBoS",
-            "EAoMSW5BaXJEYXNoaW5nEBsSFAoQSW5BaXJCYWNrRGFzaGluZxAcEhMKD0lu",
-            "QWlyVHVybkFyb3VuZBAdEhAKC09uV2FsbElkbGUxEIABEhAKC0Nyb3VjaElk",
-            "bGUxEIACEg8KCkNyb3VjaEF0azEQgQISEgoNQ3JvdWNoV2Fsa2luZxCCAhIR",
-            "CgxDcm91Y2hBdGtlZDEQgwISCQoERGVmMRCEAhIPCgpEZWYxQXRrZWQxEIUC",
-            "Eg8KCkRlZjFCcm9rZW4QhgISCQoEQXRrMRCACBIJCgRBdGsyEIEIEgkKBEF0",
-            "azMQgggSCQoEQXRrNBCDCBIJCgRBdGs1EIQIEgkKBEF0azYQhQgSCQoEQXRr",
-            "NxCGCBISCg1BdGs3X0NoYXJnaW5nEIcIEhcKEkF0azdfQ2hhcmdlUmVsZWFz",
-            "ZRCICBIJCgRBdGs4EIkIEg4KCUluQWlyQXRrMRCAEBIOCglJbkFpckF0azIQ",
-            "gRASEAoLV2Fsa2luZ0F0azEQghASEAoLV2Fsa2luZ0F0azQQgxASDgoJSW5B",
-            "aXJBdGs2EIQQEg8KCk9uV2FsbEF0azEQgBgSEgoNQXRrMV9DaGFyZ2luZxCB",
-            "GBIZChRXYWxraW5nQXRrMV9DaGFyZ2luZxCCGBIXChJJbkFpckF0azFfQ2hh",
-            "cmdpbmcQgxgSGAoTT25XYWxsQXRrMV9DaGFyZ2luZxCEGBIYChNDcm91Y2hB",
-            "dGsxX0NoYXJnaW5nEIUYKuEBCgdOcGNHb2FsEgkKBU5JZGxlEAASDwoLTkZv",
-            "bGxvd0FsbHkQARILCgdOUGF0cm9sEAISEQoNTkh1bnRUaGVuSWRsZRADEhMK",
-            "D05IdW50VGhlblBhdHJvbBAEEhcKE05IdW50VGhlbkZvbGxvd0FsbHkQBRIe",
-            "ChpOSWRsZUlmR29IdW50aW5nVGhlblBhdHJvbBAGEg8KC05QYXRoUGF0cm9s",
-            "EAcSFwoTTkh1bnRUaGVuUGF0aFBhdHJvbBAIEiIKHk5JZGxlSWZHb0h1bnRp",
-            "bmdUaGVuUGF0aFBhdHJvbBAJKk4KCVRyYXBTdGF0ZRIJCgVUSWRsZRAAEgwK",
-            "CFRXYWxraW5nEAESCQoFVEF0azEQAhILCgdUQXRrZWQxEAMSEAoMVERlYWN0",
-            "aXZhdGVkEAQqLAoMVHJpZ2dlclN0YXRlEgoKBlRSZWFkeRAAEhAKDFRDb29s",
-            "aW5nRG93bhABKjwKDVBpY2thYmxlU3RhdGUSCQoFUElkbGUQABIRCg1QRGlz",
-            "YXBwZWFyaW5nEAESDQoJUENvbnN1bWVkEAIqZwoKQnVsbGV0VHlwZRIQCgxV",
-            "bmRldGVybWluZWQQABIJCgVNZWxlZRABEhcKE01lY2hhbmljYWxDYXJ0cmlk",
-            "Z2UQAhITCg9NYWdpY2FsRmlyZWJhbGwQAxIOCgpHcm91bmRXYXZlEAQq5gEK",
-            "DE11bHRpSGl0VHlwZRIICgROb25lEAASEAoMRnJvbUVtaXNzaW9uEAESFgoS",
-            "RnJvbUZpcnN0SGl0QWN0dWFsEAISFgoSRnJvbUZpcnN0SGl0QW55d2F5EAMS",
-            "FQoRRnJvbVByZXZIaXRBY3R1YWwQBBIVChFGcm9tUHJldkhpdEFueXdheRAF",
-            "EhsKF0Zyb21WaXNpb25TZWVrT3JEZWZhdWx0EAYSIwofRnJvbVByZXZIaXRB",
-            "Y3R1YWxPckFjdGl2ZVRpbWVVcBAHEhoKFkZyb21FbWlzc2lvbkp1c3RBY3Rp",
-            "dmUQCCoyCg9Ta2lsbEludm9jYXRpb24SDgoKUmlzaW5nRWRnZRAAEg8KC0Zh",
-            "bGxpbmdFZGdlEAEqLAoPVmZ4RHVyYXRpb25UeXBlEgoKBk9uZU9mZhAAEg0K",
-            "CVJlcGVhdGluZxABKjcKDVZmeE1vdGlvblR5cGUSDAoITm9Nb3Rpb24QABIL",
-            "CgdEcm9wcGVkEAESCwoHVHJhY2luZxACKoEBCglVcHN5bmNBY3QSCwoHVUFf",
-            "Tk9ORRAAEgoKBlVBX0NNRBABEhYKElVBX1NFTEZfUEFSU0VEX1JERhACEiMK",
-            "H1VBX0hPTEVQVU5DSF9CQUNLRU5EX1VEUF9UVU5ORUwQAxIeChpVQV9IT0xF",
-            "UFVOQ0hfUEVFUl9VRFBfQUREUhAEKv8DCgtEb3duc3luY0FjdBILCgdEQV9O",
-            "T05FEAASDgoKREFfUkVHVUxBUhABEhUKEURBX0JBVFRMRV9QUkVQQVJFEAIS",
-            "HAoYREFfQkFUVExFX1JFQURZX1RPX1NUQVJUEAMSFQoRREFfQkFUVExFX1NU",
-            "QVJURUQQBBIVChFEQV9CQVRUTEVfU1RPUFBFRBAFEhsKF0RBX0JBVFRMRV9Q",
-            "RUVSX1VEUF9BRERSEAYSHwobREFfQkFUVExFX1BFRVJfRElTQ09OTkVDVEVE",
-            "EAcSGQoVREFfQkFUVExFX1BFRVJfSk9JTkVEEAgSGwoXREFfQkFUVExFX1BF",
-            "RVJfUkVKT0lORUQQCRIpCiVEQV9GQUlMRURfVE9fSk9JTl9CQVRUTEVfTk9U",
-            "X0pPSU5BQkxFEAoSJQohREFfRkFJTEVEX1RPX0pPSU5fQUxSRUFEWV9JTl9S",
-            "T09NEAsSLQopREFfRkFJTEVEX1RPX1JFSk9JTl9CQVRUTEVfTk9UX1JFSk9J",
-            "TkFCTEUQDBIpCiVEQV9GQUlMRURfVE9fUkVKT0lOX05PVF9GT1VORF9JTl9S",
-            "T09NEA0SLAooREFfRkFJTEVEX1RPX1JFSk9JTl9QTEFZRVJfU1RBVEVfSU5W",
-            "QUxJRBAOEg4KCkRBX1dTX09QRU4QQBIQCgxEQV9XU19DTE9TRUQQQSoxCg1C",
-            "dWZmU3RvY2tUeXBlEgoKBk5vbmVCZhAAEgkKBVRpbWVkEAESCQoFUXVvdGEQ",
-            "AipxCgpEZWJ1ZmZUeXBlEgsKB05vbmVEYmYQABIRCg1TcGVlZERvd25Pbmx5",
-            "EAESEQoNQ29sZFNwZWVkRG93bhACEhYKElBvc2l0aW9uTG9ja2VkT25seRAD",
-            "EhgKFEZyb3plblBvc2l0aW9uTG9ja2VkEAQqNgoOQ29uc3VtYWJsZVR5cGUS",
-            "DAoITm9uZUNzbWIQABIKCgZSZWZpbGwQARIKCgZEYmZSY3YQAiqfAQoWSW52",
-            "ZW50b3J5U2xvdFN0b2NrVHlwZRIKCgZOb25lSXYQABILCgdEdW1teUl2EAES",
-            "DAoIUG9ja2V0SXYQAhILCgdUaW1lZEl2EAMSCwoHUXVvdGFJdhAEEhMKD1Rp",
-            "bWVkTWFnYXppbmVJdhAFEhQKEEdhdWdlZE1hZ2F6aW5lSXYQBhIZChVHYXVn",
-            "ZWRUaW1lZE1hZ2F6aW5lSXYQByo8ChlQbGF5ZXJTdG9yeU1vZGVTZWxlY3RW",
-            "aWV3EggKBE5PTkUQABIKCgZSRUdJT04QARIJCgVMRVZFTBACKjUKEEZpbmlz",
-            "aGVkTHZPcHRpb24SDQoJQk9TU19PTkxZEAASEgoOU1RPUllfQU5EX0JPU1MQ",
-            "ASrNAQoKUGlja3VwVHlwZRIKCgZQa05vbmUQABIUChBIcFNtYWxsSW1tZWRp",
-            "YXRlEAESFQoRSHBNZWRpdW1JbW1lZGlhdGUQAhISCg5IcEJpZ0ltbWVkaWF0",
-            "ZRADEhQKEE1wU21hbGxJbW1lZGlhdGUQBBIVChFNcE1lZGl1bUltbWVkaWF0",
-            "ZRAFEhIKDk1wQmlnSW1tZWRpYXRlEAYSGAoTU2tpbGwxSW50b0ludmVudG9y",
-            "eRCABBIXChJCdWZmMUludG9JbnZlbnRvcnkQgAhCC6oCCGp0c2hhcmVkYgZw",
-            "cm90bzM="));
+            "ZWxfeBgIIAEoAhINCgV2ZWxfeRgJIAEoAhINCgV2ZWxfehgKIAEoAhIUCgxn",
+            "cm91bmRfdmVsX3gYCyABKAISFAoMZ3JvdW5kX3ZlbF95GAwgASgCEhQKDGdy",
+            "b3VuZF92ZWxfehgNIAEoAhISCgphaW1pbmdfcV94GA4gASgCEhIKCmFpbWlu",
+            "Z19xX3kYDyABKAISEgoKYWltaW5nX3FfehgQIAEoAhISCgphaW1pbmdfcV93",
+            "GBEgASgCEhYKDmp1bXBfdHJpZ2dlcmVkGBQgASgIEhQKDG9taXRfZ3Jhdml0",
+            "eRgVIAEoCBISCgpzcGVjaWVzX2lkGBYgASgNEhgKEGZvcmNlZF9jcm91Y2hp",
+            "bmcYFyABKAgSGwoTc2xpcF9qdW1wX3RyaWdnZXJlZBgYIAEoCBIsCiRwcmlt",
+            "YXJpbHlfb25fc2xpcHBhYmxlX2hhcmRfcHVzaGJhY2sYGSABKAgSGQoRZnJh",
+            "bWVzX3RvX3JlY292ZXIYGiABKAUSHwoXbmV3X2JpcnRoX3JkZl9jb3VudGRv",
+            "d24YGyABKAUSGQoRZnJhbWVzX2ludmluc2libGUYHCABKAUSFAoManVtcF9z",
+            "dGFydGVkGB0gASgIEhwKFGZyYW1lc190b19zdGFydF9qdW1wGB4gASgFEhYK",
+            "DmJ1bGxldF90ZWFtX2lkGB8gASgFEiAKGHJlbWFpbmluZ19haXJfanVtcF9x",
+            "dW90YRggIAEoDRIgChhyZW1haW5pbmdfYWlyX2Rhc2hfcXVvdGEYISABKA0S",
+            "IgoaZGFtYWdlZF9oaW50X3JkZl9jb3VudGRvd24YIiABKAUSHwoXZGFtYWdl",
+            "ZF9lbGVtZW50YWxfYXR0cnMYIyABKA0SHAoUcmVtYWluaW5nX2RlZjFfcXVv",
+            "dGEYJCABKA0SFQoNY29tYm9faGl0X2NudBglIAEoDRIdChVjb21ib19mcmFt",
+            "ZXNfcmVtYWluZWQYJiABKAUSGgoSbGFzdF9kYW1hZ2VkX2J5X3VkGCcgASgE",
+            "EiYKHmxhc3RfZGFtYWdlZF9ieV9idWxsZXRfdGVhbV9pZBgoIAEoBRIXCg9h",
+            "Y3RpdmVfc2tpbGxfaWQYKSABKA0SGAoQYWN0aXZlX3NraWxsX2hpdBgqIAEo",
+            "BRIdChVidG5fYV9ob2xkaW5nX3JkZl9jbnQYKyABKAUSHQoVYnRuX2JfaG9s",
+            "ZGluZ19yZGZfY250GCwgASgFEh0KFWJ0bl9jX2hvbGRpbmdfcmRmX2NudBgt",
+            "IAEoBRIdChVidG5fZF9ob2xkaW5nX3JkZl9jbnQYLiABKAUSHQoVYnRuX2Vf",
+            "aG9sZGluZ19yZGZfY250GC8gASgFEh8KF3BhcnJ5X3ByZXBfcmRmX2NudF9k",
+            "b3duGDAgASgFEh4KFm1wX3JlZ2VuX3JkZl9jb3VudGRvd24YMSABKAUSHAoU",
+            "Zmx5aW5nX3JkZl9jb3VudGRvd24YMiABKAUSFQoNbG9ja2luZ19vbl91ZBgz",
+            "IAEoBBIcChRjaF9jb2xsaXNpb25fdGVhbV9pZBg0IAEoBRINCgVzcGVlZBg1",
+            "IAEoAhIKCgJocBg2IAEoBRIKCgJtcBg3IAEoBRIqCghjaF9zdGF0ZRg4IAEo",
+            "DjIYLmp0c2hhcmVkLkNoYXJhY3RlclN0YXRlEhoKEmZyYW1lc19pbl9jaF9z",
+            "dGF0ZRg5IAEoBRIaChJsb3dlcl9wYXJ0X3JkZl9jbnQYOiABKAUSIQoJYnVm",
+            "Zl9saXN0GDsgAygLMg4uanRzaGFyZWQuQnVmZhIlCgtkZWJ1ZmZfbGlzdBg8",
+            "IAMoCzIQLmp0c2hhcmVkLkRlYnVmZhIuCg1hdGsxX21hZ2F6aW5lGD0gASgL",
+            "MhcuanRzaGFyZWQuSW52ZW50b3J5U2xvdBIwCg9zdXBlcl9hdGtfZ2F1Z2UY",
+            "PiABKAsyFy5qdHNoYXJlZC5JbnZlbnRvcnlTbG90EiYKCWludmVudG9yeRg/",
+            "IAEoCzITLmp0c2hhcmVkLkludmVudG9yeRI7ChVidWxsZXRfaW1tdW5lX3Jl",
+            "Y29yZHMYQCADKAsyHC5qdHNoYXJlZC5CdWxsZXRJbW11bmVSZWNvcmQSFwoP",
+            "a2luZW1hdGljX2tub2JzGEEgAygCIvUCChdQbGF5ZXJDaGFyYWN0ZXJEb3du",
+            "c3luYxIoCgNjaGQYASABKAsyGy5qdHNoYXJlZC5DaGFyYWN0ZXJEb3duc3lu",
+            "YxISCgpqb2luX2luZGV4GAIgASgNEhEKCWJlYXRzX2NudBgDIAEoDRISCgpi",
+            "ZWF0ZW5fY250GAQgASgNEhEKCXJldml2YWxfeBgFIAEoAhIRCglyZXZpdmFs",
+            "X3kYBiABKAISEQoJcmV2aXZhbF96GAcgASgCEhMKC3Jldml2YWxfcV94GAgg",
+            "ASgFEhMKC3Jldml2YWxfcV95GAkgASgFEhMKC3Jldml2YWxfcV96GAogASgF",
+            "EhMKC3Jldml2YWxfcV93GAsgASgFEigKIG5vdF9lbm91Z2hfbXBfaGludF9y",
+            "ZGZfY291bnRkb3duGAwgASgFEhYKDmNhY2hlZF9jdWVfY21kGA0gASgEEiYK",
+            "C2dvYWxfYXNfbnBjGA4gASgOMhEuanRzaGFyZWQuTnBjR29hbCLQBAoUTnBj",
+            "Q2hhcmFjdGVyRG93bnN5bmMSKAoDY2hkGAEgASgLMhsuanRzaGFyZWQuQ2hh",
+            "cmFjdGVyRG93bnN5bmMSCgoCaWQYAiABKA0SGAoQYWN0aXZhdGVkX3JkZl9p",
+            "ZBgDIAEoBRIWCg5jYWNoZWRfY3VlX2NtZBgEIAEoBBIdChV3YWl2aW5nX3Bh",
+            "dHJvbF9jdWVfaWQYBSABKAUSJgoLZ29hbF9hc19ucGMYBiABKA4yES5qdHNo",
+            "YXJlZC5OcGNHb2FsEioKInB1Ymxpc2hpbmdfZXZ0X21hc2tfdXBvbl9leGhh",
+            "dXN0ZWQYByABKAQSLwoncHVibGlzaGluZ190b190cmlnZ2VyX2lkX3Vwb25f",
+            "ZXhoYXVzdGVkGAggASgNEiAKGHN1YnNjcmliZXNfdG9fdHJpZ2dlcl9pZBgJ",
+            "IAEoDRImCh5zdWJzY3JpYmVzX3RvX3RyaWdnZXJfZ3JvdXBfaWQYCiABKA0S",
+            "HgoWY2FwdHVyZWRfYnlfcGF0cm9sX2N1ZRgLIAEoCBIcChRmcmFtZXNfaW5f",
+            "cGF0cm9sX2N1ZRgMIAEoBRIvCidleGhhdXN0ZWRfdG9fZHJvcF9jb25zdW1h",
+            "YmxlX3NwZWNpZXNfaWQYDSABKA0SKQohZXhoYXVzdGVkX3RvX2Ryb3BfYnVm",
+            "Zl9zcGVjaWVzX2lkGA4gASgNEikKIWV4aGF1c3RlZF90b19kcm9wX3BpY2t1",
+            "cF9za2lsbF9pZBgPIAEoDRIdChVpc19tYWluX3Rvd2VyX29mX3RlYW0YECAB",
+            "KAgilAEKEUlucHV0RnJhbWVEZWNvZGVkEgoKAmR4GAEgASgFEgoKAmR5GAIg",
+            "ASgFEhMKC2J0bl9hX2xldmVsGAMgASgEEhMKC2J0bl9iX2xldmVsGAQgASgE",
+            "EhMKC2J0bl9jX2xldmVsGAUgASgEEhMKC2J0bl9kX2xldmVsGAYgASgEEhMK",
+            "C2J0bl9lX2xldmVsGAcgASgEIjUKDlVwc3luY1NuYXBzaG90EhEKCXN0X2lm",
+            "ZF9pZBgBIAEoBRIQCghjbWRfbGlzdBgCIAMoBCLmBAoFV3NSZXESDgoGc2Vx",
+            "X25vGAEgASgNEhIKCmpvaW5faW5kZXgYAiABKA0SIAoDYWN0GAMgASgOMhMu",
+            "anRzaGFyZWQuVXBzeW5jQWN0EhAKCGF1dGhfa2V5GAQgASgFEjEKD3Vwc3lu",
+            "Y19zbmFwc2hvdBgFIAEoCzIYLmp0c2hhcmVkLlVwc3luY1NuYXBzaG90Ei4K",
+            "D3NlbGZfcGFyc2VkX3JkZhgGIAEoCzIVLmp0c2hhcmVkLlJlbmRlckZyYW1l",
+            "Eh8KF2JhdHRsZV9kdXJhdGlvbl9zZWNvbmRzGAcgASgFEkAKE3NlcmlhbGl6",
+            "ZWRfYmFycmllcnMYCCADKAsyIy5qdHNoYXJlZC5TZXJpYWxpemVkQmFycmll",
+            "ckNvbGxpZGVyElQKHHByZWFsbG9jYXRlX25wY19zcGVjaWVzX2RpY3QYCyAD",
+            "KAsyLi5qdHNoYXJlZC5Xc1JlcS5QcmVhbGxvY2F0ZU5wY1NwZWNpZXNEaWN0",
+            "RW50cnkSQQoadHJhcF9jb25maWdfZnJvbV90aWxlX2xpc3QYDCADKAsyHS5q",
+            "dHNoYXJlZC5UcmFwQ29uZmlnRnJvbVRpbGVkEkcKHXRyaWdnZXJfY29uZmln",
+            "X2Zyb21fdGlsZV9saXN0GA0gAygLMiAuanRzaGFyZWQuVHJpZ2dlckNvbmZp",
+            "Z0Zyb21UaWxlZBIbChNmYWxsZW5fZGVhdGhfaGVpZ2h0GA4gASgCGkAKHlBy",
+            "ZWFsbG9jYXRlTnBjU3BlY2llc0RpY3RFbnRyeRILCgNrZXkYASABKA0SDQoF",
+            "dmFsdWUYAiABKA06AjgBIuEBCglQYXRyb2xDdWUSCgoCaWQYASABKAUSDgoG",
+            "ZmxfYWN0GAIgASgEEg4KBmZyX2FjdBgDIAEoBBIZChFmbF9jYXB0dXJlX2Zy",
+            "YW1lcxgEIAEoBRIZChFmcl9jYXB0dXJlX2ZyYW1lcxgFIAEoBRIOCgZmZF9h",
+            "Y3QYBiABKAQSDgoGZnVfYWN0GAcgASgEEhkKEWZkX2NhcHR1cmVfZnJhbWVz",
+            "GAggASgFEhkKEWZ1X2NhcHR1cmVfZnJhbWVzGAkgASgFEhwKE2NvbGxpc2lv",
+            "bl90eXBlX21hc2sYhQggASgEItcWCgxCdWxsZXRDb25maWcSFgoOc3RhcnR1",
+            "cF9mcmFtZXMYASABKAUSIQoZc3RhcnR1cF9pbnZpbnNpYmxlX2ZyYW1lcxgC",
+            "IAEoBRIcChRjYW5jZWxsYWJsZV9zdF9mcmFtZRgDIAEoBRIcChRjYW5jZWxs",
+            "YWJsZV9lZF9mcmFtZRgEIAEoBRIVCg1hY3RpdmVfZnJhbWVzGAUgASgFEhcK",
+            "D2Nvb2xkb3duX2ZyYW1lcxgGIAEoBRIXCg9oaXRfc3R1bl9mcmFtZXMYByAB",
+            "KAUSGQoRYmxvY2tfc3R1bl9mcmFtZXMYCCABKAUSFgoOcHVzaGJhY2tfdmVs",
+            "X3gYCSABKAISFgoOcHVzaGJhY2tfdmVsX3kYCiABKAISDgoGZGFtYWdlGAsg",
+            "ASgFEhcKD3NlbGZfbG9ja192ZWxfeBgMIAEoAhIXCg9zZWxmX2xvY2tfdmVs",
+            "X3kYDSABKAISIwobc2VsZl9sb2NrX3ZlbF95X3doZW5fZmx5aW5nGA4gASgC",
+            "EhcKD2hpdGJveF9vZmZzZXRfeBgPIAEoAhIXCg9oaXRib3hfb2Zmc2V0X3kY",
+            "ECABKAISGgoSaGl0Ym94X2hhbGZfc2l6ZV94GBEgASgCEhoKEmhpdGJveF9o",
+            "YWxmX3NpemVfeRgSIAEoAhIRCglhbmltX25hbWUYFCABKAkSJgoeYWN0aXZl",
+            "X2FuaW1fbG9vcGluZ19yZGZfb2Zmc2V0GBUgASgFEh4KFnZhbmlzaGluZ19h",
+            "bmltX3JkZl9jbnQYFyABKAUSKQohdmFuaXNoaW5nX2FuaW1fbG9vcGluZ19y",
+            "ZGZfb2Zmc2V0GBggASgFEhgKEGhpdF9hbmltX3JkZl9jbnQYGiABKAUSJAoG",
+            "Yl90eXBlGBsgASgOMhQuanRzaGFyZWQuQnVsbGV0VHlwZRInCgdtaF90eXBl",
+            "GBwgASgOMhYuanRzaGFyZWQuTXVsdGlIaXRUeXBlEiIKGnNpbXVsdGFuZW91",
+            "c19tdWx0aV9oaXRfY250GB0gASgNEg0KBXNwZWVkGB4gASgCEhgKEHNwZWVk",
+            "X2lmX25vdF9oaXQYHyABKAISEAoIaGFyZG5lc3MYICABKAUSHQoVaGl0X2lu",
+            "dmluc2libGVfZnJhbWVzGCMgASgFEhQKDHBlcnBfYWNjX21hZxglIAEoBRIg",
+            "ChhkZWxheV9zZWxmX3ZlbF90b19hY3RpdmUYJiABKAgSGgoSb21pdF9zb2Z0",
+            "X3B1c2hiYWNrGCggASgIEhgKEHJlbWFpbnNfdXBvbl9oaXQYKSABKAgSHgoW",
+            "cm90YXRlc19hbG9uZ192ZWxvY2l0eRgqIAEoCBIqCiJkZWZhdWx0X2hhcmRf",
+            "cHVzaGJhY2tfYm91bmNlX3F1b3RhGCsgASgFEigKIGhhcmRfcHVzaGJhY2tf",
+            "Ym91bmNlX25vcm1fZmFjdG9yGCwgASgCEikKIWhhcmRfcHVzaGJhY2tfYm91",
+            "bmNlX3NoZWVyX2ZhY3RvchgtIAEoAhIPCgdibG93X3VwGC4gASgIEhQKDHJl",
+            "cGVhdF9xdW90YRgvIAEoBRIeChZtaF92YW5pc2hfb25fbWVsZWVfaGl0GDAg",
+            "ASgIEh0KFW1oX3VwZGF0ZXNfb3JpZ2luX3BvcxgyIAEoCBIWCg5iZWFtX2Nv",
+            "bGxpc2lvbhgzIAEoCBIQCghmb3JfYWxseRg0IAEoCBIZChFoaXRib3hfc2l6",
+            "ZV9pbmNfeBg1IAEoAhIZChFoaXRib3hfc2l6ZV9pbmNfeRg2IAEoAhIWCg5h",
+            "bGxvd3Nfd2Fsa2luZxg3IAEoCBIYChBhbGxvd3NfY3JvdWNoaW5nGDggASgI",
+            "EhcKD2VsZW1lbnRhbF9hdHRycxg7IAEoDRJBCg5jYW5jZWxfdHJhbnNpdBg+",
+            "IAMoCzIpLmp0c2hhcmVkLkJ1bGxldENvbmZpZy5DYW5jZWxUcmFuc2l0RW50",
+            "cnkSGgoSYmVhbV92aXN1YWxfc2l6ZV95GEAgASgCEiAKGHRvdWNoX2hpdF9i",
+            "b21iX2NvbGxpc2lvbhhBIAEoCBIeChZhaXJfcmlkaW5nX2dyb3VuZF93YXZl",
+            "GEIgASgIEiUKHWdyb3VuZF9pbXBhY3RfbWVsZWVfY29sbGlzaW9uGEMgASgI",
+            "EiMKG3dhbGxfaW1wYWN0X21lbGVlX2NvbGxpc2lvbhhEIAEoCBIYChBtaF9p",
+            "bmhlcml0c19zcGluGEUgASgIEiAKBmluaXRfcRhGIAEoCzIQLmp0c2hhcmVk",
+            "LlBiUXVhdBIfCgNpZmMYSyABKA4yEi5qdHNoYXJlZC5JZmFjZUNhdBIoCiBy",
+            "ZWZsZWN0X2ZpcmViYWxsX3hfaWZfbm90X2hhcmRlchhMIAEoCBItCiVyZWpl",
+            "Y3RfcmVmbGVjdGlvbl9mcm9tX2Fub3RoZXJfYnVsbGV0GE0gASgIEh8KF3By",
+            "b3ZpZGVzX3hIYXJkX3B1c2hiYWNrGE4gASgIEiMKG3Byb3ZpZGVzX3lIYXJk",
+            "X3B1c2hiYWNrX3RvcBhPIAEoCBImCh5wcm92aWRlc195SGFyZF9wdXNoYmFj",
+            "a19ib3R0b20YUCABKAgSIQoZaWdub3JlX3Nsb3BlX2RlY2VsZXJhdGlvbhhR",
+            "IAEoCBIhChlyb3RhdGVfb2ZmZW5kZXJfd2l0aF9zcGluGFIgASgIEiAKGG1o",
+            "X25vdF90cmlnZ2VyX29uX2NoX2hpdBhTIAEoCBIrCiNtaF9ub3RfdHJpZ2dl",
+            "cl9vbl9oYXJkZXJfYnVsbGV0X2hpdBhUIAEoCBIrCiNtaF9ub3RfdHJpZ2dl",
+            "cl9vbl9oYXJkX3B1c2hiYWNrX2hpdBhVIAEoCBIWCg5ob3BwZXJfbWlzc2ls",
+            "ZRhWIAEoCBIWCg5iZWFtX3JlbmRlcmluZxhXIAEoCBIqCiJtaXNzaWxlX3Nl",
+            "YXJjaF9pbnRlcnZhbF9wb3cyTWludXMxGFggASgNEi8KJ3VzZV9jaF9vZmZz",
+            "ZXRfcmVnYXJkbGVzc19vZl9lbWlzc2lvbl9taBhZIAEoCBIhChlnYXVnZV9p",
+            "bmNfcmVkdWN0aW9uX3JhdGlvGF0gASgCEiYKHm1oX2luaGVyaXRzX2ZyYW1l",
+            "c19pbl9ibF9zdGF0ZRheIAEoCBIjChtndWFyZF9icmVha2VyX2V4dHJhX2hp",
+            "dF9jbnQYXyABKA0SIwobdGFrZXNfZGVmMV9hc19oYXJkX3B1c2hiYWNrGGAg",
+            "ASgIEhgKEGZpbmlzaGluZ19mcmFtZXMYYSABKAUSJwofbm9fdmFuaXNoX2Fu",
+            "aW1fb25faGFyZF9wdXNoYmFjaxhiIAEoCBIcChRoaXRfb25fbXVsdGlfY29u",
+            "dGFjdBhjIAEoCBIcChNjb2xsaXNpb25fdHlwZV9tYXNrGIUIIAEoBBIWCg10",
+            "YWtlc19ncmF2aXR5GIYIIAEoCBIqCgtidWZmX2NvbmZpZxiHCCABKAsyFC5q",
+            "dHNoYXJlZC5CdWZmQ29uZmlnEiAKF2NoYXJhY3Rlcl9lbWl0X3NmeF9uYW1l",
+            "GIAQIAEoCRIfChZmaXJlYmFsbF9lbWl0X3NmeF9uYW1lGIEQIAEoCRIVCgxo",
+            "aXRfc2Z4X25hbWUYghAgASgJEhgKD2FjdGl2ZV9zZnhfbmFtZRiDECABKAkS",
+            "HgoVaGl0X29uX2ZsZXNoX3NmeF9uYW1lGIQQIAEoCRIdChRoaXRfb25fcm9j",
+            "a19zZnhfbmFtZRiFECABKAkSHgoVaGl0X29uX21ldGFsX3NmeF9uYW1lGIYQ",
+            "IAEoCRIdChRoaXRfb25fd29vZF9zZnhfbmFtZRiHECABKAkaNAoSQ2FuY2Vs",
+            "VHJhbnNpdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoDToCOAEi",
+            "jgUKBkJ1bGxldBInCghibF9zdGF0ZRgBIAEoDjIVLmp0c2hhcmVkLkJ1bGxl",
+            "dFN0YXRlEhoKEmZyYW1lc19pbl9ibF9zdGF0ZRgCIAEoBRIKCgJ1ZBgDIAEo",
+            "BBIiChpvcmlnaW5hdGVkX3JlbmRlcl9mcmFtZV9pZBgEIAEoBRITCgtvZmZl",
+            "bmRlcl91ZBgFIAEoBBIJCgF4GAYgASgCEgkKAXkYByABKAISCQoBehgIIAEo",
+            "AhILCgNxX3gYCSABKAISCwoDcV95GAogASgCEgsKA3FfehgLIAEoAhILCgNx",
+            "X3cYDCABKAISDQoFdmVsX3gYDSABKAISDQoFdmVsX3kYDiABKAISDQoFdmVs",
+            "X3oYDyABKAISFAoMb3JpZ2luYXRlZF94GBAgASgCEhQKDG9yaWdpbmF0ZWRf",
+            "eRgRIAEoAhIUCgxvcmlnaW5hdGVkX3oYEiABKAISGQoRcmVwZWF0X3F1b3Rh",
+            "X2xlZnQYEyABKAUSLAokcmVtYWluaW5nX2hhcmRfcHVzaGJhY2tfYm91bmNl",
+            "X3F1b3RhGBQgASgFEhEKCXRhcmdldF91ZBgVIAEoBBIVCg1kYW1hZ2VfZGVh",
+            "bGVkGBYgASgFEiYKCmhpdF9vbl9pZmMYFyABKA4yEi5qdHNoYXJlZC5JZmFj",
+            "ZUNhdBIYChBhY3RpdmVfc2tpbGxfaGl0GBkgASgFEhAKCHNraWxsX2lkGBog",
+            "ASgNEgoKAmlkGBsgASgNEg8KB3RlYW1faWQYHCABKAUSEAoIZm9yX2FsbHkY",
+            "HSABKAgSFAoMZ3JvdW5kX3ZlbF94GB4gASgCEhQKDGdyb3VuZF92ZWxfeRgf",
+            "IAEoAhIUCgxncm91bmRfdmVsX3oYICABKAIi6AQKClRyYXBDb25maWcSCwoD",
+            "dHB0GAEgASgNEhcKD2R5aW5nX2FuaW1fbmFtZRgCIAEoCRIaChJkeWluZ19h",
+            "bmltX3JkZl9jbnQYAyABKAUSDwoHYmxvd191cBgEIAEoCBIOCgZkYW1hZ2UY",
+            "BSABKAUSFwoPaGl0X3N0dW5fZnJhbWVzGAYgASgFEh0KFWhpdF9pbnZpbnNp",
+            "YmxlX2ZyYW1lcxgHIAEoBRIVCg1kZWFjdGl2YXRhYmxlGAggASgIEhAKCGhh",
+            "cmRuZXNzGAkgASgFEiEKGWRlYWN0aXZhdGVfdXBvbl90cmlnZ2VyZWQYCiAB",
+            "KAgSGAoQc3VyZmFjZV9mcmljdGlvbhgLIAEoAhIVCg11c2Vfa2luZW1hdGlj",
+            "GAwgASgIEigKIHBhdHJvbF9jdWVfcmVxdWlyZXNfZnVsbF9jb250YWluGA8g",
+            "ASgIEhsKE2F0azFfdXBvbl90cmlnZ2VyZWQYFiABKAgSFQoNYXRrMV9za2ls",
+            "bF9pZBgXIAEoDRIRCglpc19yb3RhcnkYGCABKAgSGwoTbm9feF9mbGlwX3Jl",
+            "bmRlcmluZxgZIAEoCBIfChdkZWZhdWx0X2JveF9oYWxmX3NpemVfeBgaIAEo",
+            "AhIfChdkZWZhdWx0X2JveF9oYWxmX3NpemVfeRgbIAEoAhIcChRkZWZhdWx0",
+            "X2xpbmVhcl9zcGVlZBgcIAEoAhIdChVkZWZhdWx0X2FuZ3VsYXJfc3BlZWQY",
+            "HSABKAISIgoaZGVmYXVsdF9jb29sZG93bl9yZGZfY291bnQYHiABKAUSEQoI",
+            "dHB0X25hbWUYgAggASgJIpMEChNUcmFwQ29uZmlnRnJvbVRpbGVkEgoKAmlk",
+            "GAEgASgNEgsKA3RwdBgCIAEoDRINCgVxdW90YRgDIAEoBRIXCg9ib3hfaGFs",
+            "Zl9zaXplX3gYBCABKAISFwoPYm94X2hhbGZfc2l6ZV95GAUgASgCEhQKDGxp",
+            "bmVhcl9zcGVlZBgGIAEoAhIVCg1hbmd1bGFyX3NwZWVkGAcgASgCEg4KBmlu",
+            "aXRfeBgIIAEoAhIOCgZpbml0X3kYCSABKAISDgoGaW5pdF96GAogASgCEhAK",
+            "CGluaXRfcV94GAsgASgCEhAKCGluaXRfcV95GAwgASgCEhAKCGluaXRfcV96",
+            "GA0gASgCEhAKCGluaXRfcV93GA4gASgCEhIKCmluaXRfdmVsX3gYDyABKAIS",
+            "EgoKaW5pdF92ZWxfeRgQIAEoAhISCgppbml0X3ZlbF96GBEgASgCEhoKEmNv",
+            "b2xkb3duX3JkZl9jb3VudBgSIAEoBRIVCg1zbGlkZXJfYXhpc194GBMgASgC",
+            "EhUKDXNsaWRlcl9heGlzX3kYFCABKAISFQoNc2xpZGVyX2F4aXNfehgVIAEo",
+            "AhIQCgdsaW1pdF8xGIABIAEoAhIQCgdsaW1pdF8yGIEBIAEoAhIQCgdsaW1p",
+            "dF8zGIIBIAEoAhIQCgdsaW1pdF80GIMBIAEoAhIYCg9pbml0X25vdF9tb3Zp",
+            "bmcYgAQgASgIItIBChNCYXJyaWVyQ29sbGlkZXJBdHRyEh4KFnByb3ZpZGVz",
+            "X2hhcmRfcHVzaGJhY2sYASABKAgSGgoScHJvdmlkZXNfc2xpcF9qdW1wGAIg",
+            "ASgIEh8KF3Byb2hpYml0c193YWxsX2dyYWJiaW5nGAMgASgIEhgKEGZvcmNl",
+            "c19jcm91Y2hpbmcYBCABKAgSIQoZb25seV9hbGxvd3NfYWxpZ25lZF92ZWxf",
+            "eBgFIAEoBRIhChlvbmx5X2FsbG93c19hbGlnbmVkX3ZlbF95GAYgASgFIusC",
+            "CgRUcmFwEgoKAmlkGAEgASgNEgsKA3RwdBgCIAEoDRInCgp0cmFwX3N0YXRl",
+            "GAQgASgOMhMuanRzaGFyZWQuVHJhcFN0YXRlEhwKFGZyYW1lc19pbl90cmFw",
+            "X3N0YXRlGAUgASgFEiAKGHN1YnNjcmliZXNfdG9fdHJpZ2dlcl9pZBgLIAEo",
+            "DRImCh5zdWJzY3JpYmVzX3RvX3RyaWdnZXJfZ3JvdXBfaWQYDCABKA0SCQoB",
+            "eBgNIAEoAhIJCgF5GA4gASgCEgkKAXoYDyABKAISCwoDcV94GBAgASgCEgsK",
+            "A3FfeRgRIAEoAhILCgNxX3oYEiABKAISCwoDcV93GBMgASgCEg0KBXZlbF94",
+            "GBQgASgCEg0KBXZlbF95GBUgASgCEg0KBXZlbF96GBYgASgCEhEKCWFuZ192",
+            "ZWxfeBgXIAEoAhIRCglhbmdfdmVsX3kYGCABKAISEQoJYW5nX3ZlbF96GBkg",
+            "ASgCIkkKC1BlZXJVZHBBZGRyEgoKAmlwGAEgASgJEgwKBHBvcnQYAiABKAUS",
+            "EAoIYXV0aF9rZXkYAyABKAUSDgoGc2VxX25vGAQgASgNInMKClN0ZXBSZXN1",
+            "bHQSLQoSZnVsZmlsbGVkX3RyaWdnZXJzGAEgAygLMhEuanRzaGFyZWQuVHJp",
+            "Z2dlchI2ChtmdWxmaWxsZWRfdHJpZ2dlcl9ncm91cF9pZHMYAiADKAsyES5q",
+            "dHNoYXJlZC5UcmlnZ2VyIqMECgtSZW5kZXJGcmFtZRIKCgJpZBgBIAEoBRIy",
+            "CgdwbGF5ZXJzGAIgAygLMiEuanRzaGFyZWQuUGxheWVyQ2hhcmFjdGVyRG93",
+            "bnN5bmMSFwoPY291bnRkb3duX25hbm9zGAMgASgDEiEKB2J1bGxldHMYBCAD",
+            "KAsyEC5qdHNoYXJlZC5CdWxsZXQSLAoEbnBjcxgFIAMoCzIeLmp0c2hhcmVk",
+            "Lk5wY0NoYXJhY3RlckRvd25zeW5jEiUKDWR5bmFtaWNfdHJhcHMYBiADKAsy",
+            "Di5qdHNoYXJlZC5UcmFwEiMKCHRyaWdnZXJzGAcgAygLMhEuanRzaGFyZWQu",
+            "VHJpZ2dlchIlCglwaWNrYWJsZXMYCCADKAsyEi5qdHNoYXJlZC5QaWNrYWJs",
+            "ZRIZChFidWxsZXRfaWRfY291bnRlchgJIAEoDRIUCgxidWxsZXRfY291bnQY",
+            "CiABKA0SFgoObnBjX2lkX2NvdW50ZXIYCyABKA0SEQoJbnBjX2NvdW50GAwg",
+            "ASgNEhUKDXRyaWdnZXJfY291bnQYDSABKA0SGwoTcGlja2FibGVfaWRfY291",
+            "bnRlchgPIAEoDRIWCg5waWNrYWJsZV9jb3VudBgQIAEoDRIaChJkeW5hbWlj",
+            "X3RyYXBfY291bnQYESABKA0SMwoUcHJldl9yZGZfc3RlcF9yZXN1bHQYgAQg",
+            "ASgLMhQuanRzaGFyZWQuU3RlcFJlc3VsdCKXAQoRQmF0dGxlUHJlcGFyZUlu",
+            "Zm8SEgoKc3RhZ2VfbmFtZRgBIAEoCRIVCg1ib3VuZF9yb29tX2lkGAIgASgF",
+            "Eh4KFmJhdHRsZV9kdXJhdGlvbl9mcmFtZXMYAyABKAMSGwoTYm91bmRfcm9v",
+            "bV9jYXBhY2l0eRgEIAEoBRIaChFmcmFtZV9sb2dfZW5hYmxlZBiBCCABKAgi",
+            "XAoSSW5wdXRGcmFtZURvd25zeW5jEhIKCmlucHV0X2xpc3QYASADKAQSFgoO",
+            "Y29uZmlybWVkX2xpc3QYAiABKAQSGgoSdWRwX2NvbmZpcm1lZF9saXN0GAMg",
+            "ASgEIu0DChBEb3duc3luY1NuYXBzaG90EhIKCnJlZl9yZGZfaWQYASABKAUS",
+            "JgoHcmVmX3JkZhgCIAEoCzIVLmp0c2hhcmVkLlJlbmRlckZyYW1lEhgKEHVu",
+            "Y29uZmlybWVkX21hc2sYAyABKAQSEQoJc3RfaWZkX2lkGAQgASgFEi8KCWlm",
+            "ZF9iYXRjaBgFIAMoCzIcLmp0c2hhcmVkLklucHV0RnJhbWVEb3duc3luYxIi",
+            "CgNhY3QYByABKA4yFS5qdHNoYXJlZC5Eb3duc3luY0FjdBIxCgxwcmVwYXJl",
+            "X2luZm8YCCABKAsyGy5qdHNoYXJlZC5CYXR0bGVQcmVwYXJlSW5mbxIyChNh",
+            "c3NpZ25lZF91ZHBfdHVubmVsGAkgASgLMhUuanRzaGFyZWQuUGVlclVkcEFk",
+            "ZHISMQoScGVlcl91ZHBfYWRkcl9saXN0GAogAygLMhUuanRzaGFyZWQuUGVl",
+            "clVkcEFkZHISHQoVcGFydGljaXBhbnRfY2hhbmdlX2lkGAsgASgFEhoKEmlu",
+            "YWN0aXZlX2pvaW5fbWFzaxgMIAEoBBIXCg9wZWVyX2pvaW5faW5kZXgYDSAB",
+            "KA0SGwoTcGVlcl9idWxsZXRfdGVhbV9pZBgOIAEoBRIQCgdlcnJfbXNnGIAE",
+            "IAEoCSL6AgoFU2tpbGwSFwoPcmVjb3ZlcnlfZnJhbWVzGAIgASgFEiAKGHJl",
+            "Y292ZXJ5X2ZyYW1lc19vbl9ibG9jaxgDIAEoBRIeChZyZWNvdmVyeV9mcmFt",
+            "ZXNfb25faGl0GAQgASgFEjIKD2ludm9jYXRpb25fdHlwZRgFIAEoDjIZLmp0",
+            "c2hhcmVkLlNraWxsSW52b2NhdGlvbhIwCg5ib3VuZF9jaF9zdGF0ZRgGIAEo",
+            "DjIYLmp0c2hhcmVkLkNoYXJhY3RlclN0YXRlEjcKFWJvdW5kX2NoX3N0YXRl",
+            "X29uX2hpdBgHIAEoDjIYLmp0c2hhcmVkLkNoYXJhY3RlclN0YXRlEhAKCG1w",
+            "X2RlbHRhGAggASgFEgoKAmlkGAkgASgNEiUKBGhpdHMYgAggAygLMhYuanRz",
+            "aGFyZWQuQnVsbGV0Q29uZmlnEjIKE3NlbGZfbm9uX3N0b2NrX2J1ZmYYgQgg",
+            "ASgLMhQuanRzaGFyZWQuQnVmZkNvbmZpZyL0AgoIRnJhbWVMb2cSIgoDcmRm",
+            "GAEgASgLMhUuanRzaGFyZWQuUmVuZGVyRnJhbWUSHAoUYWN0dWFsbHlfdXNl",
+            "ZF9pZmRfaWQYAiABKAUSGwoTdXNlZF9pZmRfaW5wdXRfbGlzdBgDIAMoBBIf",
+            "Chd1c2VkX2lmZF9jb25maXJtZWRfbGlzdBgEIAEoBBIjCht1c2VkX2lmZF91",
+            "ZHBfY29uZmlybWVkX2xpc3QYBSABKAQSFAoMdGltZXJfcmRmX2lkGAYgASgF",
+            "EhMKC2xjYWNfaWZkX2lkGAcgASgFEhUKDWNoYXNlcl9yZGZfaWQYCCABKAUS",
+            "IQoZY2hhc2VyX3JkZl9pZF9sb3dlcl9ib3VuZBgJIAEoBRIYChBjaGFzZXJf",
+            "c3RfcmRmX2lkGAogASgFEhgKEGNoYXNlcl9lZF9yZGZfaWQYCyABKAUSKgoi",
+            "Y2hhc2VyX3JkZl9pZF9sb3dlcl9ib3VuZF9zbmF0Y2hlZBgMIAEoCCJICgxC",
+            "YXR0bGVSZXN1bHQSGQoRd2lubmVyX2pvaW5faW5kZXgYASABKA0SHQoVd2lu",
+            "bmVyX2J1bGxldF90ZWFtX2lkGAIgASgFIskBCgxEZWJ1ZmZDb25maWcSEgoK",
+            "c3BlY2llc19pZBgBIAEoDRIrCgpzdG9ja190eXBlGAIgASgOMhcuanRzaGFy",
+            "ZWQuQnVmZlN0b2NrVHlwZRINCgVzdG9jaxgDIAEoBRIiCgR0eXBlGAQgASgO",
+            "MhQuanRzaGFyZWQuRGVidWZmVHlwZRIPCgdhcnJfaWR4GAUgASgFEhsKE2lt",
+            "cGFjdF9wZXJfaW50ZXJ2YWwYBiABKAUSFwoPaW1wYWN0X2ludGVydmFsGAcg",
+            "ASgFIoQECgpCdWZmQ29uZmlnEhIKCnNwZWNpZXNfaWQYASABKA0SKwoKc3Rv",
+            "Y2tfdHlwZRgCIAEoDjIXLmp0c2hhcmVkLkJ1ZmZTdG9ja1R5cGUSDQoFc3Rv",
+            "Y2sYAyABKAUSEwoLc3BlZWRfZGVsdGEYBCABKAISIAoYaGl0Ym94X2hhbGZf",
+            "c2l6ZV94X2RlbHRhGAUgASgCEiAKGGhpdGJveF9oYWxmX3NpemVfeV9kZWx0",
+            "YRgGIAEoAhIUCgxkYW1hZ2VfZGVsdGEYByABKAUSIgoaZGFtYWdlX2RlbHRh",
+            "X2J5X3BlcmNlbnRhZ2UYCCABKAUSIAoYY2hhcmFjdGVyX2hhcmRuZXNzX2Rl",
+            "bHRhGAkgASgFEhwKFG1lbGVlX2hhcmRuZXNzX2RlbHRhGAogASgFEh8KF2Zp",
+            "cmViYWxsX2hhcmRuZXNzX2RlbHRhGAsgASgFEhIKCmludmluc2libGUYDCAB",
+            "KAgSGwoTeGZvcm1fY2hfc3BlY2llc19pZBgNIAEoDRIbChNyZXBlbF9zb2Z0",
+            "X3B1c2hiYWNrGA4gASgIEhQKDG9taXRfZ3Jhdml0eRgPIAEoCBIRCglhdXRv",
+            "X2RlZjEYECABKAgSGgoSYXNzb2NpYXRlZF9kZWJ1ZmZzGBEgAygNEh8KF2No",
+            "YXJhY3Rlcl92ZnhfYW5pbV9uYW1lGBIgASgJIqYBCgRCdWZmEhIKCnNwZWNp",
+            "ZXNfaWQYASABKA0SDQoFc3RvY2sYAiABKAUSIgoab3JpZ2luYXRlZF9yZW5k",
+            "ZXJfZnJhbWVfaWQYAyABKAUSGgoSb3JpZ19jaF9zcGVjaWVzX2lkGAQgASgN",
+            "EiAKGG9yaWdfcmVwZWxfc29mdF9wdXNoYmFjaxgFIAEoCBIZChFvcmlnX29t",
+            "aXRfZ3Jhdml0eRgGIAEoCCIrCgZEZWJ1ZmYSEgoKc3BlY2llc19pZBgBIAEo",
+            "DRINCgVzdG9jaxgCIAEoBSJNChJCdWxsZXRJbW11bmVSZWNvcmQSEQoJYnVs",
+            "bGV0X2lkGAEgASgNEiQKHHJlbWFpbmluZ19saWZldGltZV9yZGZfY291bnQY",
+            "AiABKAUiXQoQQ29uc3VtYWJsZUNvbmZpZxISCgpzcGVjaWVzX2lkGAEgASgN",
+            "EhQKDHJlZmlsbF9kZWx0YRgCIAEoBRIfChd2ZnhfYW5pbV9uYW1lX29uX3Bp",
+            "Y2tlchgDIAEoCSJIChNQaWNrYWJsZVNraWxsQ29uZmlnEhAKCHNraWxsX2lk",
+            "GAEgASgNEh8KF3ZmeF9hbmltX25hbWVfb25fcGlja2VyGAIgASgJIpECChNJ",
+            "bnZlbnRvcnlTbG90Q29uZmlnEjQKCnN0b2NrX3R5cGUYASABKA4yIC5qdHNo",
+            "YXJlZC5JbnZlbnRvcnlTbG90U3RvY2tUeXBlEg0KBXF1b3RhGAIgASgNEhkK",
+            "EWZyYW1lc190b19yZWNvdmVyGAMgASgFEhcKD2J1ZmZfc3BlY2llc19pZBgE",
+            "IAEoDRIQCghza2lsbF9pZBgFIAEoDRIUCgxza2lsbF9pZF9haXIYBiABKA0S",
+            "FgoOZ2F1Z2VfcmVxdWlyZWQYByABKAUSIwobZnVsbF9jaGFyZ2VfYnVmZl9z",
+            "cGVjaWVzX2lkGAggASgNEhwKFGZ1bGxfY2hhcmdlX3NraWxsX2lkGAkgASgN",
+            "IoYBCg1JbnZlbnRvcnlTbG90EjQKCnN0b2NrX3R5cGUYASABKA4yIC5qdHNo",
+            "YXJlZC5JbnZlbnRvcnlTbG90U3RvY2tUeXBlEg0KBXF1b3RhGAIgASgNEhkK",
+            "EWZyYW1lc190b19yZWNvdmVyGAMgASgFEhUKDWdhdWdlX2NoYXJnZWQYBCAB",
+            "KAUiMwoJSW52ZW50b3J5EiYKBXNsb3RzGAEgAygLMhcuanRzaGFyZWQuSW52",
+            "ZW50b3J5U2xvdCIlCg9CYXR0bGVFcXVpcG1lbnQSEgoKc3BlY2llc19pZBgB",
+            "IAEoDSImCg5QbGF5ZXJTZXR0aW5ncxIUCgxzb3VuZF92b2x1bWUYASABKAUi",
+            "9AIKFFBsYXllclJlZ2lvblByb2dyZXNzEhEKCXJlZ2lvbl9pZBgBIAEoBRId",
+            "ChVjb21wbGV0ZWRfbGV2ZWxfY291bnQYAiABKAUSWQoWcmVtYWluaW5nX2Rl",
+            "cGVuZGVuY2llcxgDIAMoCzI5Lmp0c2hhcmVkLlBsYXllclJlZ2lvblByb2dy",
+            "ZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5ElUKFHJlbW92ZWRfZGVw",
+            "ZW5kZW5jaWVzGAQgAygLMjcuanRzaGFyZWQuUGxheWVyUmVnaW9uUHJvZ3Jl",
+            "c3MuUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5GjwKGlJlbWFpbmluZ0RlcGVu",
+            "ZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEa",
+            "OgoYUmVtb3ZlZERlcGVuZGVuY2llc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2",
+            "YWx1ZRgCIAEoCDoCOAEi1AQKE1BsYXllckxldmVsUHJvZ3Jlc3MSEQoJcmVn",
+            "aW9uX2lkGAEgASgFEhAKCGxldmVsX2lkGAIgASgFEhUKDWhpZ2hlc3Rfc2Nv",
+            "cmUYAyABKAUSLQolc2hvcnRlc3RfZmluaXNoX3RpbWVfYXRfaGlnaGVzdF9z",
+            "Y29yZRgEIAEoBRItCiVjaGFyYWN0ZXJfc3BlY2llc19pZF9hdF9oaWdoZXN0",
+            "X3Njb3JlGAUgASgNEhwKFHNob3J0ZXN0X2ZpbmlzaF90aW1lGAYgASgFEiUK",
+            "HXNjb3JlX2F0X3Nob3J0ZXN0X2ZpbmlzaF90aW1lGAcgASgFEjQKLGNoYXJh",
+            "Y3Rlcl9zcGVjaWVzX2lkX2F0X3Nob3J0ZXN0X2ZpbmlzaF90aW1lGAggASgN",
+            "ElgKFnJlbWFpbmluZ19kZXBlbmRlbmNpZXMYCSADKAsyOC5qdHNoYXJlZC5Q",
+            "bGF5ZXJMZXZlbFByb2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5",
+            "ElQKFHJlbW92ZWRfZGVwZW5kZW5jaWVzGAogAygLMjYuanRzaGFyZWQuUGxh",
+            "eWVyTGV2ZWxQcm9ncmVzcy5SZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkaPAoa",
+            "UmVtYWluaW5nRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZh",
+            "bHVlGAIgASgIOgI4ARo6ChhSZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkSCwoD",
+            "a2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASLcAgoWUGxheWVyQ2hVbmxv",
+            "Y2tQcm9ncmVzcxISCgpzcGVjaWVzX2lkGAEgASgNElsKFnJlbWFpbmluZ19k",
+            "ZXBlbmRlbmNpZXMYAiADKAsyOy5qdHNoYXJlZC5QbGF5ZXJDaFVubG9ja1By",
+            "b2dyZXNzLlJlbWFpbmluZ0RlcGVuZGVuY2llc0VudHJ5ElcKFHJlbW92ZWRf",
+            "ZGVwZW5kZW5jaWVzGAMgAygLMjkuanRzaGFyZWQuUGxheWVyQ2hVbmxvY2tQ",
+            "cm9ncmVzcy5SZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkaPAoaUmVtYWluaW5n",
+            "RGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgI",
+            "OgI4ARo6ChhSZW1vdmVkRGVwZW5kZW5jaWVzRW50cnkSCwoDa2V5GAEgASgF",
+            "Eg0KBXZhbHVlGAIgASgIOgI4ASKtBQoTUGxheWVyU3RvcnlQcm9ncmVzcxJT",
+            "ChRyZWdpb25fcHJvZ3Jlc3NfZGljdBgBIAMoCzI1Lmp0c2hhcmVkLlBsYXll",
+            "clN0b3J5UHJvZ3Jlc3MuUmVnaW9uUHJvZ3Jlc3NEaWN0RW50cnkSUQoTbGV2",
+            "ZWxfcHJvZ3Jlc3NfZGljdBgCIAMoCzI0Lmp0c2hhcmVkLlBsYXllclN0b3J5",
+            "UHJvZ3Jlc3MuTGV2ZWxQcm9ncmVzc0RpY3RFbnRyeRIYChBjdXJzb3JfcmVn",
+            "aW9uX2lkGAMgASgFEhcKD2N1cnNvcl9sZXZlbF9pZBgEIAEoBRIxCgR2aWV3",
+            "GAUgASgOMiMuanRzaGFyZWQuUGxheWVyU3RvcnlNb2RlU2VsZWN0VmlldxIb",
+            "ChNzYXZlZF9hdF9nbXRfbWlsbGlzGAYgASgEElgKF2NoX3VubG9ja19wcm9n",
+            "cmVzc19kaWN0GAcgAygLMjcuanRzaGFyZWQuUGxheWVyU3RvcnlQcm9ncmVz",
+            "cy5DaFVubG9ja1Byb2dyZXNzRGljdEVudHJ5GlkKF1JlZ2lvblByb2dyZXNz",
+            "RGljdEVudHJ5EgsKA2tleRgBIAEoBRItCgV2YWx1ZRgCIAEoCzIeLmp0c2hh",
+            "cmVkLlBsYXllclJlZ2lvblByb2dyZXNzOgI4ARpXChZMZXZlbFByb2dyZXNz",
+            "RGljdEVudHJ5EgsKA2tleRgBIAEoBRIsCgV2YWx1ZRgCIAEoCzIdLmp0c2hh",
+            "cmVkLlBsYXllckxldmVsUHJvZ3Jlc3M6AjgBGl0KGUNoVW5sb2NrUHJvZ3Jl",
+            "c3NEaWN0RW50cnkSCwoDa2V5GAEgASgNEi8KBXZhbHVlGAIgASgLMiAuanRz",
+            "aGFyZWQuUGxheWVyQ2hVbmxvY2tQcm9ncmVzczoCOAEiigIKGVBsYXllck9u",
+            "bGluZUFyZW5hUHJvZ3Jlc3MSGwoTc2F2ZWRfYXRfZ210X21pbGxpcxgBIAEo",
+            "BBIRCglwbGF5ZXJfaWQYAiABKAkSXgoXY2hfdW5sb2NrX3Byb2dyZXNzX2Rp",
+            "Y3QYAyADKAsyPS5qdHNoYXJlZC5QbGF5ZXJPbmxpbmVBcmVuYVByb2dyZXNz",
+            "LkNoVW5sb2NrUHJvZ3Jlc3NEaWN0RW50cnkaXQoZQ2hVbmxvY2tQcm9ncmVz",
+            "c0RpY3RFbnRyeRILCgNrZXkYASABKA0SLwoFdmFsdWUYAiABKAsyIC5qdHNo",
+            "YXJlZC5QbGF5ZXJDaFVubG9ja1Byb2dyZXNzOgI4ASJuChRTdG9yeVBvaW50",
+            "RGlhbG9nTGluZRITCgtuYXJyYXRvcl91ZBgBIAEoBBIbChNuYXJyYXRvcl9z",
+            "cGVjaWVzX2lkGAIgASgNEg8KB2NvbnRlbnQYAyABKAkSEwoLZG93bl9vcl9u",
+            "b3QYBCABKAgiYAoOU3RvcnlQb2ludFN0ZXASLQoFbGluZXMYASADKAsyHi5q",
+            "dHNoYXJlZC5TdG9yeVBvaW50RGlhbG9nTGluZRIfChdub25jdHJsX2FsaXZl",
+            "X3JkZl9jb3VudBgCIAEoBSJdCgpTdG9yeVBvaW50EicKBXN0ZXBzGAEgAygL",
+            "MhguanRzaGFyZWQuU3RvcnlQb2ludFN0ZXASDwoHbm9uY3RybBgCIAEoCBIV",
+            "Cg1jdXRzY2VuZV9uYW1lGAMgASgJIoMBCgpMZXZlbFN0b3J5EjAKBnBvaW50",
+            "cxgBIAMoCzIgLmp0c2hhcmVkLkxldmVsU3RvcnkuUG9pbnRzRW50cnkaQwoL",
+            "UG9pbnRzRW50cnkSCwoDa2V5GAEgASgFEiMKBXZhbHVlGAIgASgLMhQuanRz",
+            "aGFyZWQuU3RvcnlQb2ludDoCOAEiswEKGVNlcmlhbGl6YWJsZUNvbnZleFBv",
+            "bHlnb24SIAoGYW5jaG9yGAEgASgLMhAuanRzaGFyZWQuUGJWZWMyEiAKBnBv",
+            "aW50cxgCIAMoCzIQLmp0c2hhcmVkLlBiVmVjMhIOCgZpc19ib3gYAyABKAgS",
+            "DwoHYm94X3FfeBgEIAEoAhIPCgdib3hfcV95GAUgASgCEg8KB2JveF9xX3oY",
+            "BiABKAISDwoHYm94X3FfdxgHIAEoAiJ+ChlTZXJpYWxpemVkQmFycmllckNv",
+            "bGxpZGVyEisKBGF0dHIYASABKAsyHS5qdHNoYXJlZC5CYXJyaWVyQ29sbGlk",
+            "ZXJBdHRyEjQKB3BvbHlnb24YAiABKAsyIy5qdHNoYXJlZC5TZXJpYWxpemFi",
+            "bGVDb252ZXhQb2x5Z29uImwKDlBpY2thYmxlQ29uZmlnEikKC3BpY2t1cF90",
+            "eXBlGAEgASgOMhQuanRzaGFyZWQuUGlja3VwVHlwZRIVCg10YWtlc19ncmF2",
+            "aXR5GAIgASgIEhgKEGFjdGl2ZV9hbmltX25hbWUYAyABKAkiqAEKF1BpY2th",
+            "YmxlQ29uZmlnRnJvbVRpbGVkEikKC3BpY2t1cF90eXBlGAEgASgOMhQuanRz",
+            "aGFyZWQuUGlja3VwVHlwZRITCgtyZWN1cl9xdW90YRgCIAEoBRIpCiFsaWZl",
+            "dGltZV9yZGZfY291bnRfcGVyX29jY3VycmVuY2UYAyABKA0SIgoac3RvY2tf",
+            "cXVvdGFfcGVyX29jY3VycmVuY2UYBCABKA0irwIKCFBpY2thYmxlEgoKAmlk",
+            "GAEgASgNEikKC3BpY2t1cF90eXBlGAIgASgOMhQuanRzaGFyZWQuUGlja3Vw",
+            "VHlwZRIpCghwa19zdGF0ZRgDIAEoDjIXLmp0c2hhcmVkLlBpY2thYmxlU3Rh",
+            "dGUSGgoSZnJhbWVzX2luX3BrX3N0YXRlGAQgASgFEgkKAXgYBSABKAISCQoB",
+            "eRgGIAEoAhIJCgF6GAcgASgCEg0KBXZlbF94GAggASgCEg0KBXZlbF95GAkg",
+            "ASgCEg0KBXZlbF96GAogASgCEiQKHHJlbWFpbmluZ19saWZldGltZV9yZGZf",
+            "Y291bnQYCyABKAUSHQoVcmVtYWluaW5nX3JlY3VyX3F1b3RhGAwgASgFEhIK",
+            "CXBpY2tlcl91ZBiABCABKAQiNgoRSW5qZWN0ZWRDbWRDb25maWcSFQoNY3V0",
+            "b2ZmX3JkZl9pZBgBIAEoBRIKCgJvcBgCIAEoBCJeChZDaGFyYWN0ZXJTcGF3",
+            "bmVyQ29uZmlnEhUKDWN1dG9mZl9yZGZfaWQYASABKAUSFwoPc3BlY2llc19p",
+            "ZF9saXN0GAIgAygNEhQKDGluaXRfb3BfbGlzdBgDIAMoBCKNAQoVUGlja2Fi",
+            "bGVTcGF3bmVyQ29uZmlnEhUKDWN1dG9mZl9yZGZfaWQYASABKAUSFwoPc3Bl",
+            "Y2llc19pZF9saXN0GAIgAygNEhQKDGluaXRfb3BfbGlzdBgDIAMoBBIuChBw",
+            "aWNrdXBfdHlwZV9saXN0GAQgAygOMhQuanRzaGFyZWQuUGlja3VwVHlwZSIc",
+            "Cg1UcmlnZ2VyQ29uZmlnEgsKA3RydBgBIAEoDSKnBgoWVHJpZ2dlckNvbmZp",
+            "Z0Zyb21UaWxlZBIKCgJpZBgBIAEoDRILCgN0cnQYAiABKA0SFgoOZGVsYXll",
+            "ZF9mcmFtZXMYAyABKAUSFwoPcmVjb3ZlcnlfZnJhbWVzGAQgASgFEhYKDmJ1",
+            "bGxldF90ZWFtX2lkGAUgASgFEiAKGHN1Yl9jeWNsZV90cmlnZ2VyX2ZyYW1l",
+            "cxgGIAEoBRIXCg9zdWJfY3ljbGVfcXVvdGEYByABKAUSEQoJcXVvdGFfY2Fw",
+            "GAggASgFEhUKDW5ld19yZXZpdmFsX3gYCyABKAISFQoNbmV3X3Jldml2YWxf",
+            "eRgMIAEoAhIPCgdpbml0X3F4GA0gASgCEg8KB2luaXRfcXkYDiABKAISDwoH",
+            "aW5pdF9xehgPIAEoAhIPCgdpbml0X3F3GBAgASgCEioKInB1Ymxpc2hpbmdf",
+            "ZXZ0X21hc2tfdXBvbl9leGhhdXN0ZWQYESABKAQSLwoncHVibGlzaGluZ190",
+            "b190cmlnZ2VyX2lkX3Vwb25fZXhoYXVzdGVkGBIgASgNEhwKFGZvcmNlX2N0",
+            "cmxfcmRmX2NvdW50GBMgASgFEhYKDmZvcmNlX2N0cmxfY21kGBQgASgEEhcK",
+            "DnN0b3J5X3BvaW50X2lkGIAEIAEoBRIPCgZiZ21faWQYgQQgASgFEhoKEWlz",
+            "X2Jvc3Nfc2F2ZXBvaW50GIIEIAEoCBJPChBib3NzX3NwZWNpZXNfc2V0GIME",
+            "IAMoCzI0Lmp0c2hhcmVkLlRyaWdnZXJDb25maWdGcm9tVGlsZWQuQm9zc1Nw",
+            "ZWNpZXNTZXRFbnRyeRJFChpjaGFyYWN0ZXJfc3Bhd25lcl90aW1lX3NlcRiA",
+            "CCADKAsyIC5qdHNoYXJlZC5DaGFyYWN0ZXJTcGF3bmVyQ29uZmlnEkMKGXBp",
+            "Y2thYmxlX3NwYXduZXJfdGltZV9zZXEYgQggAygLMh8uanRzaGFyZWQuUGlj",
+            "a2FibGVTcGF3bmVyQ29uZmlnGjUKE0Jvc3NTcGVjaWVzU2V0RW50cnkSCwoD",
+            "a2V5GAEgASgNEg0KBXZhbHVlGAIgASgIOgI4ASL/AwoHVHJpZ2dlchIKCgJp",
+            "ZBgBIAEoDRIQCghncm91cF9pZBgCIAEoDRIWCg5mcmFtZXNfdG9fZmlyZRgD",
+            "IAEoBRIZChFmcmFtZXNfdG9fcmVjb3ZlchgEIAEoBRINCgVxdW90YRgFIAEo",
+            "BRIWCg5idWxsZXRfdGVhbV9pZBgGIAEoBRIXCg9zdWJfY3ljbGVfcXVvdGEY",
+            "CSABKAUSJQoFc3RhdGUYCiABKA4yFi5qdHNoYXJlZC5UcmlnZ2VyU3RhdGUS",
+            "FwoPZnJhbWVzX2luX3N0YXRlGAsgASgFEgkKAXgYDCABKAISCQoBeRgNIAEo",
+            "AhIJCgF6GA4gASgCEhkKEWRlbWFuZGVkX2V2dF9tYXNrGA8gASgEEhoKEmZ1",
+            "bGZpbGxlZF9ldnRfbWFzaxgQIAEoBBIrCiN3YXZlX25wY19leGhhdXN0ZWRf",
+            "ZXZ0X21hc2tfY291bnRlchgRIAEoBBIqCiJwdWJsaXNoaW5nX2V2dF9tYXNr",
+            "X3Vwb25fZXhoYXVzdGVkGBIgASgEEi8KJ3B1Ymxpc2hpbmdfdG9fdHJpZ2dl",
+            "cl9pZF91cG9uX2V4aGF1c3RlZBgTIAEoDRITCgtvZmZlbmRlcl91ZBgUIAEo",
+            "BBIfChdvZmZlbmRlcl9idWxsZXRfdGVhbV9pZBgVIAEoBRILCgN0cnQYFiAB",
+            "KA0idAoOUGxheWVyTWV0YUluZm8SEQoJcGxheWVyX2lkGAEgASgJEhIKCmpv",
+            "aW5faW5kZXgYAiABKA0SFgoOYnVsbGV0X3RlYW1faWQYAyABKAUSEgoKc3Bl",
+            "Y2llc19pZBgEIAEoDRIPCgdyb29tX2lkGAUgASgFInMKEVJwY0VuZHBvaW50",
+            "SG9sZGVyEgoKAmlkGAEgASgNEhoKEmV4dGVybmFsX2FkZHJfaG9zdBgCIAEo",
+            "CRIaChJleHRlcm5hbF9hZGRyX3BvcnQYAyABKA0SGgoSaW50ZXJuYWxfYWRk",
+            "cl9ob3N0GAQgASgJIqsBCg9DaFNwZWNpZXNDb25zdHMSEQoJYmxhZGVnaXJs",
+            "GAEgASgNEhQKDGJvdW50eWh1bnRlchgCIAEoDRITCgtibGFja3NhYmVyMRgD",
+            "IAEoDRIQCgdub25lX2NoGIAQIAEoDRIiChlibGFja3NhYmVyX3Rlc3Rfbm9f",
+            "dmlzaW9uGIEQIAEoDRIkChtibGFja3NhYmVyX3Rlc3Rfd2l0aF92aXNpb24Y",
+            "ghAgASgNIqUvCg9QcmltaXRpdmVDb25zdHMSGwoTYmF0dGxlX2R5bmFtaWNz",
+            "X2ZwcxgBIAEoBRIyCipkZWZhdWx0X3RpbWVvdXRfZm9yX2xhc3RfYWxsX2Nv",
+            "bmZpcm1lZF9pZmQYAiABKAUSFAoMcm9vbV9pZF9ub25lGAMgASgFEh0KFXJv",
+            "b21fc3RhdGVfaW1wb3NzaWJsZRgEIAEoBRIXCg9yb29tX3N0YXRlX2lkbGUY",
+            "BSABKAUSGgoScm9vbV9zdGF0ZV93YWl0aW5nGAYgASgFEhoKEnJvb21fc3Rh",
+            "dGVfcHJlcGFyZRgHIAEoBRIcChRyb29tX3N0YXRlX2luX2JhdHRsZRgIIAEo",
+            "BRIgChhyb29tX3N0YXRlX2luX3NldHRsZW1lbnQYCSABKAUSGgoScm9vbV9z",
+            "dGF0ZV9zdG9wcGVkGAogASgFEjAKKHJvb21fc3RhdGVfZnJvbnRlbmRfYXdh",
+            "aXRpbmdfYXV0b19yZWpvaW4YCyABKAUSMgoqcm9vbV9zdGF0ZV9mcm9udGVu",
+            "ZF9hd2FpdGluZ19tYW51YWxfcmVqb2luGAwgASgFEiUKHXJvb21fc3RhdGVf",
+            "ZnJvbnRlbmRfcmVqb2luaW5nGA0gASgFEiYKHnBsYXllcl9iYXR0bGVfc3Rh",
+            "dGVfaW1wb3NzaWJsZRgOIAEoBRI9CjVwbGF5ZXJfYmF0dGxlX3N0YXRlX2Fk",
+            "ZGVkX3BlbmRpbmdfYmF0dGxlX2NvbGxpZGVyX2FjaxgPIAEoBRI4CjBwbGF5",
+            "ZXJfYmF0dGxlX3N0YXRlX3JlYWRkZWRfcGVuZGluZ19mb3JjZV9yZXN5bmMY",
+            "ECABKAUSIgoacGxheWVyX2JhdHRsZV9zdGF0ZV9hY3RpdmUYESABKAUSKAog",
+            "cGxheWVyX2JhdHRsZV9zdGF0ZV9kaXNjb25uZWN0ZWQYEiABKAUSIAoYcGxh",
+            "eWVyX2JhdHRsZV9zdGF0ZV9sb3N0GBMgASgFEjAKKHBsYXllcl9iYXR0bGVf",
+            "c3RhdGVfZXhwZWxsZWRfZHVyaW5nX2dhbWUYFCABKAUSMQopcGxheWVyX2Jh",
+            "dHRsZV9zdGF0ZV9leHBlbGxlZF9pbl9kaXNtaXNzYWwYFSABKAUSKgoidXBz",
+            "eW5jX21zZ19hY3RfcGxheWVyX2NvbGxpZGVyX2FjaxgWIAEoBRIhChl1cHN5",
+            "bmNfbXNnX2FjdF9wbGF5ZXJfY21kGBcgASgFEjMKK3Vwc3luY19tc2dfYWN0",
+            "X2hvbGVwdW5jaF9iYWNrZW5kX3VkcF90dW5uZWwYGCABKAUSLgomdXBzeW5j",
+            "X21zZ19hY3RfaG9sZXB1bmNoX3BlZXJfdWRwX2FkZHIYGSABKAUSLQolZG93",
+            "bnN5bmNfbXNnX2FjdF9iYXR0bGVfY29sbGlkZXJfaW5mbxgaIAEoBRIkChxk",
+            "b3duc3luY19tc2dfYWN0X2lucHV0X2JhdGNoGBsgASgFEicKH2Rvd25zeW5j",
+            "X21zZ19hY3RfYmF0dGxlX3N0b3BwZWQYHCABKAUSJgoeZG93bnN5bmNfbXNn",
+            "X2FjdF9mb3JjZWRfcmVzeW5jGB0gASgFEikKIWRvd25zeW5jX21zZ19hY3Rf",
+            "cGVlcl9pbnB1dF9iYXRjaBgeIAEoBRImCh5kb3duc3luY19tc2dfYWN0X3Bl",
+            "ZXJfdWRwX2FkZHIYHyABKAUSLgomZG93bnN5bmNfbXNnX2FjdF9iYXR0bGVf",
+            "cmVhZHlfdG9fc3RhcnQYICABKAUSJQodZG93bnN5bmNfbXNnX2FjdF9iYXR0",
+            "bGVfc3RhcnQYISABKAUSLAokZG93bnN5bmNfbXNnX2FjdF9wbGF5ZXJfZGlz",
+            "Y29ubmVjdGVkGCIgASgFEjEKKWRvd25zeW5jX21zZ19hY3RfcGxheWVyX3Jl",
+            "YWRkZWRfYW5kX2Fja2VkGCMgASgFEi8KJ2Rvd25zeW5jX21zZ19hY3RfcGxh",
+            "eWVyX2FkZGVkX2FuZF9hY2tlZBgkIAEoBRIeChZkb3duc3luY19tc2dfd3Nf",
+            "Y2xvc2VkGCUgASgFEhwKFGRvd25zeW5jX21zZ193c19vcGVuGCYgASgFEiAK",
+            "GG1hZ2ljX2pvaW5faW5kZXhfaW52YWxpZBgnIAEoDRInCh9tYWdpY19qb2lu",
+            "X2luZGV4X3Nydl91ZHBfdHVubmVsGCggASgNEhwKFG1hZ2ljX3F1b3RhX2lu",
+            "ZmluaXRlGCkgASgFEiUKHW5wY19mbGVlX2dyYWNlX3BlcmlvZF9yZGZfY250",
+            "GCogASgFEjMKK21hZ2ljX2xhc3Rfc2VudF9pbnB1dF9mcmFtZV9pZF9ub3Jt",
+            "YWxfYWRkZWQYKyABKAUSLgombWFnaWNfbGFzdF9zZW50X2lucHV0X2ZyYW1l",
+            "X2lkX3JlYWRkZWQYLCABKAUSFQoNYmdtX25vX2NoYW5nZRgtIAEoBRIhChlp",
+            "bnZhbGlkX2RlZmF1bHRfcGxheWVyX2lkGC4gASgFEiEKGWVzdGltYXRlZF9z",
+            "ZWNvbmRzX3Blcl9yZGYYLyABKAISHwoXbWF4X2J0bl9ob2xkaW5nX3JkZl9j",
+            "bnQYMCABKAUSGgoSbWF4X2ZseWluZ19yZGZfY250GDEgASgFEi4KJm1heF9y",
+            "ZXZlcnNlX3B1c2hiYWNrX2ZyYW1lc190b19yZWNvdmVyGDIgASgFEiMKG3Nw",
+            "ZWVkX25vdF9oaXRfbm90X3NwZWNpZmllZBg1IAEoBRIlCh1kZWZhdWx0X3By",
+            "ZWFsbG9jX25wY19jYXBhY2l0eRg2IAEoBRIoCiBkZWZhdWx0X3ByZWFsbG9j",
+            "X2J1bGxldF9jYXBhY2l0eRg3IAEoBRImCh5kZWZhdWx0X3ByZWFsbG9jX3Ry",
+            "YXBfY2FwYWNpdHkYOCABKAUSKQohZGVmYXVsdF9wcmVhbGxvY190cmlnZ2Vy",
+            "X2NhcGFjaXR5GDkgASgFEioKImRlZmF1bHRfcHJlYWxsb2NfcGlja2FibGVf",
+            "Y2FwYWNpdHkYOiABKAUSKwojZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2J1ZmZf",
+            "Y2FwYWNpdHkYOyABKAUSLQolZGVmYXVsdF9wZXJfY2hhcmFjdGVyX2RlYnVm",
+            "Zl9jYXBhY2l0eRg8IAEoBRIwCihkZWZhdWx0X3Blcl9jaGFyYWN0ZXJfaW52",
+            "ZW50b3J5X2NhcGFjaXR5GD0gASgFEjsKM2RlZmF1bHRfcGVyX2NoYXJhY3Rl",
+            "cl9pbW11bmVfYnVsbGV0X3JlY29yZF9jYXBhY2l0eRg+IAEoBRIRCglncmF2",
+            "aXR5X3kYPyABKAISHgoWZ3Jhdml0eV95X2p1bXBfaG9sZGluZxhAIAEoAhIp",
+            "CiFkZWZhdWx0X3BhdHJvbF9jdWVfd2FpdmluZ19mcmFtZXMYQSABKAUSGAoQ",
+            "bm9fcGF0cm9sX2N1ZV9pZBhCIAEoBRIRCglub192ZnhfaWQYQyABKAUSLAok",
+            "ZGVmYXVsdF9waWNrYWJsZV9odXJ0Ym94X2hhbGZfc2l6ZV94GEQgASgCEiwK",
+            "JGRlZmF1bHRfcGlja2FibGVfaHVydGJveF9oYWxmX3NpemVfeRhFIAEoAhIx",
+            "CilkZWZhdWx0X3BpY2thYmxlX2Rpc2FwcGVhcmluZ19hbmltX2ZyYW1lcxhG",
+            "IAEoBRItCiVkZWZhdWx0X3BpY2thYmxlX2NvbnN1bWVkX2FuaW1fZnJhbWVz",
+            "GEcgASgFEiUKHWRlZmF1bHRfcGlja2FibGVfcmlzaW5nX3ZlbF95GEggASgC",
+            "EjMKK2RlZmF1bHRfcGlja2FibGVfbm9ucGlja2FibGVfc3RhcnR1cF9mcmFt",
+            "ZXMYSSABKAUSJgoeZGVmYXVsdF9mcmFtZXNfdG9fc2hvd19kYW1hZ2VkGEog",
+            "ASgFEigKIGRlZmF1bHRfZnJhbWVzX3RvX2NvbnRpbnVlX2NvbWJvGEsgASgF",
+            "EiEKGWRlZmF1bHRfYmxvY2tfc3R1bl9mcmFtZXMYTCABKAUSKQohZGVmYXVs",
+            "dF9ibG93bnVwX2ZyYW1lc19mb3JfZmx5aW5nGE0gASgFEiAKGGRlZmF1bHRf",
+            "Z2F1Z2VfaW5jX2J5X2hpdBhOIAEoBRIwCihkZWZhdWx0X2ZyYW1lc19kZWxh",
+            "eWVkX29mX2Jvc3Nfc2F2ZXBvaW50GE8gASgFEhoKEmlucHV0X3NjYWxlX2Zy",
+            "YW1lcxhQIAEoBRITCgtpbnB1dF9zY2FsZRhRIAEoBRIaChJpbnB1dF9kZWxh",
+            "eV9mcmFtZXMYUiABKAUSKQohZGVmYXVsdF9iYWNrZW5kX2lucHV0X2J1ZmZl",
+            "cl9zaXplGFMgASgFEiwKJG1heF9jaGFzaW5nX3JlbmRlcl9mcmFtZXNfcGVy",
+            "X3VwZGF0ZRhUIAEoBRIiChptYWdpY19mcmFtZXNfdG9fYmVfb25fd2FsbBhV",
+            "IAEoBRIrCiNtYWdpY19mcmFtZXNfdG9fYmVfb25fd2FsbF9haXJfanVtcBhW",
+            "IAEoBRIfChdkeWluZ19mcmFtZXNfdG9fcmVjb3ZlchhXIAEoBRIhChlwYXJy",
+            "aWVkX2ZyYW1lc190b19yZWNvdmVyGFggASgFEisKI3BhcnJpZWRfZnJhbWVz",
+            "X3RvX3N0YXJ0X2NhbmNlbGxhYmxlGFkgASgFEhAKCG5vX3NraWxsGFogASgN",
+            "EhQKDG5vX3NraWxsX2hpdBhbIAEoBRIXCg9zcGVjaWVzX25vbmVfY2gYXCAB",
+            "KA0SIgoadXBzeW5jX3N0X2lmZF9pZF90b2xlcmFuY2UYXSABKA0SEwoLbm9f",
+            "bG9ja192ZWwYXiABKAISIgoaZGVidWZmX2FycmF5X2lkeF9lbGVtZW50YWwY",
+            "XyABKAUSIwobdGVybWluYXRpbmdfcmVuZGVyX2ZyYW1lX2lkGGAgASgFEiIK",
+            "GnRlcm1pbmF0aW5nX2lucHV0X2ZyYW1lX2lkGGEgASgFEiAKGHRlcm1pbmF0",
+            "aW5nX2NoYXJhY3Rlcl9pZBhiIAEoDRIbChN0ZXJtaW5hdGluZ190cmFwX2lk",
+            "GGMgASgNEh4KFnRlcm1pbmF0aW5nX3RyaWdnZXJfaWQYZCABKA0SJAocdGVy",
+            "bWluYXRpbmdfdHJpZ2dlcl9ncm91cF9pZBhlIAEoDRIfChd0ZXJtaW5hdGlu",
+            "Z19waWNrYWJsZV9pZBhmIAEoDRIdChV0ZXJtaW5hdGluZ19idWxsZXRfaWQY",
+            "ZyABKA0SIgoadGVybWluYXRpbmdfYnVsbGV0X3RlYW1faWQYaCABKAUSIwob",
+            "dGVybWluYXRpbmdfYnVmZl9zcGVjaWVzX2lkGGkgASgNEiUKHXRlcm1pbmF0",
+            "aW5nX2RlYnVmZl9zcGVjaWVzX2lkGGogASgNEikKIXRlcm1pbmF0aW5nX2Nv",
+            "bnN1bWFibGVfc3BlY2llc19pZBhrIAEoDRIjChtmcm9udGVuZF93c19yZWN2",
+            "X2J5dGVsZW5ndGgYbCABKAUSIgoaYmFja2VuZF93c19yZWN2X2J5dGVsZW5n",
+            "dGgYbSABKAUSIgoaamFtbWVkX2J0bl9ob2xkaW5nX3JkZl9jbnQYbiABKAUS",
+            "KQohYnRuX2JfaG9sZGluZ19yZGZfY250X3RocmVzaG9sZF8yGG8gASgFEikK",
+            "IWJ0bl9iX2hvbGRpbmdfcmRmX2NudF90aHJlc2hvbGRfMRhwIAEoBRIoCiBq",
+            "dW1wX2hvbGRpbmdfcmRmX2NudF90aHJlc2hvbGRfMRhxIAEoBRIoCiBqdW1w",
+            "X2hvbGRpbmdfaWZkX2NudF90aHJlc2hvbGRfMRhyIAEoBRIoCiBqdW1wX2hv",
+            "bGRpbmdfcmRmX2NudF90aHJlc2hvbGRfMhhzIAEoBRIoCiBqdW1wX2hvbGRp",
+            "bmdfaWZkX2NudF90aHJlc2hvbGRfMhh0IAEoBRIoCiBpbl9haXJfZGFzaF9n",
+            "cmFjZV9wZXJpb2RfcmRmX2NudBh1IAEoBRIoCiBpbl9haXJfanVtcF9ncmFj",
+            "ZV9wZXJpb2RfcmRmX2NudBh2IAEoBRIpCiFidG5fZV9ob2xkaW5nX3JkZl9j",
+            "bnRfdGhyZXNob2xkXzEYdyABKAUSKQohYnRuX2VfaG9sZGluZ19pZmRfY250",
+            "X3RocmVzaG9sZF8xGHggASgFEh8KF3BhdHRlcm5faWRfdW5hYmxlX3RvX29w",
+            "GHkgASgFEhgKEHBhdHRlcm5faWRfbm9fb3AYeiABKAUSEQoJcGF0dGVybl9i",
+            "GHsgASgFEhQKDHBhdHRlcm5fdXBfYhh8IAEoBRIWCg5wYXR0ZXJuX2Rvd25f",
+            "Yhh9IAEoBRIWCg5wYXR0ZXJuX2hvbGRfYhh+IAEoBRIWCg5wYXR0ZXJuX2Rv",
+            "d25fYRh/IAEoBRIbChJwYXR0ZXJuX3JlbGVhc2VkX2IYgAEgASgFEhIKCXBh",
+            "dHRlcm5fZRiBASABKAUSGAoPcGF0dGVybl9mcm9udF9lGIIBIAEoBRIXCg5w",
+            "YXR0ZXJuX2JhY2tfZRiDASABKAUSFQoMcGF0dGVybl91cF9lGIQBIAEoBRIX",
+            "Cg5wYXR0ZXJuX2Rvd25fZRiFASABKAUSFwoOcGF0dGVybl9ob2xkX2UYhgEg",
+            "ASgFEhkKEHBhdHRlcm5fZV9ob2xkX2IYhwEgASgFEh8KFnBhdHRlcm5fZnJv",
+            "bnRfZV9ob2xkX2IYiAEgASgFEh4KFXBhdHRlcm5fYmFja19lX2hvbGRfYhiJ",
+            "ASABKAUSHAoTcGF0dGVybl91cF9lX2hvbGRfYhiKASABKAUSHgoVcGF0dGVy",
+            "bl9kb3duX2VfaG9sZF9iGIsBIAEoBRIeChVwYXR0ZXJuX2hvbGRfZV9ob2xk",
+            "X2IYjAEgASgFEiEKGHBhdHRlcm5faW52ZW50b3J5X3Nsb3RfYxiNASABKAUS",
+            "IQoYcGF0dGVybl9pbnZlbnRvcnlfc2xvdF9kGI4BIAEoBRIiChlwYXR0ZXJu",
+            "X2ludmVudG9yeV9zbG90X2JjGI8BIAEoBRImCh1wYXR0ZXJuX2hvbGRfaW52",
+            "ZW50b3J5X3Nsb3RfYxiQASABKAUSJgodcGF0dGVybl9ob2xkX2ludmVudG9y",
+            "eV9zbG90X2QYkQEgASgFEhEKCGVsZV9ub25lGJIBIAEoDRIRCghlbGVfZmly",
+            "ZRiTASABKA0SEgoJZWxlX3dhdGVyGJQBIAEoDRIUCgtlbGVfdGh1bmRlchiV",
+            "ASABKA0SEQoIZWxlX3JvY2sYlgEgASgNEhEKCGVsZV93aW5kGJcBIAEoDRIQ",
+            "CgdlbGVfaWNlGJgBIAEoDRIjChplbGVfd2Vha25lc3NfZGVmYXVsdF95aWVs",
+            "ZBiZASABKAISJQocZWxlX3Jlc2lzdGFuY2VfZGVmYXVsdF95aWVsZBiaASAB",
+            "KAISIQoYc3RhcnRpbmdfcmVuZGVyX2ZyYW1lX2lkGJsBIAEoBRIgChdzdGFy",
+            "dGluZ19pbnB1dF9mcmFtZV9pZBicASABKAUSEQoIdHJ0X25vbmUYnQEgASgN",
+            "EhkKEHRydF9jeWNsaWNfdGltZWQYngEgASgNEhgKD3RydF9ieV9tb3ZlbWVu",
+            "dBifASABKA0SFgoNdHJ0X2J5X2F0dGFjaxigASABKA0SIgoZdHJ0X2luZGlf",
+            "d2F2ZV9ucGNfc3Bhd25lchihASABKA0SIgoZdHJ0X3N5bmNfd2F2ZV9ucGNf",
+            "c3Bhd25lchiiASABKA0SHAoTdHJ0X3NhdmVfcG9pbnRfb25seRijASABKA0S",
+            "HQoUdHJ0X3N0b3J5X3BvaW50X29ubHkYpAEgASgNEiEKGHRydF9zYXZlX2Fu",
+            "ZF9zdG9yeV9wb2ludBilASABKA0SFAoLdHJ0X3ZpY3RvcnkYpgEgASgNEicK",
+            "HnRlcm1pbmF0aW5nX2xvd2VyX3BhcnRfcmRmX2NudBinASABKAUSEQoIdHB0",
+            "X25vbmUYqAEgASgNEh0KFHRwdF9zbGlkaW5nX3BsYXRmb3JtGKkBIAEoDRId",
+            "ChRzcF9hdGtfbG9va3VwX2ZyYW1lcxiABCABKAUSLgoKY2hfc3BlY2llcxiA",
+            "CCABKAsyGS5qdHNoYXJlZC5DaFNwZWNpZXNDb25zdHMifQoJQWltaW5nUmF5",
+            "EhMKC29mZmVuZGVyX3VkGAEgASgEEg4KBm9yaWdfeBgCIAEoAhIOCgZvcmln",
+            "X3kYAyABKAISDgoGb3JpZ196GAQgASgCEg0KBWRpcl94GAUgASgCEg0KBWRp",
+            "cl95GAYgASgCEg0KBWRpcl96GAcgASgCIuoGCgxDb25maWdDb25zdHMSRwoR",
+            "Y2hhcmFjdGVyX2NvbmZpZ3MYASADKAsyLC5qdHNoYXJlZC5Db25maWdDb25z",
+            "dHMuQ2hhcmFjdGVyQ29uZmlnc0VudHJ5Ej8KDXNraWxsX2NvbmZpZ3MYAiAD",
+            "KAsyKC5qdHNoYXJlZC5Db25maWdDb25zdHMuU2tpbGxDb25maWdzRW50cnkS",
+            "PQoMYnVmZl9jb25maWdzGAMgAygLMicuanRzaGFyZWQuQ29uZmlnQ29uc3Rz",
+            "LkJ1ZmZDb25maWdzRW50cnkSQQoOZGVidWZmX2NvbmZpZ3MYBCADKAsyKS5q",
+            "dHNoYXJlZC5Db25maWdDb25zdHMuRGVidWZmQ29uZmlnc0VudHJ5Ej0KDHRy",
+            "YXBfY29uZmlncxgFIAMoCzInLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5UcmFw",
+            "Q29uZmlnc0VudHJ5EkMKD3RyaWdnZXJfY29uZmlncxgGIAMoCzIqLmp0c2hh",
+            "cmVkLkNvbmZpZ0NvbnN0cy5UcmlnZ2VyQ29uZmlnc0VudHJ5GlIKFUNoYXJh",
+            "Y3RlckNvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SKAoFdmFsdWUYAiABKAsy",
+            "GS5qdHNoYXJlZC5DaGFyYWN0ZXJDb25maWc6AjgBGkQKEVNraWxsQ29uZmln",
+            "c0VudHJ5EgsKA2tleRgBIAEoDRIeCgV2YWx1ZRgCIAEoCzIPLmp0c2hhcmVk",
+            "LlNraWxsOgI4ARpIChBCdWZmQ29uZmlnc0VudHJ5EgsKA2tleRgBIAEoDRIj",
+            "CgV2YWx1ZRgCIAEoCzIULmp0c2hhcmVkLkJ1ZmZDb25maWc6AjgBGkwKEkRl",
+            "YnVmZkNvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SJQoFdmFsdWUYAiABKAsy",
+            "Fi5qdHNoYXJlZC5EZWJ1ZmZDb25maWc6AjgBGkgKEFRyYXBDb25maWdzRW50",
+            "cnkSCwoDa2V5GAEgASgNEiMKBXZhbHVlGAIgASgLMhQuanRzaGFyZWQuVHJh",
+            "cENvbmZpZzoCOAEaTgoTVHJpZ2dlckNvbmZpZ3NFbnRyeRILCgNrZXkYASAB",
+            "KA0SJgoFdmFsdWUYAiABKAsyFy5qdHNoYXJlZC5UcmlnZ2VyQ29uZmlnOgI4",
+            "ASo0ChRCb3hJbnRlcnBvbGF0aW9uVHlwZRILCgdVc2VQcmV2EAASDwoLSW50",
+            "ZXJwb2xhdGUQASpVCghJZmFjZUNhdBIJCgVFTVBUWRAAEgkKBUZMRVNIEAES",
+            "CQoFTUVUQUwQAhIJCgVGTFVJRBADEggKBFJPQ0sQBBIJCgVHUkFTUxAFEggK",
+            "BFdPT0QQBio+CgtCdWxsZXRTdGF0ZRILCgdTdGFydFVwEAASCgoGQWN0aXZl",
+            "EAESDQoJVmFuaXNoaW5nEAISBwoDSGl0EAMqiAgKDkNoYXJhY3RlclN0YXRl",
+            "EhIKDkludmFsaWRDaFN0YXRlEAASCQoFSWRsZTEQARILCgdXYWxraW5nEAIS",
+            "DgoKVHVybkFyb3VuZBADEgoKBkF0a2VkMRAEEhQKEEluQWlySWRsZTFOb0p1",
+            "bXAQBRIUChBJbkFpcklkbGUxQnlKdW1wEAYSFAoQSW5BaXJJZGxlMkJ5SnVt",
+            "cBAHEhgKFEluQWlySWRsZTFCeVdhbGxKdW1wEAgSDwoLSW5BaXJBdGtlZDEQ",
+            "CRIMCghCbG93blVwMRAKEgwKCExheURvd24xEAsSCgoGR2V0VXAxEAwSCQoF",
+            "RHlpbmcQDRILCgdEYXNoaW5nEA4SCwoHU2xpZGluZxAPEgoKBkRpbW1lZBAQ",
+            "EhQKEFRyYW5zZm9ybWluZ0ludG8QERIPCgtCYWNrRGFzaGluZxASEhAKDElu",
+            "QWlyV2Fsa2luZxATEh0KGVRyYW5zZm9ybWluZ0ludG9Gcm9tRGVhdGgQFBIQ",
+            "CgxXYWxrU3RvcHBpbmcQFRIVChFJbkFpcldhbGtTdG9wcGluZxAWEgsKB1Bh",
+            "cnJpZWQQFxILCgdBd2FraW5nEBgSEAoMR3JvdW5kRG9kZ2VkEBkSDwoLQmFj",
+            "a1dhbGtpbmcQGhIQCgxJbkFpckRhc2hpbmcQGxIUChBJbkFpckJhY2tEYXNo",
+            "aW5nEBwSEwoPSW5BaXJUdXJuQXJvdW5kEB0SEAoLT25XYWxsSWRsZTEQgAES",
+            "EAoLQ3JvdWNoSWRsZTEQgAISDwoKQ3JvdWNoQXRrMRCBAhISCg1Dcm91Y2hX",
+            "YWxraW5nEIICEhEKDENyb3VjaEF0a2VkMRCDAhIJCgREZWYxEIQCEg8KCkRl",
+            "ZjFBdGtlZDEQhQISDwoKRGVmMUJyb2tlbhCGAhIJCgRBdGsxEIAIEgkKBEF0",
+            "azIQgQgSCQoEQXRrMxCCCBIJCgRBdGs0EIMIEgkKBEF0azUQhAgSCQoEQXRr",
+            "NhCFCBIJCgRBdGs3EIYIEhIKDUF0azdfQ2hhcmdpbmcQhwgSFwoSQXRrN19D",
+            "aGFyZ2VSZWxlYXNlEIgIEgkKBEF0azgQiQgSDgoJSW5BaXJBdGsxEIAQEg4K",
+            "CUluQWlyQXRrMhCBEBIQCgtXYWxraW5nQXRrMRCCEBIQCgtXYWxraW5nQXRr",
+            "NBCDEBIOCglJbkFpckF0azYQhBASDwoKT25XYWxsQXRrMRCAGBISCg1BdGsx",
+            "X0NoYXJnaW5nEIEYEhkKFFdhbGtpbmdBdGsxX0NoYXJnaW5nEIIYEhcKEklu",
+            "QWlyQXRrMV9DaGFyZ2luZxCDGBIYChNPbldhbGxBdGsxX0NoYXJnaW5nEIQY",
+            "EhgKE0Nyb3VjaEF0azFfQ2hhcmdpbmcQhRgq4QEKB05wY0dvYWwSCQoFTklk",
+            "bGUQABIPCgtORm9sbG93QWxseRABEgsKB05QYXRyb2wQAhIRCg1OSHVudFRo",
+            "ZW5JZGxlEAMSEwoPTkh1bnRUaGVuUGF0cm9sEAQSFwoTTkh1bnRUaGVuRm9s",
+            "bG93QWxseRAFEh4KGk5JZGxlSWZHb0h1bnRpbmdUaGVuUGF0cm9sEAYSDwoL",
+            "TlBhdGhQYXRyb2wQBxIXChNOSHVudFRoZW5QYXRoUGF0cm9sEAgSIgoeTklk",
+            "bGVJZkdvSHVudGluZ1RoZW5QYXRoUGF0cm9sEAkqTgoJVHJhcFN0YXRlEgkK",
+            "BVRJZGxlEAASDAoIVFdhbGtpbmcQARIJCgVUQXRrMRACEgsKB1RBdGtlZDEQ",
+            "AxIQCgxURGVhY3RpdmF0ZWQQBCosCgxUcmlnZ2VyU3RhdGUSCgoGVFJlYWR5",
+            "EAASEAoMVENvb2xpbmdEb3duEAEqPAoNUGlja2FibGVTdGF0ZRIJCgVQSWRs",
+            "ZRAAEhEKDVBEaXNhcHBlYXJpbmcQARINCglQQ29uc3VtZWQQAipnCgpCdWxs",
+            "ZXRUeXBlEhAKDFVuZGV0ZXJtaW5lZBAAEgkKBU1lbGVlEAESFwoTTWVjaGFu",
+            "aWNhbENhcnRyaWRnZRACEhMKD01hZ2ljYWxGaXJlYmFsbBADEg4KCkdyb3Vu",
+            "ZFdhdmUQBCrmAQoMTXVsdGlIaXRUeXBlEggKBE5vbmUQABIQCgxGcm9tRW1p",
+            "c3Npb24QARIWChJGcm9tRmlyc3RIaXRBY3R1YWwQAhIWChJGcm9tRmlyc3RI",
+            "aXRBbnl3YXkQAxIVChFGcm9tUHJldkhpdEFjdHVhbBAEEhUKEUZyb21QcmV2",
+            "SGl0QW55d2F5EAUSGwoXRnJvbVZpc2lvblNlZWtPckRlZmF1bHQQBhIjCh9G",
+            "cm9tUHJldkhpdEFjdHVhbE9yQWN0aXZlVGltZVVwEAcSGgoWRnJvbUVtaXNz",
+            "aW9uSnVzdEFjdGl2ZRAIKjIKD1NraWxsSW52b2NhdGlvbhIOCgpSaXNpbmdF",
+            "ZGdlEAASDwoLRmFsbGluZ0VkZ2UQASosCg9WZnhEdXJhdGlvblR5cGUSCgoG",
+            "T25lT2ZmEAASDQoJUmVwZWF0aW5nEAEqNwoNVmZ4TW90aW9uVHlwZRIMCghO",
+            "b01vdGlvbhAAEgsKB0Ryb3BwZWQQARILCgdUcmFjaW5nEAIqgQEKCVVwc3lu",
+            "Y0FjdBILCgdVQV9OT05FEAASCgoGVUFfQ01EEAESFgoSVUFfU0VMRl9QQVJT",
+            "RURfUkRGEAISIwofVUFfSE9MRVBVTkNIX0JBQ0tFTkRfVURQX1RVTk5FTBAD",
+            "Eh4KGlVBX0hPTEVQVU5DSF9QRUVSX1VEUF9BRERSEAQq/wMKC0Rvd25zeW5j",
+            "QWN0EgsKB0RBX05PTkUQABIOCgpEQV9SRUdVTEFSEAESFQoRREFfQkFUVExF",
+            "X1BSRVBBUkUQAhIcChhEQV9CQVRUTEVfUkVBRFlfVE9fU1RBUlQQAxIVChFE",
+            "QV9CQVRUTEVfU1RBUlRFRBAEEhUKEURBX0JBVFRMRV9TVE9QUEVEEAUSGwoX",
+            "REFfQkFUVExFX1BFRVJfVURQX0FERFIQBhIfChtEQV9CQVRUTEVfUEVFUl9E",
+            "SVNDT05ORUNURUQQBxIZChVEQV9CQVRUTEVfUEVFUl9KT0lORUQQCBIbChdE",
+            "QV9CQVRUTEVfUEVFUl9SRUpPSU5FRBAJEikKJURBX0ZBSUxFRF9UT19KT0lO",
+            "X0JBVFRMRV9OT1RfSk9JTkFCTEUQChIlCiFEQV9GQUlMRURfVE9fSk9JTl9B",
+            "TFJFQURZX0lOX1JPT00QCxItCilEQV9GQUlMRURfVE9fUkVKT0lOX0JBVFRM",
+            "RV9OT1RfUkVKT0lOQUJMRRAMEikKJURBX0ZBSUxFRF9UT19SRUpPSU5fTk9U",
+            "X0ZPVU5EX0lOX1JPT00QDRIsCihEQV9GQUlMRURfVE9fUkVKT0lOX1BMQVlF",
+            "Ul9TVEFURV9JTlZBTElEEA4SDgoKREFfV1NfT1BFThBAEhAKDERBX1dTX0NM",
+            "T1NFRBBBKjEKDUJ1ZmZTdG9ja1R5cGUSCgoGTm9uZUJmEAASCQoFVGltZWQQ",
+            "ARIJCgVRdW90YRACKnEKCkRlYnVmZlR5cGUSCwoHTm9uZURiZhAAEhEKDVNw",
+            "ZWVkRG93bk9ubHkQARIRCg1Db2xkU3BlZWREb3duEAISFgoSUG9zaXRpb25M",
+            "b2NrZWRPbmx5EAMSGAoURnJvemVuUG9zaXRpb25Mb2NrZWQQBCo2Cg5Db25z",
+            "dW1hYmxlVHlwZRIMCghOb25lQ3NtYhAAEgoKBlJlZmlsbBABEgoKBkRiZlJj",
+            "dhACKp8BChZJbnZlbnRvcnlTbG90U3RvY2tUeXBlEgoKBk5vbmVJdhAAEgsK",
+            "B0R1bW15SXYQARIMCghQb2NrZXRJdhACEgsKB1RpbWVkSXYQAxILCgdRdW90",
+            "YUl2EAQSEwoPVGltZWRNYWdhemluZUl2EAUSFAoQR2F1Z2VkTWFnYXppbmVJ",
+            "dhAGEhkKFUdhdWdlZFRpbWVkTWFnYXppbmVJdhAHKjwKGVBsYXllclN0b3J5",
+            "TW9kZVNlbGVjdFZpZXcSCAoETk9ORRAAEgoKBlJFR0lPThABEgkKBUxFVkVM",
+            "EAIqNQoQRmluaXNoZWRMdk9wdGlvbhINCglCT1NTX09OTFkQABISCg5TVE9S",
+            "WV9BTkRfQk9TUxABKs0BCgpQaWNrdXBUeXBlEgoKBlBrTm9uZRAAEhQKEEhw",
+            "U21hbGxJbW1lZGlhdGUQARIVChFIcE1lZGl1bUltbWVkaWF0ZRACEhIKDkhw",
+            "QmlnSW1tZWRpYXRlEAMSFAoQTXBTbWFsbEltbWVkaWF0ZRAEEhUKEU1wTWVk",
+            "aXVtSW1tZWRpYXRlEAUSEgoOTXBCaWdJbW1lZGlhdGUQBhIYChNTa2lsbDFJ",
+            "bnRvSW52ZW50b3J5EIAEEhcKEkJ1ZmYxSW50b0ludmVudG9yeRCACEILqgII",
+            "anRzaGFyZWRiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::jtshared.BoxInterpolationType), typeof(global::jtshared.IfaceCat), typeof(global::jtshared.BulletState), typeof(global::jtshared.CharacterState), typeof(global::jtshared.NpcGoal), typeof(global::jtshared.TrapState), typeof(global::jtshared.TriggerState), typeof(global::jtshared.PickableState), typeof(global::jtshared.BulletType), typeof(global::jtshared.MultiHitType), typeof(global::jtshared.SkillInvocation), typeof(global::jtshared.VfxDurationType), typeof(global::jtshared.VfxMotionType), typeof(global::jtshared.UpsyncAct), typeof(global::jtshared.DownsyncAct), typeof(global::jtshared.BuffStockType), typeof(global::jtshared.DebuffType), typeof(global::jtshared.ConsumableType), typeof(global::jtshared.InventorySlotStockType), typeof(global::jtshared.PlayerStoryModeSelectView), typeof(global::jtshared.FinishedLvOption), typeof(global::jtshared.PickupType), }, new pbr::GeneratedClrTypeInfo[] {
@@ -810,22 +800,21 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SteamAuthenticateUserTicketResult), global::jtshared.SteamAuthenticateUserTicketResult.Parser, new[]{ "Response" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleInvitation), global::jtshared.BattleInvitation.Parser, new[]{ "FromPlayerId", "ToBattlesrvId", "BoundRoomId", "ExpiresAt", "Passcode" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterConfig), global::jtshared.CharacterConfig.Parser, new[]{ "SpeciesId", "SpeciesName", "Hp", "Mp", "LayDownFrames", "LayDownFramesToRecover", "GetUpInvinsibleFrames", "GetUpFramesToRecover", "Speed", "MpRegenPerInterval", "MpRegenInterval", "JumpingInitVelY", "DashingEnabled", "SlidingEnabled", "OnWallEnabled", "CrouchingEnabled", "CrouchingAtkEnabled", "WallJumpingFramesToRecover", "WallJumpingInitVelX", "WallJumpingInitVelY", "WallSlidingVelY", "MinFallingVelY", "MaxAscendingVelY", "Atk1UsesMagazine", "GroundDodgeEnabledByIvSlotCInBlockStun", "GroundDodgeEnabledByRdfCntFromBeginning", "GroundDodgedFramesToRecover", "GroundDodgedFramesInvinsible", "GroundDodgedSpeed", "HasVisionReaction", "CapsuleRadius", "CapsuleHalfHeight", "ShrinkedCapsuleRadius", "ShrinkedCapsuleHalfHeight", "LayDownCapsuleRadius", "LayDownCapsuleHalfHeight", "DyingCapsuleRadius", "DyingCapsuleHalfHeight", "DimmedCapsuleRadius", "DimmedCapsuleHalfHeight", "AntiGravityWhenIdle", "AntiGravityFramesLingering", "OmitGravity", "OmitSoftPushback", "RepelSoftPushback", "CollisionTypeMask", "VisionOffsetX", "VisionOffsetY", "VisionHalfHeight", "VisionTopRadius", "VisionBottomRadius", "LayDownToRecoverFromDimmed", "Hardness", "ProactiveJumpStartupFrames", "DefaultAirJumpQuota", "DefaultAirDashQuota", "DefaultDef1Quota", "IsolatedAirJumpAndDashQuota", "AirJumpVfxSpeciesId", "SlipJumpThresHoldBelowTopFace", "SlipJumpCharacterDropY", "TransformIntoSpeciesIdUponDeath", "JumpHoldingToFly", "HasDef1", "HasDef1Atked1Anim", "DefaultDef1BrokenFramesToRecover", "Def1ActiveVfxSpeciesId", "Def1AtkedVfxSpeciesId", "Def1BrokenVfxSpeciesId", "Def1StartupFrames", "Def1DamageYield", "Def1DefiesEleWeaknessPenetration", "Def1DefiesDebuff", "FlyingQuotaRdfCnt", "WalkingAutoDef1", "Ifc", "EleWeakness", "EleResistance", "HasBtnBCharging", "BtnBChargedVfxSpeciesId", "IsKeyCh", "AllowsSameTeamSoftPushback", "GaugeIncWhenExhausted", "JumpingInsteadOfWalking", "VisionSearchIntervalPow2Minus1U", "VisionSearchIntervalPow2Minus1", "NpcNoDefaultAirWalking", "NpcPrioritizeBulletHandling", "NpcPrioritizeAllyHealing", "NpcNotHuntingInAirOppoCh", "TransformIntoFramesToRecover", "TransformIntoFramesInvinsible", "AwakingFramesToRecover", "AwakingFramesInvinsible", "UseIdle1AsFlyingIdle", "NoFlee", "AccMag", "Atk1Magazine", "SuperAtkGauge", "InitInventorySlots", "BtnBAutoUnholdChStates", "LoopingChStates", "InitSkillTransit", "HasInAirWalkingAnim", "HasTurnAroundAnim", "HasInAirTurnAroundAnim", "HasWalkStoppingAnim", "HasInAirWalkStoppingAnim", "HasDimmedAnim", "HasAwakingAnim" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterDownsync), global::jtshared.CharacterDownsync.Parser, new[]{ "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "AimingQX", "AimingQY", "AimingQZ", "AimingQW", "Hp", "Mp", "ChState", "FramesInChState", "LowerPartRdfCnt", "JumpTriggered", "OmitGravity", "SpeciesId", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "FramesToRecover", "NewBirthRdfCountdown", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "BulletTeamId", "RemainingAirJumpQuota", "RemainingAirDashQuota", "DamagedHintRdfCountdown", "DamagedElementalAttrs", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "LastDamagedByUd", "LastDamagedByBulletTeamId", "ActiveSkillId", "ActiveSkillHit", "BtnAHoldingRdfCnt", "BtnBHoldingRdfCnt", "BtnCHoldingRdfCnt", "BtnDHoldingRdfCnt", "BtnEHoldingRdfCnt", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnUd", "ChCollisionTeamId", "Speed", "BuffList", "DebuffList", "Atk1Magazine", "SuperAtkGauge", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.CharacterDownsync), global::jtshared.CharacterDownsync.Parser, new[]{ "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "GroundVelX", "GroundVelY", "GroundVelZ", "AimingQX", "AimingQY", "AimingQZ", "AimingQW", "JumpTriggered", "OmitGravity", "SpeciesId", "ForcedCrouching", "SlipJumpTriggered", "PrimarilyOnSlippableHardPushback", "FramesToRecover", "NewBirthRdfCountdown", "FramesInvinsible", "JumpStarted", "FramesToStartJump", "BulletTeamId", "RemainingAirJumpQuota", "RemainingAirDashQuota", "DamagedHintRdfCountdown", "DamagedElementalAttrs", "RemainingDef1Quota", "ComboHitCnt", "ComboFramesRemained", "LastDamagedByUd", "LastDamagedByBulletTeamId", "ActiveSkillId", "ActiveSkillHit", "BtnAHoldingRdfCnt", "BtnBHoldingRdfCnt", "BtnCHoldingRdfCnt", "BtnDHoldingRdfCnt", "BtnEHoldingRdfCnt", "ParryPrepRdfCntDown", "MpRegenRdfCountdown", "FlyingRdfCountdown", "LockingOnUd", "ChCollisionTeamId", "Speed", "Hp", "Mp", "ChState", "FramesInChState", "LowerPartRdfCnt", "BuffList", "DebuffList", "Atk1Magazine", "SuperAtkGauge", "Inventory", "BulletImmuneRecords", "KinematicKnobs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerCharacterDownsync), global::jtshared.PlayerCharacterDownsync.Parser, new[]{ "Chd", "JoinIndex", "BeatsCnt", "BeatenCnt", "RevivalX", "RevivalY", "RevivalZ", "RevivalQX", "RevivalQY", "RevivalQZ", "RevivalQW", "NotEnoughMpHintRdfCountdown", "CachedCueCmd", "GoalAsNpc" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.NpcCharacterDownsync), global::jtshared.NpcCharacterDownsync.Parser, new[]{ "Chd", "Id", "ActivatedRdfId", "CachedCueCmd", "WaivingPatrolCueId", "GoalAsNpc", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "SubscribesToTriggerId", "SubscribesToTriggerGroupId", "CapturedByPatrolCue", "FramesInPatrolCue", "ExhaustedToDropConsumableSpeciesId", "ExhaustedToDropBuffSpeciesId", "ExhaustedToDropPickupSkillId", "IsMainTowerOfTeam" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDecoded), global::jtshared.InputFrameDecoded.Parser, new[]{ "Dx", "Dy", "BtnALevel", "BtnBLevel", "BtnCLevel", "BtnDLevel", "BtnELevel" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.UpsyncSnapshot), global::jtshared.UpsyncSnapshot.Parser, new[]{ "StIfdId", "CmdList" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.WsReq), global::jtshared.WsReq.Parser, new[]{ "SeqNo", "JoinIndex", "Act", "AuthKey", "UpsyncSnapshot", "SelfParsedRdf", "BattleDurationSeconds", "SerializedBarriers", "PreallocateNpcSpeciesDict", "TrapConfigFromTileList", "TriggerConfigFromTileList", "FallenDeathHeight" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PatrolCue), global::jtshared.PatrolCue.Parser, new[]{ "Id", "FlAct", "FrAct", "FlCaptureFrames", "FrCaptureFrames", "FdAct", "FuAct", "FdCaptureFrames", "FuCaptureFrames", "CollisionTypeMask" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.VfxConfig), global::jtshared.VfxConfig.Parser, new[]{ "SpeciesId", "MotionType", "DurationType", "OnCharacter", "OnBullet", "OnTrap", "UsePixelatedVer", "Name" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletConfig), global::jtshared.BulletConfig.Parser, new[]{ "StartupFrames", "CancellableStFrame", "CancellableEdFrame", "ActiveFrames", "CooldownFrames", "HitStunFrames", "BlockStunFrames", "PushbackVelX", "PushbackVelY", "Damage", "SelfLockVelX", "SelfLockVelY", "SelfLockVelYWhenFlying", "HitboxOffsetX", "HitboxOffsetY", "HitboxHalfSizeX", "HitboxHalfSizeY", "BlowUp", "SpeciesId", "ExplosionFrames", "BType", "MhType", "SimultaneousMultiHitCnt", "Speed", "CancelTransit", "RepeatQuota", "ActiveVfxSpeciesId", "ExplosionVfxSpeciesId", "AllowsWalking", "AllowsCrouching", "Hardness", "StartupInvinsibleFrames", "HitInvinsibleFrames", "ExplosionSpeciesId", "PerpAccMag", "DelaySelfVelToActive", "SpeedIfNotHit", "OmitSoftPushback", "HitboxSizeIncX", "HitboxSizeIncY", "RemainsUponHit", "RotatesAlongVelocity", "DefaultHardPushbackBounceQuota", "HardPushbackBounceNormFactor", "HardPushbackBounceSheerFactor", "IsPixelatedActiveVfx", "IsPixelatedExplostionVfx", "MhVanishOnMeleeHit", "MhUpdatesOriginPos", "BeamCollision", "ForAlly", "ElementalAttrs", "CancellableByInventorySlotC", "CancellableByInventorySlotD", "BeamVisualSizeY", "TouchExplosionBombCollision", "AirRidingGroundWave", "GroundImpactMeleeCollision", "WallImpactMeleeCollision", "MhInheritsSpin", "InitQ", "StartupVfxSpeciesId", "Ifc", "ReflectFireballXIfNotHarder", "RejectReflectionFromAnotherBullet", "ProvidesXHardPushback", "ProvidesYHardPushbackTop", "ProvidesYHardPushbackBottom", "IgnoreSlopeDeceleration", "RotateOffenderWithSpin", "MhNotTriggerOnChHit", "MhNotTriggerOnHarderBulletHit", "MhNotTriggerOnHardPushbackHit", "HopperMissile", "BeamRendering", "MissileSearchIntervalPow2Minus1", "UseChOffsetRegardlessOfEmissionMh", "InplaceVanishExplosionSpeciesId", "AnimLoopingRdfOffset", "ExplosionAnimLoopingRdfOffset", "GaugeIncReductionRatio", "MhInheritsFramesInBlState", "GuardBreakerExtraHitCnt", "TakesDef1AsHardPushback", "FinishingFrames", "NoExplosionOnHardPushback", "ExplodeOnMultiContact", "CollisionTypeMask", "TakesGravity", "BuffConfig", "CharacterEmitSfxName", "FireballEmitSfxName", "ExplosionSfxName", "ActiveSfxName", "ExplosionOnFleshSfxName", "ExplosionOnRockSfxName", "ExplosionOnMetalSfxName", "ExplosionOnWoodSfxName" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Bullet), global::jtshared.Bullet.Parser, new[]{ "BlState", "FramesInBlState", "Ud", "OriginatedRenderFrameId", "OffenderUd", "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "OriginatedX", "OriginatedY", "OriginatedZ", "RepeatQuotaLeft", "RemainingHardPushbackBounceQuota", "TargetUd", "DamageDealed", "ExplodedOnIfc", "ActiveSkillHit", "SkillId", "Id", "TeamId", "ForAlly" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfig), global::jtshared.TrapConfig.Parser, new[]{ "Tpt", "ExplosionSpeciesId", "ExplosionFrames", "BlowUp", "Damage", "HitStunFrames", "HitInvinsibleFrames", "Deactivatable", "Hardness", "DeactivateUponTriggered", "SurfaceFriction", "PatrolCueRequiresFullContain", "Atk1UponTriggered", "Atk1SkillId", "IsRotary", "NoXFlipRendering", "DefaultBoxHalfSizeX", "DefaultBoxHalfSizeY", "DefaultLinearSpeed", "DefaultAngularSpeed", "DefaultCooldownRdfCount", "SpeciesName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletConfig), global::jtshared.BulletConfig.Parser, new[]{ "StartupFrames", "StartupInvinsibleFrames", "CancellableStFrame", "CancellableEdFrame", "ActiveFrames", "CooldownFrames", "HitStunFrames", "BlockStunFrames", "PushbackVelX", "PushbackVelY", "Damage", "SelfLockVelX", "SelfLockVelY", "SelfLockVelYWhenFlying", "HitboxOffsetX", "HitboxOffsetY", "HitboxHalfSizeX", "HitboxHalfSizeY", "AnimName", "ActiveAnimLoopingRdfOffset", "VanishingAnimRdfCnt", "VanishingAnimLoopingRdfOffset", "HitAnimRdfCnt", "BType", "MhType", "SimultaneousMultiHitCnt", "Speed", "SpeedIfNotHit", "Hardness", "HitInvinsibleFrames", "PerpAccMag", "DelaySelfVelToActive", "OmitSoftPushback", "RemainsUponHit", "RotatesAlongVelocity", "DefaultHardPushbackBounceQuota", "HardPushbackBounceNormFactor", "HardPushbackBounceSheerFactor", "BlowUp", "RepeatQuota", "MhVanishOnMeleeHit", "MhUpdatesOriginPos", "BeamCollision", "ForAlly", "HitboxSizeIncX", "HitboxSizeIncY", "AllowsWalking", "AllowsCrouching", "ElementalAttrs", "CancelTransit", "BeamVisualSizeY", "TouchHitBombCollision", "AirRidingGroundWave", "GroundImpactMeleeCollision", "WallImpactMeleeCollision", "MhInheritsSpin", "InitQ", "Ifc", "ReflectFireballXIfNotHarder", "RejectReflectionFromAnotherBullet", "ProvidesXHardPushback", "ProvidesYHardPushbackTop", "ProvidesYHardPushbackBottom", "IgnoreSlopeDeceleration", "RotateOffenderWithSpin", "MhNotTriggerOnChHit", "MhNotTriggerOnHarderBulletHit", "MhNotTriggerOnHardPushbackHit", "HopperMissile", "BeamRendering", "MissileSearchIntervalPow2Minus1", "UseChOffsetRegardlessOfEmissionMh", "GaugeIncReductionRatio", "MhInheritsFramesInBlState", "GuardBreakerExtraHitCnt", "TakesDef1AsHardPushback", "FinishingFrames", "NoVanishAnimOnHardPushback", "HitOnMultiContact", "CollisionTypeMask", "TakesGravity", "BuffConfig", "CharacterEmitSfxName", "FireballEmitSfxName", "HitSfxName", "ActiveSfxName", "HitOnFleshSfxName", "HitOnRockSfxName", "HitOnMetalSfxName", "HitOnWoodSfxName" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Bullet), global::jtshared.Bullet.Parser, new[]{ "BlState", "FramesInBlState", "Ud", "OriginatedRenderFrameId", "OffenderUd", "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "OriginatedX", "OriginatedY", "OriginatedZ", "RepeatQuotaLeft", "RemainingHardPushbackBounceQuota", "TargetUd", "DamageDealed", "HitOnIfc", "ActiveSkillHit", "SkillId", "Id", "TeamId", "ForAlly", "GroundVelX", "GroundVelY", "GroundVelZ" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfig), global::jtshared.TrapConfig.Parser, new[]{ "Tpt", "DyingAnimName", "DyingAnimRdfCnt", "BlowUp", "Damage", "HitStunFrames", "HitInvinsibleFrames", "Deactivatable", "Hardness", "DeactivateUponTriggered", "SurfaceFriction", "UseKinematic", "PatrolCueRequiresFullContain", "Atk1UponTriggered", "Atk1SkillId", "IsRotary", "NoXFlipRendering", "DefaultBoxHalfSizeX", "DefaultBoxHalfSizeY", "DefaultLinearSpeed", "DefaultAngularSpeed", "DefaultCooldownRdfCount", "TptName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TrapConfigFromTiled), global::jtshared.TrapConfigFromTiled.Parser, new[]{ "Id", "Tpt", "Quota", "BoxHalfSizeX", "BoxHalfSizeY", "LinearSpeed", "AngularSpeed", "InitX", "InitY", "InitZ", "InitQX", "InitQY", "InitQZ", "InitQW", "InitVelX", "InitVelY", "InitVelZ", "CooldownRdfCount", "SliderAxisX", "SliderAxisY", "SliderAxisZ", "Limit1", "Limit2", "Limit3", "Limit4", "InitNotMoving" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BarrierColliderAttr), global::jtshared.BarrierColliderAttr.Parser, new[]{ "ProvidesHardPushback", "ProvidesSlipJump", "ProhibitsWallGrabbing", "ForcesCrouching", "OnlyAllowsAlignedVelX", "OnlyAllowsAlignedVelY" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trap), global::jtshared.Trap.Parser, new[]{ "Id", "Tpt", "TrapState", "FramesInTrapState", "SubscribesToTriggerId", "SubscribesToTriggerGroupId", "X", "Y", "Z", "QX", "QY", "QZ", "QW", "VelX", "VelY", "VelZ", "AngVelX", "AngVelY", "AngVelZ" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PeerUdpAddr), global::jtshared.PeerUdpAddr.Parser, new[]{ "Ip", "Port", "AuthKey", "SeqNo" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StepResult), global::jtshared.StepResult.Parser, new[]{ "FulfilledTriggers" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.StepResult), global::jtshared.StepResult.Parser, new[]{ "FulfilledTriggers", "FulfilledTriggerGroupIds" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RenderFrame), global::jtshared.RenderFrame.Parser, new[]{ "Id", "Players", "CountdownNanos", "Bullets", "Npcs", "DynamicTraps", "Triggers", "Pickables", "BulletIdCounter", "BulletCount", "NpcIdCounter", "NpcCount", "TriggerCount", "PickableIdCounter", "PickableCount", "DynamicTrapCount", "PrevRdfStepResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattlePrepareInfo), global::jtshared.BattlePrepareInfo.Parser, new[]{ "StageName", "BoundRoomId", "BattleDurationFrames", "BoundRoomCapacity", "FrameLogEnabled" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InputFrameDownsync), global::jtshared.InputFrameDownsync.Parser, new[]{ "InputList", "ConfirmedList", "UdpConfirmedList" }, null, null, null),
@@ -834,12 +823,12 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.FrameLog), global::jtshared.FrameLog.Parser, new[]{ "Rdf", "ActuallyUsedIfdId", "UsedIfdInputList", "UsedIfdConfirmedList", "UsedIfdUdpConfirmedList", "TimerRdfId", "LcacIfdId", "ChaserRdfId", "ChaserRdfIdLowerBound", "ChaserStRdfId", "ChaserEdRdfId", "ChaserRdfIdLowerBoundSnatched" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BattleResult), global::jtshared.BattleResult.Parser, new[]{ "WinnerJoinIndex", "WinnerBulletTeamId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.DebuffConfig), global::jtshared.DebuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "Type", "ArrIdx", "ImpactPerInterval", "ImpactInterval" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BuffConfig), global::jtshared.BuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "SpeedDelta", "HitboxHalfSizeXDelta", "HitboxHalfSizeYDelta", "DamageDelta", "DamageDeltaByPercentage", "CharacterHardnessDelta", "MeleeHardnessDelta", "FireballHardnessDelta", "Invinsible", "XformChSpeciesId", "RepelSoftPushback", "OmitGravity", "AutoDef1", "AssociatedDebuffs", "CharacterVfxSpeciesId", "IsPixelatedVfxOnCharacter" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BuffConfig), global::jtshared.BuffConfig.Parser, new[]{ "SpeciesId", "StockType", "Stock", "SpeedDelta", "HitboxHalfSizeXDelta", "HitboxHalfSizeYDelta", "DamageDelta", "DamageDeltaByPercentage", "CharacterHardnessDelta", "MeleeHardnessDelta", "FireballHardnessDelta", "Invinsible", "XformChSpeciesId", "RepelSoftPushback", "OmitGravity", "AutoDef1", "AssociatedDebuffs", "CharacterVfxAnimName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Buff), global::jtshared.Buff.Parser, new[]{ "SpeciesId", "Stock", "OriginatedRenderFrameId", "OrigChSpeciesId", "OrigRepelSoftPushback", "OrigOmitGravity" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Debuff), global::jtshared.Debuff.Parser, new[]{ "SpeciesId", "Stock" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.BulletImmuneRecord), global::jtshared.BulletImmuneRecord.Parser, new[]{ "BulletId", "RemainingLifetimeRdfCount" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConsumableConfig), global::jtshared.ConsumableConfig.Parser, new[]{ "SpeciesId", "RefillDelta", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSkillConfig), global::jtshared.PickableSkillConfig.Parser, new[]{ "SkillId", "VfxIdOnPicker", "IsPixelatedVfxOnPicker" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConsumableConfig), global::jtshared.ConsumableConfig.Parser, new[]{ "SpeciesId", "RefillDelta", "VfxAnimNameOnPicker" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSkillConfig), global::jtshared.PickableSkillConfig.Parser, new[]{ "SkillId", "VfxAnimNameOnPicker" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InventorySlotConfig), global::jtshared.InventorySlotConfig.Parser, new[]{ "StockType", "Quota", "FramesToRecover", "BuffSpeciesId", "SkillId", "SkillIdAir", "GaugeRequired", "FullChargeBuffSpeciesId", "FullChargeSkillId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InventorySlot), global::jtshared.InventorySlot.Parser, new[]{ "StockType", "Quota", "FramesToRecover", "GaugeCharged" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Inventory), global::jtshared.Inventory.Parser, new[]{ "Slots" }, null, null, null),
@@ -856,7 +845,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.LevelStory), global::jtshared.LevelStory.Parser, new[]{ "Points" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializableConvexPolygon), global::jtshared.SerializableConvexPolygon.Parser, new[]{ "Anchor", "Points", "IsBox", "BoxQX", "BoxQY", "BoxQZ", "BoxQW" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.SerializedBarrierCollider), global::jtshared.SerializedBarrierCollider.Parser, new[]{ "Attr", "Polygon" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfig), global::jtshared.PickableConfig.Parser, new[]{ "PickupType", "TakesGravity", "VfxSpeciesId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfig), global::jtshared.PickableConfig.Parser, new[]{ "PickupType", "TakesGravity", "ActiveAnimName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableConfigFromTiled), global::jtshared.PickableConfigFromTiled.Parser, new[]{ "PickupType", "RecurQuota", "LifetimeRdfCountPerOccurrence", "StockQuotaPerOccurrence" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Pickable), global::jtshared.Pickable.Parser, new[]{ "Id", "PickupType", "PkState", "FramesInPkState", "X", "Y", "Z", "VelX", "VelY", "VelZ", "RemainingLifetimeRdfCount", "RemainingRecurQuota", "PickerUd" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.InjectedCmdConfig), global::jtshared.InjectedCmdConfig.Parser, new[]{ "CutoffRdfId", "Op" }, null, null, null),
@@ -864,7 +853,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableSpawnerConfig), global::jtshared.PickableSpawnerConfig.Parser, new[]{ "CutoffRdfId", "SpeciesIdList", "InitOpList", "PickupTypeList" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfig), global::jtshared.TriggerConfig.Parser, new[]{ "Trt" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.TriggerConfigFromTiled), global::jtshared.TriggerConfigFromTiled.Parser, new[]{ "Id", "Trt", "DelayedFrames", "RecoveryFrames", "BulletTeamId", "SubCycleTriggerFrames", "SubCycleQuota", "QuotaCap", "NewRevivalX", "NewRevivalY", "InitQx", "InitQy", "InitQz", "InitQw", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "ForceCtrlRdfCount", "ForceCtrlCmd", "StoryPointId", "BgmId", "IsBossSavepoint", "BossSpeciesSet", "CharacterSpawnerTimeSeq", "PickableSpawnerTimeSeq" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "Id", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "SubCycleQuota", "State", "FramesInState", "X", "Y", "Z", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcExhaustedEvtMaskCounter", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "OffenderUd", "OffenderBulletTeamId", "Trt" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.Trigger), global::jtshared.Trigger.Parser, new[]{ "Id", "GroupId", "FramesToFire", "FramesToRecover", "Quota", "BulletTeamId", "SubCycleQuota", "State", "FramesInState", "X", "Y", "Z", "DemandedEvtMask", "FulfilledEvtMask", "WaveNpcExhaustedEvtMaskCounter", "PublishingEvtMaskUponExhausted", "PublishingToTriggerIdUponExhausted", "OffenderUd", "OffenderBulletTeamId", "Trt" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PlayerMetaInfo), global::jtshared.PlayerMetaInfo.Parser, new[]{ "PlayerId", "JoinIndex", "BulletTeamId", "SpeciesId", "RoomId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.RpcEndpointHolder), global::jtshared.RpcEndpointHolder.Parser, new[]{ "Id", "ExternalAddrHost", "ExternalAddrPort", "InternalAddrHost" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ChSpeciesConsts), global::jtshared.ChSpeciesConsts.Parser, new[]{ "Bladegirl", "Bountyhunter", "Blacksaber1", "NoneCh", "BlacksaberTestNoVision", "BlacksaberTestWithVision" }, null, null, null),
@@ -906,8 +895,8 @@ namespace jtshared {
   public enum BulletState {
     [pbr::OriginalName("StartUp")] StartUp = 0,
     [pbr::OriginalName("Active")] Active = 1,
-    [pbr::OriginalName("Exploding")] Exploding = 2,
-    [pbr::OriginalName("Vanishing")] Vanishing = 3,
+    [pbr::OriginalName("Vanishing")] Vanishing = 2,
+    [pbr::OriginalName("Hit")] Hit = 3,
   }
 
   public enum CharacterState {
@@ -6303,15 +6292,13 @@ namespace jtshared {
       velX_ = other.velX_;
       velY_ = other.velY_;
       velZ_ = other.velZ_;
+      groundVelX_ = other.groundVelX_;
+      groundVelY_ = other.groundVelY_;
+      groundVelZ_ = other.groundVelZ_;
       aimingQX_ = other.aimingQX_;
       aimingQY_ = other.aimingQY_;
       aimingQZ_ = other.aimingQZ_;
       aimingQW_ = other.aimingQW_;
-      hp_ = other.hp_;
-      mp_ = other.mp_;
-      chState_ = other.chState_;
-      framesInChState_ = other.framesInChState_;
-      lowerPartRdfCnt_ = other.lowerPartRdfCnt_;
       jumpTriggered_ = other.jumpTriggered_;
       omitGravity_ = other.omitGravity_;
       speciesId_ = other.speciesId_;
@@ -6346,6 +6333,11 @@ namespace jtshared {
       lockingOnUd_ = other.lockingOnUd_;
       chCollisionTeamId_ = other.chCollisionTeamId_;
       speed_ = other.speed_;
+      hp_ = other.hp_;
+      mp_ = other.mp_;
+      chState_ = other.chState_;
+      framesInChState_ = other.framesInChState_;
+      lowerPartRdfCnt_ = other.lowerPartRdfCnt_;
       buffList_ = other.buffList_.Clone();
       debuffList_ = other.debuffList_.Clone();
       atk1Magazine_ = other.atk1Magazine_ != null ? other.atk1Magazine_.Clone() : null;
@@ -6477,8 +6469,41 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "ground_vel_x" field.</summary>
+    public const int GroundVelXFieldNumber = 11;
+    private float groundVelX_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelX {
+      get { return groundVelX_; }
+      set {
+        groundVelX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ground_vel_y" field.</summary>
+    public const int GroundVelYFieldNumber = 12;
+    private float groundVelY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelY {
+      get { return groundVelY_; }
+      set {
+        groundVelY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ground_vel_z" field.</summary>
+    public const int GroundVelZFieldNumber = 13;
+    private float groundVelZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelZ {
+      get { return groundVelZ_; }
+      set {
+        groundVelZ_ = value;
+      }
+    }
+
     /// <summary>Field number for the "aiming_q_x" field.</summary>
-    public const int AimingQXFieldNumber = 11;
+    public const int AimingQXFieldNumber = 14;
     private float aimingQX_;
     /// <summary>
     ///
@@ -6493,7 +6518,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "aiming_q_y" field.</summary>
-    public const int AimingQYFieldNumber = 12;
+    public const int AimingQYFieldNumber = 15;
     private float aimingQY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float AimingQY {
@@ -6504,7 +6529,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "aiming_q_z" field.</summary>
-    public const int AimingQZFieldNumber = 13;
+    public const int AimingQZFieldNumber = 16;
     private float aimingQZ_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float AimingQZ {
@@ -6515,71 +6540,13 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "aiming_q_w" field.</summary>
-    public const int AimingQWFieldNumber = 14;
+    public const int AimingQWFieldNumber = 17;
     private float aimingQW_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float AimingQW {
       get { return aimingQW_; }
       set {
         aimingQW_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hp" field.</summary>
-    public const int HpFieldNumber = 15;
-    private int hp_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int Hp {
-      get { return hp_; }
-      set {
-        hp_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "mp" field.</summary>
-    public const int MpFieldNumber = 16;
-    private int mp_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int Mp {
-      get { return mp_; }
-      set {
-        mp_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "ch_state" field.</summary>
-    public const int ChStateFieldNumber = 17;
-    private global::jtshared.CharacterState chState_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.CharacterState ChState {
-      get { return chState_; }
-      set {
-        chState_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "frames_in_ch_state" field.</summary>
-    public const int FramesInChStateFieldNumber = 18;
-    private int framesInChState_;
-    /// <summary>
-    /// number of frames elapsed in the current character state   
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int FramesInChState {
-      get { return framesInChState_; }
-      set {
-        framesInChState_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "lower_part_rdf_cnt" field.</summary>
-    public const int LowerPartRdfCntFieldNumber = 19;
-    private int lowerPartRdfCnt_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int LowerPartRdfCnt {
-      get { return lowerPartRdfCnt_; }
-      set {
-        lowerPartRdfCnt_ = value;
       }
     }
 
@@ -6978,10 +6945,68 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "hp" field.</summary>
+    public const int HpFieldNumber = 54;
+    private int hp_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Hp {
+      get { return hp_; }
+      set {
+        hp_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "mp" field.</summary>
+    public const int MpFieldNumber = 55;
+    private int mp_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Mp {
+      get { return mp_; }
+      set {
+        mp_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ch_state" field.</summary>
+    public const int ChStateFieldNumber = 56;
+    private global::jtshared.CharacterState chState_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::jtshared.CharacterState ChState {
+      get { return chState_; }
+      set {
+        chState_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "frames_in_ch_state" field.</summary>
+    public const int FramesInChStateFieldNumber = 57;
+    private int framesInChState_;
+    /// <summary>
+    /// number of frames elapsed in the current character state   
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FramesInChState {
+      get { return framesInChState_; }
+      set {
+        framesInChState_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "lower_part_rdf_cnt" field.</summary>
+    public const int LowerPartRdfCntFieldNumber = 58;
+    private int lowerPartRdfCnt_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int LowerPartRdfCnt {
+      get { return lowerPartRdfCnt_; }
+      set {
+        lowerPartRdfCnt_ = value;
+      }
+    }
+
     /// <summary>Field number for the "buff_list" field.</summary>
-    public const int BuffListFieldNumber = 54;
+    public const int BuffListFieldNumber = 59;
     private static readonly pb::FieldCodec<global::jtshared.Buff> _repeated_buffList_codec
-        = pb::FieldCodec.ForMessage(434, global::jtshared.Buff.Parser);
+        = pb::FieldCodec.ForMessage(474, global::jtshared.Buff.Parser);
     private readonly pbc::RepeatedField<global::jtshared.Buff> buffList_ = new pbc::RepeatedField<global::jtshared.Buff>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::jtshared.Buff> BuffList {
@@ -6989,9 +7014,9 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "debuff_list" field.</summary>
-    public const int DebuffListFieldNumber = 55;
+    public const int DebuffListFieldNumber = 60;
     private static readonly pb::FieldCodec<global::jtshared.Debuff> _repeated_debuffList_codec
-        = pb::FieldCodec.ForMessage(442, global::jtshared.Debuff.Parser);
+        = pb::FieldCodec.ForMessage(482, global::jtshared.Debuff.Parser);
     private readonly pbc::RepeatedField<global::jtshared.Debuff> debuffList_ = new pbc::RepeatedField<global::jtshared.Debuff>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::jtshared.Debuff> DebuffList {
@@ -6999,7 +7024,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "atk1_magazine" field.</summary>
-    public const int Atk1MagazineFieldNumber = 56;
+    public const int Atk1MagazineFieldNumber = 61;
     private global::jtshared.InventorySlot atk1Magazine_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.InventorySlot Atk1Magazine {
@@ -7010,7 +7035,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "super_atk_gauge" field.</summary>
-    public const int SuperAtkGaugeFieldNumber = 57;
+    public const int SuperAtkGaugeFieldNumber = 62;
     private global::jtshared.InventorySlot superAtkGauge_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.InventorySlot SuperAtkGauge {
@@ -7021,7 +7046,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "inventory" field.</summary>
-    public const int InventoryFieldNumber = 58;
+    public const int InventoryFieldNumber = 63;
     private global::jtshared.Inventory inventory_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.Inventory Inventory {
@@ -7032,9 +7057,9 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "bullet_immune_records" field.</summary>
-    public const int BulletImmuneRecordsFieldNumber = 59;
+    public const int BulletImmuneRecordsFieldNumber = 64;
     private static readonly pb::FieldCodec<global::jtshared.BulletImmuneRecord> _repeated_bulletImmuneRecords_codec
-        = pb::FieldCodec.ForMessage(474, global::jtshared.BulletImmuneRecord.Parser);
+        = pb::FieldCodec.ForMessage(514, global::jtshared.BulletImmuneRecord.Parser);
     private readonly pbc::RepeatedField<global::jtshared.BulletImmuneRecord> bulletImmuneRecords_ = new pbc::RepeatedField<global::jtshared.BulletImmuneRecord>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::jtshared.BulletImmuneRecord> BulletImmuneRecords {
@@ -7042,9 +7067,9 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "kinematic_knobs" field.</summary>
-    public const int KinematicKnobsFieldNumber = 60;
+    public const int KinematicKnobsFieldNumber = 65;
     private static readonly pb::FieldCodec<float> _repeated_kinematicKnobs_codec
-        = pb::FieldCodec.ForFloat(482);
+        = pb::FieldCodec.ForFloat(522);
     private readonly pbc::RepeatedField<float> kinematicKnobs_ = new pbc::RepeatedField<float>();
     /// <summary>
     /// including both forward-kinematics and inverse-kinematics   
@@ -7077,15 +7102,13 @@ namespace jtshared {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelX, other.VelX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelY, other.VelY)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VelZ, other.VelZ)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelX, other.GroundVelX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelY, other.GroundVelY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelZ, other.GroundVelZ)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AimingQX, other.AimingQX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AimingQY, other.AimingQY)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AimingQZ, other.AimingQZ)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AimingQW, other.AimingQW)) return false;
-      if (Hp != other.Hp) return false;
-      if (Mp != other.Mp) return false;
-      if (ChState != other.ChState) return false;
-      if (FramesInChState != other.FramesInChState) return false;
-      if (LowerPartRdfCnt != other.LowerPartRdfCnt) return false;
       if (JumpTriggered != other.JumpTriggered) return false;
       if (OmitGravity != other.OmitGravity) return false;
       if (SpeciesId != other.SpeciesId) return false;
@@ -7120,6 +7143,11 @@ namespace jtshared {
       if (LockingOnUd != other.LockingOnUd) return false;
       if (ChCollisionTeamId != other.ChCollisionTeamId) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Speed, other.Speed)) return false;
+      if (Hp != other.Hp) return false;
+      if (Mp != other.Mp) return false;
+      if (ChState != other.ChState) return false;
+      if (FramesInChState != other.FramesInChState) return false;
+      if (LowerPartRdfCnt != other.LowerPartRdfCnt) return false;
       if(!buffList_.Equals(other.buffList_)) return false;
       if(!debuffList_.Equals(other.debuffList_)) return false;
       if (!object.Equals(Atk1Magazine, other.Atk1Magazine)) return false;
@@ -7143,15 +7171,13 @@ namespace jtshared {
       if (VelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelX);
       if (VelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelY);
       if (VelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VelZ);
+      if (GroundVelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelX);
+      if (GroundVelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelY);
+      if (GroundVelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelZ);
       if (AimingQX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AimingQX);
       if (AimingQY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AimingQY);
       if (AimingQZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AimingQZ);
       if (AimingQW != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AimingQW);
-      if (Hp != 0) hash ^= Hp.GetHashCode();
-      if (Mp != 0) hash ^= Mp.GetHashCode();
-      if (ChState != 0) hash ^= ChState.GetHashCode();
-      if (FramesInChState != 0) hash ^= FramesInChState.GetHashCode();
-      if (LowerPartRdfCnt != 0) hash ^= LowerPartRdfCnt.GetHashCode();
       if (JumpTriggered != false) hash ^= JumpTriggered.GetHashCode();
       if (OmitGravity != false) hash ^= OmitGravity.GetHashCode();
       if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
@@ -7186,6 +7212,11 @@ namespace jtshared {
       if (LockingOnUd != 0UL) hash ^= LockingOnUd.GetHashCode();
       if (ChCollisionTeamId != 0) hash ^= ChCollisionTeamId.GetHashCode();
       if (Speed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Speed);
+      if (Hp != 0) hash ^= Hp.GetHashCode();
+      if (Mp != 0) hash ^= Mp.GetHashCode();
+      if (ChState != 0) hash ^= ChState.GetHashCode();
+      if (FramesInChState != 0) hash ^= FramesInChState.GetHashCode();
+      if (LowerPartRdfCnt != 0) hash ^= LowerPartRdfCnt.GetHashCode();
       hash ^= buffList_.GetHashCode();
       hash ^= debuffList_.GetHashCode();
       if (atk1Magazine_ != null) hash ^= Atk1Magazine.GetHashCode();
@@ -7246,41 +7277,33 @@ namespace jtshared {
         output.WriteRawTag(85);
         output.WriteFloat(VelZ);
       }
-      if (AimingQX != 0F) {
+      if (GroundVelX != 0F) {
         output.WriteRawTag(93);
+        output.WriteFloat(GroundVelX);
+      }
+      if (GroundVelY != 0F) {
+        output.WriteRawTag(101);
+        output.WriteFloat(GroundVelY);
+      }
+      if (GroundVelZ != 0F) {
+        output.WriteRawTag(109);
+        output.WriteFloat(GroundVelZ);
+      }
+      if (AimingQX != 0F) {
+        output.WriteRawTag(117);
         output.WriteFloat(AimingQX);
       }
       if (AimingQY != 0F) {
-        output.WriteRawTag(101);
+        output.WriteRawTag(125);
         output.WriteFloat(AimingQY);
       }
       if (AimingQZ != 0F) {
-        output.WriteRawTag(109);
+        output.WriteRawTag(133, 1);
         output.WriteFloat(AimingQZ);
       }
       if (AimingQW != 0F) {
-        output.WriteRawTag(117);
+        output.WriteRawTag(141, 1);
         output.WriteFloat(AimingQW);
-      }
-      if (Hp != 0) {
-        output.WriteRawTag(120);
-        output.WriteInt32(Hp);
-      }
-      if (Mp != 0) {
-        output.WriteRawTag(128, 1);
-        output.WriteInt32(Mp);
-      }
-      if (ChState != 0) {
-        output.WriteRawTag(136, 1);
-        output.WriteEnum((int) ChState);
-      }
-      if (FramesInChState != 0) {
-        output.WriteRawTag(144, 1);
-        output.WriteInt32(FramesInChState);
-      }
-      if (LowerPartRdfCnt != 0) {
-        output.WriteRawTag(152, 1);
-        output.WriteInt32(LowerPartRdfCnt);
       }
       if (JumpTriggered != false) {
         output.WriteRawTag(160, 1);
@@ -7418,18 +7441,38 @@ namespace jtshared {
         output.WriteRawTag(173, 3);
         output.WriteFloat(Speed);
       }
+      if (Hp != 0) {
+        output.WriteRawTag(176, 3);
+        output.WriteInt32(Hp);
+      }
+      if (Mp != 0) {
+        output.WriteRawTag(184, 3);
+        output.WriteInt32(Mp);
+      }
+      if (ChState != 0) {
+        output.WriteRawTag(192, 3);
+        output.WriteEnum((int) ChState);
+      }
+      if (FramesInChState != 0) {
+        output.WriteRawTag(200, 3);
+        output.WriteInt32(FramesInChState);
+      }
+      if (LowerPartRdfCnt != 0) {
+        output.WriteRawTag(208, 3);
+        output.WriteInt32(LowerPartRdfCnt);
+      }
       buffList_.WriteTo(output, _repeated_buffList_codec);
       debuffList_.WriteTo(output, _repeated_debuffList_codec);
       if (atk1Magazine_ != null) {
-        output.WriteRawTag(194, 3);
+        output.WriteRawTag(234, 3);
         output.WriteMessage(Atk1Magazine);
       }
       if (superAtkGauge_ != null) {
-        output.WriteRawTag(202, 3);
+        output.WriteRawTag(242, 3);
         output.WriteMessage(SuperAtkGauge);
       }
       if (inventory_ != null) {
-        output.WriteRawTag(210, 3);
+        output.WriteRawTag(250, 3);
         output.WriteMessage(Inventory);
       }
       bulletImmuneRecords_.WriteTo(output, _repeated_bulletImmuneRecords_codec);
@@ -7472,6 +7515,15 @@ namespace jtshared {
       if (VelZ != 0F) {
         size += 1 + 4;
       }
+      if (GroundVelX != 0F) {
+        size += 1 + 4;
+      }
+      if (GroundVelY != 0F) {
+        size += 1 + 4;
+      }
+      if (GroundVelZ != 0F) {
+        size += 1 + 4;
+      }
       if (AimingQX != 0F) {
         size += 1 + 4;
       }
@@ -7479,25 +7531,10 @@ namespace jtshared {
         size += 1 + 4;
       }
       if (AimingQZ != 0F) {
-        size += 1 + 4;
+        size += 2 + 4;
       }
       if (AimingQW != 0F) {
-        size += 1 + 4;
-      }
-      if (Hp != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Hp);
-      }
-      if (Mp != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Mp);
-      }
-      if (ChState != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) ChState);
-      }
-      if (FramesInChState != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FramesInChState);
-      }
-      if (LowerPartRdfCnt != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(LowerPartRdfCnt);
+        size += 2 + 4;
       }
       if (JumpTriggered != false) {
         size += 2 + 1;
@@ -7601,6 +7638,21 @@ namespace jtshared {
       if (Speed != 0F) {
         size += 2 + 4;
       }
+      if (Hp != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Hp);
+      }
+      if (Mp != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Mp);
+      }
+      if (ChState != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) ChState);
+      }
+      if (FramesInChState != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FramesInChState);
+      }
+      if (LowerPartRdfCnt != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(LowerPartRdfCnt);
+      }
       size += buffList_.CalculateSize(_repeated_buffList_codec);
       size += debuffList_.CalculateSize(_repeated_debuffList_codec);
       if (atk1Magazine_ != null) {
@@ -7655,6 +7707,15 @@ namespace jtshared {
       if (other.VelZ != 0F) {
         VelZ = other.VelZ;
       }
+      if (other.GroundVelX != 0F) {
+        GroundVelX = other.GroundVelX;
+      }
+      if (other.GroundVelY != 0F) {
+        GroundVelY = other.GroundVelY;
+      }
+      if (other.GroundVelZ != 0F) {
+        GroundVelZ = other.GroundVelZ;
+      }
       if (other.AimingQX != 0F) {
         AimingQX = other.AimingQX;
       }
@@ -7666,21 +7727,6 @@ namespace jtshared {
       }
       if (other.AimingQW != 0F) {
         AimingQW = other.AimingQW;
-      }
-      if (other.Hp != 0) {
-        Hp = other.Hp;
-      }
-      if (other.Mp != 0) {
-        Mp = other.Mp;
-      }
-      if (other.ChState != 0) {
-        ChState = other.ChState;
-      }
-      if (other.FramesInChState != 0) {
-        FramesInChState = other.FramesInChState;
-      }
-      if (other.LowerPartRdfCnt != 0) {
-        LowerPartRdfCnt = other.LowerPartRdfCnt;
       }
       if (other.JumpTriggered != false) {
         JumpTriggered = other.JumpTriggered;
@@ -7784,6 +7830,21 @@ namespace jtshared {
       if (other.Speed != 0F) {
         Speed = other.Speed;
       }
+      if (other.Hp != 0) {
+        Hp = other.Hp;
+      }
+      if (other.Mp != 0) {
+        Mp = other.Mp;
+      }
+      if (other.ChState != 0) {
+        ChState = other.ChState;
+      }
+      if (other.FramesInChState != 0) {
+        FramesInChState = other.FramesInChState;
+      }
+      if (other.LowerPartRdfCnt != 0) {
+        LowerPartRdfCnt = other.LowerPartRdfCnt;
+      }
       buffList_.Add(other.buffList_);
       debuffList_.Add(other.debuffList_);
       if (other.atk1Magazine_ != null) {
@@ -7858,39 +7919,31 @@ namespace jtshared {
             break;
           }
           case 93: {
-            AimingQX = input.ReadFloat();
+            GroundVelX = input.ReadFloat();
             break;
           }
           case 101: {
-            AimingQY = input.ReadFloat();
+            GroundVelY = input.ReadFloat();
             break;
           }
           case 109: {
-            AimingQZ = input.ReadFloat();
+            GroundVelZ = input.ReadFloat();
             break;
           }
           case 117: {
+            AimingQX = input.ReadFloat();
+            break;
+          }
+          case 125: {
+            AimingQY = input.ReadFloat();
+            break;
+          }
+          case 133: {
+            AimingQZ = input.ReadFloat();
+            break;
+          }
+          case 141: {
             AimingQW = input.ReadFloat();
-            break;
-          }
-          case 120: {
-            Hp = input.ReadInt32();
-            break;
-          }
-          case 128: {
-            Mp = input.ReadInt32();
-            break;
-          }
-          case 136: {
-            ChState = (global::jtshared.CharacterState) input.ReadEnum();
-            break;
-          }
-          case 144: {
-            FramesInChState = input.ReadInt32();
-            break;
-          }
-          case 152: {
-            LowerPartRdfCnt = input.ReadInt32();
             break;
           }
           case 160: {
@@ -8029,41 +8082,61 @@ namespace jtshared {
             Speed = input.ReadFloat();
             break;
           }
-          case 434: {
+          case 432: {
+            Hp = input.ReadInt32();
+            break;
+          }
+          case 440: {
+            Mp = input.ReadInt32();
+            break;
+          }
+          case 448: {
+            ChState = (global::jtshared.CharacterState) input.ReadEnum();
+            break;
+          }
+          case 456: {
+            FramesInChState = input.ReadInt32();
+            break;
+          }
+          case 464: {
+            LowerPartRdfCnt = input.ReadInt32();
+            break;
+          }
+          case 474: {
             buffList_.AddEntriesFrom(input, _repeated_buffList_codec);
             break;
           }
-          case 442: {
+          case 482: {
             debuffList_.AddEntriesFrom(input, _repeated_debuffList_codec);
             break;
           }
-          case 450: {
+          case 490: {
             if (atk1Magazine_ == null) {
               Atk1Magazine = new global::jtshared.InventorySlot();
             }
             input.ReadMessage(Atk1Magazine);
             break;
           }
-          case 458: {
+          case 498: {
             if (superAtkGauge_ == null) {
               SuperAtkGauge = new global::jtshared.InventorySlot();
             }
             input.ReadMessage(SuperAtkGauge);
             break;
           }
-          case 466: {
+          case 506: {
             if (inventory_ == null) {
               Inventory = new global::jtshared.Inventory();
             }
             input.ReadMessage(Inventory);
             break;
           }
-          case 474: {
+          case 514: {
             bulletImmuneRecords_.AddEntriesFrom(input, _repeated_bulletImmuneRecords_codec);
             break;
           }
-          case 482:
-          case 485: {
+          case 522:
+          case 525: {
             kinematicKnobs_.AddEntriesFrom(input, _repeated_kinematicKnobs_codec);
             break;
           }
@@ -10393,331 +10466,6 @@ namespace jtshared {
 
   }
 
-  public sealed partial class VfxConfig : pb::IMessage<VfxConfig> {
-    private static readonly pb::MessageParser<VfxConfig> _parser = new pb::MessageParser<VfxConfig>(() => new VfxConfig());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<VfxConfig> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[17]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public VfxConfig() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public VfxConfig(VfxConfig other) : this() {
-      speciesId_ = other.speciesId_;
-      motionType_ = other.motionType_;
-      durationType_ = other.durationType_;
-      onCharacter_ = other.onCharacter_;
-      onBullet_ = other.onBullet_;
-      onTrap_ = other.onTrap_;
-      usePixelatedVer_ = other.usePixelatedVer_;
-      name_ = other.name_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public VfxConfig Clone() {
-      return new VfxConfig(this);
-    }
-
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 1;
-    private uint speciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SpeciesId {
-      get { return speciesId_; }
-      set {
-        speciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "motion_type" field.</summary>
-    public const int MotionTypeFieldNumber = 2;
-    private global::jtshared.VfxMotionType motionType_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.VfxMotionType MotionType {
-      get { return motionType_; }
-      set {
-        motionType_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "duration_type" field.</summary>
-    public const int DurationTypeFieldNumber = 3;
-    private global::jtshared.VfxDurationType durationType_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.VfxDurationType DurationType {
-      get { return durationType_; }
-      set {
-        durationType_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "on_character" field.</summary>
-    public const int OnCharacterFieldNumber = 4;
-    private bool onCharacter_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool OnCharacter {
-      get { return onCharacter_; }
-      set {
-        onCharacter_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "on_bullet" field.</summary>
-    public const int OnBulletFieldNumber = 5;
-    private bool onBullet_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool OnBullet {
-      get { return onBullet_; }
-      set {
-        onBullet_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "on_trap" field.</summary>
-    public const int OnTrapFieldNumber = 6;
-    private bool onTrap_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool OnTrap {
-      get { return onTrap_; }
-      set {
-        onTrap_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "use_pixelated_ver" field.</summary>
-    public const int UsePixelatedVerFieldNumber = 7;
-    private bool usePixelatedVer_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool UsePixelatedVer {
-      get { return usePixelatedVer_; }
-      set {
-        usePixelatedVer_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "name" field.</summary>
-    public const int NameFieldNumber = 1024;
-    private string name_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Name {
-      get { return name_; }
-      set {
-        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as VfxConfig);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(VfxConfig other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (SpeciesId != other.SpeciesId) return false;
-      if (MotionType != other.MotionType) return false;
-      if (DurationType != other.DurationType) return false;
-      if (OnCharacter != other.OnCharacter) return false;
-      if (OnBullet != other.OnBullet) return false;
-      if (OnTrap != other.OnTrap) return false;
-      if (UsePixelatedVer != other.UsePixelatedVer) return false;
-      if (Name != other.Name) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
-      if (MotionType != 0) hash ^= MotionType.GetHashCode();
-      if (DurationType != 0) hash ^= DurationType.GetHashCode();
-      if (OnCharacter != false) hash ^= OnCharacter.GetHashCode();
-      if (OnBullet != false) hash ^= OnBullet.GetHashCode();
-      if (OnTrap != false) hash ^= OnTrap.GetHashCode();
-      if (UsePixelatedVer != false) hash ^= UsePixelatedVer.GetHashCode();
-      if (Name.Length != 0) hash ^= Name.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (SpeciesId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(SpeciesId);
-      }
-      if (MotionType != 0) {
-        output.WriteRawTag(16);
-        output.WriteEnum((int) MotionType);
-      }
-      if (DurationType != 0) {
-        output.WriteRawTag(24);
-        output.WriteEnum((int) DurationType);
-      }
-      if (OnCharacter != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(OnCharacter);
-      }
-      if (OnBullet != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(OnBullet);
-      }
-      if (OnTrap != false) {
-        output.WriteRawTag(48);
-        output.WriteBool(OnTrap);
-      }
-      if (UsePixelatedVer != false) {
-        output.WriteRawTag(56);
-        output.WriteBool(UsePixelatedVer);
-      }
-      if (Name.Length != 0) {
-        output.WriteRawTag(130, 64);
-        output.WriteString(Name);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (SpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SpeciesId);
-      }
-      if (MotionType != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MotionType);
-      }
-      if (DurationType != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) DurationType);
-      }
-      if (OnCharacter != false) {
-        size += 1 + 1;
-      }
-      if (OnBullet != false) {
-        size += 1 + 1;
-      }
-      if (OnTrap != false) {
-        size += 1 + 1;
-      }
-      if (UsePixelatedVer != false) {
-        size += 1 + 1;
-      }
-      if (Name.Length != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeStringSize(Name);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(VfxConfig other) {
-      if (other == null) {
-        return;
-      }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
-      }
-      if (other.MotionType != 0) {
-        MotionType = other.MotionType;
-      }
-      if (other.DurationType != 0) {
-        DurationType = other.DurationType;
-      }
-      if (other.OnCharacter != false) {
-        OnCharacter = other.OnCharacter;
-      }
-      if (other.OnBullet != false) {
-        OnBullet = other.OnBullet;
-      }
-      if (other.OnTrap != false) {
-        OnTrap = other.OnTrap;
-      }
-      if (other.UsePixelatedVer != false) {
-        UsePixelatedVer = other.UsePixelatedVer;
-      }
-      if (other.Name.Length != 0) {
-        Name = other.Name;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            SpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 16: {
-            MotionType = (global::jtshared.VfxMotionType) input.ReadEnum();
-            break;
-          }
-          case 24: {
-            DurationType = (global::jtshared.VfxDurationType) input.ReadEnum();
-            break;
-          }
-          case 32: {
-            OnCharacter = input.ReadBool();
-            break;
-          }
-          case 40: {
-            OnBullet = input.ReadBool();
-            break;
-          }
-          case 48: {
-            OnTrap = input.ReadBool();
-            break;
-          }
-          case 56: {
-            UsePixelatedVer = input.ReadBool();
-            break;
-          }
-          case 8194: {
-            Name = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
   public sealed partial class BulletConfig : pb::IMessage<BulletConfig> {
     private static readonly pb::MessageParser<BulletConfig> _parser = new pb::MessageParser<BulletConfig>(() => new BulletConfig());
     private pb::UnknownFieldSet _unknownFields;
@@ -10726,7 +10474,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[18]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10744,6 +10492,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BulletConfig(BulletConfig other) : this() {
       startupFrames_ = other.startupFrames_;
+      startupInvinsibleFrames_ = other.startupInvinsibleFrames_;
       cancellableStFrame_ = other.cancellableStFrame_;
       cancellableEdFrame_ = other.cancellableEdFrame_;
       activeFrames_ = other.activeFrames_;
@@ -10760,51 +10509,45 @@ namespace jtshared {
       hitboxOffsetY_ = other.hitboxOffsetY_;
       hitboxHalfSizeX_ = other.hitboxHalfSizeX_;
       hitboxHalfSizeY_ = other.hitboxHalfSizeY_;
-      blowUp_ = other.blowUp_;
-      speciesId_ = other.speciesId_;
-      explosionFrames_ = other.explosionFrames_;
+      animName_ = other.animName_;
+      activeAnimLoopingRdfOffset_ = other.activeAnimLoopingRdfOffset_;
+      vanishingAnimRdfCnt_ = other.vanishingAnimRdfCnt_;
+      vanishingAnimLoopingRdfOffset_ = other.vanishingAnimLoopingRdfOffset_;
+      hitAnimRdfCnt_ = other.hitAnimRdfCnt_;
       bType_ = other.bType_;
       mhType_ = other.mhType_;
       simultaneousMultiHitCnt_ = other.simultaneousMultiHitCnt_;
       speed_ = other.speed_;
-      cancelTransit_ = other.cancelTransit_.Clone();
-      repeatQuota_ = other.repeatQuota_;
-      activeVfxSpeciesId_ = other.activeVfxSpeciesId_;
-      explosionVfxSpeciesId_ = other.explosionVfxSpeciesId_;
-      allowsWalking_ = other.allowsWalking_;
-      allowsCrouching_ = other.allowsCrouching_;
+      speedIfNotHit_ = other.speedIfNotHit_;
       hardness_ = other.hardness_;
-      startupInvinsibleFrames_ = other.startupInvinsibleFrames_;
       hitInvinsibleFrames_ = other.hitInvinsibleFrames_;
-      explosionSpeciesId_ = other.explosionSpeciesId_;
       perpAccMag_ = other.perpAccMag_;
       delaySelfVelToActive_ = other.delaySelfVelToActive_;
-      speedIfNotHit_ = other.speedIfNotHit_;
       omitSoftPushback_ = other.omitSoftPushback_;
-      hitboxSizeIncX_ = other.hitboxSizeIncX_;
-      hitboxSizeIncY_ = other.hitboxSizeIncY_;
       remainsUponHit_ = other.remainsUponHit_;
       rotatesAlongVelocity_ = other.rotatesAlongVelocity_;
       defaultHardPushbackBounceQuota_ = other.defaultHardPushbackBounceQuota_;
       hardPushbackBounceNormFactor_ = other.hardPushbackBounceNormFactor_;
       hardPushbackBounceSheerFactor_ = other.hardPushbackBounceSheerFactor_;
-      isPixelatedActiveVfx_ = other.isPixelatedActiveVfx_;
-      isPixelatedExplostionVfx_ = other.isPixelatedExplostionVfx_;
+      blowUp_ = other.blowUp_;
+      repeatQuota_ = other.repeatQuota_;
       mhVanishOnMeleeHit_ = other.mhVanishOnMeleeHit_;
       mhUpdatesOriginPos_ = other.mhUpdatesOriginPos_;
       beamCollision_ = other.beamCollision_;
       forAlly_ = other.forAlly_;
+      hitboxSizeIncX_ = other.hitboxSizeIncX_;
+      hitboxSizeIncY_ = other.hitboxSizeIncY_;
+      allowsWalking_ = other.allowsWalking_;
+      allowsCrouching_ = other.allowsCrouching_;
       elementalAttrs_ = other.elementalAttrs_;
-      cancellableByInventorySlotC_ = other.cancellableByInventorySlotC_;
-      cancellableByInventorySlotD_ = other.cancellableByInventorySlotD_;
+      cancelTransit_ = other.cancelTransit_.Clone();
       beamVisualSizeY_ = other.beamVisualSizeY_;
-      touchExplosionBombCollision_ = other.touchExplosionBombCollision_;
+      touchHitBombCollision_ = other.touchHitBombCollision_;
       airRidingGroundWave_ = other.airRidingGroundWave_;
       groundImpactMeleeCollision_ = other.groundImpactMeleeCollision_;
       wallImpactMeleeCollision_ = other.wallImpactMeleeCollision_;
       mhInheritsSpin_ = other.mhInheritsSpin_;
       initQ_ = other.initQ_ != null ? other.initQ_.Clone() : null;
-      startupVfxSpeciesId_ = other.startupVfxSpeciesId_;
       ifc_ = other.ifc_;
       reflectFireballXIfNotHarder_ = other.reflectFireballXIfNotHarder_;
       rejectReflectionFromAnotherBullet_ = other.rejectReflectionFromAnotherBullet_;
@@ -10820,27 +10563,24 @@ namespace jtshared {
       beamRendering_ = other.beamRendering_;
       missileSearchIntervalPow2Minus1_ = other.missileSearchIntervalPow2Minus1_;
       useChOffsetRegardlessOfEmissionMh_ = other.useChOffsetRegardlessOfEmissionMh_;
-      inplaceVanishExplosionSpeciesId_ = other.inplaceVanishExplosionSpeciesId_;
-      animLoopingRdfOffset_ = other.animLoopingRdfOffset_;
-      explosionAnimLoopingRdfOffset_ = other.explosionAnimLoopingRdfOffset_;
       gaugeIncReductionRatio_ = other.gaugeIncReductionRatio_;
       mhInheritsFramesInBlState_ = other.mhInheritsFramesInBlState_;
       guardBreakerExtraHitCnt_ = other.guardBreakerExtraHitCnt_;
       takesDef1AsHardPushback_ = other.takesDef1AsHardPushback_;
       finishingFrames_ = other.finishingFrames_;
-      noExplosionOnHardPushback_ = other.noExplosionOnHardPushback_;
-      explodeOnMultiContact_ = other.explodeOnMultiContact_;
+      noVanishAnimOnHardPushback_ = other.noVanishAnimOnHardPushback_;
+      hitOnMultiContact_ = other.hitOnMultiContact_;
       collisionTypeMask_ = other.collisionTypeMask_;
       takesGravity_ = other.takesGravity_;
       buffConfig_ = other.buffConfig_ != null ? other.buffConfig_.Clone() : null;
       characterEmitSfxName_ = other.characterEmitSfxName_;
       fireballEmitSfxName_ = other.fireballEmitSfxName_;
-      explosionSfxName_ = other.explosionSfxName_;
+      hitSfxName_ = other.hitSfxName_;
       activeSfxName_ = other.activeSfxName_;
-      explosionOnFleshSfxName_ = other.explosionOnFleshSfxName_;
-      explosionOnRockSfxName_ = other.explosionOnRockSfxName_;
-      explosionOnMetalSfxName_ = other.explosionOnMetalSfxName_;
-      explosionOnWoodSfxName_ = other.explosionOnWoodSfxName_;
+      hitOnFleshSfxName_ = other.hitOnFleshSfxName_;
+      hitOnRockSfxName_ = other.hitOnRockSfxName_;
+      hitOnMetalSfxName_ = other.hitOnMetalSfxName_;
+      hitOnWoodSfxName_ = other.hitOnWoodSfxName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -10860,8 +10600,19 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "startup_invinsible_frames" field.</summary>
+    public const int StartupInvinsibleFramesFieldNumber = 2;
+    private int startupInvinsibleFrames_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int StartupInvinsibleFrames {
+      get { return startupInvinsibleFrames_; }
+      set {
+        startupInvinsibleFrames_ = value;
+      }
+    }
+
     /// <summary>Field number for the "cancellable_st_frame" field.</summary>
-    public const int CancellableStFrameFieldNumber = 2;
+    public const int CancellableStFrameFieldNumber = 3;
     private int cancellableStFrame_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CancellableStFrame {
@@ -10872,7 +10623,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "cancellable_ed_frame" field.</summary>
-    public const int CancellableEdFrameFieldNumber = 3;
+    public const int CancellableEdFrameFieldNumber = 4;
     private int cancellableEdFrame_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CancellableEdFrame {
@@ -10883,7 +10634,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "active_frames" field.</summary>
-    public const int ActiveFramesFieldNumber = 4;
+    public const int ActiveFramesFieldNumber = 5;
     private int activeFrames_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int ActiveFrames {
@@ -10894,7 +10645,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "cooldown_frames" field.</summary>
-    public const int CooldownFramesFieldNumber = 5;
+    public const int CooldownFramesFieldNumber = 6;
     private int cooldownFrames_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CooldownFrames {
@@ -10905,7 +10656,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "hit_stun_frames" field.</summary>
-    public const int HitStunFramesFieldNumber = 6;
+    public const int HitStunFramesFieldNumber = 7;
     private int hitStunFrames_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int HitStunFrames {
@@ -10916,7 +10667,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "block_stun_frames" field.</summary>
-    public const int BlockStunFramesFieldNumber = 7;
+    public const int BlockStunFramesFieldNumber = 8;
     private int blockStunFrames_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int BlockStunFrames {
@@ -10927,7 +10678,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "pushback_vel_x" field.</summary>
-    public const int PushbackVelXFieldNumber = 8;
+    public const int PushbackVelXFieldNumber = 9;
     private float pushbackVelX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float PushbackVelX {
@@ -10938,7 +10689,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "pushback_vel_y" field.</summary>
-    public const int PushbackVelYFieldNumber = 9;
+    public const int PushbackVelYFieldNumber = 10;
     private float pushbackVelY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float PushbackVelY {
@@ -10949,7 +10700,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "damage" field.</summary>
-    public const int DamageFieldNumber = 10;
+    public const int DamageFieldNumber = 11;
     private int damage_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Damage {
@@ -10960,7 +10711,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "self_lock_vel_x" field.</summary>
-    public const int SelfLockVelXFieldNumber = 11;
+    public const int SelfLockVelXFieldNumber = 12;
     private float selfLockVelX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float SelfLockVelX {
@@ -10971,7 +10722,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "self_lock_vel_y" field.</summary>
-    public const int SelfLockVelYFieldNumber = 12;
+    public const int SelfLockVelYFieldNumber = 13;
     private float selfLockVelY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float SelfLockVelY {
@@ -10982,7 +10733,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "self_lock_vel_y_when_flying" field.</summary>
-    public const int SelfLockVelYWhenFlyingFieldNumber = 13;
+    public const int SelfLockVelYWhenFlyingFieldNumber = 14;
     private float selfLockVelYWhenFlying_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float SelfLockVelYWhenFlying {
@@ -10993,7 +10744,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "hitbox_offset_x" field.</summary>
-    public const int HitboxOffsetXFieldNumber = 14;
+    public const int HitboxOffsetXFieldNumber = 15;
     private float hitboxOffsetX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float HitboxOffsetX {
@@ -11004,7 +10755,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "hitbox_offset_y" field.</summary>
-    public const int HitboxOffsetYFieldNumber = 15;
+    public const int HitboxOffsetYFieldNumber = 16;
     private float hitboxOffsetY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float HitboxOffsetY {
@@ -11015,7 +10766,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "hitbox_half_size_x" field.</summary>
-    public const int HitboxHalfSizeXFieldNumber = 16;
+    public const int HitboxHalfSizeXFieldNumber = 17;
     private float hitboxHalfSizeX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float HitboxHalfSizeX {
@@ -11026,7 +10777,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "hitbox_half_size_y" field.</summary>
-    public const int HitboxHalfSizeYFieldNumber = 17;
+    public const int HitboxHalfSizeYFieldNumber = 18;
     private float hitboxHalfSizeY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float HitboxHalfSizeY {
@@ -11036,44 +10787,66 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "blow_up" field.</summary>
-    public const int BlowUpFieldNumber = 18;
-    private bool blowUp_;
+    /// <summary>Field number for the "anim_name" field.</summary>
+    public const int AnimNameFieldNumber = 20;
+    private string animName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool BlowUp {
-      get { return blowUp_; }
+    public string AnimName {
+      get { return animName_; }
       set {
-        blowUp_ = value;
+        animName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
-    /// <summary>Field number for the "species_id" field.</summary>
-    public const int SpeciesIdFieldNumber = 19;
-    private uint speciesId_;
+    /// <summary>Field number for the "active_anim_looping_rdf_offset" field.</summary>
+    public const int ActiveAnimLoopingRdfOffsetFieldNumber = 21;
+    private int activeAnimLoopingRdfOffset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int ActiveAnimLoopingRdfOffset {
+      get { return activeAnimLoopingRdfOffset_; }
+      set {
+        activeAnimLoopingRdfOffset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vanishing_anim_rdf_cnt" field.</summary>
+    public const int VanishingAnimRdfCntFieldNumber = 23;
+    private int vanishingAnimRdfCnt_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int VanishingAnimRdfCnt {
+      get { return vanishingAnimRdfCnt_; }
+      set {
+        vanishingAnimRdfCnt_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "vanishing_anim_looping_rdf_offset" field.</summary>
+    public const int VanishingAnimLoopingRdfOffsetFieldNumber = 24;
+    private int vanishingAnimLoopingRdfOffset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int VanishingAnimLoopingRdfOffset {
+      get { return vanishingAnimLoopingRdfOffset_; }
+      set {
+        vanishingAnimLoopingRdfOffset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "hit_anim_rdf_cnt" field.</summary>
+    public const int HitAnimRdfCntFieldNumber = 26;
+    private int hitAnimRdfCnt_;
     /// <summary>
-    /// For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
+    /// [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint SpeciesId {
-      get { return speciesId_; }
+    public int HitAnimRdfCnt {
+      get { return hitAnimRdfCnt_; }
       set {
-        speciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "explosion_frames" field.</summary>
-    public const int ExplosionFramesFieldNumber = 20;
-    private int explosionFrames_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int ExplosionFrames {
-      get { return explosionFrames_; }
-      set {
-        explosionFrames_ = value;
+        hitAnimRdfCnt_ = value;
       }
     }
 
     /// <summary>Field number for the "b_type" field.</summary>
-    public const int BTypeFieldNumber = 21;
+    public const int BTypeFieldNumber = 27;
     private global::jtshared.BulletType bType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.BulletType BType {
@@ -11084,7 +10857,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "mh_type" field.</summary>
-    public const int MhTypeFieldNumber = 22;
+    public const int MhTypeFieldNumber = 28;
     private global::jtshared.MultiHitType mhType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::jtshared.MultiHitType MhType {
@@ -11095,7 +10868,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "simultaneous_multi_hit_cnt" field.</summary>
-    public const int SimultaneousMultiHitCntFieldNumber = 23;
+    public const int SimultaneousMultiHitCntFieldNumber = 29;
     private uint simultaneousMultiHitCnt_;
     /// <summary>
     /// marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
@@ -11109,7 +10882,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "speed" field.</summary>
-    public const int SpeedFieldNumber = 24;
+    public const int SpeedFieldNumber = 30;
     private float speed_;
     /// <summary>
     /// For speed varying bullets, this is the initial speed
@@ -11122,85 +10895,19 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "cancel_transit" field.</summary>
-    public const int CancelTransitFieldNumber = 25;
-    private static readonly pbc::MapField<int, uint>.Codec _map_cancelTransit_codec
-        = new pbc::MapField<int, uint>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForUInt32(16), 202);
-    private readonly pbc::MapField<int, uint> cancelTransit_ = new pbc::MapField<int, uint>();
-    /// <summary>
-    /// encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero &lt;activeSkillId, activeSkillHit> which is more granular than &lt;ch_state>
-    /// </summary>
+    /// <summary>Field number for the "speed_if_not_hit" field.</summary>
+    public const int SpeedIfNotHitFieldNumber = 31;
+    private float speedIfNotHit_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::MapField<int, uint> CancelTransit {
-      get { return cancelTransit_; }
-    }
-
-    /// <summary>Field number for the "repeat_quota" field.</summary>
-    public const int RepeatQuotaFieldNumber = 26;
-    private int repeatQuota_;
-    /// <summary>
-    /// for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int RepeatQuota {
-      get { return repeatQuota_; }
+    public float SpeedIfNotHit {
+      get { return speedIfNotHit_; }
       set {
-        repeatQuota_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "active_vfx_species_id" field.</summary>
-    public const int ActiveVfxSpeciesIdFieldNumber = 27;
-    private uint activeVfxSpeciesId_;
-    /// <summary>
-    /// currently only support 1 vfx config when active
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint ActiveVfxSpeciesId {
-      get { return activeVfxSpeciesId_; }
-      set {
-        activeVfxSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "explosion_vfx_species_id" field.</summary>
-    public const int ExplosionVfxSpeciesIdFieldNumber = 28;
-    private uint explosionVfxSpeciesId_;
-    /// <summary>
-    /// currently only support 1 vfx config when exploding
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint ExplosionVfxSpeciesId {
-      get { return explosionVfxSpeciesId_; }
-      set {
-        explosionVfxSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "allows_walking" field.</summary>
-    public const int AllowsWalkingFieldNumber = 29;
-    private bool allowsWalking_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool AllowsWalking {
-      get { return allowsWalking_; }
-      set {
-        allowsWalking_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "allows_crouching" field.</summary>
-    public const int AllowsCrouchingFieldNumber = 30;
-    private bool allowsCrouching_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool AllowsCrouching {
-      get { return allowsCrouching_; }
-      set {
-        allowsCrouching_ = value;
+        speedIfNotHit_ = value;
       }
     }
 
     /// <summary>Field number for the "hardness" field.</summary>
-    public const int HardnessFieldNumber = 31;
+    public const int HardnessFieldNumber = 32;
     private int hardness_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Hardness {
@@ -11210,19 +10917,8 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "startup_invinsible_frames" field.</summary>
-    public const int StartupInvinsibleFramesFieldNumber = 32;
-    private int startupInvinsibleFrames_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int StartupInvinsibleFrames {
-      get { return startupInvinsibleFrames_; }
-      set {
-        startupInvinsibleFrames_ = value;
-      }
-    }
-
     /// <summary>Field number for the "hit_invinsible_frames" field.</summary>
-    public const int HitInvinsibleFramesFieldNumber = 33;
+    public const int HitInvinsibleFramesFieldNumber = 35;
     private int hitInvinsibleFrames_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int HitInvinsibleFrames {
@@ -11232,19 +10928,8 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "explosion_species_id" field.</summary>
-    public const int ExplosionSpeciesIdFieldNumber = 34;
-    private uint explosionSpeciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint ExplosionSpeciesId {
-      get { return explosionSpeciesId_; }
-      set {
-        explosionSpeciesId_ = value;
-      }
-    }
-
     /// <summary>Field number for the "perp_acc_mag" field.</summary>
-    public const int PerpAccMagFieldNumber = 35;
+    public const int PerpAccMagFieldNumber = 37;
     private int perpAccMag_;
     /// <summary>
     /// acceleration magnitude perpendicular to instantaneous velocity per second
@@ -11258,7 +10943,7 @@ namespace jtshared {
     }
 
     /// <summary>Field number for the "delay_self_vel_to_active" field.</summary>
-    public const int DelaySelfVelToActiveFieldNumber = 36;
+    public const int DelaySelfVelToActiveFieldNumber = 38;
     private bool delaySelfVelToActive_;
     /// <summary>
     /// if true, "self_lock_vel_x" &amp; "self_lock_vel_y" would only be applied when bullet is active 
@@ -11271,19 +10956,8 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "speed_if_not_hit" field.</summary>
-    public const int SpeedIfNotHitFieldNumber = 37;
-    private float speedIfNotHit_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float SpeedIfNotHit {
-      get { return speedIfNotHit_; }
-      set {
-        speedIfNotHit_ = value;
-      }
-    }
-
     /// <summary>Field number for the "omit_soft_pushback" field.</summary>
-    public const int OmitSoftPushbackFieldNumber = 38;
+    public const int OmitSoftPushbackFieldNumber = 40;
     private bool omitSoftPushback_;
     /// <summary>
     /// Only used for melee bullets
@@ -11293,34 +10967,6 @@ namespace jtshared {
       get { return omitSoftPushback_; }
       set {
         omitSoftPushback_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hitbox_size_inc_x" field.</summary>
-    public const int HitboxSizeIncXFieldNumber = 39;
-    private float hitboxSizeIncX_;
-    /// <summary>
-    /// Change of hitbox_size_x per second
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float HitboxSizeIncX {
-      get { return hitboxSizeIncX_; }
-      set {
-        hitboxSizeIncX_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "hitbox_size_inc_y" field.</summary>
-    public const int HitboxSizeIncYFieldNumber = 40;
-    private float hitboxSizeIncY_;
-    /// <summary>
-    /// Change of hitbox_size_y per second
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float HitboxSizeIncY {
-      get { return hitboxSizeIncY_; }
-      set {
-        hitboxSizeIncY_ = value;
       }
     }
 
@@ -11385,31 +11031,37 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "is_pixelated_active_vfx" field.</summary>
-    public const int IsPixelatedActiveVfxFieldNumber = 46;
-    private bool isPixelatedActiveVfx_;
+    /// <summary>Field number for the "blow_up" field.</summary>
+    public const int BlowUpFieldNumber = 46;
+    private bool blowUp_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsPixelatedActiveVfx {
-      get { return isPixelatedActiveVfx_; }
+    public bool BlowUp {
+      get { return blowUp_; }
       set {
-        isPixelatedActiveVfx_ = value;
+        blowUp_ = value;
       }
     }
 
-    /// <summary>Field number for the "is_pixelated_explostion_vfx" field.</summary>
-    public const int IsPixelatedExplostionVfxFieldNumber = 47;
-    private bool isPixelatedExplostionVfx_;
+    /// <summary>Field number for the "repeat_quota" field.</summary>
+    public const int RepeatQuotaFieldNumber = 47;
+    private int repeatQuota_;
+    /// <summary>
+    /// for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsPixelatedExplostionVfx {
-      get { return isPixelatedExplostionVfx_; }
+    public int RepeatQuota {
+      get { return repeatQuota_; }
       set {
-        isPixelatedExplostionVfx_ = value;
+        repeatQuota_ = value;
       }
     }
 
     /// <summary>Field number for the "mh_vanish_on_melee_hit" field.</summary>
     public const int MhVanishOnMeleeHitFieldNumber = 48;
     private bool mhVanishOnMeleeHit_;
+    /// <summary>
+    /// "mh" short for "multihit"
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool MhVanishOnMeleeHit {
       get { return mhVanishOnMeleeHit_; }
@@ -11457,6 +11109,56 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "hitbox_size_inc_x" field.</summary>
+    public const int HitboxSizeIncXFieldNumber = 53;
+    private float hitboxSizeIncX_;
+    /// <summary>
+    /// Change of hitbox_size_x per second
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float HitboxSizeIncX {
+      get { return hitboxSizeIncX_; }
+      set {
+        hitboxSizeIncX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "hitbox_size_inc_y" field.</summary>
+    public const int HitboxSizeIncYFieldNumber = 54;
+    private float hitboxSizeIncY_;
+    /// <summary>
+    /// Change of hitbox_size_y per second
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float HitboxSizeIncY {
+      get { return hitboxSizeIncY_; }
+      set {
+        hitboxSizeIncY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "allows_walking" field.</summary>
+    public const int AllowsWalkingFieldNumber = 55;
+    private bool allowsWalking_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool AllowsWalking {
+      get { return allowsWalking_; }
+      set {
+        allowsWalking_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "allows_crouching" field.</summary>
+    public const int AllowsCrouchingFieldNumber = 56;
+    private bool allowsCrouching_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool AllowsCrouching {
+      get { return allowsCrouching_; }
+      set {
+        allowsCrouching_ = value;
+      }
+    }
+
     /// <summary>Field number for the "elemental_attrs" field.</summary>
     public const int ElementalAttrsFieldNumber = 59;
     private uint elementalAttrs_;
@@ -11468,26 +11170,17 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "cancellable_by_inventory_slot_c" field.</summary>
-    public const int CancellableByInventorySlotCFieldNumber = 60;
-    private bool cancellableByInventorySlotC_;
+    /// <summary>Field number for the "cancel_transit" field.</summary>
+    public const int CancelTransitFieldNumber = 62;
+    private static readonly pbc::MapField<int, uint>.Codec _map_cancelTransit_codec
+        = new pbc::MapField<int, uint>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForUInt32(16), 498);
+    private readonly pbc::MapField<int, uint> cancelTransit_ = new pbc::MapField<int, uint>();
+    /// <summary>
+    /// encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero &lt;activeSkillId, activeSkillHit> which is more granular than &lt;ch_state>
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool CancellableByInventorySlotC {
-      get { return cancellableByInventorySlotC_; }
-      set {
-        cancellableByInventorySlotC_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "cancellable_by_inventory_slot_d" field.</summary>
-    public const int CancellableByInventorySlotDFieldNumber = 61;
-    private bool cancellableByInventorySlotD_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool CancellableByInventorySlotD {
-      get { return cancellableByInventorySlotD_; }
-      set {
-        cancellableByInventorySlotD_ = value;
-      }
+    public pbc::MapField<int, uint> CancelTransit {
+      get { return cancelTransit_; }
     }
 
     /// <summary>Field number for the "beam_visual_size_y" field.</summary>
@@ -11501,14 +11194,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "touch_explosion_bomb_collision" field.</summary>
-    public const int TouchExplosionBombCollisionFieldNumber = 65;
-    private bool touchExplosionBombCollision_;
+    /// <summary>Field number for the "touch_hit_bomb_collision" field.</summary>
+    public const int TouchHitBombCollisionFieldNumber = 65;
+    private bool touchHitBombCollision_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool TouchExplosionBombCollision {
-      get { return touchExplosionBombCollision_; }
+    public bool TouchHitBombCollision {
+      get { return touchHitBombCollision_; }
       set {
-        touchExplosionBombCollision_ = value;
+        touchHitBombCollision_ = value;
       }
     }
 
@@ -11573,20 +11266,6 @@ namespace jtshared {
       get { return initQ_; }
       set {
         initQ_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "startup_vfx_species_id" field.</summary>
-    public const int StartupVfxSpeciesIdFieldNumber = 74;
-    private uint startupVfxSpeciesId_;
-    /// <summary>
-    /// currently only support 1 vfx config when starting up
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint StartupVfxSpeciesId {
-      get { return startupVfxSpeciesId_; }
-      set {
-        startupVfxSpeciesId_ = value;
       }
     }
 
@@ -11755,39 +11434,6 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "inplace_vanish_explosion_species_id" field.</summary>
-    public const int InplaceVanishExplosionSpeciesIdFieldNumber = 90;
-    private uint inplaceVanishExplosionSpeciesId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint InplaceVanishExplosionSpeciesId {
-      get { return inplaceVanishExplosionSpeciesId_; }
-      set {
-        inplaceVanishExplosionSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "anim_looping_rdf_offset" field.</summary>
-    public const int AnimLoopingRdfOffsetFieldNumber = 91;
-    private int animLoopingRdfOffset_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int AnimLoopingRdfOffset {
-      get { return animLoopingRdfOffset_; }
-      set {
-        animLoopingRdfOffset_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "explosion_anim_looping_rdf_offset" field.</summary>
-    public const int ExplosionAnimLoopingRdfOffsetFieldNumber = 92;
-    private int explosionAnimLoopingRdfOffset_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int ExplosionAnimLoopingRdfOffset {
-      get { return explosionAnimLoopingRdfOffset_; }
-      set {
-        explosionAnimLoopingRdfOffset_ = value;
-      }
-    }
-
     /// <summary>Field number for the "gauge_inc_reduction_ratio" field.</summary>
     public const int GaugeIncReductionRatioFieldNumber = 93;
     private float gaugeIncReductionRatio_;
@@ -11849,28 +11495,28 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "no_explosion_on_hard_pushback" field.</summary>
-    public const int NoExplosionOnHardPushbackFieldNumber = 98;
-    private bool noExplosionOnHardPushback_;
+    /// <summary>Field number for the "no_vanish_anim_on_hard_pushback" field.</summary>
+    public const int NoVanishAnimOnHardPushbackFieldNumber = 98;
+    private bool noVanishAnimOnHardPushback_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool NoExplosionOnHardPushback {
-      get { return noExplosionOnHardPushback_; }
+    public bool NoVanishAnimOnHardPushback {
+      get { return noVanishAnimOnHardPushback_; }
       set {
-        noExplosionOnHardPushback_ = value;
+        noVanishAnimOnHardPushback_ = value;
       }
     }
 
-    /// <summary>Field number for the "explode_on_multi_contact" field.</summary>
-    public const int ExplodeOnMultiContactFieldNumber = 99;
-    private bool explodeOnMultiContact_;
+    /// <summary>Field number for the "hit_on_multi_contact" field.</summary>
+    public const int HitOnMultiContactFieldNumber = 99;
+    private bool hitOnMultiContact_;
     /// <summary>
     /// often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ExplodeOnMultiContact {
-      get { return explodeOnMultiContact_; }
+    public bool HitOnMultiContact {
+      get { return hitOnMultiContact_; }
       set {
-        explodeOnMultiContact_ = value;
+        hitOnMultiContact_ = value;
       }
     }
 
@@ -11935,14 +11581,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "explosion_sfx_name" field.</summary>
-    public const int ExplosionSfxNameFieldNumber = 2050;
-    private string explosionSfxName_ = "";
+    /// <summary>Field number for the "hit_sfx_name" field.</summary>
+    public const int HitSfxNameFieldNumber = 2050;
+    private string hitSfxName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ExplosionSfxName {
-      get { return explosionSfxName_; }
+    public string HitSfxName {
+      get { return hitSfxName_; }
       set {
-        explosionSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        hitSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -11957,47 +11603,47 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "explosion_on_flesh_sfx_name" field.</summary>
-    public const int ExplosionOnFleshSfxNameFieldNumber = 2052;
-    private string explosionOnFleshSfxName_ = "";
+    /// <summary>Field number for the "hit_on_flesh_sfx_name" field.</summary>
+    public const int HitOnFleshSfxNameFieldNumber = 2052;
+    private string hitOnFleshSfxName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ExplosionOnFleshSfxName {
-      get { return explosionOnFleshSfxName_; }
+    public string HitOnFleshSfxName {
+      get { return hitOnFleshSfxName_; }
       set {
-        explosionOnFleshSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        hitOnFleshSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
-    /// <summary>Field number for the "explosion_on_rock_sfx_name" field.</summary>
-    public const int ExplosionOnRockSfxNameFieldNumber = 2053;
-    private string explosionOnRockSfxName_ = "";
+    /// <summary>Field number for the "hit_on_rock_sfx_name" field.</summary>
+    public const int HitOnRockSfxNameFieldNumber = 2053;
+    private string hitOnRockSfxName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ExplosionOnRockSfxName {
-      get { return explosionOnRockSfxName_; }
+    public string HitOnRockSfxName {
+      get { return hitOnRockSfxName_; }
       set {
-        explosionOnRockSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        hitOnRockSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
-    /// <summary>Field number for the "explosion_on_metal_sfx_name" field.</summary>
-    public const int ExplosionOnMetalSfxNameFieldNumber = 2054;
-    private string explosionOnMetalSfxName_ = "";
+    /// <summary>Field number for the "hit_on_metal_sfx_name" field.</summary>
+    public const int HitOnMetalSfxNameFieldNumber = 2054;
+    private string hitOnMetalSfxName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ExplosionOnMetalSfxName {
-      get { return explosionOnMetalSfxName_; }
+    public string HitOnMetalSfxName {
+      get { return hitOnMetalSfxName_; }
       set {
-        explosionOnMetalSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        hitOnMetalSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
-    /// <summary>Field number for the "explosion_on_wood_sfx_name" field.</summary>
-    public const int ExplosionOnWoodSfxNameFieldNumber = 2055;
-    private string explosionOnWoodSfxName_ = "";
+    /// <summary>Field number for the "hit_on_wood_sfx_name" field.</summary>
+    public const int HitOnWoodSfxNameFieldNumber = 2055;
+    private string hitOnWoodSfxName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ExplosionOnWoodSfxName {
-      get { return explosionOnWoodSfxName_; }
+    public string HitOnWoodSfxName {
+      get { return hitOnWoodSfxName_; }
       set {
-        explosionOnWoodSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        hitOnWoodSfxName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -12015,6 +11661,7 @@ namespace jtshared {
         return true;
       }
       if (StartupFrames != other.StartupFrames) return false;
+      if (StartupInvinsibleFrames != other.StartupInvinsibleFrames) return false;
       if (CancellableStFrame != other.CancellableStFrame) return false;
       if (CancellableEdFrame != other.CancellableEdFrame) return false;
       if (ActiveFrames != other.ActiveFrames) return false;
@@ -12031,51 +11678,45 @@ namespace jtshared {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxOffsetY, other.HitboxOffsetY)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxHalfSizeX, other.HitboxHalfSizeX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxHalfSizeY, other.HitboxHalfSizeY)) return false;
-      if (BlowUp != other.BlowUp) return false;
-      if (SpeciesId != other.SpeciesId) return false;
-      if (ExplosionFrames != other.ExplosionFrames) return false;
+      if (AnimName != other.AnimName) return false;
+      if (ActiveAnimLoopingRdfOffset != other.ActiveAnimLoopingRdfOffset) return false;
+      if (VanishingAnimRdfCnt != other.VanishingAnimRdfCnt) return false;
+      if (VanishingAnimLoopingRdfOffset != other.VanishingAnimLoopingRdfOffset) return false;
+      if (HitAnimRdfCnt != other.HitAnimRdfCnt) return false;
       if (BType != other.BType) return false;
       if (MhType != other.MhType) return false;
       if (SimultaneousMultiHitCnt != other.SimultaneousMultiHitCnt) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Speed, other.Speed)) return false;
-      if (!CancelTransit.Equals(other.CancelTransit)) return false;
-      if (RepeatQuota != other.RepeatQuota) return false;
-      if (ActiveVfxSpeciesId != other.ActiveVfxSpeciesId) return false;
-      if (ExplosionVfxSpeciesId != other.ExplosionVfxSpeciesId) return false;
-      if (AllowsWalking != other.AllowsWalking) return false;
-      if (AllowsCrouching != other.AllowsCrouching) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SpeedIfNotHit, other.SpeedIfNotHit)) return false;
       if (Hardness != other.Hardness) return false;
-      if (StartupInvinsibleFrames != other.StartupInvinsibleFrames) return false;
       if (HitInvinsibleFrames != other.HitInvinsibleFrames) return false;
-      if (ExplosionSpeciesId != other.ExplosionSpeciesId) return false;
       if (PerpAccMag != other.PerpAccMag) return false;
       if (DelaySelfVelToActive != other.DelaySelfVelToActive) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SpeedIfNotHit, other.SpeedIfNotHit)) return false;
       if (OmitSoftPushback != other.OmitSoftPushback) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxSizeIncX, other.HitboxSizeIncX)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxSizeIncY, other.HitboxSizeIncY)) return false;
       if (RemainsUponHit != other.RemainsUponHit) return false;
       if (RotatesAlongVelocity != other.RotatesAlongVelocity) return false;
       if (DefaultHardPushbackBounceQuota != other.DefaultHardPushbackBounceQuota) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HardPushbackBounceNormFactor, other.HardPushbackBounceNormFactor)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HardPushbackBounceSheerFactor, other.HardPushbackBounceSheerFactor)) return false;
-      if (IsPixelatedActiveVfx != other.IsPixelatedActiveVfx) return false;
-      if (IsPixelatedExplostionVfx != other.IsPixelatedExplostionVfx) return false;
+      if (BlowUp != other.BlowUp) return false;
+      if (RepeatQuota != other.RepeatQuota) return false;
       if (MhVanishOnMeleeHit != other.MhVanishOnMeleeHit) return false;
       if (MhUpdatesOriginPos != other.MhUpdatesOriginPos) return false;
       if (BeamCollision != other.BeamCollision) return false;
       if (ForAlly != other.ForAlly) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxSizeIncX, other.HitboxSizeIncX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(HitboxSizeIncY, other.HitboxSizeIncY)) return false;
+      if (AllowsWalking != other.AllowsWalking) return false;
+      if (AllowsCrouching != other.AllowsCrouching) return false;
       if (ElementalAttrs != other.ElementalAttrs) return false;
-      if (CancellableByInventorySlotC != other.CancellableByInventorySlotC) return false;
-      if (CancellableByInventorySlotD != other.CancellableByInventorySlotD) return false;
+      if (!CancelTransit.Equals(other.CancelTransit)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BeamVisualSizeY, other.BeamVisualSizeY)) return false;
-      if (TouchExplosionBombCollision != other.TouchExplosionBombCollision) return false;
+      if (TouchHitBombCollision != other.TouchHitBombCollision) return false;
       if (AirRidingGroundWave != other.AirRidingGroundWave) return false;
       if (GroundImpactMeleeCollision != other.GroundImpactMeleeCollision) return false;
       if (WallImpactMeleeCollision != other.WallImpactMeleeCollision) return false;
       if (MhInheritsSpin != other.MhInheritsSpin) return false;
       if (!object.Equals(InitQ, other.InitQ)) return false;
-      if (StartupVfxSpeciesId != other.StartupVfxSpeciesId) return false;
       if (Ifc != other.Ifc) return false;
       if (ReflectFireballXIfNotHarder != other.ReflectFireballXIfNotHarder) return false;
       if (RejectReflectionFromAnotherBullet != other.RejectReflectionFromAnotherBullet) return false;
@@ -12091,27 +11732,24 @@ namespace jtshared {
       if (BeamRendering != other.BeamRendering) return false;
       if (MissileSearchIntervalPow2Minus1 != other.MissileSearchIntervalPow2Minus1) return false;
       if (UseChOffsetRegardlessOfEmissionMh != other.UseChOffsetRegardlessOfEmissionMh) return false;
-      if (InplaceVanishExplosionSpeciesId != other.InplaceVanishExplosionSpeciesId) return false;
-      if (AnimLoopingRdfOffset != other.AnimLoopingRdfOffset) return false;
-      if (ExplosionAnimLoopingRdfOffset != other.ExplosionAnimLoopingRdfOffset) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GaugeIncReductionRatio, other.GaugeIncReductionRatio)) return false;
       if (MhInheritsFramesInBlState != other.MhInheritsFramesInBlState) return false;
       if (GuardBreakerExtraHitCnt != other.GuardBreakerExtraHitCnt) return false;
       if (TakesDef1AsHardPushback != other.TakesDef1AsHardPushback) return false;
       if (FinishingFrames != other.FinishingFrames) return false;
-      if (NoExplosionOnHardPushback != other.NoExplosionOnHardPushback) return false;
-      if (ExplodeOnMultiContact != other.ExplodeOnMultiContact) return false;
+      if (NoVanishAnimOnHardPushback != other.NoVanishAnimOnHardPushback) return false;
+      if (HitOnMultiContact != other.HitOnMultiContact) return false;
       if (CollisionTypeMask != other.CollisionTypeMask) return false;
       if (TakesGravity != other.TakesGravity) return false;
       if (!object.Equals(BuffConfig, other.BuffConfig)) return false;
       if (CharacterEmitSfxName != other.CharacterEmitSfxName) return false;
       if (FireballEmitSfxName != other.FireballEmitSfxName) return false;
-      if (ExplosionSfxName != other.ExplosionSfxName) return false;
+      if (HitSfxName != other.HitSfxName) return false;
       if (ActiveSfxName != other.ActiveSfxName) return false;
-      if (ExplosionOnFleshSfxName != other.ExplosionOnFleshSfxName) return false;
-      if (ExplosionOnRockSfxName != other.ExplosionOnRockSfxName) return false;
-      if (ExplosionOnMetalSfxName != other.ExplosionOnMetalSfxName) return false;
-      if (ExplosionOnWoodSfxName != other.ExplosionOnWoodSfxName) return false;
+      if (HitOnFleshSfxName != other.HitOnFleshSfxName) return false;
+      if (HitOnRockSfxName != other.HitOnRockSfxName) return false;
+      if (HitOnMetalSfxName != other.HitOnMetalSfxName) return false;
+      if (HitOnWoodSfxName != other.HitOnWoodSfxName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -12119,6 +11757,7 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (StartupFrames != 0) hash ^= StartupFrames.GetHashCode();
+      if (StartupInvinsibleFrames != 0) hash ^= StartupInvinsibleFrames.GetHashCode();
       if (CancellableStFrame != 0) hash ^= CancellableStFrame.GetHashCode();
       if (CancellableEdFrame != 0) hash ^= CancellableEdFrame.GetHashCode();
       if (ActiveFrames != 0) hash ^= ActiveFrames.GetHashCode();
@@ -12135,51 +11774,45 @@ namespace jtshared {
       if (HitboxOffsetY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxOffsetY);
       if (HitboxHalfSizeX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxHalfSizeX);
       if (HitboxHalfSizeY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxHalfSizeY);
-      if (BlowUp != false) hash ^= BlowUp.GetHashCode();
-      if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
-      if (ExplosionFrames != 0) hash ^= ExplosionFrames.GetHashCode();
+      if (AnimName.Length != 0) hash ^= AnimName.GetHashCode();
+      if (ActiveAnimLoopingRdfOffset != 0) hash ^= ActiveAnimLoopingRdfOffset.GetHashCode();
+      if (VanishingAnimRdfCnt != 0) hash ^= VanishingAnimRdfCnt.GetHashCode();
+      if (VanishingAnimLoopingRdfOffset != 0) hash ^= VanishingAnimLoopingRdfOffset.GetHashCode();
+      if (HitAnimRdfCnt != 0) hash ^= HitAnimRdfCnt.GetHashCode();
       if (BType != 0) hash ^= BType.GetHashCode();
       if (MhType != 0) hash ^= MhType.GetHashCode();
       if (SimultaneousMultiHitCnt != 0) hash ^= SimultaneousMultiHitCnt.GetHashCode();
       if (Speed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Speed);
-      hash ^= CancelTransit.GetHashCode();
-      if (RepeatQuota != 0) hash ^= RepeatQuota.GetHashCode();
-      if (ActiveVfxSpeciesId != 0) hash ^= ActiveVfxSpeciesId.GetHashCode();
-      if (ExplosionVfxSpeciesId != 0) hash ^= ExplosionVfxSpeciesId.GetHashCode();
-      if (AllowsWalking != false) hash ^= AllowsWalking.GetHashCode();
-      if (AllowsCrouching != false) hash ^= AllowsCrouching.GetHashCode();
+      if (SpeedIfNotHit != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SpeedIfNotHit);
       if (Hardness != 0) hash ^= Hardness.GetHashCode();
-      if (StartupInvinsibleFrames != 0) hash ^= StartupInvinsibleFrames.GetHashCode();
       if (HitInvinsibleFrames != 0) hash ^= HitInvinsibleFrames.GetHashCode();
-      if (ExplosionSpeciesId != 0) hash ^= ExplosionSpeciesId.GetHashCode();
       if (PerpAccMag != 0) hash ^= PerpAccMag.GetHashCode();
       if (DelaySelfVelToActive != false) hash ^= DelaySelfVelToActive.GetHashCode();
-      if (SpeedIfNotHit != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SpeedIfNotHit);
       if (OmitSoftPushback != false) hash ^= OmitSoftPushback.GetHashCode();
-      if (HitboxSizeIncX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxSizeIncX);
-      if (HitboxSizeIncY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxSizeIncY);
       if (RemainsUponHit != false) hash ^= RemainsUponHit.GetHashCode();
       if (RotatesAlongVelocity != false) hash ^= RotatesAlongVelocity.GetHashCode();
       if (DefaultHardPushbackBounceQuota != 0) hash ^= DefaultHardPushbackBounceQuota.GetHashCode();
       if (HardPushbackBounceNormFactor != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HardPushbackBounceNormFactor);
       if (HardPushbackBounceSheerFactor != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HardPushbackBounceSheerFactor);
-      if (IsPixelatedActiveVfx != false) hash ^= IsPixelatedActiveVfx.GetHashCode();
-      if (IsPixelatedExplostionVfx != false) hash ^= IsPixelatedExplostionVfx.GetHashCode();
+      if (BlowUp != false) hash ^= BlowUp.GetHashCode();
+      if (RepeatQuota != 0) hash ^= RepeatQuota.GetHashCode();
       if (MhVanishOnMeleeHit != false) hash ^= MhVanishOnMeleeHit.GetHashCode();
       if (MhUpdatesOriginPos != false) hash ^= MhUpdatesOriginPos.GetHashCode();
       if (BeamCollision != false) hash ^= BeamCollision.GetHashCode();
       if (ForAlly != false) hash ^= ForAlly.GetHashCode();
+      if (HitboxSizeIncX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxSizeIncX);
+      if (HitboxSizeIncY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(HitboxSizeIncY);
+      if (AllowsWalking != false) hash ^= AllowsWalking.GetHashCode();
+      if (AllowsCrouching != false) hash ^= AllowsCrouching.GetHashCode();
       if (ElementalAttrs != 0) hash ^= ElementalAttrs.GetHashCode();
-      if (CancellableByInventorySlotC != false) hash ^= CancellableByInventorySlotC.GetHashCode();
-      if (CancellableByInventorySlotD != false) hash ^= CancellableByInventorySlotD.GetHashCode();
+      hash ^= CancelTransit.GetHashCode();
       if (BeamVisualSizeY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BeamVisualSizeY);
-      if (TouchExplosionBombCollision != false) hash ^= TouchExplosionBombCollision.GetHashCode();
+      if (TouchHitBombCollision != false) hash ^= TouchHitBombCollision.GetHashCode();
       if (AirRidingGroundWave != false) hash ^= AirRidingGroundWave.GetHashCode();
       if (GroundImpactMeleeCollision != false) hash ^= GroundImpactMeleeCollision.GetHashCode();
       if (WallImpactMeleeCollision != false) hash ^= WallImpactMeleeCollision.GetHashCode();
       if (MhInheritsSpin != false) hash ^= MhInheritsSpin.GetHashCode();
       if (initQ_ != null) hash ^= InitQ.GetHashCode();
-      if (StartupVfxSpeciesId != 0) hash ^= StartupVfxSpeciesId.GetHashCode();
       if (Ifc != 0) hash ^= Ifc.GetHashCode();
       if (ReflectFireballXIfNotHarder != false) hash ^= ReflectFireballXIfNotHarder.GetHashCode();
       if (RejectReflectionFromAnotherBullet != false) hash ^= RejectReflectionFromAnotherBullet.GetHashCode();
@@ -12195,27 +11828,24 @@ namespace jtshared {
       if (BeamRendering != false) hash ^= BeamRendering.GetHashCode();
       if (MissileSearchIntervalPow2Minus1 != 0) hash ^= MissileSearchIntervalPow2Minus1.GetHashCode();
       if (UseChOffsetRegardlessOfEmissionMh != false) hash ^= UseChOffsetRegardlessOfEmissionMh.GetHashCode();
-      if (InplaceVanishExplosionSpeciesId != 0) hash ^= InplaceVanishExplosionSpeciesId.GetHashCode();
-      if (AnimLoopingRdfOffset != 0) hash ^= AnimLoopingRdfOffset.GetHashCode();
-      if (ExplosionAnimLoopingRdfOffset != 0) hash ^= ExplosionAnimLoopingRdfOffset.GetHashCode();
       if (GaugeIncReductionRatio != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GaugeIncReductionRatio);
       if (MhInheritsFramesInBlState != false) hash ^= MhInheritsFramesInBlState.GetHashCode();
       if (GuardBreakerExtraHitCnt != 0) hash ^= GuardBreakerExtraHitCnt.GetHashCode();
       if (TakesDef1AsHardPushback != false) hash ^= TakesDef1AsHardPushback.GetHashCode();
       if (FinishingFrames != 0) hash ^= FinishingFrames.GetHashCode();
-      if (NoExplosionOnHardPushback != false) hash ^= NoExplosionOnHardPushback.GetHashCode();
-      if (ExplodeOnMultiContact != false) hash ^= ExplodeOnMultiContact.GetHashCode();
+      if (NoVanishAnimOnHardPushback != false) hash ^= NoVanishAnimOnHardPushback.GetHashCode();
+      if (HitOnMultiContact != false) hash ^= HitOnMultiContact.GetHashCode();
       if (CollisionTypeMask != 0UL) hash ^= CollisionTypeMask.GetHashCode();
       if (TakesGravity != false) hash ^= TakesGravity.GetHashCode();
       if (buffConfig_ != null) hash ^= BuffConfig.GetHashCode();
       if (CharacterEmitSfxName.Length != 0) hash ^= CharacterEmitSfxName.GetHashCode();
       if (FireballEmitSfxName.Length != 0) hash ^= FireballEmitSfxName.GetHashCode();
-      if (ExplosionSfxName.Length != 0) hash ^= ExplosionSfxName.GetHashCode();
+      if (HitSfxName.Length != 0) hash ^= HitSfxName.GetHashCode();
       if (ActiveSfxName.Length != 0) hash ^= ActiveSfxName.GetHashCode();
-      if (ExplosionOnFleshSfxName.Length != 0) hash ^= ExplosionOnFleshSfxName.GetHashCode();
-      if (ExplosionOnRockSfxName.Length != 0) hash ^= ExplosionOnRockSfxName.GetHashCode();
-      if (ExplosionOnMetalSfxName.Length != 0) hash ^= ExplosionOnMetalSfxName.GetHashCode();
-      if (ExplosionOnWoodSfxName.Length != 0) hash ^= ExplosionOnWoodSfxName.GetHashCode();
+      if (HitOnFleshSfxName.Length != 0) hash ^= HitOnFleshSfxName.GetHashCode();
+      if (HitOnRockSfxName.Length != 0) hash ^= HitOnRockSfxName.GetHashCode();
+      if (HitOnMetalSfxName.Length != 0) hash ^= HitOnMetalSfxName.GetHashCode();
+      if (HitOnWoodSfxName.Length != 0) hash ^= HitOnWoodSfxName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -12233,158 +11863,133 @@ namespace jtshared {
         output.WriteRawTag(8);
         output.WriteInt32(StartupFrames);
       }
-      if (CancellableStFrame != 0) {
+      if (StartupInvinsibleFrames != 0) {
         output.WriteRawTag(16);
+        output.WriteInt32(StartupInvinsibleFrames);
+      }
+      if (CancellableStFrame != 0) {
+        output.WriteRawTag(24);
         output.WriteInt32(CancellableStFrame);
       }
       if (CancellableEdFrame != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(32);
         output.WriteInt32(CancellableEdFrame);
       }
       if (ActiveFrames != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(40);
         output.WriteInt32(ActiveFrames);
       }
       if (CooldownFrames != 0) {
-        output.WriteRawTag(40);
+        output.WriteRawTag(48);
         output.WriteInt32(CooldownFrames);
       }
       if (HitStunFrames != 0) {
-        output.WriteRawTag(48);
+        output.WriteRawTag(56);
         output.WriteInt32(HitStunFrames);
       }
       if (BlockStunFrames != 0) {
-        output.WriteRawTag(56);
+        output.WriteRawTag(64);
         output.WriteInt32(BlockStunFrames);
       }
       if (PushbackVelX != 0F) {
-        output.WriteRawTag(69);
+        output.WriteRawTag(77);
         output.WriteFloat(PushbackVelX);
       }
       if (PushbackVelY != 0F) {
-        output.WriteRawTag(77);
+        output.WriteRawTag(85);
         output.WriteFloat(PushbackVelY);
       }
       if (Damage != 0) {
-        output.WriteRawTag(80);
+        output.WriteRawTag(88);
         output.WriteInt32(Damage);
       }
       if (SelfLockVelX != 0F) {
-        output.WriteRawTag(93);
+        output.WriteRawTag(101);
         output.WriteFloat(SelfLockVelX);
       }
       if (SelfLockVelY != 0F) {
-        output.WriteRawTag(101);
+        output.WriteRawTag(109);
         output.WriteFloat(SelfLockVelY);
       }
       if (SelfLockVelYWhenFlying != 0F) {
-        output.WriteRawTag(109);
+        output.WriteRawTag(117);
         output.WriteFloat(SelfLockVelYWhenFlying);
       }
       if (HitboxOffsetX != 0F) {
-        output.WriteRawTag(117);
+        output.WriteRawTag(125);
         output.WriteFloat(HitboxOffsetX);
       }
       if (HitboxOffsetY != 0F) {
-        output.WriteRawTag(125);
+        output.WriteRawTag(133, 1);
         output.WriteFloat(HitboxOffsetY);
       }
       if (HitboxHalfSizeX != 0F) {
-        output.WriteRawTag(133, 1);
+        output.WriteRawTag(141, 1);
         output.WriteFloat(HitboxHalfSizeX);
       }
       if (HitboxHalfSizeY != 0F) {
-        output.WriteRawTag(141, 1);
+        output.WriteRawTag(149, 1);
         output.WriteFloat(HitboxHalfSizeY);
       }
-      if (BlowUp != false) {
-        output.WriteRawTag(144, 1);
-        output.WriteBool(BlowUp);
+      if (AnimName.Length != 0) {
+        output.WriteRawTag(162, 1);
+        output.WriteString(AnimName);
       }
-      if (SpeciesId != 0) {
-        output.WriteRawTag(152, 1);
-        output.WriteUInt32(SpeciesId);
+      if (ActiveAnimLoopingRdfOffset != 0) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(ActiveAnimLoopingRdfOffset);
       }
-      if (ExplosionFrames != 0) {
-        output.WriteRawTag(160, 1);
-        output.WriteInt32(ExplosionFrames);
+      if (VanishingAnimRdfCnt != 0) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(VanishingAnimRdfCnt);
+      }
+      if (VanishingAnimLoopingRdfOffset != 0) {
+        output.WriteRawTag(192, 1);
+        output.WriteInt32(VanishingAnimLoopingRdfOffset);
+      }
+      if (HitAnimRdfCnt != 0) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt32(HitAnimRdfCnt);
       }
       if (BType != 0) {
-        output.WriteRawTag(168, 1);
+        output.WriteRawTag(216, 1);
         output.WriteEnum((int) BType);
       }
       if (MhType != 0) {
-        output.WriteRawTag(176, 1);
+        output.WriteRawTag(224, 1);
         output.WriteEnum((int) MhType);
       }
       if (SimultaneousMultiHitCnt != 0) {
-        output.WriteRawTag(184, 1);
+        output.WriteRawTag(232, 1);
         output.WriteUInt32(SimultaneousMultiHitCnt);
       }
       if (Speed != 0F) {
-        output.WriteRawTag(197, 1);
+        output.WriteRawTag(245, 1);
         output.WriteFloat(Speed);
       }
-      cancelTransit_.WriteTo(output, _map_cancelTransit_codec);
-      if (RepeatQuota != 0) {
-        output.WriteRawTag(208, 1);
-        output.WriteInt32(RepeatQuota);
-      }
-      if (ActiveVfxSpeciesId != 0) {
-        output.WriteRawTag(216, 1);
-        output.WriteUInt32(ActiveVfxSpeciesId);
-      }
-      if (ExplosionVfxSpeciesId != 0) {
-        output.WriteRawTag(224, 1);
-        output.WriteUInt32(ExplosionVfxSpeciesId);
-      }
-      if (AllowsWalking != false) {
-        output.WriteRawTag(232, 1);
-        output.WriteBool(AllowsWalking);
-      }
-      if (AllowsCrouching != false) {
-        output.WriteRawTag(240, 1);
-        output.WriteBool(AllowsCrouching);
+      if (SpeedIfNotHit != 0F) {
+        output.WriteRawTag(253, 1);
+        output.WriteFloat(SpeedIfNotHit);
       }
       if (Hardness != 0) {
-        output.WriteRawTag(248, 1);
+        output.WriteRawTag(128, 2);
         output.WriteInt32(Hardness);
       }
-      if (StartupInvinsibleFrames != 0) {
-        output.WriteRawTag(128, 2);
-        output.WriteInt32(StartupInvinsibleFrames);
-      }
       if (HitInvinsibleFrames != 0) {
-        output.WriteRawTag(136, 2);
+        output.WriteRawTag(152, 2);
         output.WriteInt32(HitInvinsibleFrames);
       }
-      if (ExplosionSpeciesId != 0) {
-        output.WriteRawTag(144, 2);
-        output.WriteUInt32(ExplosionSpeciesId);
-      }
       if (PerpAccMag != 0) {
-        output.WriteRawTag(152, 2);
+        output.WriteRawTag(168, 2);
         output.WriteInt32(PerpAccMag);
       }
       if (DelaySelfVelToActive != false) {
-        output.WriteRawTag(160, 2);
+        output.WriteRawTag(176, 2);
         output.WriteBool(DelaySelfVelToActive);
       }
-      if (SpeedIfNotHit != 0F) {
-        output.WriteRawTag(173, 2);
-        output.WriteFloat(SpeedIfNotHit);
-      }
       if (OmitSoftPushback != false) {
-        output.WriteRawTag(176, 2);
+        output.WriteRawTag(192, 2);
         output.WriteBool(OmitSoftPushback);
-      }
-      if (HitboxSizeIncX != 0F) {
-        output.WriteRawTag(189, 2);
-        output.WriteFloat(HitboxSizeIncX);
-      }
-      if (HitboxSizeIncY != 0F) {
-        output.WriteRawTag(197, 2);
-        output.WriteFloat(HitboxSizeIncY);
       }
       if (RemainsUponHit != false) {
         output.WriteRawTag(200, 2);
@@ -12406,13 +12011,13 @@ namespace jtshared {
         output.WriteRawTag(237, 2);
         output.WriteFloat(HardPushbackBounceSheerFactor);
       }
-      if (IsPixelatedActiveVfx != false) {
+      if (BlowUp != false) {
         output.WriteRawTag(240, 2);
-        output.WriteBool(IsPixelatedActiveVfx);
+        output.WriteBool(BlowUp);
       }
-      if (IsPixelatedExplostionVfx != false) {
+      if (RepeatQuota != 0) {
         output.WriteRawTag(248, 2);
-        output.WriteBool(IsPixelatedExplostionVfx);
+        output.WriteInt32(RepeatQuota);
       }
       if (MhVanishOnMeleeHit != false) {
         output.WriteRawTag(128, 3);
@@ -12430,25 +12035,34 @@ namespace jtshared {
         output.WriteRawTag(160, 3);
         output.WriteBool(ForAlly);
       }
+      if (HitboxSizeIncX != 0F) {
+        output.WriteRawTag(173, 3);
+        output.WriteFloat(HitboxSizeIncX);
+      }
+      if (HitboxSizeIncY != 0F) {
+        output.WriteRawTag(181, 3);
+        output.WriteFloat(HitboxSizeIncY);
+      }
+      if (AllowsWalking != false) {
+        output.WriteRawTag(184, 3);
+        output.WriteBool(AllowsWalking);
+      }
+      if (AllowsCrouching != false) {
+        output.WriteRawTag(192, 3);
+        output.WriteBool(AllowsCrouching);
+      }
       if (ElementalAttrs != 0) {
         output.WriteRawTag(216, 3);
         output.WriteUInt32(ElementalAttrs);
       }
-      if (CancellableByInventorySlotC != false) {
-        output.WriteRawTag(224, 3);
-        output.WriteBool(CancellableByInventorySlotC);
-      }
-      if (CancellableByInventorySlotD != false) {
-        output.WriteRawTag(232, 3);
-        output.WriteBool(CancellableByInventorySlotD);
-      }
+      cancelTransit_.WriteTo(output, _map_cancelTransit_codec);
       if (BeamVisualSizeY != 0F) {
         output.WriteRawTag(133, 4);
         output.WriteFloat(BeamVisualSizeY);
       }
-      if (TouchExplosionBombCollision != false) {
+      if (TouchHitBombCollision != false) {
         output.WriteRawTag(136, 4);
-        output.WriteBool(TouchExplosionBombCollision);
+        output.WriteBool(TouchHitBombCollision);
       }
       if (AirRidingGroundWave != false) {
         output.WriteRawTag(144, 4);
@@ -12469,10 +12083,6 @@ namespace jtshared {
       if (initQ_ != null) {
         output.WriteRawTag(178, 4);
         output.WriteMessage(InitQ);
-      }
-      if (StartupVfxSpeciesId != 0) {
-        output.WriteRawTag(208, 4);
-        output.WriteUInt32(StartupVfxSpeciesId);
       }
       if (Ifc != 0) {
         output.WriteRawTag(216, 4);
@@ -12534,18 +12144,6 @@ namespace jtshared {
         output.WriteRawTag(200, 5);
         output.WriteBool(UseChOffsetRegardlessOfEmissionMh);
       }
-      if (InplaceVanishExplosionSpeciesId != 0) {
-        output.WriteRawTag(208, 5);
-        output.WriteUInt32(InplaceVanishExplosionSpeciesId);
-      }
-      if (AnimLoopingRdfOffset != 0) {
-        output.WriteRawTag(216, 5);
-        output.WriteInt32(AnimLoopingRdfOffset);
-      }
-      if (ExplosionAnimLoopingRdfOffset != 0) {
-        output.WriteRawTag(224, 5);
-        output.WriteInt32(ExplosionAnimLoopingRdfOffset);
-      }
       if (GaugeIncReductionRatio != 0F) {
         output.WriteRawTag(237, 5);
         output.WriteFloat(GaugeIncReductionRatio);
@@ -12566,13 +12164,13 @@ namespace jtshared {
         output.WriteRawTag(136, 6);
         output.WriteInt32(FinishingFrames);
       }
-      if (NoExplosionOnHardPushback != false) {
+      if (NoVanishAnimOnHardPushback != false) {
         output.WriteRawTag(144, 6);
-        output.WriteBool(NoExplosionOnHardPushback);
+        output.WriteBool(NoVanishAnimOnHardPushback);
       }
-      if (ExplodeOnMultiContact != false) {
+      if (HitOnMultiContact != false) {
         output.WriteRawTag(152, 6);
-        output.WriteBool(ExplodeOnMultiContact);
+        output.WriteBool(HitOnMultiContact);
       }
       if (CollisionTypeMask != 0UL) {
         output.WriteRawTag(168, 64);
@@ -12594,29 +12192,29 @@ namespace jtshared {
         output.WriteRawTag(138, 128, 1);
         output.WriteString(FireballEmitSfxName);
       }
-      if (ExplosionSfxName.Length != 0) {
+      if (HitSfxName.Length != 0) {
         output.WriteRawTag(146, 128, 1);
-        output.WriteString(ExplosionSfxName);
+        output.WriteString(HitSfxName);
       }
       if (ActiveSfxName.Length != 0) {
         output.WriteRawTag(154, 128, 1);
         output.WriteString(ActiveSfxName);
       }
-      if (ExplosionOnFleshSfxName.Length != 0) {
+      if (HitOnFleshSfxName.Length != 0) {
         output.WriteRawTag(162, 128, 1);
-        output.WriteString(ExplosionOnFleshSfxName);
+        output.WriteString(HitOnFleshSfxName);
       }
-      if (ExplosionOnRockSfxName.Length != 0) {
+      if (HitOnRockSfxName.Length != 0) {
         output.WriteRawTag(170, 128, 1);
-        output.WriteString(ExplosionOnRockSfxName);
+        output.WriteString(HitOnRockSfxName);
       }
-      if (ExplosionOnMetalSfxName.Length != 0) {
+      if (HitOnMetalSfxName.Length != 0) {
         output.WriteRawTag(178, 128, 1);
-        output.WriteString(ExplosionOnMetalSfxName);
+        output.WriteString(HitOnMetalSfxName);
       }
-      if (ExplosionOnWoodSfxName.Length != 0) {
+      if (HitOnWoodSfxName.Length != 0) {
         output.WriteRawTag(186, 128, 1);
-        output.WriteString(ExplosionOnWoodSfxName);
+        output.WriteString(HitOnWoodSfxName);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -12628,6 +12226,9 @@ namespace jtshared {
       int size = 0;
       if (StartupFrames != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(StartupFrames);
+      }
+      if (StartupInvinsibleFrames != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(StartupInvinsibleFrames);
       }
       if (CancellableStFrame != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(CancellableStFrame);
@@ -12669,7 +12270,7 @@ namespace jtshared {
         size += 1 + 4;
       }
       if (HitboxOffsetY != 0F) {
-        size += 1 + 4;
+        size += 2 + 4;
       }
       if (HitboxHalfSizeX != 0F) {
         size += 2 + 4;
@@ -12677,14 +12278,20 @@ namespace jtshared {
       if (HitboxHalfSizeY != 0F) {
         size += 2 + 4;
       }
-      if (BlowUp != false) {
-        size += 2 + 1;
+      if (AnimName.Length != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(AnimName);
       }
-      if (SpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(SpeciesId);
+      if (ActiveAnimLoopingRdfOffset != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(ActiveAnimLoopingRdfOffset);
       }
-      if (ExplosionFrames != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(ExplosionFrames);
+      if (VanishingAnimRdfCnt != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(VanishingAnimRdfCnt);
+      }
+      if (VanishingAnimLoopingRdfOffset != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(VanishingAnimLoopingRdfOffset);
+      }
+      if (HitAnimRdfCnt != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(HitAnimRdfCnt);
       }
       if (BType != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) BType);
@@ -12698,33 +12305,14 @@ namespace jtshared {
       if (Speed != 0F) {
         size += 2 + 4;
       }
-      size += cancelTransit_.CalculateSize(_map_cancelTransit_codec);
-      if (RepeatQuota != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RepeatQuota);
-      }
-      if (ActiveVfxSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ActiveVfxSpeciesId);
-      }
-      if (ExplosionVfxSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ExplosionVfxSpeciesId);
-      }
-      if (AllowsWalking != false) {
-        size += 2 + 1;
-      }
-      if (AllowsCrouching != false) {
-        size += 2 + 1;
+      if (SpeedIfNotHit != 0F) {
+        size += 2 + 4;
       }
       if (Hardness != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(Hardness);
       }
-      if (StartupInvinsibleFrames != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(StartupInvinsibleFrames);
-      }
       if (HitInvinsibleFrames != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(HitInvinsibleFrames);
-      }
-      if (ExplosionSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ExplosionSpeciesId);
       }
       if (PerpAccMag != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(PerpAccMag);
@@ -12732,17 +12320,8 @@ namespace jtshared {
       if (DelaySelfVelToActive != false) {
         size += 2 + 1;
       }
-      if (SpeedIfNotHit != 0F) {
-        size += 2 + 4;
-      }
       if (OmitSoftPushback != false) {
         size += 2 + 1;
-      }
-      if (HitboxSizeIncX != 0F) {
-        size += 2 + 4;
-      }
-      if (HitboxSizeIncY != 0F) {
-        size += 2 + 4;
       }
       if (RemainsUponHit != false) {
         size += 2 + 1;
@@ -12759,11 +12338,11 @@ namespace jtshared {
       if (HardPushbackBounceSheerFactor != 0F) {
         size += 2 + 4;
       }
-      if (IsPixelatedActiveVfx != false) {
+      if (BlowUp != false) {
         size += 2 + 1;
       }
-      if (IsPixelatedExplostionVfx != false) {
-        size += 2 + 1;
+      if (RepeatQuota != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RepeatQuota);
       }
       if (MhVanishOnMeleeHit != false) {
         size += 2 + 1;
@@ -12777,19 +12356,26 @@ namespace jtshared {
       if (ForAlly != false) {
         size += 2 + 1;
       }
+      if (HitboxSizeIncX != 0F) {
+        size += 2 + 4;
+      }
+      if (HitboxSizeIncY != 0F) {
+        size += 2 + 4;
+      }
+      if (AllowsWalking != false) {
+        size += 2 + 1;
+      }
+      if (AllowsCrouching != false) {
+        size += 2 + 1;
+      }
       if (ElementalAttrs != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ElementalAttrs);
       }
-      if (CancellableByInventorySlotC != false) {
-        size += 2 + 1;
-      }
-      if (CancellableByInventorySlotD != false) {
-        size += 2 + 1;
-      }
+      size += cancelTransit_.CalculateSize(_map_cancelTransit_codec);
       if (BeamVisualSizeY != 0F) {
         size += 2 + 4;
       }
-      if (TouchExplosionBombCollision != false) {
+      if (TouchHitBombCollision != false) {
         size += 2 + 1;
       }
       if (AirRidingGroundWave != false) {
@@ -12806,9 +12392,6 @@ namespace jtshared {
       }
       if (initQ_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(InitQ);
-      }
-      if (StartupVfxSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(StartupVfxSpeciesId);
       }
       if (Ifc != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Ifc);
@@ -12855,15 +12438,6 @@ namespace jtshared {
       if (UseChOffsetRegardlessOfEmissionMh != false) {
         size += 2 + 1;
       }
-      if (InplaceVanishExplosionSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(InplaceVanishExplosionSpeciesId);
-      }
-      if (AnimLoopingRdfOffset != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(AnimLoopingRdfOffset);
-      }
-      if (ExplosionAnimLoopingRdfOffset != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(ExplosionAnimLoopingRdfOffset);
-      }
       if (GaugeIncReductionRatio != 0F) {
         size += 2 + 4;
       }
@@ -12879,10 +12453,10 @@ namespace jtshared {
       if (FinishingFrames != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(FinishingFrames);
       }
-      if (NoExplosionOnHardPushback != false) {
+      if (NoVanishAnimOnHardPushback != false) {
         size += 2 + 1;
       }
-      if (ExplodeOnMultiContact != false) {
+      if (HitOnMultiContact != false) {
         size += 2 + 1;
       }
       if (CollisionTypeMask != 0UL) {
@@ -12900,23 +12474,23 @@ namespace jtshared {
       if (FireballEmitSfxName.Length != 0) {
         size += 3 + pb::CodedOutputStream.ComputeStringSize(FireballEmitSfxName);
       }
-      if (ExplosionSfxName.Length != 0) {
-        size += 3 + pb::CodedOutputStream.ComputeStringSize(ExplosionSfxName);
+      if (HitSfxName.Length != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeStringSize(HitSfxName);
       }
       if (ActiveSfxName.Length != 0) {
         size += 3 + pb::CodedOutputStream.ComputeStringSize(ActiveSfxName);
       }
-      if (ExplosionOnFleshSfxName.Length != 0) {
-        size += 3 + pb::CodedOutputStream.ComputeStringSize(ExplosionOnFleshSfxName);
+      if (HitOnFleshSfxName.Length != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeStringSize(HitOnFleshSfxName);
       }
-      if (ExplosionOnRockSfxName.Length != 0) {
-        size += 3 + pb::CodedOutputStream.ComputeStringSize(ExplosionOnRockSfxName);
+      if (HitOnRockSfxName.Length != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeStringSize(HitOnRockSfxName);
       }
-      if (ExplosionOnMetalSfxName.Length != 0) {
-        size += 3 + pb::CodedOutputStream.ComputeStringSize(ExplosionOnMetalSfxName);
+      if (HitOnMetalSfxName.Length != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeStringSize(HitOnMetalSfxName);
       }
-      if (ExplosionOnWoodSfxName.Length != 0) {
-        size += 3 + pb::CodedOutputStream.ComputeStringSize(ExplosionOnWoodSfxName);
+      if (HitOnWoodSfxName.Length != 0) {
+        size += 3 + pb::CodedOutputStream.ComputeStringSize(HitOnWoodSfxName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -12931,6 +12505,9 @@ namespace jtshared {
       }
       if (other.StartupFrames != 0) {
         StartupFrames = other.StartupFrames;
+      }
+      if (other.StartupInvinsibleFrames != 0) {
+        StartupInvinsibleFrames = other.StartupInvinsibleFrames;
       }
       if (other.CancellableStFrame != 0) {
         CancellableStFrame = other.CancellableStFrame;
@@ -12980,14 +12557,20 @@ namespace jtshared {
       if (other.HitboxHalfSizeY != 0F) {
         HitboxHalfSizeY = other.HitboxHalfSizeY;
       }
-      if (other.BlowUp != false) {
-        BlowUp = other.BlowUp;
+      if (other.AnimName.Length != 0) {
+        AnimName = other.AnimName;
       }
-      if (other.SpeciesId != 0) {
-        SpeciesId = other.SpeciesId;
+      if (other.ActiveAnimLoopingRdfOffset != 0) {
+        ActiveAnimLoopingRdfOffset = other.ActiveAnimLoopingRdfOffset;
       }
-      if (other.ExplosionFrames != 0) {
-        ExplosionFrames = other.ExplosionFrames;
+      if (other.VanishingAnimRdfCnt != 0) {
+        VanishingAnimRdfCnt = other.VanishingAnimRdfCnt;
+      }
+      if (other.VanishingAnimLoopingRdfOffset != 0) {
+        VanishingAnimLoopingRdfOffset = other.VanishingAnimLoopingRdfOffset;
+      }
+      if (other.HitAnimRdfCnt != 0) {
+        HitAnimRdfCnt = other.HitAnimRdfCnt;
       }
       if (other.BType != 0) {
         BType = other.BType;
@@ -13001,33 +12584,14 @@ namespace jtshared {
       if (other.Speed != 0F) {
         Speed = other.Speed;
       }
-      cancelTransit_.Add(other.cancelTransit_);
-      if (other.RepeatQuota != 0) {
-        RepeatQuota = other.RepeatQuota;
-      }
-      if (other.ActiveVfxSpeciesId != 0) {
-        ActiveVfxSpeciesId = other.ActiveVfxSpeciesId;
-      }
-      if (other.ExplosionVfxSpeciesId != 0) {
-        ExplosionVfxSpeciesId = other.ExplosionVfxSpeciesId;
-      }
-      if (other.AllowsWalking != false) {
-        AllowsWalking = other.AllowsWalking;
-      }
-      if (other.AllowsCrouching != false) {
-        AllowsCrouching = other.AllowsCrouching;
+      if (other.SpeedIfNotHit != 0F) {
+        SpeedIfNotHit = other.SpeedIfNotHit;
       }
       if (other.Hardness != 0) {
         Hardness = other.Hardness;
       }
-      if (other.StartupInvinsibleFrames != 0) {
-        StartupInvinsibleFrames = other.StartupInvinsibleFrames;
-      }
       if (other.HitInvinsibleFrames != 0) {
         HitInvinsibleFrames = other.HitInvinsibleFrames;
-      }
-      if (other.ExplosionSpeciesId != 0) {
-        ExplosionSpeciesId = other.ExplosionSpeciesId;
       }
       if (other.PerpAccMag != 0) {
         PerpAccMag = other.PerpAccMag;
@@ -13035,17 +12599,8 @@ namespace jtshared {
       if (other.DelaySelfVelToActive != false) {
         DelaySelfVelToActive = other.DelaySelfVelToActive;
       }
-      if (other.SpeedIfNotHit != 0F) {
-        SpeedIfNotHit = other.SpeedIfNotHit;
-      }
       if (other.OmitSoftPushback != false) {
         OmitSoftPushback = other.OmitSoftPushback;
-      }
-      if (other.HitboxSizeIncX != 0F) {
-        HitboxSizeIncX = other.HitboxSizeIncX;
-      }
-      if (other.HitboxSizeIncY != 0F) {
-        HitboxSizeIncY = other.HitboxSizeIncY;
       }
       if (other.RemainsUponHit != false) {
         RemainsUponHit = other.RemainsUponHit;
@@ -13062,11 +12617,11 @@ namespace jtshared {
       if (other.HardPushbackBounceSheerFactor != 0F) {
         HardPushbackBounceSheerFactor = other.HardPushbackBounceSheerFactor;
       }
-      if (other.IsPixelatedActiveVfx != false) {
-        IsPixelatedActiveVfx = other.IsPixelatedActiveVfx;
+      if (other.BlowUp != false) {
+        BlowUp = other.BlowUp;
       }
-      if (other.IsPixelatedExplostionVfx != false) {
-        IsPixelatedExplostionVfx = other.IsPixelatedExplostionVfx;
+      if (other.RepeatQuota != 0) {
+        RepeatQuota = other.RepeatQuota;
       }
       if (other.MhVanishOnMeleeHit != false) {
         MhVanishOnMeleeHit = other.MhVanishOnMeleeHit;
@@ -13080,20 +12635,27 @@ namespace jtshared {
       if (other.ForAlly != false) {
         ForAlly = other.ForAlly;
       }
+      if (other.HitboxSizeIncX != 0F) {
+        HitboxSizeIncX = other.HitboxSizeIncX;
+      }
+      if (other.HitboxSizeIncY != 0F) {
+        HitboxSizeIncY = other.HitboxSizeIncY;
+      }
+      if (other.AllowsWalking != false) {
+        AllowsWalking = other.AllowsWalking;
+      }
+      if (other.AllowsCrouching != false) {
+        AllowsCrouching = other.AllowsCrouching;
+      }
       if (other.ElementalAttrs != 0) {
         ElementalAttrs = other.ElementalAttrs;
       }
-      if (other.CancellableByInventorySlotC != false) {
-        CancellableByInventorySlotC = other.CancellableByInventorySlotC;
-      }
-      if (other.CancellableByInventorySlotD != false) {
-        CancellableByInventorySlotD = other.CancellableByInventorySlotD;
-      }
+      cancelTransit_.Add(other.cancelTransit_);
       if (other.BeamVisualSizeY != 0F) {
         BeamVisualSizeY = other.BeamVisualSizeY;
       }
-      if (other.TouchExplosionBombCollision != false) {
-        TouchExplosionBombCollision = other.TouchExplosionBombCollision;
+      if (other.TouchHitBombCollision != false) {
+        TouchHitBombCollision = other.TouchHitBombCollision;
       }
       if (other.AirRidingGroundWave != false) {
         AirRidingGroundWave = other.AirRidingGroundWave;
@@ -13112,9 +12674,6 @@ namespace jtshared {
           InitQ = new global::jtshared.PbQuat();
         }
         InitQ.MergeFrom(other.InitQ);
-      }
-      if (other.StartupVfxSpeciesId != 0) {
-        StartupVfxSpeciesId = other.StartupVfxSpeciesId;
       }
       if (other.Ifc != 0) {
         Ifc = other.Ifc;
@@ -13161,15 +12720,6 @@ namespace jtshared {
       if (other.UseChOffsetRegardlessOfEmissionMh != false) {
         UseChOffsetRegardlessOfEmissionMh = other.UseChOffsetRegardlessOfEmissionMh;
       }
-      if (other.InplaceVanishExplosionSpeciesId != 0) {
-        InplaceVanishExplosionSpeciesId = other.InplaceVanishExplosionSpeciesId;
-      }
-      if (other.AnimLoopingRdfOffset != 0) {
-        AnimLoopingRdfOffset = other.AnimLoopingRdfOffset;
-      }
-      if (other.ExplosionAnimLoopingRdfOffset != 0) {
-        ExplosionAnimLoopingRdfOffset = other.ExplosionAnimLoopingRdfOffset;
-      }
       if (other.GaugeIncReductionRatio != 0F) {
         GaugeIncReductionRatio = other.GaugeIncReductionRatio;
       }
@@ -13185,11 +12735,11 @@ namespace jtshared {
       if (other.FinishingFrames != 0) {
         FinishingFrames = other.FinishingFrames;
       }
-      if (other.NoExplosionOnHardPushback != false) {
-        NoExplosionOnHardPushback = other.NoExplosionOnHardPushback;
+      if (other.NoVanishAnimOnHardPushback != false) {
+        NoVanishAnimOnHardPushback = other.NoVanishAnimOnHardPushback;
       }
-      if (other.ExplodeOnMultiContact != false) {
-        ExplodeOnMultiContact = other.ExplodeOnMultiContact;
+      if (other.HitOnMultiContact != false) {
+        HitOnMultiContact = other.HitOnMultiContact;
       }
       if (other.CollisionTypeMask != 0UL) {
         CollisionTypeMask = other.CollisionTypeMask;
@@ -13209,23 +12759,23 @@ namespace jtshared {
       if (other.FireballEmitSfxName.Length != 0) {
         FireballEmitSfxName = other.FireballEmitSfxName;
       }
-      if (other.ExplosionSfxName.Length != 0) {
-        ExplosionSfxName = other.ExplosionSfxName;
+      if (other.HitSfxName.Length != 0) {
+        HitSfxName = other.HitSfxName;
       }
       if (other.ActiveSfxName.Length != 0) {
         ActiveSfxName = other.ActiveSfxName;
       }
-      if (other.ExplosionOnFleshSfxName.Length != 0) {
-        ExplosionOnFleshSfxName = other.ExplosionOnFleshSfxName;
+      if (other.HitOnFleshSfxName.Length != 0) {
+        HitOnFleshSfxName = other.HitOnFleshSfxName;
       }
-      if (other.ExplosionOnRockSfxName.Length != 0) {
-        ExplosionOnRockSfxName = other.ExplosionOnRockSfxName;
+      if (other.HitOnRockSfxName.Length != 0) {
+        HitOnRockSfxName = other.HitOnRockSfxName;
       }
-      if (other.ExplosionOnMetalSfxName.Length != 0) {
-        ExplosionOnMetalSfxName = other.ExplosionOnMetalSfxName;
+      if (other.HitOnMetalSfxName.Length != 0) {
+        HitOnMetalSfxName = other.HitOnMetalSfxName;
       }
-      if (other.ExplosionOnWoodSfxName.Length != 0) {
-        ExplosionOnWoodSfxName = other.ExplosionOnWoodSfxName;
+      if (other.HitOnWoodSfxName.Length != 0) {
+        HitOnWoodSfxName = other.HitOnWoodSfxName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -13243,159 +12793,131 @@ namespace jtshared {
             break;
           }
           case 16: {
-            CancellableStFrame = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            CancellableEdFrame = input.ReadInt32();
-            break;
-          }
-          case 32: {
-            ActiveFrames = input.ReadInt32();
-            break;
-          }
-          case 40: {
-            CooldownFrames = input.ReadInt32();
-            break;
-          }
-          case 48: {
-            HitStunFrames = input.ReadInt32();
-            break;
-          }
-          case 56: {
-            BlockStunFrames = input.ReadInt32();
-            break;
-          }
-          case 69: {
-            PushbackVelX = input.ReadFloat();
-            break;
-          }
-          case 77: {
-            PushbackVelY = input.ReadFloat();
-            break;
-          }
-          case 80: {
-            Damage = input.ReadInt32();
-            break;
-          }
-          case 93: {
-            SelfLockVelX = input.ReadFloat();
-            break;
-          }
-          case 101: {
-            SelfLockVelY = input.ReadFloat();
-            break;
-          }
-          case 109: {
-            SelfLockVelYWhenFlying = input.ReadFloat();
-            break;
-          }
-          case 117: {
-            HitboxOffsetX = input.ReadFloat();
-            break;
-          }
-          case 125: {
-            HitboxOffsetY = input.ReadFloat();
-            break;
-          }
-          case 133: {
-            HitboxHalfSizeX = input.ReadFloat();
-            break;
-          }
-          case 141: {
-            HitboxHalfSizeY = input.ReadFloat();
-            break;
-          }
-          case 144: {
-            BlowUp = input.ReadBool();
-            break;
-          }
-          case 152: {
-            SpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 160: {
-            ExplosionFrames = input.ReadInt32();
-            break;
-          }
-          case 168: {
-            BType = (global::jtshared.BulletType) input.ReadEnum();
-            break;
-          }
-          case 176: {
-            MhType = (global::jtshared.MultiHitType) input.ReadEnum();
-            break;
-          }
-          case 184: {
-            SimultaneousMultiHitCnt = input.ReadUInt32();
-            break;
-          }
-          case 197: {
-            Speed = input.ReadFloat();
-            break;
-          }
-          case 202: {
-            cancelTransit_.AddEntriesFrom(input, _map_cancelTransit_codec);
-            break;
-          }
-          case 208: {
-            RepeatQuota = input.ReadInt32();
-            break;
-          }
-          case 216: {
-            ActiveVfxSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 224: {
-            ExplosionVfxSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 232: {
-            AllowsWalking = input.ReadBool();
-            break;
-          }
-          case 240: {
-            AllowsCrouching = input.ReadBool();
-            break;
-          }
-          case 248: {
-            Hardness = input.ReadInt32();
-            break;
-          }
-          case 256: {
             StartupInvinsibleFrames = input.ReadInt32();
             break;
           }
-          case 264: {
-            HitInvinsibleFrames = input.ReadInt32();
+          case 24: {
+            CancellableStFrame = input.ReadInt32();
             break;
           }
-          case 272: {
-            ExplosionSpeciesId = input.ReadUInt32();
+          case 32: {
+            CancellableEdFrame = input.ReadInt32();
             break;
           }
-          case 280: {
-            PerpAccMag = input.ReadInt32();
+          case 40: {
+            ActiveFrames = input.ReadInt32();
             break;
           }
-          case 288: {
-            DelaySelfVelToActive = input.ReadBool();
+          case 48: {
+            CooldownFrames = input.ReadInt32();
             break;
           }
-          case 301: {
+          case 56: {
+            HitStunFrames = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            BlockStunFrames = input.ReadInt32();
+            break;
+          }
+          case 77: {
+            PushbackVelX = input.ReadFloat();
+            break;
+          }
+          case 85: {
+            PushbackVelY = input.ReadFloat();
+            break;
+          }
+          case 88: {
+            Damage = input.ReadInt32();
+            break;
+          }
+          case 101: {
+            SelfLockVelX = input.ReadFloat();
+            break;
+          }
+          case 109: {
+            SelfLockVelY = input.ReadFloat();
+            break;
+          }
+          case 117: {
+            SelfLockVelYWhenFlying = input.ReadFloat();
+            break;
+          }
+          case 125: {
+            HitboxOffsetX = input.ReadFloat();
+            break;
+          }
+          case 133: {
+            HitboxOffsetY = input.ReadFloat();
+            break;
+          }
+          case 141: {
+            HitboxHalfSizeX = input.ReadFloat();
+            break;
+          }
+          case 149: {
+            HitboxHalfSizeY = input.ReadFloat();
+            break;
+          }
+          case 162: {
+            AnimName = input.ReadString();
+            break;
+          }
+          case 168: {
+            ActiveAnimLoopingRdfOffset = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            VanishingAnimRdfCnt = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            VanishingAnimLoopingRdfOffset = input.ReadInt32();
+            break;
+          }
+          case 208: {
+            HitAnimRdfCnt = input.ReadInt32();
+            break;
+          }
+          case 216: {
+            BType = (global::jtshared.BulletType) input.ReadEnum();
+            break;
+          }
+          case 224: {
+            MhType = (global::jtshared.MultiHitType) input.ReadEnum();
+            break;
+          }
+          case 232: {
+            SimultaneousMultiHitCnt = input.ReadUInt32();
+            break;
+          }
+          case 245: {
+            Speed = input.ReadFloat();
+            break;
+          }
+          case 253: {
             SpeedIfNotHit = input.ReadFloat();
             break;
           }
+          case 256: {
+            Hardness = input.ReadInt32();
+            break;
+          }
+          case 280: {
+            HitInvinsibleFrames = input.ReadInt32();
+            break;
+          }
+          case 296: {
+            PerpAccMag = input.ReadInt32();
+            break;
+          }
           case 304: {
+            DelaySelfVelToActive = input.ReadBool();
+            break;
+          }
+          case 320: {
             OmitSoftPushback = input.ReadBool();
-            break;
-          }
-          case 317: {
-            HitboxSizeIncX = input.ReadFloat();
-            break;
-          }
-          case 325: {
-            HitboxSizeIncY = input.ReadFloat();
             break;
           }
           case 328: {
@@ -13419,11 +12941,11 @@ namespace jtshared {
             break;
           }
           case 368: {
-            IsPixelatedActiveVfx = input.ReadBool();
+            BlowUp = input.ReadBool();
             break;
           }
           case 376: {
-            IsPixelatedExplostionVfx = input.ReadBool();
+            RepeatQuota = input.ReadInt32();
             break;
           }
           case 384: {
@@ -13442,16 +12964,28 @@ namespace jtshared {
             ForAlly = input.ReadBool();
             break;
           }
+          case 429: {
+            HitboxSizeIncX = input.ReadFloat();
+            break;
+          }
+          case 437: {
+            HitboxSizeIncY = input.ReadFloat();
+            break;
+          }
+          case 440: {
+            AllowsWalking = input.ReadBool();
+            break;
+          }
+          case 448: {
+            AllowsCrouching = input.ReadBool();
+            break;
+          }
           case 472: {
             ElementalAttrs = input.ReadUInt32();
             break;
           }
-          case 480: {
-            CancellableByInventorySlotC = input.ReadBool();
-            break;
-          }
-          case 488: {
-            CancellableByInventorySlotD = input.ReadBool();
+          case 498: {
+            cancelTransit_.AddEntriesFrom(input, _map_cancelTransit_codec);
             break;
           }
           case 517: {
@@ -13459,7 +12993,7 @@ namespace jtshared {
             break;
           }
           case 520: {
-            TouchExplosionBombCollision = input.ReadBool();
+            TouchHitBombCollision = input.ReadBool();
             break;
           }
           case 528: {
@@ -13483,10 +13017,6 @@ namespace jtshared {
               InitQ = new global::jtshared.PbQuat();
             }
             input.ReadMessage(InitQ);
-            break;
-          }
-          case 592: {
-            StartupVfxSpeciesId = input.ReadUInt32();
             break;
           }
           case 600: {
@@ -13549,18 +13079,6 @@ namespace jtshared {
             UseChOffsetRegardlessOfEmissionMh = input.ReadBool();
             break;
           }
-          case 720: {
-            InplaceVanishExplosionSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 728: {
-            AnimLoopingRdfOffset = input.ReadInt32();
-            break;
-          }
-          case 736: {
-            ExplosionAnimLoopingRdfOffset = input.ReadInt32();
-            break;
-          }
           case 749: {
             GaugeIncReductionRatio = input.ReadFloat();
             break;
@@ -13582,11 +13100,11 @@ namespace jtshared {
             break;
           }
           case 784: {
-            NoExplosionOnHardPushback = input.ReadBool();
+            NoVanishAnimOnHardPushback = input.ReadBool();
             break;
           }
           case 792: {
-            ExplodeOnMultiContact = input.ReadBool();
+            HitOnMultiContact = input.ReadBool();
             break;
           }
           case 8232: {
@@ -13613,7 +13131,7 @@ namespace jtshared {
             break;
           }
           case 16402: {
-            ExplosionSfxName = input.ReadString();
+            HitSfxName = input.ReadString();
             break;
           }
           case 16410: {
@@ -13621,19 +13139,19 @@ namespace jtshared {
             break;
           }
           case 16418: {
-            ExplosionOnFleshSfxName = input.ReadString();
+            HitOnFleshSfxName = input.ReadString();
             break;
           }
           case 16426: {
-            ExplosionOnRockSfxName = input.ReadString();
+            HitOnRockSfxName = input.ReadString();
             break;
           }
           case 16434: {
-            ExplosionOnMetalSfxName = input.ReadString();
+            HitOnMetalSfxName = input.ReadString();
             break;
           }
           case 16442: {
-            ExplosionOnWoodSfxName = input.ReadString();
+            HitOnWoodSfxName = input.ReadString();
             break;
           }
         }
@@ -13650,7 +13168,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[19]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[18]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13689,12 +13207,15 @@ namespace jtshared {
       remainingHardPushbackBounceQuota_ = other.remainingHardPushbackBounceQuota_;
       targetUd_ = other.targetUd_;
       damageDealed_ = other.damageDealed_;
-      explodedOnIfc_ = other.explodedOnIfc_;
+      hitOnIfc_ = other.hitOnIfc_;
       activeSkillHit_ = other.activeSkillHit_;
       skillId_ = other.skillId_;
       id_ = other.id_;
       teamId_ = other.teamId_;
       forAlly_ = other.forAlly_;
+      groundVelX_ = other.groundVelX_;
+      groundVelY_ = other.groundVelY_;
+      groundVelZ_ = other.groundVelZ_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -13961,14 +13482,17 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "exploded_on_ifc" field.</summary>
-    public const int ExplodedOnIfcFieldNumber = 23;
-    private global::jtshared.IfaceCat explodedOnIfc_ = 0;
+    /// <summary>Field number for the "hit_on_ifc" field.</summary>
+    public const int HitOnIfcFieldNumber = 23;
+    private global::jtshared.IfaceCat hitOnIfc_ = 0;
+    /// <summary>
+    /// [REMINDER] Together with "BulletConfig.ifc" to determine sound effect.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::jtshared.IfaceCat ExplodedOnIfc {
-      get { return explodedOnIfc_; }
+    public global::jtshared.IfaceCat HitOnIfc {
+      get { return hitOnIfc_; }
       set {
-        explodedOnIfc_ = value;
+        hitOnIfc_ = value;
       }
     }
 
@@ -14033,6 +13557,39 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "ground_vel_x" field.</summary>
+    public const int GroundVelXFieldNumber = 30;
+    private float groundVelX_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelX {
+      get { return groundVelX_; }
+      set {
+        groundVelX_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ground_vel_y" field.</summary>
+    public const int GroundVelYFieldNumber = 31;
+    private float groundVelY_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelY {
+      get { return groundVelY_; }
+      set {
+        groundVelY_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ground_vel_z" field.</summary>
+    public const int GroundVelZFieldNumber = 32;
+    private float groundVelZ_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float GroundVelZ {
+      get { return groundVelZ_; }
+      set {
+        groundVelZ_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Bullet);
@@ -14068,12 +13625,15 @@ namespace jtshared {
       if (RemainingHardPushbackBounceQuota != other.RemainingHardPushbackBounceQuota) return false;
       if (TargetUd != other.TargetUd) return false;
       if (DamageDealed != other.DamageDealed) return false;
-      if (ExplodedOnIfc != other.ExplodedOnIfc) return false;
+      if (HitOnIfc != other.HitOnIfc) return false;
       if (ActiveSkillHit != other.ActiveSkillHit) return false;
       if (SkillId != other.SkillId) return false;
       if (Id != other.Id) return false;
       if (TeamId != other.TeamId) return false;
       if (ForAlly != other.ForAlly) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelX, other.GroundVelX)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelY, other.GroundVelY)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(GroundVelZ, other.GroundVelZ)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -14102,12 +13662,15 @@ namespace jtshared {
       if (RemainingHardPushbackBounceQuota != 0) hash ^= RemainingHardPushbackBounceQuota.GetHashCode();
       if (TargetUd != 0UL) hash ^= TargetUd.GetHashCode();
       if (DamageDealed != 0) hash ^= DamageDealed.GetHashCode();
-      if (ExplodedOnIfc != 0) hash ^= ExplodedOnIfc.GetHashCode();
+      if (HitOnIfc != 0) hash ^= HitOnIfc.GetHashCode();
       if (ActiveSkillHit != 0) hash ^= ActiveSkillHit.GetHashCode();
       if (SkillId != 0) hash ^= SkillId.GetHashCode();
       if (Id != 0) hash ^= Id.GetHashCode();
       if (TeamId != 0) hash ^= TeamId.GetHashCode();
       if (ForAlly != false) hash ^= ForAlly.GetHashCode();
+      if (GroundVelX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelX);
+      if (GroundVelY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelY);
+      if (GroundVelZ != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(GroundVelZ);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -14209,9 +13772,9 @@ namespace jtshared {
         output.WriteRawTag(176, 1);
         output.WriteInt32(DamageDealed);
       }
-      if (ExplodedOnIfc != 0) {
+      if (HitOnIfc != 0) {
         output.WriteRawTag(184, 1);
-        output.WriteEnum((int) ExplodedOnIfc);
+        output.WriteEnum((int) HitOnIfc);
       }
       if (ActiveSkillHit != 0) {
         output.WriteRawTag(200, 1);
@@ -14232,6 +13795,18 @@ namespace jtshared {
       if (ForAlly != false) {
         output.WriteRawTag(232, 1);
         output.WriteBool(ForAlly);
+      }
+      if (GroundVelX != 0F) {
+        output.WriteRawTag(245, 1);
+        output.WriteFloat(GroundVelX);
+      }
+      if (GroundVelY != 0F) {
+        output.WriteRawTag(253, 1);
+        output.WriteFloat(GroundVelY);
+      }
+      if (GroundVelZ != 0F) {
+        output.WriteRawTag(133, 2);
+        output.WriteFloat(GroundVelZ);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -14307,8 +13882,8 @@ namespace jtshared {
       if (DamageDealed != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(DamageDealed);
       }
-      if (ExplodedOnIfc != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) ExplodedOnIfc);
+      if (HitOnIfc != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) HitOnIfc);
       }
       if (ActiveSkillHit != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(ActiveSkillHit);
@@ -14324,6 +13899,15 @@ namespace jtshared {
       }
       if (ForAlly != false) {
         size += 2 + 1;
+      }
+      if (GroundVelX != 0F) {
+        size += 2 + 4;
+      }
+      if (GroundVelY != 0F) {
+        size += 2 + 4;
+      }
+      if (GroundVelZ != 0F) {
+        size += 2 + 4;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -14402,8 +13986,8 @@ namespace jtshared {
       if (other.DamageDealed != 0) {
         DamageDealed = other.DamageDealed;
       }
-      if (other.ExplodedOnIfc != 0) {
-        ExplodedOnIfc = other.ExplodedOnIfc;
+      if (other.HitOnIfc != 0) {
+        HitOnIfc = other.HitOnIfc;
       }
       if (other.ActiveSkillHit != 0) {
         ActiveSkillHit = other.ActiveSkillHit;
@@ -14419,6 +14003,15 @@ namespace jtshared {
       }
       if (other.ForAlly != false) {
         ForAlly = other.ForAlly;
+      }
+      if (other.GroundVelX != 0F) {
+        GroundVelX = other.GroundVelX;
+      }
+      if (other.GroundVelY != 0F) {
+        GroundVelY = other.GroundVelY;
+      }
+      if (other.GroundVelZ != 0F) {
+        GroundVelZ = other.GroundVelZ;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -14520,7 +14113,7 @@ namespace jtshared {
             break;
           }
           case 184: {
-            ExplodedOnIfc = (global::jtshared.IfaceCat) input.ReadEnum();
+            HitOnIfc = (global::jtshared.IfaceCat) input.ReadEnum();
             break;
           }
           case 200: {
@@ -14543,6 +14136,18 @@ namespace jtshared {
             ForAlly = input.ReadBool();
             break;
           }
+          case 245: {
+            GroundVelX = input.ReadFloat();
+            break;
+          }
+          case 253: {
+            GroundVelY = input.ReadFloat();
+            break;
+          }
+          case 261: {
+            GroundVelZ = input.ReadFloat();
+            break;
+          }
         }
       }
     }
@@ -14557,7 +14162,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[19]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14575,8 +14180,8 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TrapConfig(TrapConfig other) : this() {
       tpt_ = other.tpt_;
-      explosionSpeciesId_ = other.explosionSpeciesId_;
-      explosionFrames_ = other.explosionFrames_;
+      dyingAnimName_ = other.dyingAnimName_;
+      dyingAnimRdfCnt_ = other.dyingAnimRdfCnt_;
       blowUp_ = other.blowUp_;
       damage_ = other.damage_;
       hitStunFrames_ = other.hitStunFrames_;
@@ -14585,6 +14190,7 @@ namespace jtshared {
       hardness_ = other.hardness_;
       deactivateUponTriggered_ = other.deactivateUponTriggered_;
       surfaceFriction_ = other.surfaceFriction_;
+      useKinematic_ = other.useKinematic_;
       patrolCueRequiresFullContain_ = other.patrolCueRequiresFullContain_;
       atk1UponTriggered_ = other.atk1UponTriggered_;
       atk1SkillId_ = other.atk1SkillId_;
@@ -14595,7 +14201,7 @@ namespace jtshared {
       defaultLinearSpeed_ = other.defaultLinearSpeed_;
       defaultAngularSpeed_ = other.defaultAngularSpeed_;
       defaultCooldownRdfCount_ = other.defaultCooldownRdfCount_;
-      speciesName_ = other.speciesName_;
+      tptName_ = other.tptName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -14618,25 +14224,25 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "explosion_species_id" field.</summary>
-    public const int ExplosionSpeciesIdFieldNumber = 2;
-    private uint explosionSpeciesId_;
+    /// <summary>Field number for the "dying_anim_name" field.</summary>
+    public const int DyingAnimNameFieldNumber = 2;
+    private string dyingAnimName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint ExplosionSpeciesId {
-      get { return explosionSpeciesId_; }
+    public string DyingAnimName {
+      get { return dyingAnimName_; }
       set {
-        explosionSpeciesId_ = value;
+        dyingAnimName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
-    /// <summary>Field number for the "explosion_frames" field.</summary>
-    public const int ExplosionFramesFieldNumber = 3;
-    private int explosionFrames_;
+    /// <summary>Field number for the "dying_anim_rdf_cnt" field.</summary>
+    public const int DyingAnimRdfCntFieldNumber = 3;
+    private int dyingAnimRdfCnt_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int ExplosionFrames {
-      get { return explosionFrames_; }
+    public int DyingAnimRdfCnt {
+      get { return dyingAnimRdfCnt_; }
       set {
-        explosionFrames_ = value;
+        dyingAnimRdfCnt_ = value;
       }
     }
 
@@ -14725,6 +14331,17 @@ namespace jtshared {
       get { return surfaceFriction_; }
       set {
         surfaceFriction_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "use_kinematic" field.</summary>
+    public const int UseKinematicFieldNumber = 12;
+    private bool useKinematic_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool UseKinematic {
+      get { return useKinematic_; }
+      set {
+        useKinematic_ = value;
       }
     }
 
@@ -14844,14 +14461,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "species_name" field.</summary>
-    public const int SpeciesNameFieldNumber = 1024;
-    private string speciesName_ = "";
+    /// <summary>Field number for the "tpt_name" field.</summary>
+    public const int TptNameFieldNumber = 1024;
+    private string tptName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string SpeciesName {
-      get { return speciesName_; }
+    public string TptName {
+      get { return tptName_; }
       set {
-        speciesName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        tptName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -14869,8 +14486,8 @@ namespace jtshared {
         return true;
       }
       if (Tpt != other.Tpt) return false;
-      if (ExplosionSpeciesId != other.ExplosionSpeciesId) return false;
-      if (ExplosionFrames != other.ExplosionFrames) return false;
+      if (DyingAnimName != other.DyingAnimName) return false;
+      if (DyingAnimRdfCnt != other.DyingAnimRdfCnt) return false;
       if (BlowUp != other.BlowUp) return false;
       if (Damage != other.Damage) return false;
       if (HitStunFrames != other.HitStunFrames) return false;
@@ -14879,6 +14496,7 @@ namespace jtshared {
       if (Hardness != other.Hardness) return false;
       if (DeactivateUponTriggered != other.DeactivateUponTriggered) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SurfaceFriction, other.SurfaceFriction)) return false;
+      if (UseKinematic != other.UseKinematic) return false;
       if (PatrolCueRequiresFullContain != other.PatrolCueRequiresFullContain) return false;
       if (Atk1UponTriggered != other.Atk1UponTriggered) return false;
       if (Atk1SkillId != other.Atk1SkillId) return false;
@@ -14889,7 +14507,7 @@ namespace jtshared {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultLinearSpeed, other.DefaultLinearSpeed)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultAngularSpeed, other.DefaultAngularSpeed)) return false;
       if (DefaultCooldownRdfCount != other.DefaultCooldownRdfCount) return false;
-      if (SpeciesName != other.SpeciesName) return false;
+      if (TptName != other.TptName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -14897,8 +14515,8 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (Tpt != 0) hash ^= Tpt.GetHashCode();
-      if (ExplosionSpeciesId != 0) hash ^= ExplosionSpeciesId.GetHashCode();
-      if (ExplosionFrames != 0) hash ^= ExplosionFrames.GetHashCode();
+      if (DyingAnimName.Length != 0) hash ^= DyingAnimName.GetHashCode();
+      if (DyingAnimRdfCnt != 0) hash ^= DyingAnimRdfCnt.GetHashCode();
       if (BlowUp != false) hash ^= BlowUp.GetHashCode();
       if (Damage != 0) hash ^= Damage.GetHashCode();
       if (HitStunFrames != 0) hash ^= HitStunFrames.GetHashCode();
@@ -14907,6 +14525,7 @@ namespace jtshared {
       if (Hardness != 0) hash ^= Hardness.GetHashCode();
       if (DeactivateUponTriggered != false) hash ^= DeactivateUponTriggered.GetHashCode();
       if (SurfaceFriction != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SurfaceFriction);
+      if (UseKinematic != false) hash ^= UseKinematic.GetHashCode();
       if (PatrolCueRequiresFullContain != false) hash ^= PatrolCueRequiresFullContain.GetHashCode();
       if (Atk1UponTriggered != false) hash ^= Atk1UponTriggered.GetHashCode();
       if (Atk1SkillId != 0) hash ^= Atk1SkillId.GetHashCode();
@@ -14917,7 +14536,7 @@ namespace jtshared {
       if (DefaultLinearSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultLinearSpeed);
       if (DefaultAngularSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultAngularSpeed);
       if (DefaultCooldownRdfCount != 0) hash ^= DefaultCooldownRdfCount.GetHashCode();
-      if (SpeciesName.Length != 0) hash ^= SpeciesName.GetHashCode();
+      if (TptName.Length != 0) hash ^= TptName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -14935,13 +14554,13 @@ namespace jtshared {
         output.WriteRawTag(8);
         output.WriteUInt32(Tpt);
       }
-      if (ExplosionSpeciesId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(ExplosionSpeciesId);
+      if (DyingAnimName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(DyingAnimName);
       }
-      if (ExplosionFrames != 0) {
+      if (DyingAnimRdfCnt != 0) {
         output.WriteRawTag(24);
-        output.WriteInt32(ExplosionFrames);
+        output.WriteInt32(DyingAnimRdfCnt);
       }
       if (BlowUp != false) {
         output.WriteRawTag(32);
@@ -14974,6 +14593,10 @@ namespace jtshared {
       if (SurfaceFriction != 0F) {
         output.WriteRawTag(93);
         output.WriteFloat(SurfaceFriction);
+      }
+      if (UseKinematic != false) {
+        output.WriteRawTag(96);
+        output.WriteBool(UseKinematic);
       }
       if (PatrolCueRequiresFullContain != false) {
         output.WriteRawTag(120);
@@ -15015,9 +14638,9 @@ namespace jtshared {
         output.WriteRawTag(240, 1);
         output.WriteInt32(DefaultCooldownRdfCount);
       }
-      if (SpeciesName.Length != 0) {
+      if (TptName.Length != 0) {
         output.WriteRawTag(130, 64);
-        output.WriteString(SpeciesName);
+        output.WriteString(TptName);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -15030,11 +14653,11 @@ namespace jtshared {
       if (Tpt != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Tpt);
       }
-      if (ExplosionSpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ExplosionSpeciesId);
+      if (DyingAnimName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(DyingAnimName);
       }
-      if (ExplosionFrames != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ExplosionFrames);
+      if (DyingAnimRdfCnt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DyingAnimRdfCnt);
       }
       if (BlowUp != false) {
         size += 1 + 1;
@@ -15059,6 +14682,9 @@ namespace jtshared {
       }
       if (SurfaceFriction != 0F) {
         size += 1 + 4;
+      }
+      if (UseKinematic != false) {
+        size += 1 + 1;
       }
       if (PatrolCueRequiresFullContain != false) {
         size += 1 + 1;
@@ -15090,8 +14716,8 @@ namespace jtshared {
       if (DefaultCooldownRdfCount != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(DefaultCooldownRdfCount);
       }
-      if (SpeciesName.Length != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeStringSize(SpeciesName);
+      if (TptName.Length != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(TptName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -15107,11 +14733,11 @@ namespace jtshared {
       if (other.Tpt != 0) {
         Tpt = other.Tpt;
       }
-      if (other.ExplosionSpeciesId != 0) {
-        ExplosionSpeciesId = other.ExplosionSpeciesId;
+      if (other.DyingAnimName.Length != 0) {
+        DyingAnimName = other.DyingAnimName;
       }
-      if (other.ExplosionFrames != 0) {
-        ExplosionFrames = other.ExplosionFrames;
+      if (other.DyingAnimRdfCnt != 0) {
+        DyingAnimRdfCnt = other.DyingAnimRdfCnt;
       }
       if (other.BlowUp != false) {
         BlowUp = other.BlowUp;
@@ -15136,6 +14762,9 @@ namespace jtshared {
       }
       if (other.SurfaceFriction != 0F) {
         SurfaceFriction = other.SurfaceFriction;
+      }
+      if (other.UseKinematic != false) {
+        UseKinematic = other.UseKinematic;
       }
       if (other.PatrolCueRequiresFullContain != false) {
         PatrolCueRequiresFullContain = other.PatrolCueRequiresFullContain;
@@ -15167,8 +14796,8 @@ namespace jtshared {
       if (other.DefaultCooldownRdfCount != 0) {
         DefaultCooldownRdfCount = other.DefaultCooldownRdfCount;
       }
-      if (other.SpeciesName.Length != 0) {
-        SpeciesName = other.SpeciesName;
+      if (other.TptName.Length != 0) {
+        TptName = other.TptName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -15185,12 +14814,12 @@ namespace jtshared {
             Tpt = input.ReadUInt32();
             break;
           }
-          case 16: {
-            ExplosionSpeciesId = input.ReadUInt32();
+          case 18: {
+            DyingAnimName = input.ReadString();
             break;
           }
           case 24: {
-            ExplosionFrames = input.ReadInt32();
+            DyingAnimRdfCnt = input.ReadInt32();
             break;
           }
           case 32: {
@@ -15223,6 +14852,10 @@ namespace jtshared {
           }
           case 93: {
             SurfaceFriction = input.ReadFloat();
+            break;
+          }
+          case 96: {
+            UseKinematic = input.ReadBool();
             break;
           }
           case 120: {
@@ -15266,7 +14899,7 @@ namespace jtshared {
             break;
           }
           case 8194: {
-            SpeciesName = input.ReadString();
+            TptName = input.ReadString();
             break;
           }
         }
@@ -15283,7 +14916,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[20]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15349,7 +14982,7 @@ namespace jtshared {
     public const int TptFieldNumber = 2;
     private uint tpt_;
     /// <summary>
-    /// Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
+    /// Will be used for the "dynamic trap" to locate its Prefab for animating
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint Tpt {
@@ -16127,7 +15760,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -16400,7 +16033,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[23]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17039,7 +16672,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[23]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17252,7 +16885,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[24]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17270,6 +16903,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StepResult(StepResult other) : this() {
       fulfilledTriggers_ = other.fulfilledTriggers_.Clone();
+      fulfilledTriggerGroupIds_ = other.fulfilledTriggerGroupIds_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -17288,6 +16922,16 @@ namespace jtshared {
       get { return fulfilledTriggers_; }
     }
 
+    /// <summary>Field number for the "fulfilled_trigger_group_ids" field.</summary>
+    public const int FulfilledTriggerGroupIdsFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::jtshared.Trigger> _repeated_fulfilledTriggerGroupIds_codec
+        = pb::FieldCodec.ForMessage(18, global::jtshared.Trigger.Parser);
+    private readonly pbc::RepeatedField<global::jtshared.Trigger> fulfilledTriggerGroupIds_ = new pbc::RepeatedField<global::jtshared.Trigger>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::jtshared.Trigger> FulfilledTriggerGroupIds {
+      get { return fulfilledTriggerGroupIds_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as StepResult);
@@ -17302,6 +16946,7 @@ namespace jtshared {
         return true;
       }
       if(!fulfilledTriggers_.Equals(other.fulfilledTriggers_)) return false;
+      if(!fulfilledTriggerGroupIds_.Equals(other.fulfilledTriggerGroupIds_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -17309,6 +16954,7 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       hash ^= fulfilledTriggers_.GetHashCode();
+      hash ^= fulfilledTriggerGroupIds_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -17323,6 +16969,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       fulfilledTriggers_.WriteTo(output, _repeated_fulfilledTriggers_codec);
+      fulfilledTriggerGroupIds_.WriteTo(output, _repeated_fulfilledTriggerGroupIds_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -17332,6 +16979,7 @@ namespace jtshared {
     public int CalculateSize() {
       int size = 0;
       size += fulfilledTriggers_.CalculateSize(_repeated_fulfilledTriggers_codec);
+      size += fulfilledTriggerGroupIds_.CalculateSize(_repeated_fulfilledTriggerGroupIds_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -17344,6 +16992,7 @@ namespace jtshared {
         return;
       }
       fulfilledTriggers_.Add(other.fulfilledTriggers_);
+      fulfilledTriggerGroupIds_.Add(other.fulfilledTriggerGroupIds_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -17357,6 +17006,10 @@ namespace jtshared {
             break;
           case 10: {
             fulfilledTriggers_.AddEntriesFrom(input, _repeated_fulfilledTriggers_codec);
+            break;
+          }
+          case 18: {
+            fulfilledTriggerGroupIds_.AddEntriesFrom(input, _repeated_fulfilledTriggerGroupIds_codec);
             break;
           }
         }
@@ -17373,7 +17026,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[25]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17914,7 +17567,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[26]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18155,7 +17808,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[27]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18342,7 +17995,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[28]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18837,7 +18490,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[29]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19222,7 +18875,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[30]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19658,7 +19311,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[31]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19815,7 +19468,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[32]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20112,7 +19765,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[33]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20146,8 +19799,7 @@ namespace jtshared {
       omitGravity_ = other.omitGravity_;
       autoDef1_ = other.autoDef1_;
       associatedDebuffs_ = other.associatedDebuffs_.Clone();
-      characterVfxSpeciesId_ = other.characterVfxSpeciesId_;
-      isPixelatedVfxOnCharacter_ = other.isPixelatedVfxOnCharacter_;
+      characterVfxAnimName_ = other.characterVfxAnimName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -20355,25 +20007,14 @@ namespace jtshared {
       get { return associatedDebuffs_; }
     }
 
-    /// <summary>Field number for the "character_vfx_species_id" field.</summary>
-    public const int CharacterVfxSpeciesIdFieldNumber = 18;
-    private uint characterVfxSpeciesId_;
+    /// <summary>Field number for the "character_vfx_anim_name" field.</summary>
+    public const int CharacterVfxAnimNameFieldNumber = 18;
+    private string characterVfxAnimName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint CharacterVfxSpeciesId {
-      get { return characterVfxSpeciesId_; }
+    public string CharacterVfxAnimName {
+      get { return characterVfxAnimName_; }
       set {
-        characterVfxSpeciesId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_pixelated_vfx_on_character" field.</summary>
-    public const int IsPixelatedVfxOnCharacterFieldNumber = 19;
-    private bool isPixelatedVfxOnCharacter_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsPixelatedVfxOnCharacter {
-      get { return isPixelatedVfxOnCharacter_; }
-      set {
-        isPixelatedVfxOnCharacter_ = value;
+        characterVfxAnimName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -20407,8 +20048,7 @@ namespace jtshared {
       if (OmitGravity != other.OmitGravity) return false;
       if (AutoDef1 != other.AutoDef1) return false;
       if(!associatedDebuffs_.Equals(other.associatedDebuffs_)) return false;
-      if (CharacterVfxSpeciesId != other.CharacterVfxSpeciesId) return false;
-      if (IsPixelatedVfxOnCharacter != other.IsPixelatedVfxOnCharacter) return false;
+      if (CharacterVfxAnimName != other.CharacterVfxAnimName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -20432,8 +20072,7 @@ namespace jtshared {
       if (OmitGravity != false) hash ^= OmitGravity.GetHashCode();
       if (AutoDef1 != false) hash ^= AutoDef1.GetHashCode();
       hash ^= associatedDebuffs_.GetHashCode();
-      if (CharacterVfxSpeciesId != 0) hash ^= CharacterVfxSpeciesId.GetHashCode();
-      if (IsPixelatedVfxOnCharacter != false) hash ^= IsPixelatedVfxOnCharacter.GetHashCode();
+      if (CharacterVfxAnimName.Length != 0) hash ^= CharacterVfxAnimName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -20512,13 +20151,9 @@ namespace jtshared {
         output.WriteBool(AutoDef1);
       }
       associatedDebuffs_.WriteTo(output, _repeated_associatedDebuffs_codec);
-      if (CharacterVfxSpeciesId != 0) {
-        output.WriteRawTag(144, 1);
-        output.WriteUInt32(CharacterVfxSpeciesId);
-      }
-      if (IsPixelatedVfxOnCharacter != false) {
-        output.WriteRawTag(152, 1);
-        output.WriteBool(IsPixelatedVfxOnCharacter);
+      if (CharacterVfxAnimName.Length != 0) {
+        output.WriteRawTag(146, 1);
+        output.WriteString(CharacterVfxAnimName);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -20577,11 +20212,8 @@ namespace jtshared {
         size += 2 + 1;
       }
       size += associatedDebuffs_.CalculateSize(_repeated_associatedDebuffs_codec);
-      if (CharacterVfxSpeciesId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(CharacterVfxSpeciesId);
-      }
-      if (IsPixelatedVfxOnCharacter != false) {
-        size += 2 + 1;
+      if (CharacterVfxAnimName.Length != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(CharacterVfxAnimName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -20643,11 +20275,8 @@ namespace jtshared {
         AutoDef1 = other.AutoDef1;
       }
       associatedDebuffs_.Add(other.associatedDebuffs_);
-      if (other.CharacterVfxSpeciesId != 0) {
-        CharacterVfxSpeciesId = other.CharacterVfxSpeciesId;
-      }
-      if (other.IsPixelatedVfxOnCharacter != false) {
-        IsPixelatedVfxOnCharacter = other.IsPixelatedVfxOnCharacter;
+      if (other.CharacterVfxAnimName.Length != 0) {
+        CharacterVfxAnimName = other.CharacterVfxAnimName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -20729,12 +20358,8 @@ namespace jtshared {
             associatedDebuffs_.AddEntriesFrom(input, _repeated_associatedDebuffs_codec);
             break;
           }
-          case 144: {
-            CharacterVfxSpeciesId = input.ReadUInt32();
-            break;
-          }
-          case 152: {
-            IsPixelatedVfxOnCharacter = input.ReadBool();
+          case 146: {
+            CharacterVfxAnimName = input.ReadString();
             break;
           }
         }
@@ -20751,7 +20376,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[34]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21020,7 +20645,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[35]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21180,7 +20805,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[36]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21337,7 +20962,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[37]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21356,8 +20981,7 @@ namespace jtshared {
     public ConsumableConfig(ConsumableConfig other) : this() {
       speciesId_ = other.speciesId_;
       refillDelta_ = other.refillDelta_;
-      vfxIdOnPicker_ = other.vfxIdOnPicker_;
-      isPixelatedVfxOnPicker_ = other.isPixelatedVfxOnPicker_;
+      vfxAnimNameOnPicker_ = other.vfxAnimNameOnPicker_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -21388,25 +21012,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "vfx_id_on_picker" field.</summary>
-    public const int VfxIdOnPickerFieldNumber = 3;
-    private int vfxIdOnPicker_;
+    /// <summary>Field number for the "vfx_anim_name_on_picker" field.</summary>
+    public const int VfxAnimNameOnPickerFieldNumber = 3;
+    private string vfxAnimNameOnPicker_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int VfxIdOnPicker {
-      get { return vfxIdOnPicker_; }
+    public string VfxAnimNameOnPicker {
+      get { return vfxAnimNameOnPicker_; }
       set {
-        vfxIdOnPicker_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_pixelated_vfx_on_picker" field.</summary>
-    public const int IsPixelatedVfxOnPickerFieldNumber = 4;
-    private bool isPixelatedVfxOnPicker_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsPixelatedVfxOnPicker {
-      get { return isPixelatedVfxOnPicker_; }
-      set {
-        isPixelatedVfxOnPicker_ = value;
+        vfxAnimNameOnPicker_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -21425,8 +21038,7 @@ namespace jtshared {
       }
       if (SpeciesId != other.SpeciesId) return false;
       if (RefillDelta != other.RefillDelta) return false;
-      if (VfxIdOnPicker != other.VfxIdOnPicker) return false;
-      if (IsPixelatedVfxOnPicker != other.IsPixelatedVfxOnPicker) return false;
+      if (VfxAnimNameOnPicker != other.VfxAnimNameOnPicker) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -21435,8 +21047,7 @@ namespace jtshared {
       int hash = 1;
       if (SpeciesId != 0) hash ^= SpeciesId.GetHashCode();
       if (RefillDelta != 0) hash ^= RefillDelta.GetHashCode();
-      if (VfxIdOnPicker != 0) hash ^= VfxIdOnPicker.GetHashCode();
-      if (IsPixelatedVfxOnPicker != false) hash ^= IsPixelatedVfxOnPicker.GetHashCode();
+      if (VfxAnimNameOnPicker.Length != 0) hash ^= VfxAnimNameOnPicker.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -21458,13 +21069,9 @@ namespace jtshared {
         output.WriteRawTag(16);
         output.WriteInt32(RefillDelta);
       }
-      if (VfxIdOnPicker != 0) {
-        output.WriteRawTag(24);
-        output.WriteInt32(VfxIdOnPicker);
-      }
-      if (IsPixelatedVfxOnPicker != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(IsPixelatedVfxOnPicker);
+      if (VfxAnimNameOnPicker.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(VfxAnimNameOnPicker);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -21480,11 +21087,8 @@ namespace jtshared {
       if (RefillDelta != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(RefillDelta);
       }
-      if (VfxIdOnPicker != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(VfxIdOnPicker);
-      }
-      if (IsPixelatedVfxOnPicker != false) {
-        size += 1 + 1;
+      if (VfxAnimNameOnPicker.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(VfxAnimNameOnPicker);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -21503,11 +21107,8 @@ namespace jtshared {
       if (other.RefillDelta != 0) {
         RefillDelta = other.RefillDelta;
       }
-      if (other.VfxIdOnPicker != 0) {
-        VfxIdOnPicker = other.VfxIdOnPicker;
-      }
-      if (other.IsPixelatedVfxOnPicker != false) {
-        IsPixelatedVfxOnPicker = other.IsPixelatedVfxOnPicker;
+      if (other.VfxAnimNameOnPicker.Length != 0) {
+        VfxAnimNameOnPicker = other.VfxAnimNameOnPicker;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -21528,12 +21129,8 @@ namespace jtshared {
             RefillDelta = input.ReadInt32();
             break;
           }
-          case 24: {
-            VfxIdOnPicker = input.ReadInt32();
-            break;
-          }
-          case 32: {
-            IsPixelatedVfxOnPicker = input.ReadBool();
+          case 26: {
+            VfxAnimNameOnPicker = input.ReadString();
             break;
           }
         }
@@ -21550,7 +21147,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[38]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21568,8 +21165,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PickableSkillConfig(PickableSkillConfig other) : this() {
       skillId_ = other.skillId_;
-      vfxIdOnPicker_ = other.vfxIdOnPicker_;
-      isPixelatedVfxOnPicker_ = other.isPixelatedVfxOnPicker_;
+      vfxAnimNameOnPicker_ = other.vfxAnimNameOnPicker_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -21589,25 +21185,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "vfx_id_on_picker" field.</summary>
-    public const int VfxIdOnPickerFieldNumber = 2;
-    private int vfxIdOnPicker_;
+    /// <summary>Field number for the "vfx_anim_name_on_picker" field.</summary>
+    public const int VfxAnimNameOnPickerFieldNumber = 2;
+    private string vfxAnimNameOnPicker_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int VfxIdOnPicker {
-      get { return vfxIdOnPicker_; }
+    public string VfxAnimNameOnPicker {
+      get { return vfxAnimNameOnPicker_; }
       set {
-        vfxIdOnPicker_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_pixelated_vfx_on_picker" field.</summary>
-    public const int IsPixelatedVfxOnPickerFieldNumber = 3;
-    private bool isPixelatedVfxOnPicker_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsPixelatedVfxOnPicker {
-      get { return isPixelatedVfxOnPicker_; }
-      set {
-        isPixelatedVfxOnPicker_ = value;
+        vfxAnimNameOnPicker_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -21625,8 +21210,7 @@ namespace jtshared {
         return true;
       }
       if (SkillId != other.SkillId) return false;
-      if (VfxIdOnPicker != other.VfxIdOnPicker) return false;
-      if (IsPixelatedVfxOnPicker != other.IsPixelatedVfxOnPicker) return false;
+      if (VfxAnimNameOnPicker != other.VfxAnimNameOnPicker) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -21634,8 +21218,7 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (SkillId != 0) hash ^= SkillId.GetHashCode();
-      if (VfxIdOnPicker != 0) hash ^= VfxIdOnPicker.GetHashCode();
-      if (IsPixelatedVfxOnPicker != false) hash ^= IsPixelatedVfxOnPicker.GetHashCode();
+      if (VfxAnimNameOnPicker.Length != 0) hash ^= VfxAnimNameOnPicker.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -21653,13 +21236,9 @@ namespace jtshared {
         output.WriteRawTag(8);
         output.WriteUInt32(SkillId);
       }
-      if (VfxIdOnPicker != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(VfxIdOnPicker);
-      }
-      if (IsPixelatedVfxOnPicker != false) {
-        output.WriteRawTag(24);
-        output.WriteBool(IsPixelatedVfxOnPicker);
+      if (VfxAnimNameOnPicker.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(VfxAnimNameOnPicker);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -21672,11 +21251,8 @@ namespace jtshared {
       if (SkillId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SkillId);
       }
-      if (VfxIdOnPicker != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(VfxIdOnPicker);
-      }
-      if (IsPixelatedVfxOnPicker != false) {
-        size += 1 + 1;
+      if (VfxAnimNameOnPicker.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(VfxAnimNameOnPicker);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -21692,11 +21268,8 @@ namespace jtshared {
       if (other.SkillId != 0) {
         SkillId = other.SkillId;
       }
-      if (other.VfxIdOnPicker != 0) {
-        VfxIdOnPicker = other.VfxIdOnPicker;
-      }
-      if (other.IsPixelatedVfxOnPicker != false) {
-        IsPixelatedVfxOnPicker = other.IsPixelatedVfxOnPicker;
+      if (other.VfxAnimNameOnPicker.Length != 0) {
+        VfxAnimNameOnPicker = other.VfxAnimNameOnPicker;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -21713,12 +21286,8 @@ namespace jtshared {
             SkillId = input.ReadUInt32();
             break;
           }
-          case 16: {
-            VfxIdOnPicker = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            IsPixelatedVfxOnPicker = input.ReadBool();
+          case 18: {
+            VfxAnimNameOnPicker = input.ReadString();
             break;
           }
         }
@@ -21735,7 +21304,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[39]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22088,7 +21657,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[40]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22301,7 +21870,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[41]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22422,7 +21991,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[42]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22554,7 +22123,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[43]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22683,7 +22252,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[44]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22883,7 +22452,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[45]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23251,7 +22820,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[46]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23420,7 +22989,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[47]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23702,7 +23271,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[48]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23882,7 +23451,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[49]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24098,7 +23667,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[50]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24247,7 +23816,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[51]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24430,7 +23999,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[52]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24551,7 +24120,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[53]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -24849,7 +24418,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[54]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25018,7 +24587,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[56]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[55]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25037,7 +24606,7 @@ namespace jtshared {
     public PickableConfig(PickableConfig other) : this() {
       pickupType_ = other.pickupType_;
       takesGravity_ = other.takesGravity_;
-      vfxSpeciesId_ = other.vfxSpeciesId_;
+      activeAnimName_ = other.activeAnimName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -25068,17 +24637,14 @@ namespace jtshared {
       }
     }
 
-    /// <summary>Field number for the "vfx_species_id" field.</summary>
-    public const int VfxSpeciesIdFieldNumber = 3;
-    private uint vfxSpeciesId_;
-    /// <summary>
-    /// Always use pixelated vfx
-    /// </summary>
+    /// <summary>Field number for the "active_anim_name" field.</summary>
+    public const int ActiveAnimNameFieldNumber = 3;
+    private string activeAnimName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint VfxSpeciesId {
-      get { return vfxSpeciesId_; }
+    public string ActiveAnimName {
+      get { return activeAnimName_; }
       set {
-        vfxSpeciesId_ = value;
+        activeAnimName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -25097,7 +24663,7 @@ namespace jtshared {
       }
       if (PickupType != other.PickupType) return false;
       if (TakesGravity != other.TakesGravity) return false;
-      if (VfxSpeciesId != other.VfxSpeciesId) return false;
+      if (ActiveAnimName != other.ActiveAnimName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -25106,7 +24672,7 @@ namespace jtshared {
       int hash = 1;
       if (PickupType != 0) hash ^= PickupType.GetHashCode();
       if (TakesGravity != false) hash ^= TakesGravity.GetHashCode();
-      if (VfxSpeciesId != 0) hash ^= VfxSpeciesId.GetHashCode();
+      if (ActiveAnimName.Length != 0) hash ^= ActiveAnimName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -25128,9 +24694,9 @@ namespace jtshared {
         output.WriteRawTag(16);
         output.WriteBool(TakesGravity);
       }
-      if (VfxSpeciesId != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(VfxSpeciesId);
+      if (ActiveAnimName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(ActiveAnimName);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -25146,8 +24712,8 @@ namespace jtshared {
       if (TakesGravity != false) {
         size += 1 + 1;
       }
-      if (VfxSpeciesId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(VfxSpeciesId);
+      if (ActiveAnimName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ActiveAnimName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -25166,8 +24732,8 @@ namespace jtshared {
       if (other.TakesGravity != false) {
         TakesGravity = other.TakesGravity;
       }
-      if (other.VfxSpeciesId != 0) {
-        VfxSpeciesId = other.VfxSpeciesId;
+      if (other.ActiveAnimName.Length != 0) {
+        ActiveAnimName = other.ActiveAnimName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -25188,8 +24754,8 @@ namespace jtshared {
             TakesGravity = input.ReadBool();
             break;
           }
-          case 24: {
-            VfxSpeciesId = input.ReadUInt32();
+          case 26: {
+            ActiveAnimName = input.ReadString();
             break;
           }
         }
@@ -25206,7 +24772,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[56]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25419,7 +24985,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[57]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -25884,7 +25450,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[58]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26041,7 +25607,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[59]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26215,7 +25781,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[60]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26410,7 +25976,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[61]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26542,7 +26108,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[62]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -27305,7 +26871,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[63]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -27323,6 +26889,7 @@ namespace jtshared {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Trigger(Trigger other) : this() {
       id_ = other.id_;
+      groupId_ = other.groupId_;
       framesToFire_ = other.framesToFire_;
       framesToRecover_ = other.framesToRecover_;
       quota_ = other.quota_;
@@ -27357,6 +26924,17 @@ namespace jtshared {
       get { return id_; }
       set {
         id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "group_id" field.</summary>
+    public const int GroupIdFieldNumber = 2;
+    private uint groupId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint GroupId {
+      get { return groupId_; }
+      set {
+        groupId_ = value;
       }
     }
 
@@ -27584,6 +27162,7 @@ namespace jtshared {
         return true;
       }
       if (Id != other.Id) return false;
+      if (GroupId != other.GroupId) return false;
       if (FramesToFire != other.FramesToFire) return false;
       if (FramesToRecover != other.FramesToRecover) return false;
       if (Quota != other.Quota) return false;
@@ -27609,6 +27188,7 @@ namespace jtshared {
     public override int GetHashCode() {
       int hash = 1;
       if (Id != 0) hash ^= Id.GetHashCode();
+      if (GroupId != 0) hash ^= GroupId.GetHashCode();
       if (FramesToFire != 0) hash ^= FramesToFire.GetHashCode();
       if (FramesToRecover != 0) hash ^= FramesToRecover.GetHashCode();
       if (Quota != 0) hash ^= Quota.GetHashCode();
@@ -27643,6 +27223,10 @@ namespace jtshared {
       if (Id != 0) {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
+      }
+      if (GroupId != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(GroupId);
       }
       if (FramesToFire != 0) {
         output.WriteRawTag(24);
@@ -27727,6 +27311,9 @@ namespace jtshared {
       if (Id != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
+      if (GroupId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(GroupId);
+      }
       if (FramesToFire != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(FramesToFire);
       }
@@ -27795,6 +27382,9 @@ namespace jtshared {
       if (other.Id != 0) {
         Id = other.Id;
       }
+      if (other.GroupId != 0) {
+        GroupId = other.GroupId;
+      }
       if (other.FramesToFire != 0) {
         FramesToFire = other.FramesToFire;
       }
@@ -27862,6 +27452,10 @@ namespace jtshared {
             break;
           case 8: {
             Id = input.ReadUInt32();
+            break;
+          }
+          case 16: {
+            GroupId = input.ReadUInt32();
             break;
           }
           case 24: {
@@ -27950,7 +27544,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[64]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28191,7 +27785,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[66]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[65]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28404,7 +27998,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[67]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[66]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -28673,7 +28267,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[68]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[67]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -33545,7 +33139,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[69]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[68]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -33845,7 +33439,7 @@ namespace jtshared {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[70]; }
+      get { return global::jtshared.SerializableDataReflection.Descriptor.MessageTypes[69]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

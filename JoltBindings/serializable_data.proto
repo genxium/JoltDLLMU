@@ -127,8 +127,8 @@ enum IfaceCat {
 enum BulletState {
     StartUp = 0;
     Active = 1;
-    Exploding = 2;
-    Vanishing = 3;
+    Vanishing = 2;
+    Hit = 3;
 }
 
 enum CharacterState {
@@ -412,20 +412,17 @@ message CharacterDownsync {
     float vel_y = 9;
     float vel_z = 10;
 
+    float ground_vel_x = 11;
+    float ground_vel_y = 12;
+    float ground_vel_z = 13;
+
     /*
     The unit-quaternion that rotates the character's aiming direction LOCALLY after "q_*". 
     */
-    float aiming_q_x = 11;
-    float aiming_q_y = 12;
-    float aiming_q_z = 13;
-    float aiming_q_w = 14;
-
-    int32 hp = 15;
-    int32 mp = 16;
-
-    CharacterState ch_state = 17;
-    int32 frames_in_ch_state = 18; // number of frames elapsed in the current character state   
-    int32 lower_part_rdf_cnt = 19;   
+    float aiming_q_x = 14;
+    float aiming_q_y = 15;
+    float aiming_q_z = 16;
+    float aiming_q_w = 17;
 
     bool jump_triggered = 20;
     bool omit_gravity = 21;
@@ -479,16 +476,23 @@ message CharacterDownsync {
     int32 ch_collision_team_id = 52;
     float speed = 53; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
 
-    repeated Buff buff_list = 54; 
-    repeated Debuff debuff_list = 55; 
+    int32 hp = 54;
+    int32 mp = 55;
 
-    InventorySlot atk1_magazine = 56; 
-    InventorySlot super_atk_gauge = 57; 
-    Inventory inventory = 58;
+    CharacterState ch_state = 56;
+    int32 frames_in_ch_state = 57; // number of frames elapsed in the current character state   
+    int32 lower_part_rdf_cnt = 58;   
 
-    repeated BulletImmuneRecord bullet_immune_records = 59;
+    repeated Buff buff_list = 59; 
+    repeated Debuff debuff_list = 60; 
 
-    repeated float kinematic_knobs = 60; // including both forward-kinematics and inverse-kinematics   
+    InventorySlot atk1_magazine = 61; 
+    InventorySlot super_atk_gauge = 62; 
+    Inventory inventory = 63;
+
+    repeated BulletImmuneRecord bullet_immune_records = 64;
+
+    repeated float kinematic_knobs = 65; // including both forward-kinematics and inverse-kinematics   
 }
 
 message PlayerCharacterDownsync {
@@ -632,72 +636,51 @@ enum VfxMotionType {
     Tracing = 2;
 }
 
-message VfxConfig {
-    uint32 species_id = 1;
-    VfxMotionType motion_type = 2;
-    VfxDurationType duration_type = 3;
-    bool on_character = 4;
-    bool on_bullet = 5;
-    bool on_trap = 6;
-    bool use_pixelated_ver = 7;
-    string name = 1024;
-}
-
 message BulletConfig {
     int32 startup_frames = 1;
-    int32 cancellable_st_frame = 2;
-    int32 cancellable_ed_frame = 3;
-    int32 active_frames = 4;
-    int32 cooldown_frames = 5;
+    int32 startup_invinsible_frames = 2;
+    int32 cancellable_st_frame = 3;
+    int32 cancellable_ed_frame = 4;
+    int32 active_frames = 5;
+    int32 cooldown_frames = 6;
 
-    int32 hit_stun_frames = 6;
-    int32 block_stun_frames = 7;
-    float pushback_vel_x = 8;
-    float pushback_vel_y = 9;
-    int32 damage = 10;
+    int32 hit_stun_frames = 7;
+    int32 block_stun_frames = 8;
+    float pushback_vel_x = 9;
+    float pushback_vel_y = 10;
+    int32 damage = 11;
 
-    float self_lock_vel_x = 11;
-    float self_lock_vel_y = 12;
-    float self_lock_vel_y_when_flying = 13;
+    float self_lock_vel_x = 12;
+    float self_lock_vel_y = 13;
+    float self_lock_vel_y_when_flying = 14;
 
-    float hitbox_offset_x = 14;
-    float hitbox_offset_y = 15;
-    float hitbox_half_size_x = 16;
-    float hitbox_half_size_y = 17;
+    float hitbox_offset_x = 15;
+    float hitbox_offset_y = 16;
+    float hitbox_half_size_x = 17;
+    float hitbox_half_size_y = 18;
 
-    bool blow_up = 18;
+    string anim_name = 20;
+    int32 active_anim_looping_rdf_offset = 21;  
+    int32 vanishing_anim_rdf_cnt = 23;
+    int32 vanishing_anim_looping_rdf_offset = 24;  
+    int32 hit_anim_rdf_cnt = 26; // [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
 
-    uint32 species_id = 19; // For fireball, this species_id specifies both the active animation and the explosion animation (if "explosion_species_id" not explicitly assigned), for melee it specifies the explosion animation
-    int32 explosion_frames = 20;
+    BulletType b_type = 27;
+    MultiHitType mh_type = 28;
 
-    BulletType b_type = 21;
-    MultiHitType mh_type = 22;
-    uint32 simultaneous_multi_hit_cnt = 23; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
+    uint32 simultaneous_multi_hit_cnt = 29; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
 
-    float speed = 24; // For speed varying bullets, this is the initial speed
+    float speed = 30; // For speed varying bullets, this is the initial speed
+    float speed_if_not_hit = 31;
 
-    map<int32, uint32> cancel_transit = 25; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
-    int32 repeat_quota = 26; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
+    int32 hardness = 32;
+    int32 hit_invinsible_frames = 35;
 
-    uint32 active_vfx_species_id = 27; // currently only support 1 vfx config when active
-    uint32 explosion_vfx_species_id = 28; // currently only support 1 vfx config when exploding
+    int32 perp_acc_mag = 37; // acceleration magnitude perpendicular to instantaneous velocity per second
 
-    bool allows_walking = 29;
-    bool allows_crouching = 30;
-    int32 hardness = 31;
-    int32 startup_invinsible_frames = 32;
-    int32 hit_invinsible_frames = 33;
-    uint32 explosion_species_id = 34;
+    bool delay_self_vel_to_active = 38; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
 
-    int32 perp_acc_mag = 35; // acceleration magnitude perpendicular to instantaneous velocity per second
-
-    bool delay_self_vel_to_active = 36; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
-
-    float speed_if_not_hit = 37;
-    bool omit_soft_pushback = 38; // Only used for melee bullets
-
-    float hitbox_size_inc_x = 39; // Change of hitbox_size_x per second
-    float hitbox_size_inc_y = 40; // Change of hitbox_size_y per second
+    bool omit_soft_pushback = 40; // Only used for melee bullets
 
     bool remains_upon_hit = 41; 
     bool rotates_along_velocity = 42;
@@ -706,24 +689,29 @@ message BulletConfig {
     float hard_pushback_bounce_norm_factor = 44; // For attenuation
     float hard_pushback_bounce_sheer_factor = 45; // For attenuation
 
-    bool is_pixelated_active_vfx = 46;
-    bool is_pixelated_explostion_vfx = 47;
+    bool blow_up = 46;
+    int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
 
-    bool mh_vanish_on_melee_hit = 48;
+    bool mh_vanish_on_melee_hit = 48; // "mh" short for "multihit"
 
     bool mh_updates_origin_pos = 50; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
     bool beam_collision = 51; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
 
     bool for_ally = 52;
 
+    float hitbox_size_inc_x = 53; // Change of hitbox_size_x per second
+    float hitbox_size_inc_y = 54; // Change of hitbox_size_y per second
+
+    bool allows_walking = 55;
+    bool allows_crouching = 56;
+
     uint32 elemental_attrs = 59;
 
-    bool cancellable_by_inventory_slot_c = 60;
-    bool cancellable_by_inventory_slot_d = 61;
+    map<int32, uint32> cancel_transit = 62; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
 
     float beam_visual_size_y = 64;
 
-    bool touch_explosion_bomb_collision = 65;
+    bool touch_hit_bomb_collision = 65;
     
     bool air_riding_ground_wave = 66; // Only applicable to "b_type == GroundWave"
 
@@ -732,8 +720,6 @@ message BulletConfig {
 
     bool mh_inherits_spin = 69;
     PbQuat init_q = 70;
-
-    uint32 startup_vfx_species_id = 74; // currently only support 1 vfx config when starting up
 
     IfaceCat ifc = 75;
     bool reflect_fireball_x_if_not_harder = 76;
@@ -754,11 +740,6 @@ message BulletConfig {
 
     bool use_ch_offset_regardless_of_emission_mh = 89;
 
-    uint32 inplace_vanish_explosion_species_id = 90;
-
-    int32 anim_looping_rdf_offset = 91;  
-    int32 explosion_anim_looping_rdf_offset = 92;  
-
     float gauge_inc_reduction_ratio = 93;
     bool mh_inherits_frames_in_bl_state = 94;
     uint32 guard_breaker_extra_hit_cnt = 95;
@@ -766,9 +747,9 @@ message BulletConfig {
     bool takes_def1_as_hard_pushback = 96; // [WARNING] Always implies "beam_collision" and must be used together with "beam_collision".
 
     int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
-    bool no_explosion_on_hard_pushback = 98;
+    bool no_vanish_anim_on_hard_pushback = 98;
 
-    bool explode_on_multi_contact = 99; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
+    bool hit_on_multi_contact = 99; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
 
     uint64 collision_type_mask = 1029;
     bool takes_gravity = 1030; // e.g. a bomb, a ground-wave
@@ -778,12 +759,12 @@ message BulletConfig {
     // Sfx configs
     string character_emit_sfx_name = 2048;
     string fireball_emit_sfx_name = 2049;
-    string explosion_sfx_name = 2050;
+    string hit_sfx_name = 2050;
     string active_sfx_name = 2051;
-    string explosion_on_flesh_sfx_name = 2052;
-    string explosion_on_rock_sfx_name = 2053;
-    string explosion_on_metal_sfx_name = 2054;
-    string explosion_on_wood_sfx_name = 2055;
+    string hit_on_flesh_sfx_name = 2052;
+    string hit_on_rock_sfx_name = 2053;
+    string hit_on_metal_sfx_name = 2054;
+    string hit_on_wood_sfx_name = 2055;
 }
 
 message Bullet {
@@ -822,7 +803,7 @@ message Bullet {
     int32 remaining_hard_pushback_bounce_quota = 20;
     uint64 target_ud = 21; 
     int32 damage_dealed = 22;
-    IfaceCat exploded_on_ifc = 23;
+    IfaceCat hit_on_ifc = 23; // [REMINDER] Together with "BulletConfig.ifc" to determine sound effect.
 
     int32 active_skill_hit = 25; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_hit" might've already been reset)
     uint32 skill_id = 26; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_id" might've already been reset); also for reverse lookup in multihit transition, in the most extreme case, a same "BulletConfig" instance is to be shared across different "Skill"s, thus we put "skill_id" in "BulletBattleAttr" instead.
@@ -832,12 +813,16 @@ message Bullet {
     int32 team_id = 28;
     
     bool for_ally = 29;
+
+    float ground_vel_x = 30;
+    float ground_vel_y = 31;
+    float ground_vel_z = 32;
 }
 
 message TrapConfig {
     uint32 tpt = 1; // short for "trap type"
-    uint32 explosion_species_id = 2; 
-    int32 explosion_frames = 3;
+    string dying_anim_name = 2; 
+    int32 dying_anim_rdf_cnt = 3;
     bool blow_up = 4;
 
     int32 damage = 5;
@@ -850,6 +835,8 @@ message TrapConfig {
     bool deactivate_upon_triggered = 10;
 
     float surface_friction = 11;
+
+    bool use_kinematic = 12;
 
     bool patrol_cue_requires_full_contain = 15; // For accurate positioning
 
@@ -864,12 +851,12 @@ message TrapConfig {
     float default_angular_speed = 29; // in "radians/second" 
     int32 default_cooldown_rdf_count = 30;
 
-    string species_name = 1024;
+    string tpt_name = 1024;
 }
 
 message TrapConfigFromTiled {
     uint32 id = 1; 
-    uint32 tpt = 2; // Will be used for the "dynamic trap" to locate its Prefab for animating, and used for all types of traps to locate their explosion animations.
+    uint32 tpt = 2; // Will be used for the "dynamic trap" to locate its Prefab for animating
     int32 quota = 3;
 
     float box_half_size_x = 4;
@@ -959,6 +946,7 @@ message PeerUdpAddr {
 
 message StepResult {
     repeated Trigger fulfilled_triggers = 1;
+    repeated Trigger fulfilled_trigger_group_ids = 2;
 }
 
 message RenderFrame {
@@ -1143,8 +1131,7 @@ message BuffConfig {
     // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
     repeated uint32 associated_debuffs = 17;   
 
-    uint32 character_vfx_species_id = 18;
-    bool is_pixelated_vfx_on_character = 19;
+    string character_vfx_anim_name = 18;
 }
 
 message Buff {
@@ -1175,14 +1162,12 @@ enum ConsumableType {
 message ConsumableConfig {
     uint32 species_id = 1; 
     int32 refill_delta = 2;
-    int32 vfx_id_on_picker = 3;
-    bool is_pixelated_vfx_on_picker = 4;
+    string vfx_anim_name_on_picker = 3;
 };
 
 message PickableSkillConfig {
     uint32 skill_id = 1; 
-    int32 vfx_id_on_picker = 2;
-    bool is_pixelated_vfx_on_picker = 3;
+    string vfx_anim_name_on_picker = 2;
 };
 
 enum InventorySlotStockType {
@@ -1350,7 +1335,7 @@ enum PickupType {
 message PickableConfig {
     PickupType pickup_type = 1;
     bool takes_gravity = 2; 
-    uint32 vfx_species_id = 3; // Always use pixelated vfx
+    string active_anim_name = 3;
 }
 
 message PickableConfigFromTiled {
@@ -1447,6 +1432,7 @@ message Trigger {
      */
 
     uint32 id = 1;
+    uint32 group_id = 2;
     int32 frames_to_fire = 3; 
     int32 frames_to_recover = 4; // if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 < sub_cycle_quota" and itself becomes 0
     int32 quota = 5; // the initial value is from static config, but decreases upon use 

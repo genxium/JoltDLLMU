@@ -19,11 +19,6 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetStartupVfxSpeciesId(uint val) {
-            this.StartupVfxSpeciesId = val;
-            return this;
-        }
-
         public BulletConfig SetStartupFrames(int val) {
             this.StartupFrames = val;
             return this;
@@ -135,13 +130,13 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetIsPixelatedActiveVfx(bool val) {
-            IsPixelatedActiveVfx = val;
+        public BulletConfig SetAnimName(string val) {
+            AnimName = val;
             return this;
         }
 
-        public BulletConfig SetActiveVfxSpeciesId(uint val) {
-            ActiveVfxSpeciesId = val;
+        public BulletConfig SetVanishingAnimRdfCnt(int val) {
+            VanishingAnimRdfCnt = val;
             return this;
         }
 
@@ -164,8 +159,8 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetAnimLoopingRdfOffset(int val) {
-            AnimLoopingRdfOffset = val;
+        public BulletConfig SetActiveAnimLoopingRdfOffset(int val) {
+            ActiveAnimLoopingRdfOffset = val;
             return this;
         }
     }

@@ -469,48 +469,13 @@ namespace JoltCSharp {
             return (outSkill, outBulletConfig);
         }
 
-        public static bool IsBulletVanishing(Bullet bullet, BulletConfig bc) {
-            return BulletState.Vanishing == bullet.BlState;
-        }
-
-        public static bool IsBulletExploding(Bullet bullet, BulletConfig bc) {
-            switch (bc.BType) {
-            case BulletType.Melee:
-                return ((BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) && bullet.FramesInBlState < bc.ExplosionFrames);
-            case BulletType.MechanicalCartridge:
-            case BulletType.MagicalFireball:
-            case BulletType.GroundWave:
-                return (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState);
-            default:
-                return false;
-            }
-        }
-
-        public static bool IsBulletStartingUp(Bullet bullet, BulletConfig bc, int currRdfId) {
-            return BulletState.StartUp == bullet.BlState;
-        }
-
-        public static bool IsBulletActive(Bullet bullet) {
-            return (BulletState.Active == bullet.BlState);
-        }
-
-        public static bool IsBulletActive(Bullet bullet, BulletConfig bc, int currRdfId) {
-            if (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) {
-                return false;
-            }
-            return (bullet.OriginatedRenderFrameId + bc.StartupFrames < currRdfId) && (currRdfId < bullet.OriginatedRenderFrameId + bc.StartupFrames + bc.ActiveFrames);
-        }
-
         public static bool IsBulletJustActive(Bullet bullet, BulletConfig bc, int currRdfId) {
-            if (BulletState.Exploding == bullet.BlState || BulletState.Vanishing == bullet.BlState) {
+            if (BulletState.Active != bullet.BlState) {
                 return false;
             }
             // [WARNING] Practically a bullet might propagate for a few render frames before hitting its visually "VertMovingTrapLocalIdUponActive"!
             int visualBufferRdfCnt = 3;
-            if (BulletState.Active == bullet.BlState) {
-                return visualBufferRdfCnt >= bullet.FramesInBlState;
-            }
-            return (bullet.OriginatedRenderFrameId + bc.StartupFrames < currRdfId && currRdfId <= bullet.OriginatedRenderFrameId + bc.StartupFrames + visualBufferRdfCnt);
+            return visualBufferRdfCnt >= bullet.FramesInBlState;
         }
 
         public static bool IsPickableAlive(Pickable pickable, int currRdfId) {
@@ -519,12 +484,12 @@ namespace JoltCSharp {
 
         public static bool IsBulletAlive(Bullet bullet, BulletConfig bc, int currRdfId) {
             if (BulletState.Vanishing == bullet.BlState) {
-                return bullet.FramesInBlState < bc.ActiveFrames + bc.ExplosionFrames;
+                return bullet.FramesInBlState < bc.VanishingAnimRdfCnt;
             }
-            if (BulletState.Exploding == bullet.BlState && MultiHitType.FromEmission != bc.MhType) {
-                return bullet.FramesInBlState < bc.ActiveFrames;
+            if (BulletState.Hit == bullet.BlState) {
+                return bullet.FramesInBlState < bc.HitAnimRdfCnt;
             }
-            return (currRdfId < bullet.OriginatedRenderFrameId + bc.StartupFrames + bc.ActiveFrames);
+            return (currRdfId < bullet.OriginatedRenderFrameId + bc.StartupFrames + bc.ActiveFrames + bc.CooldownFrames);
         }
     }
 }
