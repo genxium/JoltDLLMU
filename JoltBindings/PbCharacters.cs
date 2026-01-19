@@ -10,7 +10,7 @@ namespace JoltCSharp {
 
          The "CapsuleHalfHeight" component of "BlownUp/LayDown/Dying" MUST be smaller or equal to that of "Shrinked", such that when a character is blown up and falled onto a "slip-jump provider", it wouldn't trigger an unexpected slip-jump.
 
-         Reference value for "ProactiveJumpStartupFrames" -- Ibuki in Street Figher IV/V has a pre-jump frame count of 4, according to https://streetfighter.fandom.com/wiki/Jump. I also counted that of Ken in Street Fighter VI by 60fps recording and got the same result.
+         Reference value for "JumpStartupFrames" -- Ibuki in Street Figher IV/V has a pre-jump frame count of 4, according to https://streetfighter.fandom.com/wiki/Jump. I also counted that of Ken in Street Fighter VI by 60fps recording and got the same result.
          */
         public static CharacterConfig BLADEGIRL = new CharacterConfig {
             SpeciesId = SPECIES_BLADEGIRL,
@@ -21,17 +21,22 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
-            JumpingInitVelY = 8f * BATTLE_DYNAMICS_FPS, 
-            AccMag = 7.8f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS, 
+            JumpStartupFrames = 3,
+            AccMagX = 7.8f * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
             OnWallEnabled = true,
             CrouchingEnabled = true,
             CrouchingAtkEnabled = true, // It's actually weird to have "false == CrouchingAtkEnabled && true == CrouchingEnabled", but flexibility provided anyway
-            WallJumpingFramesToRecover = 8,
-            WallJumpingInitVelX = (2.5f) * BATTLE_DYNAMICS_FPS,
-            WallJumpingInitVelY =  (8f) * BATTLE_DYNAMICS_FPS,
-            WallSlidingVelY = (-1f) * BATTLE_DYNAMICS_FPS,
+            WallJumpFramesToRecover = 8,
+            WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
+            WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
+            WallSlideVelY = (-1f) * BATTLE_DYNAMICS_FPS,
+            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf,
+            WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
+
             CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -41,7 +46,6 @@ namespace JoltCSharp {
             DyingCapsuleRadius = (16.0f),
             DyingCapsuleHalfHeight = (6.0f),
             HasTurnAroundAnim = false,
-            ProactiveJumpStartupFrames = 2,
             Hardness = 5,
             HasDimmedAnim = true,
             MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
@@ -67,8 +71,10 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 34,
             GetUpFramesToRecover = 30,
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
-            JumpingInitVelY = 8.9f * BATTLE_DYNAMICS_FPS,
-            AccMag = 7.8f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpStartupFrames = 3,
+            AccMagX = 7.8f * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             CapsuleRadius = (8.0f),
             CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -81,13 +87,14 @@ namespace JoltCSharp {
             CrouchingEnabled = true,
             CrouchingAtkEnabled = true,
             OnWallEnabled = true,
-            WallJumpingFramesToRecover = 8,
-            WallJumpingInitVelX = (2.5f) * BATTLE_DYNAMICS_FPS,
-            WallJumpingInitVelY = (8f) * BATTLE_DYNAMICS_FPS,
-            WallSlidingVelY = (-1) * BATTLE_DYNAMICS_FPS,
+            WallJumpFramesToRecover = 8,
+            WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
+            WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
+            WallSlideVelY = (-1) * BATTLE_DYNAMICS_FPS,
+            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf,
+            WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
-            ProactiveJumpStartupFrames = 2,
             Hardness = 5,
             MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
             SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
@@ -124,13 +131,14 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 0.6f * BATTLE_DYNAMICS_FPS,
-            JumpingInitVelY = 6.5f * BATTLE_DYNAMICS_FPS,
-            ProactiveJumpStartupFrames = 4,
-            AccMag = 3.0f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpStartupFrames = 2,
+            AccMagX = 3.0f * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),
-            VisionHalfHeight = (30.0f),
-            VisionTopRadius = (32.0f),
+            VisionHalfHeight = (64.0f),
+            VisionTopRadius = (48.0f),
             VisionBottomRadius = (48.0f),
             HasVisionReaction = true,
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
@@ -161,8 +169,9 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 0.8f * BATTLE_DYNAMICS_FPS,
-            JumpingInitVelY = 0, 
-            AccMag = 6.8f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 0, 
+            AccMagX = 6.8f * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             CapsuleHalfHeight = (10.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -189,9 +198,10 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 0.6f * BATTLE_DYNAMICS_FPS,
-            JumpingInitVelY = 6.5f * BATTLE_DYNAMICS_FPS,
-            ProactiveJumpStartupFrames = 4,
-            AccMag = 3.0f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpStartupFrames = 2,
+            AccMagX = 3.0f * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),
             VisionHalfHeight = (30.0f),
@@ -229,6 +239,12 @@ namespace JoltCSharp {
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), BladeGirlCrouchSlashId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), BladeGirlGroundDashingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), BladeGirlGroundDashingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), BladeGirlGroundDashingId);
+
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 
             // BOUNTY_HUNTER
@@ -241,6 +257,10 @@ namespace JoltCSharp {
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), HunterSlidingId);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
 
             // BLACKSABER1

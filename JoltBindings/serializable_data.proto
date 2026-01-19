@@ -158,8 +158,6 @@ enum CharacterState {
     InAirWalking = 19;
 
     TransformingIntoFromDeath = 20; // When at this state, the character has already completed transform, i.e. in new species_id
-    WalkStopping = 21;
-    InAirWalkStopping = 22;
 
     Parried = 23;
     Awaking = 24;
@@ -169,6 +167,8 @@ enum CharacterState {
     InAirDashing = 27;
     InAirBackDashing = 28;
     InAirTurnAround = 29;
+
+    InAirIdle1BySlipJump = 30;
 
     OnWallIdle1 = 128; 
 
@@ -257,29 +257,28 @@ message CharacterConfig {
     int32 mp_regen_per_interval = 10;
     int32 mp_regen_interval = 11; // an integer of RenderFrame count
 
-    float jumping_init_vel_y = 12;
+    float acc_mag_x = 12; // acceleration magnitude per second
+    float jump_acc_mag_y = 13;
+    float ang_y_speed = 14; // rads/second
 
-    bool dashing_enabled = 14;
-    bool sliding_enabled = 15;
-    bool on_wall_enabled = 16;
-    bool crouching_enabled = 17; // Considering that a character might be forced to crouch, "CrouchAtked1" is a MUST if "true == crouching_enabled"
-    bool crouching_atk_enabled = 18; 
-    int32 wall_jumping_frames_to_recover = 19;
-    float wall_jumping_init_vel_x = 20;
-    float wall_jumping_init_vel_y = 21;
-    float wall_sliding_vel_y = 22;
-    float min_falling_vel_y = 23;
-    float max_ascending_vel_y = 24;
+    int32 wall_jump_frames_to_recover = 15;
+    float wall_jump_acc_mag_x = 16;
+    float wall_jump_acc_mag_y = 17;
+    float wall_ang_y_speed = 18; // rads/second
+    float wall_slide_vel_y = 19;
+    float wall_jump_free_speed = 20;
 
     bool atk1_uses_magazine = 25;
 
-    bool ground_dodge_enabled_by_iv_slot_c_in_block_stun = 26;
-    int32 ground_dodge_enabled_by_rdf_cnt_from_beginning = 27;
     int32 ground_dodged_frames_to_recover = 28;
     int32 ground_dodged_frames_invinsible = 29;
     float ground_dodged_speed = 30; // TODO: For better flexibility, should allow "configurable list of speed keyframes", like that of "Hurtboxes"  
 
     bool  has_vision_reaction = 31;
+
+    int32 walkstopping_inertia_rdf_count = 32;
+    int32 turnaround_inertia_rdf_count = 33;
+    int32 fallstopping_inertia_rdf_count = 34;
 
     float capsule_radius = 35;
     float capsule_half_height = 36;
@@ -314,7 +313,7 @@ message CharacterConfig {
 
     int32 hardness = 57;
 
-    int32 proactive_jump_startup_frames = 58;
+    int32 jump_startup_frames = 58;
 
     uint32 default_air_jump_quota = 59;
     uint32 default_air_dash_quota = 60;
@@ -373,16 +372,25 @@ message CharacterConfig {
 
     bool no_flee = 100;
 
-    float acc_mag = 101; // acceleration magnitude per second
+    bool dashing_enabled = 101;
+    bool sliding_enabled = 102;
+    bool on_wall_enabled = 103;
+    bool crouching_enabled = 104; // Considering that a character might be forced to crouch, "CrouchAtked1" is a MUST if "true == crouching_enabled"
+    bool crouching_atk_enabled = 105; 
+    bool ground_dodge_enabled_by_iv_slot_c_in_block_stun = 106;
+    int32 ground_dodge_enabled_by_rdf_cnt_from_beginning = 107;
 
-    InventorySlotConfig atk1_magazine = 102; 
-    InventorySlotConfig super_atk_gauge = 103; 
+    float min_falling_vel_y = 108;
+    float max_ascending_vel_y = 109;
 
-    repeated InventorySlotConfig init_inventory_slots = 104;
-    map<int32, int32> btn_b_auto_unhold_ch_states = 105; 
-    map<int32, int32> looping_ch_states = 106; 
+    InventorySlotConfig atk1_magazine = 256; 
+    InventorySlotConfig super_atk_gauge = 257; 
 
-    map<int32, uint32> init_skill_transit = 107; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
+    repeated InventorySlotConfig init_inventory_slots = 258;
+    map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
+    map<int32, int32> looping_ch_states = 260; 
+
+    map<int32, uint32> init_skill_transit = 261; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
 
     bool has_in_air_walking_anim = 512; 
     bool has_turn_around_anim = 513;
@@ -424,23 +432,22 @@ message CharacterDownsync {
     float aiming_q_z = 16;
     float aiming_q_w = 17;
 
-    bool jump_triggered = 20;
+    int32 walkstopping_rdf_countdown = 18;
+    int32 fallstopping_rdf_countdown = 19;
+
     bool omit_gravity = 21;
 
     uint32 species_id = 22; // For evolution during battle
 
     bool forced_crouching = 23; // by design a standalone field only inferred by the collision result of "Step" instead of "character_state", because we need check the transition for "character_state" from this field, i.e. "forced_crouching (prev -> curr)"
 
-    bool slip_jump_triggered = 24;
-    bool primarily_on_slippable_hard_pushback = 25; // by design a standalone field only inferred by the calc result of "Battle.Step" instead of "character_state"
+    uint64 ground_ud = 24;
 
     int32 frames_to_recover = 26;
 
     int32 new_birth_rdf_countdown = 27;
 
     int32 frames_invinsible = 28;
-    bool jump_started = 29;
-    int32 frames_to_start_jump = 30;
 
     // Kindly note that "collision_type_mask" is NOT GRANULAR ENOUGH for inter-character collision configuration, e.g. same team omission, thus we'd still need the fields "bullet_team_id" and "ch_collision_team_id" here
     int32 bullet_team_id = 31;

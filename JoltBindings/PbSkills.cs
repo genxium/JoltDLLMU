@@ -159,9 +159,9 @@ namespace JoltCSharp {
             BlockStunFrames = 8,
             CooldownFrames = 5,
             Damage = 10,
-            PushbackVelX = 0.3f,
+            PushbackVelX = 0.3f * BATTLE_DYNAMICS_FPS,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 10f,
@@ -190,9 +190,9 @@ namespace JoltCSharp {
             BlockStunFrames = 8,
             CooldownFrames = 6,
             Damage = 8,
-            PushbackVelX = 0.5f,
+            PushbackVelX = 0.5f * BATTLE_DYNAMICS_FPS,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0.1f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 12f,
@@ -221,9 +221,9 @@ namespace JoltCSharp {
             BlockStunFrames = 8,
             CooldownFrames = 25,
             Damage = 15,
-            PushbackVelX = 0.5f,
-            PushbackVelY = -0.5f,
-            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelX = 0.5f * BATTLE_DYNAMICS_FPS,
+            PushbackVelY = -0.5f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 0.2f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 24f,
@@ -250,9 +250,9 @@ namespace JoltCSharp {
             BlockStunFrames = 8,
             CooldownFrames = 4,
             Damage = 5,
-            PushbackVelX = 0.3f,
+            PushbackVelX = 0.3f * BATTLE_DYNAMICS_FPS,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 10f,
@@ -273,7 +273,8 @@ namespace JoltCSharp {
             CollisionTypeMask = 0, // TODO
         };
 
-        public static BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1);
+        public static BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1)
+                                                       .SetSelfLockVel(PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel);
 
         public static Skill BladeGirlGroundSlash1 = new Skill {
             Id = BladeGirlGroundSlash1Id,
@@ -328,6 +329,84 @@ namespace JoltCSharp {
             BoundChState = CharacterState.InAirAtk1
         }.AddHit(BasicBladeAirHit1);
 
+        public static BulletConfig BasicGroundDashingHit1 = new BulletConfig {
+            StartupFrames = 4,
+            StartupInvinsibleFrames = 2,
+            ActiveFrames = 12,
+            CooldownFrames = 5,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 5.0f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            BType = BulletType.Melee,
+            CharacterEmitSfxName = "SlashEmitSpd1",
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicAirDashingHit1 = new BulletConfig {
+            StartupFrames = 4,
+            StartupInvinsibleFrames = 2,
+            ActiveFrames = 12,
+            CooldownFrames = 5,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 5.2f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelY = 0,
+            SelfLockVelYWhenFlying = 0,
+            BType = BulletType.Melee,
+            CharacterEmitSfxName = "SlashEmitSpd1",
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static BulletConfig BasicSlidingHit1 = new BulletConfig {
+            StartupFrames = 4,
+            StartupInvinsibleFrames = 2,
+            ActiveFrames = 12,
+            CooldownFrames = 5,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 4.5f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            BType = BulletType.Melee,
+            CharacterEmitSfxName = "SlashEmitSpd2",
+            CollisionTypeMask = 0, // TODO
+        };
+
+        public static Skill BladeGirlGroundDashing = new Skill {
+            Id = BladeGirlGroundDashingId,
+            RecoveryFrames = BasicGroundDashingHit1.StartupFrames+BasicGroundDashingHit1.ActiveFrames+BasicGroundDashingHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicGroundDashingHit1.StartupFrames+BasicGroundDashingHit1.ActiveFrames+BasicGroundDashingHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicGroundDashingHit1.StartupFrames+BasicGroundDashingHit1.ActiveFrames+BasicGroundDashingHit1.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Dashing
+        }.AddHit(
+            new BulletConfig(BasicGroundDashingHit1)
+        );
+
+        public static Skill BladeGirlAirDashing = new Skill {
+            Id = BladeGirlAirDashingId,
+            RecoveryFrames = BasicAirDashingHit1.StartupFrames+BasicAirDashingHit1.ActiveFrames+BasicAirDashingHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicAirDashingHit1.StartupFrames+BasicAirDashingHit1.ActiveFrames+BasicAirDashingHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicAirDashingHit1.StartupFrames+BasicAirDashingHit1.ActiveFrames+BasicAirDashingHit1.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Dashing
+        }.AddHit(
+            new BulletConfig(BasicAirDashingHit1)
+        );
+
+        public static Skill BountyhunterSliding = new Skill {
+            Id = HunterSlidingId,
+            RecoveryFrames = BasicSlidingHit1.StartupFrames+BasicSlidingHit1.ActiveFrames+BasicSlidingHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicSlidingHit1.StartupFrames+BasicSlidingHit1.ActiveFrames+BasicSlidingHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicSlidingHit1.StartupFrames+BasicSlidingHit1.ActiveFrames+BasicSlidingHit1.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Sliding
+        }.AddHit(
+            new BulletConfig(BasicSlidingHit1)
+        );
+
         public static MapField<uint, Skill> underlying = new MapField<uint, Skill>() { };
 
         static PbSkills() {
@@ -336,12 +415,15 @@ namespace JoltCSharp {
             underlying.Add(BladeGirlGroundSlash2Id, BladeGirlGroundSlash2);
             underlying.Add(BladeGirlGroundSlash3Id, BladeGirlGroundSlash3);
             underlying.Add(BladeGirlCrouchSlashId, BladeGirlCrouchSlash1);
+            underlying.Add(BladeGirlGroundDashingId, BladeGirlGroundDashing);
+            underlying.Add(BladeGirlAirDashingId, BladeGirlAirDashing);
 
             underlying.Add(HunterPistolAirId, HunterPistolAir);
             underlying.Add(HunterPistolId, HunterPistol);
             underlying.Add(HunterPistolWallId, HunterPistolWall);
             underlying.Add(HunterPistolWalkingId, HunterPistolWalking);
             underlying.Add(HunterPistolCrouchId, HunterPistolCrouch);
+            underlying.Add(HunterSlidingId, BountyhunterSliding);
         }
     }
 }
