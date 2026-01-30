@@ -71,7 +71,7 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetSelfLockVel(float x, float y, int yWhenFlying) {
+        public BulletConfig SetSelfLockVel(float x, float y, float yWhenFlying) {
             this.SelfLockVelX = x;
             this.SelfLockVelY = y;
             this.SelfLockVelYWhenFlying = yWhenFlying;

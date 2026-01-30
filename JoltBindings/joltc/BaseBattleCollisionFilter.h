@@ -120,7 +120,15 @@ typedef struct NonContactConstraintCacheKeyHasher {
 
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
+static const JPH::Quat  cIdentityQ = JPH::Quat(0, 0, 0, 1);
 static const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
+static const JPH::Quat  cTurnMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), JPH_PI/360);
+static const JPH::Quat  cTurnNegativeMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), -JPH_PI/360);
+static const JPH::Quat  cTurn90DegsAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), 0.5f*JPH_PI);
+static const JPH::Vec3  cXAxis = JPH::Vec3(1, 0, 0);
+static const JPH::Vec3  cYAxis = JPH::Vec3(0, 1, 0);
+static const JPH::Vec3  cNegativeZAxis = JPH::Vec3(0, 0, -1);
+
 static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
 static const JPH::Mat44 cTurn90DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn90DegsAroundZAxis);
 
@@ -281,11 +289,11 @@ public:
         return (Dashing != chd.ch_state() && Sliding != chd.ch_state() && BackDashing != chd.ch_state() && InAirDashing != chd.ch_state());
     }
 
-    inline static bool chCanJumpWithInertia(const CharacterDownsync& currChd, const CharacterConfig* cc, bool notDashing) {
-        if (0 >= cc->jumping_init_vel_y()) return false;
+    inline static bool chCanJumpWithInertia(const CharacterDownsync& currChd, const CharacterConfig* cc, const bool notDashing, const bool inJumpStartup) {
+        if (0 >= cc->jump_acc_mag_y()) return false;
         if (0 >= currChd.frames_to_recover()) return true;
-        if (!notDashing && cc->proactive_jump_startup_frames() <= currChd.frames_in_ch_state()) return true;
-        if (walkingAtkSet.count(currChd.ch_state()) && cc->proactive_jump_startup_frames() <= currChd.frames_in_ch_state()) return true;
+        if (inJumpStartup) return false;
+        if (walkingAtkSet.count(currChd.ch_state()) && cc->jump_startup_frames() <= currChd.frames_in_ch_state()) return true;
         return false;
     }
 
@@ -342,6 +350,63 @@ public:
         if (0 == joinIndex) return 0;
         return (U64_1 << (joinIndex - 1));
     }
+
+    inline static void calcChdFacing(const CharacterDownsync& currChd, Quat& outQ, Vec3& outFacing) {
+        outQ = Quat(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
+        Vec3 outFacingRaw = outQ.RotateAxisX();
+        float outFacingRawProjX = outFacingRaw.Dot(Vec3::sAxisX()); 
+        JPH_ASSERT(0 != outFacingRawProjX); // Guaranteed by "lampChdQ"
+        float outFacingX = 0 < outFacingRawProjX ? +1 : -1; 
+        outFacing.Set(outFacingX, 0, 0); 
+    }
+
+    inline static void clampChdQ(Quat& ioChdQ, const int effDx) {
+        if (ioChdQ.IsClose(cTurn90DegsAroundYAxis) && 0 != effDx) {
+            ioChdQ = (0 > effDx ? cTurnMiniatureAroundYAxis : cTurnNegativeMiniatureAroundYAxis)*ioChdQ; // Turn a little more
+        }
+
+        Vec3 qAxis;
+        float qAngle;
+        ioChdQ.GetAxisAngle(qAxis, qAngle);
+        if (0 > qAxis.GetY() && 0 != effDx) {
+            if (0 < effDx) {
+                ioChdQ = cIdentityQ;
+            } else {
+                ioChdQ = cTurnbackAroundYAxis;
+            }
+        } else {
+            if (0 >= qAngle) {
+                ioChdQ = cIdentityQ;
+            } else if (JPH_PI <= qAngle) {
+                ioChdQ = cTurnbackAroundYAxis;
+            }
+        }
+    }
+
+    inline static void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) {
+        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state())) {
+            return;
+        }
+
+        if (InAirIdle1ByWallJump == nextChd->ch_state()) {
+            const float maxVelX = +cc->wall_jump_free_speed();
+            const float minVelX = -cc->wall_jump_free_speed();
+            if (ioVel.GetX() >= maxVelX) {
+                ioVel.SetX(maxVelX);
+            } else if (ioVel.GetX() <= minVelX) {
+                ioVel.SetX(minVelX);
+            }
+        } else {
+            const float maxVelX = cc->speed() + groundVel.GetX();
+            const float minVelX = -cc->speed() + groundVel.GetX();
+            if (ioVel.GetX() >= maxVelX) {
+                ioVel.SetX(maxVelX);
+            } else if (ioVel.GetX() <= minVelX) {
+                ioVel.SetX(minVelX);
+            }
+        }
+    }
+
 }; 
 
 #endif

@@ -20,6 +20,7 @@ const std::unordered_set<CharacterState> proactiveJumpingSet = {
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,
     InAirIdle2ByJump,
+    InAirIdle1BySlipJump,
 };
 
 const std::unordered_set<CharacterState> inAirSet = {
@@ -27,6 +28,7 @@ const std::unordered_set<CharacterState> inAirSet = {
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,
     InAirIdle2ByJump,
+    InAirIdle1BySlipJump,
     InAirAtk1,
     InAirAtk2,
     InAirAtk6,
@@ -37,7 +39,6 @@ const std::unordered_set<CharacterState> inAirSet = {
     InAirDashing,
     InAirBackDashing,
     InAirWalking,
-    InAirWalkStopping,
     InAirTurnAround,
 };
 
@@ -64,7 +65,6 @@ const std::unordered_set<CharacterState> walkingSet = {
     BackWalking,
     CrouchWalking,
     InAirWalking,
-    // [WARNING] "WalkStopping" doesn't count.
 };
 
 const std::unordered_set<CharacterState> walkingAtkSet = {
@@ -85,7 +85,6 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     Idle1,
     Walking,
     BackWalking, 
-    WalkStopping,
     Dashing,
     BackDashing,
     Sliding,
@@ -96,9 +95,9 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,
     InAirIdle2ByJump,
+    InAirIdle1BySlipJump,
     InAirDashing,
     InAirWalking,
-    InAirWalkStopping,
     InAirBackDashing,
     OnWallIdle1,
     CrouchIdle1,
@@ -124,6 +123,7 @@ const std::unordered_set<CharacterState> shrinkedSizeSet = {
     InAirIdle1ByJump,
     InAirIdle2ByJump,
     InAirIdle1ByWallJump,
+    InAirIdle1BySlipJump,
     InAirDashing,
     InAirAtk1,
     InAirAtk2,

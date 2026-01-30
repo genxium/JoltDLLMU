@@ -321,17 +321,14 @@ namespace JoltCSharp {
 
             chd.ChState = CharacterState.InvalidChState;
             chd.FramesInChState = 0;   
-            chd.JumpTriggered = false;
+            chd.WalkstoppingRdfCountdown = 0;   
+            chd.FallstoppingRdfCountdown = 0;   
             chd.OmitGravity = false;
 
             chd.ForcedCrouching = false;     
-            chd.SlipJumpTriggered = false;
-            chd.PrimarilyOnSlippableHardPushback = false;
             chd.NewBirthRdfCountdown = 0;
 
             chd.FramesInvinsible = 0;
-            chd.JumpStarted = false;
-            chd.FramesToStartJump = 0;
 
             chd.BulletTeamId = 0;
             chd.RemainingAirJumpQuota = 0;

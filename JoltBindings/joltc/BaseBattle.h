@@ -124,11 +124,67 @@ public:
     }
 
     ~CollisionUdHolderStockCache_ThreadSafe() {
+        cnt = 0;
         while (!holders.empty()) {
             CollisionUdHolder_ThreadSafe* holder = holders.back();
             holders.pop_back();
             delete holder;
         }
+    }
+};
+
+typedef struct InputInducedMotion {
+    // "COM" refers to "Center Of Mass"
+    Vec3 forceCOM;  
+    Vec3 torqueCOM;
+    Vec3 velCOM; // Only inherited vel of CharacterDownsync, use of skills or impact from opponent bullets will write into "velCOM"
+    Vec3 angVelCOM; // Only proactive input (including NPC AI) will write into "angVelCOM" 
+    bool jumpTriggered;
+    bool slipJumpTriggered;
+
+    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false) {
+    }
+} InputInducedMotion;
+
+class InputInducedMotionStockCache {
+private:
+    std::vector<InputInducedMotion> holders; 
+    atomic<int> cnt;
+    int size;
+
+public:
+    InputInducedMotionStockCache(const int inSize) {
+        size = inSize;
+        holders.reserve(inSize);
+        for (int i = 0; i < inSize; ++i) {
+            holders.push_back(InputInducedMotion());
+        }
+        cnt = 0;
+    }
+
+    InputInducedMotion* Take_ThreadSafe() {
+        int idx = cnt.fetch_add(1);
+        if (idx >= size) {
+            --cnt;
+            return nullptr;
+        }
+        InputInducedMotion* holder = &holders[idx];   
+        holder->forceCOM.Set(0, 0, 0);
+        holder->torqueCOM.Set(0, 0, 0);
+        holder->velCOM.Set(0, 0, 0);
+        holder->angVelCOM.Set(0, 0, 0);
+        holder->jumpTriggered = false;
+        holder->slipJumpTriggered = false;
+        return holder; 
+    }
+
+    void Clear_ThreadSafe() {
+        cnt = 0;
+    }
+
+    ~InputInducedMotionStockCache() {
+        cnt = 0;
+        holders.clear();
     }
 };
 
@@ -285,7 +341,7 @@ public:
         return oldVal;
     }
 
-    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, const CharacterDownsync& currChd, const CharacterDownsync& nextChd);
+    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion);
 
     virtual RenderFrame* CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
     
@@ -365,6 +421,16 @@ public:
             auto rhsB = rhs->bullets(i);
             BaseBattle::AssertNearlySame(lhsB, rhsB);
         }
+
+        JPH_ASSERT(lhs->dynamic_traps_size() == rhs->dynamic_traps_size());
+        JPH_ASSERT(lhs->dynamic_trap_count() == rhs->dynamic_trap_count());
+        for (int i = 0; i < lhs->dynamic_traps_size(); i++) {
+            auto lhsTp = lhs->dynamic_traps(i);
+            if (globalPrimitiveConsts->terminating_trap_id() == lhsTp.id()) break;
+            auto rhsTp = rhs->dynamic_traps(i);
+            BaseBattle::AssertNearlySame(lhsTp, rhsTp);
+        }
+
     }
 
     inline static void AssertNearlySame(const PlayerCharacterDownsync& lhs, const PlayerCharacterDownsync& rhs) {
@@ -383,6 +449,7 @@ public:
     inline static void AssertNearlySame(const CharacterDownsync& lhs, const CharacterDownsync& rhs) {
         JPH_ASSERT(lhs.ch_state() == rhs.ch_state());
         JPH_ASSERT(lhs.frames_in_ch_state() == rhs.frames_in_ch_state());
+        JPH_ASSERT(lhs.ground_ud() == rhs.ground_ud());
         JPH_ASSERT(lhs.btn_a_holding_rdf_cnt() == rhs.btn_a_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_b_holding_rdf_cnt() == rhs.btn_b_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_c_holding_rdf_cnt() == rhs.btn_c_holding_rdf_cnt());
@@ -390,13 +457,12 @@ public:
         JPH_ASSERT(lhs.btn_e_holding_rdf_cnt() == rhs.btn_e_holding_rdf_cnt());
         JPH_ASSERT(lhs.frames_invinsible() == rhs.frames_invinsible());
         JPH_ASSERT(lhs.frames_to_recover() == rhs.frames_to_recover());
-        JPH_ASSERT(lhs.frames_to_start_jump() == rhs.frames_to_start_jump());
+        JPH_ASSERT(lhs.lower_part_rdf_cnt() == rhs.lower_part_rdf_cnt());
+        JPH_ASSERT(lhs.walkstopping_rdf_countdown() == rhs.walkstopping_rdf_countdown());
+        JPH_ASSERT(lhs.fallstopping_rdf_countdown() == rhs.fallstopping_rdf_countdown());
         JPH_ASSERT(lhs.remaining_air_dash_quota() == rhs.remaining_air_dash_quota());
         JPH_ASSERT(lhs.remaining_air_jump_quota() == rhs.remaining_air_jump_quota());
         JPH_ASSERT(lhs.remaining_def1_quota() == rhs.remaining_def1_quota());
-        JPH_ASSERT(lhs.slip_jump_triggered() == rhs.slip_jump_triggered());
-        JPH_ASSERT(lhs.jump_triggered() == rhs.jump_triggered());
-        JPH_ASSERT(lhs.jump_started() == rhs.jump_started());
         JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
         JPH_ASSERT(isNearlySame(lhs.ground_vel_x(), lhs.ground_vel_y(), lhs.ground_vel_z(), rhs.ground_vel_x(), rhs.ground_vel_y(), rhs.ground_vel_z()));
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
@@ -427,6 +493,16 @@ public:
         JPH_ASSERT(lhs.id() == rhs.id());
         JPH_ASSERT(lhs.team_id() == rhs.team_id());
     }
+
+    inline static void AssertNearlySame(const Trap& lhs, const Trap& rhs) {
+        JPH_ASSERT(lhs.trap_state() == rhs.trap_state());
+        JPH_ASSERT(lhs.frames_in_trap_state() == rhs.frames_in_trap_state());
+        JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
+        JPH_ASSERT(isNearlySame(lhs.vel_x(), lhs.vel_y(), lhs.vel_z(), rhs.vel_x(), rhs.vel_y(), rhs.vel_z()));
+        JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
+        JPH_ASSERT(lhsQ.IsClose(rhsQ));
+        JPH_ASSERT(lhs.id() == rhs.id());
+    }
     
 protected:
     float fallenDeathHeight = 0;
@@ -449,19 +525,20 @@ protected:
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 
-    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
     // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider_NotThreadSafe" still works
-    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
-    CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(uint64_t ud, const CharacterConfig* inCc, float newRadius, float newHalfHeight);
+    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, const float newRadius, const float newHalfHeight, const Vec3Arg& newPos, const QuatArg& newRot);
 
-    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType);
-    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody);
+    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType, const Vec3Arg& newPos, const QuatArg& newRot);
+    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody, const Vec3Arg& newPos, const QuatArg& newRot);
 
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
 
     std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
     std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
+    InputInducedMotionStockCache inputInducedMotionStockCache;
     CollisionUdHolderStockCache_ThreadSafe collisionUdHolderStockCache;
 
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
@@ -473,6 +550,7 @@ protected:
     std::unordered_map<uint64_t, Body*> transientUdToConstraintObsIfaceBody;
 
     std::unordered_map<uint64_t, CollisionUdHolder_ThreadSafe*> transientUdToCollisionUdHolder;
+    std::unordered_map<uint64_t, InputInducedMotion*> transientUdToInputInducedMotion;
 
     std::unordered_map<uint64_t, const PlayerCharacterDownsync*> transientUdToCurrPlayer;
     std::unordered_map<uint64_t, PlayerCharacterDownsync*> transientUdToNextPlayer;
@@ -558,20 +636,36 @@ protected:
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
-    void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
+    void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
-    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill);
+    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion);
 
-    void transitToGroundDodgedChState(const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
+    void transitToGroundDodgedChState(const CharacterDownsync& currChd, const Vec3 currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, InputInducedMotion* ioInputInducedMotion);
     void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
-    void resetJumpStartup(CharacterDownsync* nextChd, bool putBtnHoldingJammed = false);
     bool isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
     bool isJumpStartupJustEnded(const CharacterDownsync& currCd, const CharacterDownsync* nextCd, const CharacterConfig* cc);
     void jamBtnHolding(CharacterDownsync* nextChd);
-    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed);
-    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
-    void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed);
-    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun);
+    inline static void resetInputInducedMotion(InputInducedMotion* ioInputInducedMotion, const bool resetVelCOM=false) {
+        ioInputInducedMotion->forceCOM.Set(0, 0, 0);
+        ioInputInducedMotion->torqueCOM.Set(0, 0, 0);
+        ioInputInducedMotion->jumpTriggered = false;
+        ioInputInducedMotion->slipJumpTriggered = false;
+        if (resetVelCOM) {
+            ioInputInducedMotion->velCOM.Set(0, 0, 0);
+            ioInputInducedMotion->angVelCOM.Set(0, 0, 0);
+        }
+    }
+
+
+    void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+
+    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+
+    void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+
+
     void handleLhsCharacterCollisionWithRhsBullet(
         const int currRdfId,
         RenderFrame* nextRdf,
@@ -580,10 +674,8 @@ protected:
         const ContactPoints& inContactPoints,
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
     bool addBlHitToNextFrame(int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos);
-    bool addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
+    bool addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
-    void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc, bool currParalyzed);
-    void processJumpStarted(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool currEffInAir, const CharacterConfig* cc);
 
     void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
@@ -591,10 +683,10 @@ protected:
     bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, const bool cvInAir, PlayerCharacterDownsync* nextPlayer);
     bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, const bool cvInAir, NpcCharacterDownsync* nextNpc);
 
-    void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, bool nextEffInAir);
+    void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
 
     virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
-    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState);
+    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
 
     virtual void stepSingleTriggerState(int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger);
 
@@ -609,7 +701,7 @@ protected:
     void leftShiftDeadBuffs(int currRdfId, CharacterDownsync* nextChd);
     void leftShiftDeadDebuffs(int currRdfId, CharacterDownsync* nextChd);
 
-    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
+    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, const Vec3& currChdFacing, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
 
     void useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
     static bool IsChargingAtkChState(CharacterState chState) {
@@ -630,7 +722,7 @@ protected:
         return &v;
     }
 
-    CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc);
+    CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc, const Vec3Arg& newPos, const QuatArg& newRot, const uint64_t newUd, BodyInterface* inBodyInterface);
 
     inline EMotionType       calcBlMotionType(const BulletType blType) {
         /*
@@ -661,9 +753,9 @@ protected:
         }
     }
 
-    BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType = EMotionType::Static, const bool isSensor = true);
+    BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
-    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer);
+    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer, BodyInterface* inBodyInterface);
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 

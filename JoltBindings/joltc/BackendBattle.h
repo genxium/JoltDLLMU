@@ -71,8 +71,13 @@ protected:
         PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
         clonedPhySettings.mUseManifoldReduction = true;
 
+        /*
         clonedPhySettings.mConstraintWarmStart = true; 
         clonedPhySettings.mUseBodyPairContactCache = true;
+        */
+
+        clonedPhySettings.mConstraintWarmStart = false; 
+        clonedPhySettings.mUseBodyPairContactCache = false;
 
         phySys->SetPhysicsSettings(clonedPhySettings);
         antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();
