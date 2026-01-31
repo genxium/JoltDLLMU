@@ -43,6 +43,7 @@ const uint32_t cMaxBodyPairs = 1024;
 const uint32_t cMaxContactConstraints = 1024;
 const float  cDefaultChDensity = 0.5f;
 const float  cDefaultChFriction = 0.01f; 
+const float  cDefaultChAntiPushFriction = 0.1f; 
 const float  cWalkstoppingChFriction = 125.0f; 
 const float  cFallstoppingChFriction = 90.0f; 
 const float  cDefaultThickness = 0.02f; // An impossibly small value

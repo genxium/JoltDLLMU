@@ -4,7 +4,7 @@ using jtshared;
 namespace JoltCSharp {
     public class PbPrimitives {
         public static float StdYAxisAngularSpeedPerRdf = (float)Math.PI/4; // rads/rdf
-        public static float OnWallYAxisAngularSpeedPerRdf = (float)Math.PI/6; // rads/rdf, this is a bit slower than "StdYAxisAngularSpeedPerRdf" to allow players to tap a "direction" 1 InputFrameDownsync before tapping "jump" -- instead of requiring to tap them altogether at the exact same InputFrameDownsync 
+        public static float OnWallYAxisAngularSpeedPerRdf = (float)Math.PI/24; // rads/rdf, this is a bit slower than "StdYAxisAngularSpeedPerRdf" to allow players to tap a "direction" at least 1 InputFrameDownsync before tapping "jump" -- instead of requiring to tap them altogether at the exact same InputFrameDownsync, kindly note that when on wall a character only needs to turn 90 degrees before detaching 
         public static uint BladeGirlGroundSlash1Id = 1, BladeGirlGroundSlash2Id = 2, BladeGirlGroundSlash3Id = 3, BladeGirlGroundSuperSlashId = 4, BladeGirlGroundDashingId = 5, BladeGirlDiverImpactId = 6, BladeGirlSlidingSlashId = 7, BladeGirlCrouchSlashId = 8, BladeGirlAirSlash1Id = 9, BladeGirlAirSlash2Id = 10, BladeGirlDragonPunchId = 11, BladeGirlGroundBackDashingId = 12, BladeGirlAirDashingId = 13;
 
         public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, MobileThunderCannonPrimerId = 137, MobileThunderCannonPrimerAirId = 138, MobileThunderCannonPrimerCrouchId = 139, MobileThunderCannonPrimerWallId = 140;

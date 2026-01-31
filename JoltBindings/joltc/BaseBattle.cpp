@@ -1707,7 +1707,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
             biNoLock->SetFriction(chCollider->GetBodyID(), 0); // Will be resumed in "batchRemoveFromPhySysAndCache"
         } else if (0 == currChd.ground_vel_x() && 0 != currChd.vel_x()) {
             // Being pushed away
-            biNoLock->SetFriction(chCollider->GetBodyID(), cWalkstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+            biNoLock->SetFriction(chCollider->GetBodyID(), cDefaultChAntiPushFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
         }
     }
 
@@ -1747,6 +1747,13 @@ void BaseBattle::processInertiaWalking(int rdfId, float dt, const CharacterDowns
     if (0 != effDx) {
         if (onWallSet.count(currChd.ch_state())) {
             ioInputInducedMotion->angVelCOM.SetY(0 > effDx ? cc->wall_ang_y_speed() : -cc->wall_ang_y_speed());
+/*
+#ifndef NDEBUG 
+            std::ostringstream oss;
+            oss << "@currRdfId=" << rdfId << ", characterUd=" << ud << ": on wall currQ=(" << currChd.q_x() << ", " << currChd.q_y() << ", " << currChd.q_z() << ", " << currChd.q_w() << "), effDx=" << effDx << ", angVelCOM=(" << ioInputInducedMotion->angVelCOM.GetX() << ", " << ioInputInducedMotion->angVelCOM.GetY() << ", " << ioInputInducedMotion->angVelCOM.GetZ() << ") #1";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
         } else {
             ioInputInducedMotion->angVelCOM.SetY(0 > effDx ? cc->ang_y_speed() : -cc->ang_y_speed());
         }
@@ -1840,9 +1847,9 @@ bool BaseBattle::addBlHitToNextFrame(int currRdfId, RenderFrame* nextRdf, const 
 #ifndef  NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", bulletId=" << referenceBullet->id() << ": bullet overwhelming when adding vanishing#1";
-        --mNextRdfBulletCount;
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
+        --mNextRdfBulletCount;
         return false;
     }
 
@@ -1878,9 +1885,9 @@ bool BaseBattle::addNewBulletToNextFrame(int currRdfId, const CharacterDownsync&
 #ifndef  NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming#1";
-        --mNextRdfBulletCount;
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
+        --mNextRdfBulletCount;
         return false;
     }
 
@@ -2903,12 +2910,29 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
         Quat currChdQRaw(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
         const JPH::Quat newYRot = JPH::Quat::sRotation(cYAxis, dt*ioInputInducedMotion->angVelCOM.GetY()); 
         JPH::Quat nextChdQ = newYRot*currChdQRaw; 
+/*
+#ifndef NDEBUG 
+        if (onWallSet.count(currChd.ch_state()) && 0 != effDx) {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << rdfId << ", characterUd=" << ud << ": on wall nextQ=(" << nextChdQ.GetX() << ", " << nextChdQ.GetY() << ", " << nextChdQ.GetZ() << ", " << nextChdQ.GetW() << "), effDx=" << effDx << ", angVelCOM=(" << ioInputInducedMotion->angVelCOM.GetX() << ", " << ioInputInducedMotion->angVelCOM.GetY() << ", " << ioInputInducedMotion->angVelCOM.GetZ() << ") #2";
+            Debug::Log(oss.str(), DColor::Orange);
+        }
+#endif
+*/
         clampChdQ(nextChdQ, effDx);
         nextChd->set_q_x(nextChdQ.GetX());
         nextChd->set_q_y(nextChdQ.GetY());
         nextChd->set_q_z(nextChdQ.GetZ());
         nextChd->set_q_w(nextChdQ.GetW());
-    
+/*
+#ifndef NDEBUG 
+        if (onWallSet.count(currChd.ch_state()) && 0 != effDx) {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << rdfId << ", characterUd=" << ud << ": on wall nextQ=(" << nextChdQ.GetX() << ", " << nextChdQ.GetY() << ", " << nextChdQ.GetZ() << ", " << nextChdQ.GetW() << "), effDx=" << effDx << ", angVelCOM=(" << ioInputInducedMotion->angVelCOM.GetX() << ", " << ioInputInducedMotion->angVelCOM.GetY() << ", " << ioInputInducedMotion->angVelCOM.GetZ() << ") #3";
+            Debug::Log(oss.str(), DColor::Orange);
+        }
+#endif
+*/
         bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
         bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
         processDelayedBulletSelfVel(rdfId, currChd, massProps, currChdFacing, nextChd, cc, currParalyzed, nextEffInAir, ioInputInducedMotion);
