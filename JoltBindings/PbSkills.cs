@@ -336,7 +336,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 5.0f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 6.5f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             BType = BulletType.Melee,
@@ -351,7 +351,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 5.2f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 6.0f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = 0,
             SelfLockVelYWhenFlying = 0,
             BType = BulletType.Melee,
@@ -366,7 +366,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 4.5f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 6.0f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             BType = BulletType.Melee,
@@ -391,7 +391,7 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = BasicAirDashingHit1.StartupFrames+BasicAirDashingHit1.ActiveFrames+BasicAirDashingHit1.CooldownFrames,
             RecoveryFramesOnHit = BasicAirDashingHit1.StartupFrames+BasicAirDashingHit1.ActiveFrames+BasicAirDashingHit1.CooldownFrames,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.Dashing
+            BoundChState = CharacterState.InAirDashing
         }.AddHit(
             new BulletConfig(BasicAirDashingHit1)
         );

@@ -479,7 +479,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     */
     const float potentialMv = cc->speed()*globalPrimitiveConsts->estimated_seconds_per_rdf();
 
-    bool currGroundCanHoldMeIfWalkOn = (currGroundMvTolerance.vision_alignment() >= potentialMv);
+    bool currGroundCanHoldMeIfWalkOn = (currGroundMvTolerance.vision_alignment() >= (potentialMv + 0.5*cc->capsule_radius()));
     bool toHandleMvBlockerCanHoldMeIfWalkOn = false;
     const Vec3& chColliderVel = selfNpcCollider->GetLinearVelocity(false);
     const float constraintVelXDiff = chColliderVel.GetX() - nextChd->vel_x();

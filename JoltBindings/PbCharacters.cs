@@ -34,7 +34,7 @@ namespace JoltCSharp {
             WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
             WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
             WallSlideVelY = (-1f) * BATTLE_DYNAMICS_FPS,
-            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf,
+            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
 
             CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
@@ -91,7 +91,7 @@ namespace JoltCSharp {
             WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
             WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
             WallSlideVelY = (-1) * BATTLE_DYNAMICS_FPS,
-            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf,
+            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
@@ -137,8 +137,8 @@ namespace JoltCSharp {
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),
-            VisionHalfHeight = (64.0f),
-            VisionTopRadius = (48.0f),
+            VisionHalfHeight = (96.0f),
+            VisionTopRadius = (32.0f),
             VisionBottomRadius = (48.0f),
             HasVisionReaction = true,
             VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
@@ -245,6 +245,8 @@ namespace JoltCSharp {
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), BladeGirlGroundDashingId);
 
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
+
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 
             // BOUNTY_HUNTER

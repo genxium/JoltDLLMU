@@ -120,10 +120,11 @@ typedef struct NonContactConstraintCacheKeyHasher {
 
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
+static const float      cHalfPI = 0.5*JPH_PI;
 static const JPH::Quat  cIdentityQ = JPH::Quat(0, 0, 0, 1);
 static const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
-static const JPH::Quat  cTurnMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), JPH_PI/360);
-static const JPH::Quat  cTurnNegativeMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), -JPH_PI/360);
+static const JPH::Quat  cTurnMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), JPH_PI/180);
+static const JPH::Quat  cTurnNegativeMiniatureAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), -JPH_PI/180);
 static const JPH::Quat  cTurn90DegsAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), 0.5f*JPH_PI);
 static const JPH::Vec3  cXAxis = JPH::Vec3(1, 0, 0);
 static const JPH::Vec3  cYAxis = JPH::Vec3(0, 1, 0);
@@ -368,8 +369,8 @@ public:
         Vec3 qAxis;
         float qAngle;
         ioChdQ.GetAxisAngle(qAxis, qAngle);
-        if (0 > qAxis.GetY() && 0 != effDx) {
-            if (0 < effDx) {
+        if (0 > qAxis.GetY()) {
+            if (0 < effDx || cHalfPI >= qAngle) {
                 ioChdQ = cIdentityQ;
             } else {
                 ioChdQ = cTurnbackAroundYAxis;

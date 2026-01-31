@@ -1376,6 +1376,15 @@ std::map<int, uint64_t> testCmds13 = {
     {108, 3},
     {112, 3},
     {116, 0},
+    {199, 0},
+    {200, 3},
+    {216, 3},
+    {220, 19},
+    {243, 3},
+    {244, 259},
+    {248, 3},
+    {320, 3},
+    {1024, 0},
 };
 
 std::map<int, uint64_t> testCmds14 = {
@@ -1422,6 +1431,23 @@ std::map<int, uint64_t> testCmds14 = {
     {360, 0},
     {361, 32},
     {362, 0},
+    {399, 0},
+    {400, 4},
+    {435, 4},
+    {436, 20},
+    {483, 4},
+    {484, 20},
+    {499, 4},
+    {500, 20},
+    {539, 4},
+    {540, 20},
+    {579, 4},
+    {580, 20},
+    {600, 4},
+    {604, 20},
+    {635, 4},
+    {636, 3},
+    {640, 3},
     {1024, 0}
 };
 
@@ -3296,16 +3322,16 @@ bool runTestCase1(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
-            int p1ExpectedFramesInChState = outerTimerRdfId - 63;
+            int p1Expectedfc = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
             uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
             int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
             BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
+            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1Expectedfc);
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(p1Expectedfc == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
         } else if (81 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
@@ -3432,7 +3458,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
-            int p1ExpectedFramesInChState = outerTimerRdfId - 63;
+            int p1Expectedfc = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
             uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
@@ -3972,16 +3998,16 @@ bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(750 == tp1.y());
             //shouldPrint = true;
         } else if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
-            int p1ExpectedFramesInChState = outerTimerRdfId - 231;
+            int p1Expectedfc = outerTimerRdfId - 231;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
             uint32_t p1ChdActiveSkillId = p1Chd.active_skill_id();
             int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
             BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1ExpectedFramesInChState);
+            int p1ExpectedFramesToRecover = skill->recovery_frames() - (p1Expectedfc);
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(p1ExpectedFramesInChState == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(p1Expectedfc == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
             JPH_ASSERT(500 <= tp1.x());
             JPH_ASSERT(750 == tp1.y());
@@ -4235,7 +4261,7 @@ bool runTestCase12(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase12/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase12/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -4291,10 +4317,16 @@ bool runTestCase13(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         } else if (103 <= outerTimerRdfId && outerTimerRdfId <= 124) {
             JPH_ASSERT(CharacterState::Dashing == p1Chd.ch_state());
-            int expectedFramesInChState = outerTimerRdfId-103;
-            JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFramesInChState);
+            int expectedFc = outerTimerRdfId-103;
+            JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFc);
         } else if (125 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+        } else if (247 <= outerTimerRdfId && outerTimerRdfId <= 268) {
+            JPH_ASSERT(CharacterState::InAirDashing == p1Chd.ch_state());
+            int expectedFc = outerTimerRdfId-247;
+            JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFc);
+        } else if (269 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
 
         outerTimerRdfId++;
@@ -4364,16 +4396,20 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
             }
             JPH_ASSERT(140 == npc1Chd.hp());
         } else if (192 <= outerTimerRdfId && outerTimerRdfId <= 280) {
-            JPH_ASSERT(130 == npc1Chd.hp());
+            JPH_ASSERT(140 == npc1Chd.hp());
         } else if (285 < outerTimerRdfId && outerTimerRdfId <= 400) {
             if (300 == outerTimerRdfId) {
                 shouldPrint = true;
-                JPH_ASSERT(140 == p2Chd.hp());
+                JPH_ASSERT(130 == p2Chd.hp());
             }
+        }
+
+        if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
+            shouldPrint = true;
         }
         
         if (shouldPrint) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", chState = " << p1Chd.ch_state() << ", framesInChState = " << p1Chd.frames_in_ch_state() << ", dir = (" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", chState = " << p2Chd.ch_state() << ", framesInChState = " << p2Chd.frames_in_ch_state() << ", dir = (" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos = (" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel = (" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", chState = " << npc1Chd.ch_state() << ", framesInChState = " << npc1Chd.frames_in_ch_state() << ", dir = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -4561,7 +4597,7 @@ bool runTestCase17(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
         
         if (shouldPrint) {
-            std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 ch_state=" << (int)p1Chd.ch_state() << ", frames_in_ch_state=" << p1Chd.frames_in_ch_state() << ", pos = (" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel = (" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\ttp1 pos = (" << tp1.x() << ", " << tp1.y() << ", " << tp1.z() << "), dir = (" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel = (" << tp1.vel_x() << ", " << tp1.vel_y() << ", " << tp1.vel_z() << ")" << std::endl;
+            std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 ch_state=" << (int)p1Chd.ch_state() << ", frames_in_ch_state=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\ttp1 pos=(" << tp1.x() << ", " << tp1.y() << ", " << tp1.z() << "), q=(" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << ", " << tp1.vel_z() << ")" << std::endl;
         }
 
         outerTimerRdfId++;
@@ -4924,7 +4960,7 @@ int main(int argc, char** argv)
     initTest12Data(fallenDeathInitializerMapData, fallenDeathHulls);
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-         
+    
     WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator); 
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
@@ -4954,7 +4990,7 @@ int main(int argc, char** argv)
     initTest18Data(sliderTrapTestInitializerMapData4, wideMapHulls);
     runTestCase18(battle, sliderTrapTestInitializerMapData4, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-     
+    
     pbStarterWsReqAllocator.Reset();
 
     // clean up
