@@ -1707,7 +1707,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
             biNoLock->SetFriction(chCollider->GetBodyID(), 0); // Will be resumed in "batchRemoveFromPhySysAndCache"
         } else if (0 == currChd.ground_vel_x() && 0 != currChd.vel_x()) {
             // Being pushed away
-            biNoLock->SetFriction(chCollider->GetBodyID(), cDefaultChAntiPushFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+            biNoLock->SetFriction(chCollider->GetBodyID(), cAntiPushChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
         }
     }
 
@@ -2883,6 +2883,12 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
                     nextChd->set_remaining_air_jump_quota(nextChd->remaining_air_jump_quota() - 1);
                 }
             }
+            bi->SetGravityFactor(chBodyID, 0);
+        } else {
+            bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+            if (!nextNotDashing) {
+                bi->SetFriction(chBodyID, cGroundDashingChFriction);
+            }
         }
 /*
 #ifndef NDEBUG
@@ -2943,6 +2949,14 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
                 nextChd->set_frames_in_ch_state(0);
             } else if (slowDownToAvoidOverlap) {
                 ioInputInducedMotion->velCOM *= 0.25;
+            }
+        }
+
+        if (currDashing) {
+            if (InAirDashing == currChd.ch_state()) {
+                bi->SetGravityFactor(chBodyID, 0);
+            } else {
+                bi->SetFriction(chBodyID, cGroundDashingChFriction);
             }
         }
     }
