@@ -44,6 +44,11 @@ namespace jtshared {
             return this;
         }
 
+        public BulletConfig SetCooldownFrames(int val) {
+            this.CooldownFrames = val;
+            return this;
+        }
+
         public BulletConfig SetFinishingFrames(int val) {
             this.FinishingFrames = val;
             return this;

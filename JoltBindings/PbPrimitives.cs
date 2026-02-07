@@ -9,6 +9,8 @@ namespace JoltCSharp {
 
         public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, MobileThunderCannonPrimerId = 137, MobileThunderCannonPrimerAirId = 138, MobileThunderCannonPrimerCrouchId = 139, MobileThunderCannonPrimerWallId = 140;
 
+        public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
+
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
         public const uint SPECIES_BOUNTYHUNTER = 7;
