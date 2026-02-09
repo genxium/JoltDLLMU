@@ -1656,6 +1656,7 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
                 ioInputInducedMotion->jumpTriggered = true;
             }
             ioInputInducedMotion->forceCOM.SetY(massProps.mMass * (cc->jump_acc_mag_y() - phySys->GetGravity().GetY()));
+/*
 #ifndef NDEBUG
             if (InAirIdle2ByJump == nextChd->ch_state()) {          
                 std::ostringstream oss;
@@ -1663,6 +1664,7 @@ void BaseBattle::prepareJumpStartup(int currRdfId, const CharacterDownsync& curr
                 Debug::Log(oss.str(), DColor::Orange);
             }
 #endif
+*/
         }
     } else if (slipJumpTriggered) { 
         nextChd->set_ch_state(InAirIdle1BySlipJump);
@@ -1707,7 +1709,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, c
             biNoLock->SetFriction(chCollider->GetBodyID(), 0); // Will be resumed in "batchRemoveFromPhySysAndCache"
         } else if (0 == currChd.ground_vel_x() && 0 != currChd.vel_x()) {
             // Being pushed away
-            biNoLock->SetFriction(chCollider->GetBodyID(), cDefaultChAntiPushFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+            biNoLock->SetFriction(chCollider->GetBodyID(), cAntiPushChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
         }
     }
 
@@ -2491,19 +2493,23 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             int effCooldownRdfCount = 0 >= tpConfigFromTile->cooldown_rdf_count() ? tpConfig->default_cooldown_rdf_count() : tpConfigFromTile->cooldown_rdf_count();
             if (mD <= tpConfigFromTile->limit_1()) {
                 if (TrapState::TWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+/*
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                     nextTp->set_trap_state(TrapState::TIdle);
                     nextTp->set_frames_in_trap_state(0);
                 } else if (TrapState::TIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+/*
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                     const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                     nextTp->set_trap_state(TrapState::TWalking);
                     nextTp->set_frames_in_trap_state(0);
@@ -2511,19 +2517,23 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                 }
             } else if (mD >= tpConfigFromTile->limit_2()) {
                 if (TrapState::TWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+/*
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                     nextTp->set_trap_state(TrapState::TIdle);
                     nextTp->set_frames_in_trap_state(0);
                 } else if (TrapState::TIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+/*
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                     const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                     nextTp->set_trap_state(TrapState::TWalking);
                     nextTp->set_frames_in_trap_state(0);
@@ -2883,6 +2893,12 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
                     nextChd->set_remaining_air_jump_quota(nextChd->remaining_air_jump_quota() - 1);
                 }
             }
+            bi->SetGravityFactor(chBodyID, 0);
+        } else {
+            bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+            if (!nextNotDashing) {
+                bi->SetFriction(chBodyID, cGroundDashingChFriction);
+            }
         }
 /*
 #ifndef NDEBUG
@@ -2943,6 +2959,14 @@ void BaseBattle::processSingleCharacterInput(int rdfId, float dt, int patternId,
                 nextChd->set_frames_in_ch_state(0);
             } else if (slowDownToAvoidOverlap) {
                 ioInputInducedMotion->velCOM *= 0.25;
+            }
+        }
+
+        if (currDashing) {
+            if (InAirDashing == currChd.ch_state()) {
+                bi->SetGravityFactor(chBodyID, 0);
+            } else {
+                bi->SetFriction(chBodyID, cGroundDashingChFriction);
             }
         }
     }
@@ -3856,12 +3880,13 @@ bool BaseBattle::useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDo
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
-
+/*
 #ifndef NDEBUG
     std::ostringstream oss3;
     oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by [currVel=(" << currChd.vel_x() << "," << currChd.vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << "], [nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextPos=(" << nextChd->x() << ", " << nextChd->y() << ")], patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy;
     Debug::Log(oss3.str(), DColor::Orange);
 #endif // !NDEBUG
+*/
     return true;
 }
 
@@ -4877,7 +4902,18 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
     const CharacterConfig* cc = getCc(currChd->species_id());
     if (!(successfulDef1 && 0 >= cc->def1_damage_yield())) {
-        int effDamage = successfulDef1 ? (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage()) : rhsBlConfig->damage(); 
+        int effDamage = rhsBlConfig->damage();
+        if (successfulDef1) {
+            effDamage = (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage());
+        }
+#ifndef NDEBUG
+        if (UDT_PLAYER == udtLhs) {
+            std::ostringstream oss;
+            auto bulletId = rhsCurrBl->id();
+            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", bulletId=" << bulletId << " hits Player ud=" << udLhs << " with effDamage=" << effDamage;
+            Debug::Log(oss.str(), DColor::Orange);
+        }
+#endif
         outNewDamage += effDamage; 
         if (rhsBlConfig->blow_up()) {
             outNewEffBlownUp = true;

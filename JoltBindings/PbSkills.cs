@@ -407,6 +407,33 @@ namespace JoltCSharp {
             new BulletConfig(BasicSlidingHit1)
         );
 
+        public static BulletConfig SlowBladeHit1 = new BulletConfig(BasicBladeHit1)
+         .SetStartupFrames(24)
+         .SetActiveFrames(8)
+         .SetCooldownFrames(4)
+        ; 
+
+        public static BulletConfig SlowBladeAirHit1 = new BulletConfig(SlowBladeHit1)
+                                                       .SetSelfLockVel(PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel);
+
+        public static Skill BlackSaber1AirSlash1 = new Skill {
+            Id = BlackSaber1AirSlash1Id,
+            RecoveryFrames = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+            RecoveryFramesOnBlock = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+            RecoveryFramesOnHit = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.InAirAtk1
+        }.AddHit(SlowBladeAirHit1);
+
+        public static Skill BlackSaber1GroundSlash1 = new Skill {
+            Id = BlackSaber1GroundSlash1Id,
+            RecoveryFrames = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+            RecoveryFramesOnBlock = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+            RecoveryFramesOnHit = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Atk1
+        }.AddHit(SlowBladeHit1);
+
         public static MapField<uint, Skill> underlying = new MapField<uint, Skill>() { };
 
         static PbSkills() {
@@ -424,6 +451,9 @@ namespace JoltCSharp {
             underlying.Add(HunterPistolWalkingId, HunterPistolWalking);
             underlying.Add(HunterPistolCrouchId, HunterPistolCrouch);
             underlying.Add(HunterSlidingId, BountyhunterSliding);
+
+            underlying.Add(BlackSaber1GroundSlash1Id, BlackSaber1GroundSlash1);
+            underlying.Add(BlackSaber1AirSlash1Id, BlackSaber1AirSlash1);
         }
     }
 }

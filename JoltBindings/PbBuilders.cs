@@ -44,6 +44,11 @@ namespace jtshared {
             return this;
         }
 
+        public BulletConfig SetCooldownFrames(int val) {
+            this.CooldownFrames = val;
+            return this;
+        }
+
         public BulletConfig SetFinishingFrames(int val) {
             this.FinishingFrames = val;
             return this;
@@ -169,6 +174,27 @@ namespace jtshared {
         
         public Skill AddHit(BulletConfig val) {
             Hits.Add(val);
+            return this;
+        }
+    }
+
+    public sealed partial class StoryPointStep {
+        public StoryPointStep AddLine(StoryPointDialogLine val) {
+            Lines.Add(val);
+            return this;
+        }
+    }
+
+    public sealed partial class StoryPoint {
+        public StoryPoint AddStep(StoryPointStep val) {
+            Steps.Add(val);
+            return this;
+        }
+    }
+
+    public sealed partial class LevelStory {
+        public LevelStory UpdatePoint(int k, StoryPoint val) {
+            Points[k] = val;
             return this;
         }
     }

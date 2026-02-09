@@ -266,6 +266,10 @@ namespace JoltCSharp {
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
 
             // BLACKSABER1
+            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BlackSaber1GroundSlash1Id);
+            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BlackSaber1GroundSlash1Id);
+
+            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BlackSaber1AirSlash1Id);
             underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
 
             // BLACKSABER_TEST

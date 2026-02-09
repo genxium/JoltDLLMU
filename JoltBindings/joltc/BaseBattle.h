@@ -810,6 +810,49 @@ protected:
         if (BulletState::Hit == bullet->bl_state()) {
             return bullet->frames_in_bl_state() < bc->hit_anim_rdf_cnt();
         }
+        if (BulletState::StartUp == bullet->bl_state() && BulletType::Melee == bc->b_type()) {
+            uint64_t offenderUd = bullet->offender_ud();
+            uint64_t offenderUdt = getUDT(offenderUd);
+            switch (offenderUdt) {
+                case UDT_PLAYER: {
+                    if (!transientUdToNextPlayer.count(offenderUd)) {
+                        return false; // The offender might've been dead
+                    }
+                    auto nextOffenderPlayer = transientUdToNextPlayer.at(offenderUd); 
+                    auto nextOffenderChd = nextOffenderPlayer->chd(); 
+                    if (atkedSet.count(nextOffenderChd.ch_state()) || noOpSet.count(nextOffenderChd.ch_state())) {
+                        return false; // The offender is hit
+                    }
+                    break;
+                }
+                case UDT_NPC: {
+                    if (!transientUdToNextNpc.count(offenderUd)) {
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        auto bulletId = bullet->id();
+                        oss << "isBulletAlive returning false#1 because bulletId=" << bulletId << ", offenderUd=" << offenderUd << " doesn't exist in transientUdToNextNpc";
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                        return false; // The offender might've been dead
+                    }
+                    auto nextOffenderNpc = transientUdToNextNpc.at(offenderUd); 
+                    auto nextOffenderChd = nextOffenderNpc->chd(); 
+                    if (atkedSet.count(nextOffenderChd.ch_state()) || noOpSet.count(nextOffenderChd.ch_state())) {
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        auto bulletId = bullet->id();
+                        oss << "isBulletAlive returning false#2 because bulletId=" << bulletId << ", offenderUd=" << offenderUd << " has next_ch_state=" << (int)nextOffenderChd.ch_state();
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                        return false; // The offender is hit
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
         return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
     }
 
@@ -931,12 +974,14 @@ public:
         }
         case UDT_BL: {
             if (!transientUdToCurrBl.count(udRhs)) {
+/*
 #ifndef NDEBUG
                 std::ostringstream oss;
                 auto bulletId = getUDPayload(udRhs);
                 oss << "validateLhsCharacterContact/currBl with udRhs=" << udRhs << ", id=" << bulletId << " is NOT FOUND";
                 Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
                 return JPH::ValidateResult::RejectContact;
             }
             auto rhsCurrBl = transientUdToCurrBl.at(udRhs);

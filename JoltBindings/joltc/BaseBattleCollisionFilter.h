@@ -287,7 +287,7 @@ public:
     }
 
     inline static bool chIsNotDashing(const CharacterDownsync& chd) {
-        return (Dashing != chd.ch_state() && Sliding != chd.ch_state() && BackDashing != chd.ch_state() && InAirDashing != chd.ch_state());
+        return (Dashing != chd.ch_state() && Sliding != chd.ch_state() && BackDashing != chd.ch_state() && InAirDashing != chd.ch_state() && InAirBackDashing != chd.ch_state());
     }
 
     inline static bool chCanJumpWithInertia(const CharacterDownsync& currChd, const CharacterConfig* cc, const bool notDashing, const bool inJumpStartup) {
