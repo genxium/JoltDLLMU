@@ -49,8 +49,6 @@ namespace JoltCSharp {
             Hardness = 5,
             HasDimmedAnim = true,
             MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
-            SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
-            SlipJumpCharacterDropY = DEFAULT_SLIP_JUMP_CHARACTER_DROP,
             DefaultAirDashQuota = 1,
             DefaultAirJumpQuota = 1,
             GroundDodgeEnabledByRdfCntFromBeginning = 12, 
@@ -97,8 +95,6 @@ namespace JoltCSharp {
             SlidingEnabled = true,
             Hardness = 5,
             MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
-            SlipJumpThresHoldBelowTopFace = DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE,
-            SlipJumpCharacterDropY = DEFAULT_SLIP_JUMP_CHARACTER_DROP,
             DefaultAirDashQuota = 1,
             DefaultAirJumpQuota = 1,
             AirJumpVfxSpeciesId = 0, // TODO
@@ -163,7 +159,7 @@ namespace JoltCSharp {
         public static CharacterConfig BLACKSABER_TEST_NO_VISION = new CharacterConfig {
             SpeciesId = SPECIES_BLACKSABER_TEST_NO_VISION,
             SpeciesName = "BlackSaber1",
-            Hp = 40,
+            Hp = 10,
             LayDownFrames = 12,
             LayDownFramesToRecover = 12,
             GetUpInvinsibleFrames = 19,
@@ -192,7 +188,7 @@ namespace JoltCSharp {
         public static CharacterConfig BLACKSABER_TEST_WITH_VISION = new CharacterConfig {
             SpeciesId = SPECIES_BLACKSABER_TEST_WITH_VISION,
             SpeciesName = "BlackSaber1",
-            Hp = 40,
+            Hp = 10,
             LayDownFrames = 12,
             LayDownFramesToRecover = 12,
             GetUpInvinsibleFrames = 19,

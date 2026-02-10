@@ -1,15 +1,21 @@
 #ifndef PB_CONSTS_H
 #define PB_CONSTS_H 1
 
+#include <google/protobuf/arena.h>
 #include "serializable_data.pb.h"
 #include "joltc_export.h"
 #include <set>
 #include <utility>
+#include <unordered_set>
 
 using namespace jtshared;
 
 extern JOLTC_EXPORT const PrimitiveConsts* globalPrimitiveConsts;
 extern JOLTC_EXPORT const ConfigConsts* globalConfigConsts;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> trivialTrtSet;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> timedTrtSet;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> directNpcSpawnerTrtSet;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> collidableTrtSet;
 
 const std::unordered_set<CharacterState> onWallSet = {
     OnWallIdle1, 
@@ -151,6 +157,28 @@ const std::unordered_set<NpcGoal> temptingToMoveNpcGoalSet = {
     NHuntThenPatrol,
     NHuntThenPathPatrol,
     NHuntThenFollowAlly,
+};
+
+const std::unordered_set<TriggerState> trSubCycleStates = {
+    TriggerState::TrSubCycleReady,
+    TriggerState::TrSubCycleCoolingDown,
+    TriggerState::TrSubCycleExhausted,
+};
+
+const std::unordered_set<TriggerState> trActiveSubCycleStates = {
+    TriggerState::TrSubCycleReady,
+    TriggerState::TrSubCycleCoolingDown,
+};
+
+const std::unordered_set<TriggerState> trMainCycleStates = {
+    TriggerState::TrReady,
+    TriggerState::TrCoolingDown,
+    TriggerState::TrExhausted,
+};
+
+const std::unordered_set<TriggerState> trActiveMainCycleStates = {
+    TriggerState::TrReady,
+    TriggerState::TrCoolingDown,
 };
 
 typedef struct ChStatePairHasher {

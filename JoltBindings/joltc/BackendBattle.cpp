@@ -24,31 +24,40 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
         downsyncSnapshotHolder->set_st_ifd_id(stIfdId);
         downsyncSnapshotHolder->set_act(DownsyncAct::DA_REGULAR);
         if (withRefRdf) {
-            RenderFrame* refRdf = rdfBuffer.GetByFrameId(dynamicsRdfId); // NOT arena-allocated, needs later manual release of ownership
+            RenderFrame* refRdf = rdfBuffer.GetByFrameId(dynamicsRdfId);
             JPH_ASSERT(nullptr != refRdf);
             JPH_ASSERT(!downsyncSnapshotHolder->has_ref_rdf());
             downsyncSnapshotHolder->set_ref_rdf_id(dynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "dynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
-            downsyncSnapshotHolder->set_allocated_ref_rdf(refRdf); // No copy because "refRdf" is NOT arena-allocated.
+
+            if (nullptr == downsyncSnapshotHolder->GetArena()) {
+                JPH_ASSERT(nullptr != refRdf->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
+            }
+            downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf); // [WARNING] Intentionally avoids memory copy in all possible cases.
         }
         *pOutResult = downsyncSnapshotHolder; 
     }
     if (stIfdId < edIfdId) {
         auto resultIfdBatchHolder = (*pOutResult)->mutable_ifd_batch();
         for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
-            InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId); 
-            resultIfdBatchHolder->AddAllocated(ifd); // No copy because "ifd" is NOT arena-allocated
+            InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId);
+            // See comments around "downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf)".
+            if (nullptr == resultIfdBatchHolder) {
+                JPH_ASSERT(nullptr != ifd->GetArena());
+            }
+            resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); 
         }
     }
 }
 
 void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot) {
-    if (downsyncSnapshot->has_ref_rdf()) {
-        auto res = downsyncSnapshot->release_ref_rdf(); // To avoid auto deallocation of the rdf which I still need
-    }
+    // See comments around "downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf)".
+    auto res = downsyncSnapshot->unsafe_arena_release_ref_rdf(); // There's no need to duplicate just for returning an unused local variable, I have the pointer I need in "rdfBuffer"
+
     auto resultIfdBatchHolder = downsyncSnapshot->mutable_ifd_batch();
     while (!resultIfdBatchHolder->empty()) {
-        auto res = resultIfdBatchHolder->ReleaseLast(); // To avoid auto deallocation of the ifd which I still need
+        auto res = resultIfdBatchHolder->UnsafeArenaReleaseLast(); // There's no need to duplicate just for returning an unused local variable, I have the pointer I need in "ifdBuffer"
     }
+    
     downsyncSnapshot->Clear();
 }
 
@@ -224,10 +233,10 @@ bool BackendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf,
     if (!nextFrameLog) {
         nextFrameLog = frameLogBuffer.DryPut();
     }
-    if (nextFrameLog->has_rdf()) {
-        auto res = nextFrameLog->release_rdf();
+    if (frameLogBuffer.GetAllocator() == &pbTempAllocator) {
+        ArenaFreeFrameLog(nextFrameLog, &pbTempAllocator);
     }
-    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
+    nextFrameLog->unsafe_arena_set_allocated_rdf(nextRdf);
     nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
     nextFrameLog->set_used_ifd_confirmed_list(delayedIfd->confirmed_list());
     nextFrameLog->set_used_ifd_udp_confirmed_list(delayedIfd->udp_confirmed_list());
@@ -237,7 +246,6 @@ bool BackendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf,
     nextFrameLog->set_chaser_ed_rdf_id(0);
     nextFrameLog->set_chaser_rdf_id_lower_bound(0);
     auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
-    inputListHolder->Clear();
     inputListHolder->CopyFrom(delayedIfd->input_list());
     return true;
 }

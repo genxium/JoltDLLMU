@@ -35,7 +35,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
 
     const Vec3 visionDirection = currChdFacing;
   
-    VisionBodyFilter visionBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, baseBattleFilter);
+    VisionBodyFilter visionBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, baseBattleFilter);
 
     VISION_HIT_COLLECTOR_T visionHitCollector;
     const Vec3 scaling = Vec3::sOne();
@@ -332,7 +332,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
         switch (udtRhs) {
         case UDT_PLAYER: 
         case UDT_NPC: {
-            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, nullptr);
+            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, nullptr);
             RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
             bool rayTestPassed = false;
             RayCastResult rcResult;
@@ -446,7 +446,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
                 }
             }
 
-            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), selfNpcBodyID, selfNpcUd, nullptr);
+            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, nullptr);
             RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
             RayCastResult rcResult;
             narrowPhaseQuery->CastRay(ray, rcResult, {}, {}, visionRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!

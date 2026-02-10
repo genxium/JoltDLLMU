@@ -33,6 +33,7 @@ set(TARGET_NAME LibExportImportCppTest)
 
 set(CPP_TEST_SRC_FILES 
     Test.cpp
+    ${JOLT_BINDINGS_ROOT}/joltc/TestHelper.cpp
 )
 
 add_executable(${TARGET_NAME} ${CPP_TEST_SRC_FILES})
@@ -132,4 +133,6 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
 
     install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
     install(FILES ${PREBUILT_LIB_PATH}/ConfigConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
+
+    install(FILES ${JOLT_BINDINGS_ROOT}/joltc/TestHelper.h DESTINATION ${_rt_deps_destination} OPTIONAL)
 endforeach()

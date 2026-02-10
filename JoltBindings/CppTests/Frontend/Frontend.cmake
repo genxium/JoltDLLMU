@@ -3,10 +3,8 @@ set(FRONTEND_TEST_ROOT ${JOLT_BINDINGS_ROOT}/CppTests/Frontend)
 # Source files
 set(FRONTEND_TEST_SRC_FILES
 	${FRONTEND_TEST_ROOT}/Test.cpp
+    ${JOLTC_ROOT}/TestHelper.cpp
 )
-
-# Group source files
-source_group(TREE ${FRONTEND_TEST_ROOT} FILES ${FRONTEND_TEST_SRC_FILES})
 
 add_executable(FrontendTest ${FRONTEND_TEST_SRC_FILES})
 
@@ -61,4 +59,6 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
 
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/ConfigConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
+
+    install(FILES ${JOLTC_ROOT}/TestHelper.h DESTINATION ${_rt_deps_destination} OPTIONAL)
 endforeach()
