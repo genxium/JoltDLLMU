@@ -13,11 +13,12 @@ using namespace JPH;
 class VisionBodyFilter : public BodyFilter {
 public:
     const CharacterDownsync* mSelfNpcChd;
+    const CharacterDownsync* mSelfNpcNextChd;
     BodyID   mSelfNpcBodyID;
     uint64_t mSelfNpcUd;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    VisionBodyFilter(const CharacterDownsync* inSelfNpcChd, const BodyID& inSelfNpcBodyID, const uint64_t inSelfNpcUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfNpcChd(inSelfNpcChd), mSelfNpcBodyID(inSelfNpcBodyID), mSelfNpcUd(inSelfNpcUd), mBaseBattleFilter(baseBattleFilter) {
+    VisionBodyFilter(const CharacterDownsync* inSelfNpcChd, const CharacterDownsync* inSelfNpcNextChd, const BodyID& inSelfNpcBodyID, const uint64_t inSelfNpcUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfNpcChd(inSelfNpcChd), mSelfNpcNextChd(inSelfNpcNextChd), mSelfNpcBodyID(inSelfNpcBodyID), mSelfNpcUd(inSelfNpcUd), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -31,7 +32,37 @@ public:
         }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfNpcChd, udRhs, udtRhs);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfNpcChd, mSelfNpcNextChd, udRhs, udtRhs, inBody);
+        if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
+            return false;
+        }
+        return true;
+    }
+};
+
+class ChdPostPhysicsNarrowPhaseBodyFilter : public BodyFilter {
+public:
+    const CharacterDownsync* mSelfChd;
+    const CharacterDownsync* mSelfNextChd;
+    BodyID   mSelfBodyID;
+    uint64_t mSelfUd;
+    const BaseBattleCollisionFilter* mBaseBattleFilter;
+
+    ChdPostPhysicsNarrowPhaseBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mBaseBattleFilter(baseBattleFilter) {
+
+    }
+
+    virtual bool			ShouldCollide([[maybe_unused]] const BodyID &inBodyID) const {
+        return inBodyID != mSelfBodyID;
+    }
+
+    virtual bool			ShouldCollideLocked([[maybe_unused]] const Body &inBody) const {
+        if (nullptr == mBaseBattleFilter) {
+            return true;
+        }
+        const uint64_t udRhs = inBody.GetUserData();
+        const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -54,10 +85,6 @@ public:
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mCurrChd, udRhs, udtRhs);
-        if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
-            return;
-        }
         auto normal = -inResult.mPenetrationAxis.Normalized();
         float dot = normal.Dot(mUp);
         if (dot > mBestDot) {

@@ -336,7 +336,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 6.5f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 8.0f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             BType = BulletType.Melee,
@@ -351,7 +351,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 6.0f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 7.8f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = 0,
             SelfLockVelYWhenFlying = 0,
             BType = BulletType.Melee,
@@ -366,7 +366,7 @@ namespace JoltCSharp {
             CooldownFrames = 5,
             PushbackVelX = PbPrimitives.underlying.NoLockVel,
             PushbackVelY = PbPrimitives.underlying.NoLockVel,
-            SelfLockVelX = 6.0f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = 7.5f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             BType = BulletType.Melee,
@@ -408,9 +408,9 @@ namespace JoltCSharp {
         );
 
         public static BulletConfig SlowBladeHit1 = new BulletConfig(BasicBladeHit1)
-         .SetStartupFrames(24)
-         .SetActiveFrames(8)
-         .SetCooldownFrames(4)
+         .SetStartupFrames(26)
+         .SetActiveFrames(4)
+         .SetCooldownFrames(6)
         ; 
 
         public static BulletConfig SlowBladeAirHit1 = new BulletConfig(SlowBladeHit1)

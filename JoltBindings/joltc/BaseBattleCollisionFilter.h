@@ -142,13 +142,13 @@ public:
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const = 0;
 
-    virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) const = 0;
+    virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
-    virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) const = 0;
+    virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const Body& lhs, // the "Bullet"

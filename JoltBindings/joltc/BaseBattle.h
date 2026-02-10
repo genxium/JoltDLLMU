@@ -341,7 +341,7 @@ public:
         return oldVal;
     }
 
-    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion);
+    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty);
 
     virtual RenderFrame* CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
     
@@ -540,7 +540,10 @@ protected:
 
     InputInducedMotionStockCache inputInducedMotionStockCache;
     CollisionUdHolderStockCache_ThreadSafe collisionUdHolderStockCache;
+    
+    const BattleSpecificConfig* battleSpecificConfig = nullptr;
 
+    std::unordered_set<uint64_t> transientSlipJumpableUds;
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
@@ -638,7 +641,7 @@ protected:
 
     void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
-    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion);
+    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
     void transitToGroundDodgedChState(const CharacterDownsync& currChd, const Vec3 currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, InputInducedMotion* ioInputInducedMotion);
     void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
@@ -657,13 +660,13 @@ protected:
     }
 
 
-    void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
 
-    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
-    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
-    void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
-    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
 
     void handleLhsCharacterCollisionWithRhsBullet(
@@ -960,7 +963,23 @@ public:
         return JPH::ValidateResult::AcceptContact;
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) const {
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+        if (transientSlipJumpableUds.count(udRhs)) {
+            // Check early returns
+            if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state()) {
+                return JPH::ValidateResult::RejectContact;
+            } else if (CharacterState::InAirIdle1BySlipJump == lhsNextChd->ch_state()) {
+                return JPH::ValidateResult::RejectContact;
+            } else if (0 < lhsCurrChd->vel_y()) {
+                return JPH::ValidateResult::RejectContact;
+            }  else {
+                const AABox& rhsAABB = rhs.GetWorldSpaceBounds();
+                if (lhsCurrChd->y() < rhsAABB.mMin.GetY()) {
+                    return JPH::ValidateResult::RejectContact;
+                }
+            }
+        }
+
         switch (udtRhs) {
         case UDT_PLAYER: {
             auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
@@ -1003,13 +1022,17 @@ public:
             case UDT_PLAYER: {
                 auto lhsCurrPlayer = transientUdToCurrPlayer.at(udLhs);
                 auto& lhsCurrChd = lhsCurrPlayer->chd();
-                return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
+                auto lhsNextPlayer = transientUdToNextPlayer.at(udLhs);
+                auto& lhsNextChd = lhsNextPlayer->chd();
+                return validateLhsCharacterContact(&lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
                 break;
             }
             case UDT_NPC: {
                 auto lhsCurrNpc = transientUdToCurrNpc.at(udLhs);
                 auto& lhsCurrChd = lhsCurrNpc->chd();
-                return validateLhsCharacterContact(&lhsCurrChd, udRhs, udtRhs);
+                auto lhsNextNpc = transientUdToNextNpc.at(udLhs);
+                auto& lhsNextChd = lhsNextNpc->chd();
+                return validateLhsCharacterContact(&lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
                 break;
             }
             default:
@@ -1017,7 +1040,7 @@ public:
         }
     }
 
-    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) const {
+    virtual JPH::ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         switch (udtRhs) {
         case UDT_PLAYER: {
             auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
@@ -1065,7 +1088,7 @@ public:
         const JPH::Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
         auto lhsCurrBl = transientUdToCurrBl.at(udLhs);
-        return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs);
+        return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs, rhs);
     }
 
 public:
@@ -1146,6 +1169,22 @@ public:
 
         if (transientUdToConstraintHelperBodyID.count(ud2) && inBody2.IsSensor()) return JPH::ValidateResult::RejectContact;
         if (transientUdToConstraintHelperBodyID.count(ud1) && inBody1.IsSensor()) return JPH::ValidateResult::RejectContact;
+
+        if (transientSlipJumpableUds.count(ud2)) {
+            // Check early returns
+            const AABox& lhsAABB = inBody1.GetWorldSpaceBounds(); 
+            const AABox& rhsAABB = inBody2.GetWorldSpaceBounds(); 
+            if (lhsAABB.mMin.GetY() < rhsAABB.mMin.GetY()) {    
+                return JPH::ValidateResult::RejectContact;    
+            }
+        } else if (transientSlipJumpableUds.count(ud1)) {
+            // Check early returns
+            const AABox& lhsAABB = inBody1.GetWorldSpaceBounds(); 
+            const AABox& rhsAABB = inBody2.GetWorldSpaceBounds(); 
+            if (rhsAABB.mMin.GetY() < lhsAABB.mMin.GetY()) {    
+                return JPH::ValidateResult::RejectContact;    
+            }
+        }
 
         switch (udt1)
         {

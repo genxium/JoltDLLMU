@@ -323,9 +323,6 @@ message CharacterConfig {
 
     int32 air_jump_vfx_species_id = 63;
 
-    float slip_jump_thres_hold_below_top_face = 64; 
-    float slip_jump_character_drop_y = 65; 
-
     uint32 transform_into_species_id_upon_death = 66;
     bool jump_holding_to_fly = 67;
     bool has_def1 = 68;
@@ -399,6 +396,22 @@ message CharacterConfig {
     bool has_in_air_walk_stopping_anim = 516; 
     bool has_dimmed_anim = 517;
     bool has_awaking_anim = 518;
+}
+
+enum SpecialMoveOverrideStatus {
+    SmusKeep = 0;    
+    SmusLocked = 1;    
+    SmusUnlocked = 2;    
+} 
+
+message CharacterBattleSpecificConfig {
+    map<int32, uint32> init_skill_transit = 1;     
+    repeated InventorySlotConfig init_inventory_slots = 2;
+    SpecialMoveOverrideStatus air_jump_override = 3;
+}
+
+message BattleSpecificConfig {
+    map<uint64, CharacterBattleSpecificConfig> character_overrides = 1; 
 }
 
 message CharacterDownsync {
@@ -580,6 +593,7 @@ message WsReq {
     repeated TrapConfigFromTiled trap_config_from_tile_list = 12;
     repeated TriggerConfigFromTiled trigger_config_from_tile_list = 13;
     float fallen_death_height = 14;
+    BattleSpecificConfig battle_specific_config = 15;
 }
 
 message PatrolCue {
@@ -891,6 +905,8 @@ message TrapConfigFromTiled {
     float slider_axis_x = 19;
     float slider_axis_y = 20;
     float slider_axis_z = 21;
+
+    BarrierColliderAttr barrier_attr = 22;  
 
     // Used for constraint limit assignment
     float limit_1 = 128;  
