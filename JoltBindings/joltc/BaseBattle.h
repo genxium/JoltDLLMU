@@ -343,7 +343,7 @@ public:
 
     void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty);
 
-    virtual RenderFrame* CalcSingleStep(int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
+    virtual RenderFrame* CalcSingleStep(const int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
     
     virtual void Clear();
 
@@ -536,7 +536,7 @@ protected:
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
 
     std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
-    std::unordered_map<uint32_t, const TriggerConfigFromTiled*> triggerConfigFromTileDict;
+    std::unordered_map<uint32_t, TriggerConfigFromTiled*> triggerConfigFromTileDict;
 
     InputInducedMotionStockCache inputInducedMotionStockCache;
     CollisionUdHolderStockCache_ThreadSafe collisionUdHolderStockCache;
@@ -639,9 +639,9 @@ protected:
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
-    void deriveCharacterOpPattern(int rdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
+    void deriveCharacterOpPattern(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy);
 
-    void processSingleCharacterInput(int rdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processSingleCharacterInput(const int currRdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
     void transitToGroundDodgedChState(const CharacterDownsync& currChd, const Vec3 currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, InputInducedMotion* ioInputInducedMotion);
     void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
@@ -660,13 +660,13 @@ protected:
     }
 
 
-    void prepareJumpStartup(int currRdfId, const CharacterDownsync& currChd, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
 
-    void processInertiaWalkingHandleZeroEffDx(int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
-    void processInertiaWalking(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaWalkingHandleZeroEffDx(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaWalking(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
-    void processInertiaFlyingHandleZeroEffDxAndDy(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
-    void processInertiaFlying(int rdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
+    void processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
 
     void handleLhsCharacterCollisionWithRhsBullet(
@@ -676,37 +676,40 @@ protected:
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
-    bool addBlHitToNextFrame(int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos);
-    bool addNewBulletToNextFrame(int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
+    bool addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos);
+    bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
 
-    void processWallGrabbingPostPhysicsUpdate(int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
+    void processWallGrabbingPostPhysicsUpdate(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
     bool transitToDying(const int currRdfId, const CharacterDownsync& currChd, const bool cvInAir, CharacterDownsync* nextChd);
     bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, const bool cvInAir, PlayerCharacterDownsync* nextPlayer);
     bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, const bool cvInAir, NpcCharacterDownsync* nextNpc);
 
-    void processDelayedBulletSelfVel(int rdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
+    void processDelayedBulletSelfVel(const int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
 
     virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
     virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
 
-    virtual void stepSingleTriggerState(int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger);
+    virtual void topoSortTriggerConfigFromTiledList(WsReq* initializerMapData);
+    virtual void stepSingleTrivialTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, StepResult* stepResult);
+    virtual void stepSingleTimedTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, StepResult* stepResult);
+    virtual void stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger);
 
-    void leftShiftDeadNpcs(int currRdfId, RenderFrame* nextRdf);
-    void leftShiftDeadBullets(int currRdfId, RenderFrame* nextRdf);
-    void leftShiftDeadDynamicTraps(int currRdfId, RenderFrame* nextRdf);
-    void leftShiftDeadTriggers(int currRdfId, RenderFrame* nextRdf);
-    void leftShiftDeadPickables(int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadDynamicTraps(const int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadTriggers(const int currRdfId, RenderFrame* nextRdf);
+    void leftShiftDeadPickables(const int currRdfId, RenderFrame* nextRdf);
 
-    void leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* nextChd);
-    void leftShiftDeadIvSlots(int currRdfId, CharacterDownsync* nextChd);
-    void leftShiftDeadBuffs(int currRdfId, CharacterDownsync* nextChd);
-    void leftShiftDeadDebuffs(int currRdfId, CharacterDownsync* nextChd);
+    void leftShiftDeadBlImmuneRecords(const int currRdfId, CharacterDownsync* nextChd);
+    void leftShiftDeadIvSlots(const int currRdfId, CharacterDownsync* nextChd);
+    void leftShiftDeadBuffs(const int currRdfId, CharacterDownsync* nextChd);
+    void leftShiftDeadDebuffs(const int currRdfId, CharacterDownsync* nextChd);
 
-    bool useSkill(int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, const Vec3& currChdFacing, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
+    bool useSkill(const int currRdfId, RenderFrame* nextRdf, const CharacterDownsync& currChd, const Vec3& currChdFacing, uint64_t ud, const CharacterConfig* cc, CharacterDownsync* nextChd, int effDx, int effDy, int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, int& outSkillId, const Skill*& outSkill, const BulletConfig*& outPivotBc);
 
-    void useInventorySlot(int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
+    void useInventorySlot(const int currRdfId, int patternId, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool& outSlotUsed, bool& outDodgedInBlockStun);
     static bool IsChargingAtkChState(CharacterState chState) {
         return (CharacterState::Atk7_Charging == chState);
     }
@@ -880,7 +883,7 @@ protected:
         return (0 >= chd->hp() && 0 >= chd->frames_to_recover());
     }
 
-    inline bool publishNpcExhaustedEvt(int rdfId, uint64_t publishingEvtMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
+    inline bool publishNpcExhaustedEvt(const int currRdfId, uint64_t publishingEvtMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
         if (0 == nextRdfTrigger->demanded_evt_mask()) return false;
         nextRdfTrigger->set_fulfilled_evt_mask(nextRdfTrigger->fulfilled_evt_mask() | publishingEvtMask);
         nextRdfTrigger->set_offender_ud(offenderUd);

@@ -15,6 +15,7 @@
 #include "NpcReactionConsts.h"
 #include "FrontendBattle.h"
 #include "BackendBattle.h"
+#include <unordered_set>
 
 #ifndef NDEBUG
 #include "DebugLog.h"
@@ -29,6 +30,8 @@ using namespace JPH;
 const PrimitiveConsts* globalPrimitiveConsts = nullptr;
 const ConfigConsts* globalConfigConsts = nullptr;
 std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;
+std::unordered_set<uint32_t> trivialTrtSet;
+std::unordered_set<uint32_t> timedTrtSet;
 
 bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     if (nullptr != globalPrimitiveConsts) {
@@ -41,6 +44,20 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     auto& chSpecies = globalPrimitiveConsts->ch_species();
     globalNpcReactionMap[chSpecies.blacksaber1()] = new BlackSaber1NpcReaction();
     globalNpcReactionMap[chSpecies.blacksaber_test_with_vision()] = new BlackSaberTestWithVisionNpcReaction();
+
+    trivialTrtSet = {
+        globalPrimitiveConsts->trt_victory(),
+        globalPrimitiveConsts->trt_by_movement(),
+        globalPrimitiveConsts->trt_by_attack(),
+        globalPrimitiveConsts->trt_save_point_only(),
+        globalPrimitiveConsts->trt_story_point_only(),
+        globalPrimitiveConsts->trt_save_and_story_point(),
+    };
+
+    timedTrtSet = {
+        globalPrimitiveConsts->trt_cyclic_timed(),
+    };
+
     return true;
 }
 

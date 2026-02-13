@@ -5,11 +5,14 @@
 #include "joltc_export.h"
 #include <set>
 #include <utility>
+#include <unordered_set>
 
 using namespace jtshared;
 
 extern JOLTC_EXPORT const PrimitiveConsts* globalPrimitiveConsts;
 extern JOLTC_EXPORT const ConfigConsts* globalConfigConsts;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> trivialTrtSet;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> timedTrtSet;
 
 const std::unordered_set<CharacterState> onWallSet = {
     OnWallIdle1, 

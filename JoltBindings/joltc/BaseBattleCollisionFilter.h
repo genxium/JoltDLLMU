@@ -138,6 +138,9 @@ public:
     std::atomic<uint32_t>       mNextRdfBulletIdCounter = 0;
     std::atomic<uint32_t>       mNextRdfBulletCount = 0;
 
+    std::atomic<uint32_t>       mNextRdfNpcIdCounter = 0;
+    std::atomic<uint32_t>       mNextRdfNpcCount = 0;
+
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const = 0;

@@ -2962,6 +2962,9 @@ void initTest15Data(WsReq* victoryTriggerInitializerMapData, std::vector<std::ve
         anchor->set_y(anchorY);
     }
     victoryTriggerInitializerMapData->set_allocated_self_parsed_rdf(victoryTriggerStartRdf);
+    auto triggerConfigFromTiled1 = victoryTriggerInitializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(victoryTriggerStartRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(victoryTriggerStartRdf->triggers(0).trt());
 }
 
 void initTest16Data(WsReq* sliderTrapTestInitializerMapData, std::vector<std::vector<float>>& hulls) {
@@ -5135,7 +5138,7 @@ int main(int argc, char** argv)
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
 
     int selfJoinIndex = 1;
-     
+    
     initTest1Data();
     runTestCase1(battle, initializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -5187,7 +5190,7 @@ int main(int argc, char** argv)
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-     
+
     WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbStarterWsReqAllocator);
     initTest14Data(bountyHunterSkillInitializerMapData, hulls);
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);

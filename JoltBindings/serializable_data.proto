@@ -231,7 +231,9 @@ enum TrapState {
 
 enum TriggerState {
     TReady = 0;
-    TCoolingDown = 1;
+    TSubCycleReady = 1;
+    TSubCoolingDown = 2;
+    TCoolingDown = 3;
 }
 
 enum PickableState {
@@ -549,7 +551,7 @@ message NpcCharacterDownsync {
     int32 waiving_patrol_cue_id = 5;
     NpcGoal goal_as_npc = 6;
 
-    uint64 publishing_evt_mask_upon_exhausted = 7;
+    uint64 publishing_evt_mask_upon_exhausted = 7; // [WARNING] NOT to be configured from UI/Story Editor.
     uint32 publishing_to_trigger_id_upon_exhausted = 8;
 
     uint32 subscribes_to_trigger_id = 9; 
@@ -1430,11 +1432,13 @@ message TriggerConfigFromTiled {
     float init_qz = 15;
     float init_qw = 16;
 
-    uint64 publishing_evt_mask_upon_exhausted = 17; 
-    uint32 publishing_to_trigger_id_upon_exhausted = 18;
+    uint64 publishing_evt_mask_upon_exhausted = 17; // [WARNING] NOT to be configured from UI/Story Editor. 
+    uint32 publishing_to_trigger_id_upon_exhausted = 18; // [WARNING] Points to a "topo_lv" smaller than itself, and "A.topo_lv < B.topo_lv" means "A" is an ancestor of "B".  
 
     int32 force_ctrl_rdf_count = 19;
     uint64 force_ctrl_cmd = 20;
+
+    uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
 
     int32 story_point_id = 512;
     int32 bgm_id = 513;
@@ -1470,17 +1474,22 @@ message Trigger {
     float y = 13;
     float z = 14;
 
-    uint64 demanded_evt_mask = 15; // [WARNING] changes with time/battle progress
+    uint64 demanded_evt_mask = 15; // for main cycle
     uint64 fulfilled_evt_mask = 16;
-    uint64 wave_npc_exhausted_evt_mask_counter = 17;
 
-    uint64 publishing_evt_mask_upon_exhausted = 18; 
-    uint32 publishing_to_trigger_id_upon_exhausted = 19;
+    uint64 sub_cycle_demanded_evt_mask = 17; 
+    uint64 sub_cycle_fulfilled_evt_mask = 18;
+    uint64 sub_cycle_gen_mask_counter = 19;
 
     uint64 offender_ud = 20; 
     int32 offender_bullet_team_id = 21; 
 
     uint32 trt = 22;
+    
+    uint32 topo_lv = 23; // Inherited from "TriggerConfigFromTiled"
+
+    uint64 publishing_evt_mask_upon_exhausted = 24; // [WARNING] NOT to be configured from UI/Story Editor. 
+    uint32 publishing_to_trigger_id_upon_exhausted = 25; // [WARNING] Inherited from "TriggerConfigFromTiled" in UI/Story Editor.
 }
 
 message PlayerMetaInfo {
