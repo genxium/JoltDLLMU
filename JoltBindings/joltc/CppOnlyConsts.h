@@ -82,4 +82,33 @@ const std::vector<std::vector<int>> DIRECTION_DECODER = {
     { 0, 0 }, // 15
 };
 
+typedef struct PairUint64Hasher {
+    std::size_t operator()(const std::pair<uint64_t, uint64_t>& v) const {
+        std::size_t seed = 2; // Start with the size of the vector
+        seed ^= std::hash<float>()(v.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} PairUint64Hasher;
+
+const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transientCollisionHolderApplicableUdtPairs = {
+    {UDT_PLAYER, UDT_TRIGGER},
+    {UDT_NPC,    UDT_TRIGGER},
+    {UDT_TRIGGER, UDT_PLAYER},
+    {UDT_TRIGGER, UDT_NPC},
+
+    {UDT_PLAYER, UDT_BL},
+    {UDT_NPC,    UDT_BL},
+
+    {UDT_BL, UDT_PLAYER},
+    {UDT_BL, UDT_NPC},
+    {UDT_BL, UDT_TRAP},
+    {UDT_BL, UDT_TRIGGER},
+    {UDT_BL, UDT_OBSTACLE},
+
+    {UDT_OBSTACLE, UDT_BL},
+    {UDT_TRIGGER, UDT_BL},
+    {UDT_TRAP, UDT_BL},
+};
+
 #endif

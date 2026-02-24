@@ -1,26 +1,32 @@
-template <typename T>
-inline RingBuffer<T>::RingBuffer(int n) {
+template <typename T, typename AllocatorType>
+inline RingBuffer<T, AllocatorType>::RingBuffer(int n, AllocatorType* theAllocator, ALLOC_T_FUNC<T, AllocatorType> theAllocTFunc, FREE_T_FUNC<T, AllocatorType> theFreeTFunc) {
     Cnt = St = Ed = 0;
     N = n;
     Eles.reserve(n);
     Eles.assign(n, nullptr);
+    allocator = theAllocator;
+    allocTFunc = theAllocTFunc;
+    freeTFunc = theFreeTFunc;
 }
 
-template <typename T>
-inline RingBuffer<T>::~RingBuffer() {
+template <typename T, typename AllocatorType>
+inline RingBuffer<T, AllocatorType>::~RingBuffer() {
     // [WARNING] It's inconvenient to use Google Protobuf Arena Allocation on this "RingBuffer<T>" for general purpose, therefore individual allocation in "DryPut()" and deallocation here are used.
 
     while (0 < Cnt) {
         T* front = Pop();
-        delete front;
-        front = nullptr;
+        if (nullptr == freeTFunc) {
+            delete front;
+        } else {
+            freeTFunc(front, allocator);
+        }
     }
 
     Clear();
 }
 
-template <typename T>
-inline int RingBuffer<T>::GetArrIdxByOffset(int offsetFromSt) {
+template <typename T, typename AllocatorType>
+inline int RingBuffer<T, AllocatorType>::GetArrIdxByOffset(int offsetFromSt) {
     if (0 == Cnt || 0 > offsetFromSt) {
         return -1;
     }
@@ -47,8 +53,8 @@ inline int RingBuffer<T>::GetArrIdxByOffset(int offsetFromSt) {
     return -1;
 }
 
-template <typename T>
-inline T* RingBuffer<T>::GetByOffset(int offsetFromSt) {
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::GetByOffset(int offsetFromSt) {
     int arrIdx = GetArrIdxByOffset(offsetFromSt);
 
     if (-1 == arrIdx) {
@@ -61,21 +67,21 @@ inline T* RingBuffer<T>::GetByOffset(int offsetFromSt) {
     return Eles[arrIdx];
 }
 
-template <typename T>
-inline T* RingBuffer<T>::GetFirst() {
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::GetFirst() {
     if (0 == Cnt) return nullptr;
     return Eles[St];
 }
 
-template <typename T>
-inline T* RingBuffer<T>::GetLast() {
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::GetLast() {
     if (0 == Cnt) return nullptr;
     if (0 < Ed) return Eles[Ed - 1];
     else return Eles[N - 1];
 }
 
-template <typename T>
-inline T* RingBuffer<T>::Pop() {
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::Pop() {
     if (0 == Cnt) return nullptr;
     auto holder = GetFirst();
     Cnt--; St++;
@@ -86,8 +92,8 @@ inline T* RingBuffer<T>::Pop() {
     return holder;
 }
 
-template <typename T>
-inline T* RingBuffer<T>::PopTail() {
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::PopTail() {
     if (0 == Cnt) return nullptr;
     auto holder = GetLast();
     Cnt--; Ed--;
@@ -98,14 +104,14 @@ inline T* RingBuffer<T>::PopTail() {
     return holder;
 }
 
-template <typename T>
-inline void RingBuffer<T>::Clear() {
+template <typename T, typename AllocatorType>
+inline void RingBuffer<T, AllocatorType>::Clear() {
     Cnt = 0;
     St = Ed = 0;
 }
 
-template <typename T>
-inline T* RingBuffer<T>::DryPut() { 
+template <typename T, typename AllocatorType>
+inline T* RingBuffer<T, AllocatorType>::DryPut() { 
     bool isFull = (0 < Cnt && Cnt == N); 
     T* candidateSlot = nullptr;
     if (isFull) {
@@ -113,7 +119,11 @@ inline T* RingBuffer<T>::DryPut() {
     } else {
         T** pSlot = (N > Ed ? &Eles[Ed] : &Eles[0]);
         if (nullptr == *pSlot) {
-            *pSlot = new T();
+            if (nullptr == allocTFunc) {
+                *pSlot = new T();
+            } else {
+                *pSlot = allocTFunc(allocator);
+            }
         }
         candidateSlot = *pSlot;
     }

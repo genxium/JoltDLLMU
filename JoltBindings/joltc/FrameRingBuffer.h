@@ -2,22 +2,22 @@
 
 #ifndef USE_RBMT
 #include "RingBuffer.h"
-#define RB_T RingBuffer<T> 
+#define RB_T RingBuffer<T, AllocatorType> 
 #else
 #include "RingBufferMt.h"
-#define RB_T RingBufferMt<T> 
+#define RB_T RingBufferMt<T, AllocatorType> 
 #endif
 
 #include <string>
 
-template <class T>
+template <class T, class AllocatorType>
 class FrameRingBuffer : public RB_T {
     public:
         int EdFrameId;
         int StFrameId;
 
     public: 
-        FrameRingBuffer(int n);
+        FrameRingBuffer(int n, AllocatorType* theAllocator = nullptr, ALLOC_T_FUNC<T, AllocatorType> theAllocTFunc = nullptr, FREE_T_FUNC<T, AllocatorType> theFreeTFunc = nullptr);
         virtual ~FrameRingBuffer();
         T* Pop(); 
         T* PopTail();

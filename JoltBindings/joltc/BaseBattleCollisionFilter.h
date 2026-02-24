@@ -1,7 +1,7 @@
 #ifndef BASE_BATTLE_COLLISION_FILTER_H_
 #define BASE_BATTLE_COLLISION_FILTER_H_ 1
 
-#include "serializable_data.pb.h"
+#include "CppOnlyConsts.h"
 
 #include <atomic>
 #include <utility> // for "std::pair"
@@ -14,9 +14,6 @@
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Math/Quat.h>
 #include <Jolt/Math/Mat44.h>
-
-#include "CppOnlyConsts.h"
-#include "PbConsts.h"
 
 using namespace JPH;
 
@@ -120,6 +117,10 @@ typedef struct NonContactConstraintCacheKeyHasher {
 
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
+#define TR_COLLIDER_T JPH::Body
+#define TR_CACHE_KEY_T std::vector<float>
+#define TR_COLLIDER_Q std::vector<TR_COLLIDER_T*>
+
 static const float      cHalfPI = 0.5*JPH_PI;
 static const JPH::Quat  cIdentityQ = JPH::Quat(0, 0, 0, 1);
 static const JPH::Quat  cTurnbackAroundYAxis = JPH::Quat(0, 1, 0, 0);
@@ -138,17 +139,20 @@ public:
     std::atomic<uint32_t>       mNextRdfBulletIdCounter = 0;
     std::atomic<uint32_t>       mNextRdfBulletCount = 0;
 
+    std::atomic<uint32_t>       mNextRdfNpcIdCounter = 0;
+    std::atomic<uint32_t>       mNextRdfNpcCount = 0;
+
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const = 0;
 
-    virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs) const = 0;
+    virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
-    virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs) const = 0;
+    virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const Body& lhs, // the "Bullet"
@@ -162,8 +166,8 @@ public:
         return calcTriggerUserData(npcChd.publishing_to_trigger_id_upon_exhausted());
     }
 
-    inline const uint64_t calcPublishingToTriggerUd(const Trigger& tr) {
-        return calcTriggerUserData(tr.publishing_to_trigger_id_upon_exhausted());
+    inline const uint64_t calcPublishingToTriggerUd(const TriggerConfigFromTiled& triggerConfigFromTiled) {
+        return calcTriggerUserData(triggerConfigFromTiled.publishing_to_trigger_id_upon_exhausted());
     }
 
     inline const uint64_t calcUserData(const PlayerCharacterDownsync& playerChd) const {

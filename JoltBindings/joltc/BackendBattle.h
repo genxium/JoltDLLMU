@@ -11,8 +11,8 @@ using namespace JPH;
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
-        downsyncSnapshotHolder = new DownsyncSnapshot();
-        wsReqHolder = new WsReq();
+        downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbRdfAllocator);
+        wsReqHolder = google::protobuf::Arena::CreateMessage<WsReq>(&pbRdfAllocator);
 
         allocPhySys();
         jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
@@ -21,11 +21,9 @@ public:
     virtual ~BackendBattle() {
         // Calls base destructor (implicitly)
         if (nullptr != downsyncSnapshotHolder) {
-            delete downsyncSnapshotHolder;
             downsyncSnapshotHolder = nullptr;
         }
         if (nullptr != wsReqHolder) {
-            delete wsReqHolder;
             wsReqHolder = nullptr;
         }
 #ifndef NDEBUG

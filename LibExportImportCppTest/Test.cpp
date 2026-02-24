@@ -1,15 +1,13 @@
-#include "joltc_export.h" // imports the "JOLTC_EXPORT" macro for "serializable_data.pb.h"
-#include <Jolt/Jolt.h> // imports the "JPH_EXPORT" macro for classes under namespace JPH (from <Jolt/Core/Core.h>)
-#include "serializable_data.pb.h"
-#include "joltc_api.h" 
-#include "PbConsts.h"
-#include "CppOnlyConsts.h"
+#include "TestHelper.h"
 #include "DebugLog.h"
 
 #include "FrontendBattle.h"
 #include <chrono>
 #include <fstream>
 #include <filesystem>
+
+#include <google/protobuf/arena.h>
+google::protobuf::Arena pbTestCaseDataAllocator;
 
 using namespace jtshared;
 using namespace std::chrono;
@@ -18,9 +16,9 @@ using namespace std::filesystem;
 const uint32_t SPECIES_BLADEGIRL = 1;
 const uint32_t SPECIES_BOUNTYHUNTER = 7;
 
-RenderFrame* mockStartRdf() {
+RenderFrame* mockStartRdf(google::protobuf::Arena* theAllocator) {
     const int roomCapacity = 2;
-    auto startRdf = BaseBattle::NewPreallocatedRdf(roomCapacity, 8, 128);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     int pickableIdCounter = 1;
     int npcIdCounter = 1;
@@ -181,31 +179,15 @@ int main(int argc, char** argv)
     
     RegisterDebugCallback(DebugLogCb);
 
-    auto startRdf = mockStartRdf();
+    auto startRdf = mockStartRdf(&pbTestCaseDataAllocator);
 
-    WsReq wsReq;
-    for (auto hull : hulls) {
-        auto srcBarrier = wsReq.add_serialized_barriers();
-        auto srcPolygon = srcBarrier->mutable_polygon();
-        float anchorX = 0, anchorY = 0;
-        for (int i = 0; i < hull.size(); i += 2) {
-            PbVec2* newPt = srcPolygon->add_points();
-            newPt->set_x(hull[i]);
-            newPt->set_y(hull[i + 1]);
-            anchorX += hull[i];
-            anchorY += hull[i + 1];
-        }
-        anchorX /= (hull.size() >> 1);
-        anchorY /= (hull.size() >> 1);
-        auto anchor = srcPolygon->mutable_anchor();
-        anchor->set_x(anchorX);
-        anchor->set_y(anchorY);
-    }
-    wsReq.set_allocated_self_parsed_rdf(startRdf);
+    WsReq* wsReq = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+    TestHelper::AddHullsToWsReq(wsReq, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    wsReq->set_allocated_self_parsed_rdf(startRdf);
 
     memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
-    long byteSize = wsReq.ByteSizeLong();
-    wsReq.SerializeToArray(pbByteBuffer, byteSize);
+    long byteSize = wsReq->ByteSizeLong();
+    wsReq->SerializeToArray(pbByteBuffer, byteSize);
     uint32_t selfJoinIndex = 1;
     const char * const selfPlayerId = "foobar";
     const int selfCmdAuthKey = 123456;

@@ -204,6 +204,14 @@ namespace JoltCSharp {
 
         public static CharacterDownsync NewPreallocatedCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity, PrimitiveConsts primitives) {
             var single = new CharacterDownsync();
+            single.QX = 0;
+            single.QY = 0;
+            single.QZ = 0;
+            single.QW = 1;
+            single.AimingQX = 0;
+            single.AimingQY = 0;
+            single.AimingQZ = 0;
+            single.AimingQW = 1;
             single.LastDamagedByUd = 0;
             single.LastDamagedByBulletTeamId = primitives.TerminatingBulletTeamId;
             for (int i = 0; i < buffCapacity; i++) {
@@ -218,14 +226,13 @@ namespace JoltCSharp {
                 singleDebuff.SpeciesId = primitives.TerminatingDebuffSpeciesId;
                 single.DebuffList.Add(singleDebuff);
             }
-            if (0 < inventoryCapacity) {
-                single.Inventory = new Inventory();
-                for (int i = 0; i < inventoryCapacity; i++) {
-                    var singleSlot = new InventorySlot();
-                    singleSlot.StockType = InventorySlotStockType.NoneIv;
-                    single.Inventory.Slots.Add(singleSlot);
-                }
+
+            for (int i = 0; i < inventoryCapacity; i++) {
+                var singleSlot = new InventorySlot();
+                singleSlot.StockType = InventorySlotStockType.NoneIv;
+                single.InventorySlots.Add(singleSlot);
             }
+
             for (int i = 0; i < bulletImmuneRecordCapacity; i++) {
                 var singleRecord = new BulletImmuneRecord {
                     BulletId = primitives.TerminatingBulletId,
@@ -274,8 +281,8 @@ namespace JoltCSharp {
             if (null != chd.DebuffList) {
                 chd.DebuffList.Clear();
             }  
-            if (null != chd.Inventory && null != chd.Inventory.Slots) {
-                chd.Inventory.Slots.Clear();
+            if (null != chd.InventorySlots) {
+                chd.InventorySlots.Clear();
             }
             if (null != chd.BulletImmuneRecords) {
                 chd.BulletImmuneRecords.Clear();
@@ -325,7 +332,6 @@ namespace JoltCSharp {
             chd.FallstoppingRdfCountdown = 0;   
             chd.OmitGravity = false;
 
-            chd.ForcedCrouching = false;     
             chd.NewBirthRdfCountdown = 0;
 
             chd.FramesInvinsible = 0;

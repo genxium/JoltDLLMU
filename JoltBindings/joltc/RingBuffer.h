@@ -3,6 +3,12 @@
 
 #include <vector>
 
+template <typename RetType, typename AllocatorType>
+using ALLOC_T_FUNC = RetType* (*)(AllocatorType*);
+
+template <typename ArgType, typename AllocatorType>
+using FREE_T_FUNC = void (*)(ArgType*, AllocatorType*);
+
 /*
 [WARNING]
 
@@ -12,7 +18,7 @@ This class DOESN'T support resizing.
 
 This class implicitly deallocates pointer-type element memory in destructor.
 */
-template <class T>
+template <class T, class AllocatorType>
 class RingBuffer {
     public: 
         int CONSECUTIVE_SET = 0;
@@ -24,7 +30,7 @@ class RingBuffer {
         int Cnt;       // the count of valid elements in the buffer, used mainly to distinguish what "St == Ed" means for "Pop" and "Get" methods
         std::vector<T*> Eles;
     public:
-        RingBuffer(int n);
+        RingBuffer(int n, AllocatorType* theAllocator = nullptr, ALLOC_T_FUNC<T, AllocatorType> theAllocTFunc = nullptr, FREE_T_FUNC<T, AllocatorType> theFreeTFunc = nullptr);
         virtual ~RingBuffer();
         int GetArrIdxByOffset(int offsetFromSt); 
         T* GetByOffset(int offsetFromSt);
@@ -39,7 +45,15 @@ class RingBuffer {
         virtual void Clear();
 
         // [WARNING] Always returns a non-null pointer to the slot for assignment -- when the candidate slot is nullptr, heap memory allocation will occur.
-        virtual T* DryPut();   
+        virtual T* DryPut();  
+
+        virtual AllocatorType* GetAllocator() {
+            return allocator;
+        }
+    protected:
+        AllocatorType* allocator = nullptr;
+        ALLOC_T_FUNC<T, AllocatorType> allocTFunc = nullptr;
+        FREE_T_FUNC<T, AllocatorType>  freeTFunc = nullptr;
 }; 
 
 #include "RingBuffer.inl"

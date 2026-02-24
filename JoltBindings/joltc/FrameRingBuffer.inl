@@ -1,15 +1,15 @@
-template <typename T>
-FrameRingBuffer<T>::FrameRingBuffer(int n) : RB_T(n) {
+template <typename T, typename AllocatorType>
+FrameRingBuffer<T, AllocatorType>::FrameRingBuffer(int n, AllocatorType* theAllocator, ALLOC_T_FUNC<T, AllocatorType> theAllocTFunc, FREE_T_FUNC<T, AllocatorType> theFreeTFunc) : RB_T(n, theAllocator, theAllocTFunc, theFreeTFunc) {
     StFrameId = EdFrameId = 0;
 }
 
-template <typename T>
-FrameRingBuffer<T>::~FrameRingBuffer() {
+template <typename T, typename AllocatorType>
+FrameRingBuffer<T, AllocatorType>::~FrameRingBuffer() {
     // Calls base destructor (implicitly)
 }
 
-template <typename T>
-T* FrameRingBuffer<T>::Pop() {
+template <typename T, typename AllocatorType>
+T* FrameRingBuffer<T, AllocatorType>::Pop() {
     auto ret = RB_T::Pop(); 
     if (nullptr != ret) {
         StFrameId++;
@@ -17,8 +17,8 @@ T* FrameRingBuffer<T>::Pop() {
     return ret;
 }
 
-template <typename T>
-T* FrameRingBuffer<T>::PopTail() {
+template <typename T, typename AllocatorType>
+T* FrameRingBuffer<T, AllocatorType>::PopTail() {
     auto ret = RB_T::PopTail(); 
     if (nullptr != ret) {
         EdFrameId--;
@@ -26,22 +26,22 @@ T* FrameRingBuffer<T>::PopTail() {
     return ret;
 }
 
-template <typename T>
-T* FrameRingBuffer<T>::GetByFrameId(int frameId) {
+template <typename T, typename AllocatorType>
+T* FrameRingBuffer<T, AllocatorType>::GetByFrameId(int frameId) {
     if (frameId >= EdFrameId || frameId < StFrameId) {
         return nullptr;
     }
     return RB_T::GetByOffset(frameId - StFrameId);
 }
 
-template <typename T>
-void FrameRingBuffer<T>::Clear() {
+template <typename T, typename AllocatorType>
+void FrameRingBuffer<T, AllocatorType>::Clear() {
     RB_T::Clear();
     StFrameId = EdFrameId = 0;
 }
 
-template <typename T>
-T* FrameRingBuffer<T>::DryPut() {
+template <typename T, typename AllocatorType>
+T* FrameRingBuffer<T, AllocatorType>::DryPut() {
     auto ret = RB_T::DryPut(); 
     EdFrameId++;
     return ret;

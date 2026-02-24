@@ -12,7 +12,6 @@ inline RingBufferMt<T>::~RingBufferMt() {
     while (0 < Cnt) {
         T* front = Pop();
         delete front;
-        front = nullptr;
     }
     Clear();
 }

@@ -67,6 +67,8 @@ generate_export_header(${TARGET_NAME}
 )
 
 if(MSVC)
+    target_compile_options(${TARGET_NAME} PRIVATE /bigobj)
+
     target_compile_definitions(${TARGET_NAME} PRIVATE joltc_EXPORTS) # [IMPORTANT] Moreover, ${TARGET_NAME} should toggle on "joltc_EXPORTS", a weird flag used in the autogen "joltc_export.h" to enable "__declspec(dllexport)" in Windows.
     target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
     # Expand inline functions for easier debugging.

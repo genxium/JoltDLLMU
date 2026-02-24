@@ -35,7 +35,7 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
 
 bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     if (nullptr == downsyncSnapshotHolder) {
-        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTempAllocator);
+        downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbRdfAllocator);
     }
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
     return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
@@ -81,7 +81,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             
             RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId);
             JPH_ASSERT(nullptr != targetHolder);
-            targetHolder->CopyFrom(refRdf);
+            CopyRdf(&refRdf, targetHolder);
 
             chaserRdfId = refRdfId;
             chaserRdfIdLowerBound = refRdfId;
@@ -160,7 +160,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             }
 #endif
 */
-            targetHolder->CopyFrom(refIfd);
+            CopyIfd(&refIfd, targetHolder);
             targetHolder->set_confirmed_list(allConfirmedMask);
             
             for (int k = 0; k < playersCnt; ++k) {
@@ -228,7 +228,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
 bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     if (nullptr == upsyncSnapshotReqHolder) {
-        upsyncSnapshotReqHolder = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+        upsyncSnapshotReqHolder = google::protobuf::Arena::CreateMessage<WsReq>(&pbRdfAllocator);
     }
     upsyncSnapshotReqHolder->ParseFromArray(inBytes, inBytesCnt);
 
@@ -353,7 +353,7 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
         return false;
     }
 
-    auto result = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    auto result = google::protobuf::Arena::CreateMessage<WsReq>(&pbTempAllocator);
     result->set_join_index(selfJoinIndex);
     result->set_auth_key(selfCmdAuthKey);
     result->set_seq_no(seqNo);
@@ -380,11 +380,11 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
     if (!nextFrameLog) {
         nextFrameLog = frameLogBuffer.DryPut();
     }
-    if (nextFrameLog->has_rdf()) {
-        auto res = nextFrameLog->release_rdf();
+    if (frameLogBuffer.GetAllocator() == &pbTempAllocator) {
+        ArenaFreeFrameLog(nextFrameLog, &pbTempAllocator);
     }
+    nextFrameLog->unsafe_arena_set_allocated_rdf(nextRdf);
     auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
-    inputListHolder->Clear();
     uint64_t tcpConfirmedList = delayedIfd->confirmed_list();
     uint64_t udpConfirmedList = delayedIfd->udp_confirmed_list();
     nextFrameLog->set_used_ifd_confirmed_list(tcpConfirmedList);
@@ -392,7 +392,6 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
     nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
     inputListHolder->CopyFrom(delayedIfd->input_list());
     nextFrameLog->set_chaser_rdf_id_lower_bound_snatched(snatched);
-    nextFrameLog->set_allocated_rdf(nextRdf); // No copy, neither is arena-allocated.
     nextFrameLog->set_timer_rdf_id(timerRdfId);
     nextFrameLog->set_chaser_rdf_id(chaserRdfId);
     nextFrameLog->set_chaser_rdf_id_lower_bound(chaserRdfIdLowerBound);
@@ -589,7 +588,7 @@ void FrontendBattle::Clear() {
 }
 
 bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
-    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    WsReq* initializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTempAllocator);
     initializerMapData->ParseFromArray(inBytes, inBytesCnt);
     return ResetStartRdf(initializerMapData, inSelfJoinIndex, inSelfPlayerId, inSelfCmdAuthKey);
 }
