@@ -13,7 +13,7 @@ using namespace jtshared;
 extern JOLTC_EXPORT const PrimitiveConsts* globalPrimitiveConsts;
 extern JOLTC_EXPORT const ConfigConsts* globalConfigConsts;
 extern JOLTC_EXPORT std::unordered_set<uint32_t> trivialTrtSet;
-extern JOLTC_EXPORT std::unordered_set<uint32_t> timedTrtSet;
+extern JOLTC_EXPORT std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
 extern JOLTC_EXPORT std::unordered_set<uint32_t> directNpcSpawnerTrtSet;
 extern JOLTC_EXPORT std::unordered_set<uint32_t> collidableTrtSet;
 
@@ -174,11 +174,13 @@ const std::unordered_set<TriggerState> trMainCycleStates = {
     TriggerState::TrReady,
     TriggerState::TrCoolingDown,
     TriggerState::TrExhausted,
+    TriggerState::TrExhaustedYetListening,
 };
 
 const std::unordered_set<TriggerState> trActiveMainCycleStates = {
     TriggerState::TrReady,
     TriggerState::TrCoolingDown,
+    TriggerState::TrExhaustedYetListening,
 };
 
 typedef struct ChStatePairHasher {

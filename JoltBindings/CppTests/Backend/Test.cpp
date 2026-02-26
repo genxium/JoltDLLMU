@@ -92,10 +92,10 @@ void DebugLogCb(const char* message, int color, int size) {
 int forceConfirmedStEvictedCnt = 0, oldLcacIfdId = 0, newLcacIfdId = 0, oldDynamicsRdfId = 0, newDynamicsRdfId = 0;
 bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(0);
@@ -108,7 +108,7 @@ bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->OnUpsyncSnapshotReceived(reqA1->join_index(), reqA1->upsync_snapshot(), false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt, &oldLcacIfdId, &newLcacIfdId, &oldDynamicsRdfId, &newDynamicsRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 31 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     
-    auto reqA2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA2->set_join_index(1);
     auto a2 = reqA2->mutable_upsync_snapshot();
     a2->set_st_ifd_id(150);
@@ -120,7 +120,7 @@ bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->OnUpsyncSnapshotReceived(reqA2->join_index(), reqA2->upsync_snapshot(), false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt, &oldLcacIfdId, &newLcacIfdId, &oldDynamicsRdfId, &newDynamicsRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    auto reqB1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB1->set_join_index(2);
     auto b1 = reqB1->mutable_upsync_snapshot();
     b1->set_st_ifd_id(0);
@@ -134,7 +134,7 @@ bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 31 == downsyncSnapshotHolder->ifd_batch_size()); // [0, 30]
 
-    auto reqA3 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA3->set_join_index(1);
     auto a3 = reqA3->mutable_upsync_snapshot();
     a3->set_st_ifd_id(31);
@@ -148,7 +148,7 @@ bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(31 == downsyncSnapshotHolder->st_ifd_id() && 40 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [31, 70]
 
-    auto reqB2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB2->set_join_index(2);
     auto b2 = reqB2->mutable_upsync_snapshot();
     b2->set_st_ifd_id(101);
@@ -167,10 +167,10 @@ bool runTestCase1(BackendBattle* reusedBattle, WsReq* initializerMapData) {
 
 bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(0);
@@ -184,7 +184,7 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 301 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    auto reqA2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA2->set_join_index(1);
     auto a2 = reqA2->mutable_upsync_snapshot();
     a2->set_st_ifd_id(400);
@@ -197,7 +197,7 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 401 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     
-    auto reqB1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB1->set_join_index(2);
     auto b1 = reqB1->mutable_upsync_snapshot();
     b1->set_st_ifd_id(0);
@@ -213,7 +213,7 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 301 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [0, 300]
 
-    auto reqA3 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA3->set_join_index(1);
     auto a3 = reqA3->mutable_upsync_snapshot();
     a3->set_st_ifd_id(401);
@@ -226,7 +226,7 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(upserted);
     JPH_ASSERT(300 == newLcacIfdId && 250 == reusedBattle->ifdBuffer.StFrameId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt); // i.e. as "ifdBuffer.StFrameId" hasn't reached "lcacIfdId" yet, there's no new downsync snapshot 
 
-    auto reqB2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB2->set_join_index(2);
     auto b2 = reqB2->mutable_upsync_snapshot();
     b2->set_st_ifd_id(800);
@@ -239,7 +239,7 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(!upserted);
     JPH_ASSERT(300 == newLcacIfdId && 701 == reusedBattle->ifdBuffer.EdFrameId && 451 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    auto reqA4 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA4 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA4->set_join_index(1);
     auto a4 = reqA4->mutable_upsync_snapshot();
     a4->set_st_ifd_id(298);
@@ -261,10 +261,10 @@ bool runTestCase2(BackendBattle* reusedBattle, WsReq* initializerMapData) {
 
 bool runTestCase3(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(0);
@@ -278,7 +278,7 @@ bool runTestCase3(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 121 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
  
-    auto reqB1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB1->set_join_index(2);
     auto b1 = reqB1->mutable_upsync_snapshot();
     b1->set_st_ifd_id(0);
@@ -293,7 +293,7 @@ bool runTestCase3(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(121 == downsyncSnapshotHolder->ifd_batch_size());
 
-    auto reqA2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA2->set_join_index(1);
     auto a2 = reqA2->mutable_upsync_snapshot();
     a2->set_st_ifd_id(459);
@@ -315,12 +315,12 @@ bool runTestCase3(BackendBattle* reusedBattle, WsReq* initializerMapData) {
 
 bool runTestCase4(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
     long outBytesCnt = pbBufferSizeLimit;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(459);
@@ -342,12 +342,12 @@ bool runTestCase4(BackendBattle* reusedBattle, WsReq* initializerMapData) {
 
 bool runTestCase5(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
     long outBytesCnt = pbBufferSizeLimit;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(0);
@@ -360,7 +360,7 @@ bool runTestCase5(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     JPH_ASSERT(upserted);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 3 == reusedBattle->ifdBuffer.EdFrameId && 3 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt);
 
-    auto reqB1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB1->set_join_index(2);
     auto b1 = reqB1->mutable_upsync_snapshot();
     b1->set_st_ifd_id(0);
@@ -375,7 +375,7 @@ bool runTestCase5(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(3 == downsyncSnapshotHolder->ifd_batch_size() && 0 == downsyncSnapshotHolder->st_ifd_id()); // [0, 2]
 
-    auto reqA2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA2->set_join_index(1);
     auto a2 = reqA2->mutable_upsync_snapshot();
     a2->set_st_ifd_id(459);
@@ -398,10 +398,10 @@ bool runTestCase5(BackendBattle* reusedBattle, WsReq* initializerMapData) {
 
 bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->ResetStartRdf(initializerMapData);
-    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+    DownsyncSnapshot* downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
     int maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
-    auto reqA1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA1->set_join_index(1);
     auto a1 = reqA1->mutable_upsync_snapshot();
     a1->set_st_ifd_id(0);
@@ -414,7 +414,7 @@ bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->OnUpsyncSnapshotReceived(reqA1->join_index(), reqA1->upsync_snapshot(), false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt, &oldLcacIfdId, &newLcacIfdId, &oldDynamicsRdfId, &newDynamicsRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 31 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
     
-    auto reqA2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA2->set_join_index(1);
     auto a2 = reqA2->mutable_upsync_snapshot();
     a2->set_st_ifd_id(150);
@@ -426,7 +426,7 @@ bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     reusedBattle->OnUpsyncSnapshotReceived(reqA2->join_index(), reqA2->upsync_snapshot(), false, true, downsyncSnapshotByteBuffer, &outBytesCnt, &forceConfirmedStEvictedCnt, &oldLcacIfdId, &newLcacIfdId, &oldDynamicsRdfId, &newDynamicsRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
     JPH_ASSERT(-1 == newLcacIfdId && 0 == reusedBattle->ifdBuffer.StFrameId && 171 == reusedBattle->ifdBuffer.Cnt && 0 == outBytesCnt && 0 == forceConfirmedStEvictedCnt);
 
-    auto reqB1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB1->set_join_index(2);
     auto b1 = reqB1->mutable_upsync_snapshot();
     b1->set_st_ifd_id(0);
@@ -440,7 +440,7 @@ bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(0 == downsyncSnapshotHolder->st_ifd_id() && 31 == downsyncSnapshotHolder->ifd_batch_size()); // [0, 30]
 
-    auto reqA3 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqA3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqA3->set_join_index(1);
     auto a3 = reqA3->mutable_upsync_snapshot();
     a3->set_st_ifd_id(31);
@@ -454,7 +454,7 @@ bool runTestCase6(BackendBattle* reusedBattle, WsReq* initializerMapData) {
     downsyncSnapshotHolder->ParseFromArray(downsyncSnapshotByteBuffer, outBytesCnt);
     JPH_ASSERT(31 == downsyncSnapshotHolder->st_ifd_id() && 40 == downsyncSnapshotHolder->ifd_batch_size() && !downsyncSnapshotHolder->has_ref_rdf()); // [31, 70]
 
-    auto reqB2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    auto reqB2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     reqB2->set_join_index(2);
     auto b2 = reqB2->mutable_upsync_snapshot();
     b2->set_st_ifd_id(101);
@@ -543,7 +543,7 @@ int main(int argc, char** argv)
     std::cout << "Created battle = " << battle << std::endl;
 
     auto startRdf = mockStartRdf(&pbTestCaseDataAllocator);
-    WsReq* initializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf); // "initializerMapData" will own "startRdf" and deallocate it implicitly
     google::protobuf::Arena* arenaToVerify = initializerMapData->GetArena();

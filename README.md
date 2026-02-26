@@ -6,9 +6,13 @@ Yes, there's a closed-source project dedicated for the account system, backend s
 
 Afterall, the underlying netcode is the same as [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4).
 
-# Why not use a "static library `joltc`"?
+# Why NOT use a "static library `joltc`"?
 
 The main target `joltc.dll` (or `libjoltc.so`) is used by `JoltCSharpBindings.cs` via `DllImport("joltc")` which doesn't support static library, so there's no need to support static library build in the cmake scripts.
+
+- This requirement has a profound impact on our choice of `C Runtime Library (CRT)` on Windows, when installing `protobuf` by `vcpkg`, we can only use `protobuf:x64-windows`(built with `Dynamic CRT`) but NOT `protobuf:x64-windows-static` (built with `Static CRT`).
+
+- Kindly note that `protobuf:x64-windows` can also provide `libprotobuf.lib` which is to be `statically linked/bundled`, and the main constraint for this choice is that **eventually `joltc.dll` requires other `Dynamic CRT built/compatible DLLs` from somewhere in the Windows file system to run even if `libprotobuf.lib` is already `statically linked/bundled`**.  
 
 # Why use a "static library `protobuf`" by default?
 

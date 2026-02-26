@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 The following option is critical for "Message::GetArenaNoVirtual()" to return "_internal_metadata_.arena()" instead of "ALWAYS nullptr".
 
-When creating a pb-message instance, use "Arena::CreateMessage" but NOT "Arena::Create", e.g "google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator)" but NOT "google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator)" -- the former allows "Message._internal_metadata_.ptr_" to actually carry the arena pointer instead of "ALWAYS nullptr".   
+When creating a pb-message instance in some old pb versions (e.g. "vcpkg install protobuf:x64-windows@3.7.1"), use "Arena::CreateMessage<>" but NOT "Arena::Create<>", e.g "google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator)" but NOT "google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator)" -- the former allows "Message._internal_metadata_.ptr_" to actually carry the arena pointer instead of "ALWAYS nullptr".   
 */
 option cc_enable_arenas = true; 
 
@@ -248,6 +248,7 @@ enum TriggerState {
     TrCoolingDown = 4;
     TrExhausted = 5; // Wouldn't be left-shifted 
     TrDead = 6;
+    TrExhaustedYetListening = 7; // Special state for "trt_indi_wave_npc_spawner" 
 }
 
 enum PickableState {
@@ -570,9 +571,9 @@ message NpcCharacterDownsync {
     NpcGoal goal_as_npc = 6;
 
     uint64 publishing_mask_upon_exhausted = 7; // [WARNING] NOT to be configured from UI/Story Editor.
-    uint32 publishing_to_trigger_id_upon_exhausted = 8;
+    uint32 publishing_to_trigger_id_upon_exhausted = 8; // Configured from UI/Story Editor for awakening
 
-    uint32 subscribes_to_trigger_id = 9; 
+    uint32 subscribes_to_trigger_id = 9; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
     uint32 subscribes_to_trigger_group_id = 10; 
 
     bool captured_by_patrol_cue = 11;
@@ -726,10 +727,6 @@ message BulletConfig {
     bool remains_upon_hit = 41; 
     bool rotates_along_velocity = 42;
 
-    int32 default_hard_pushback_bounce_quota = 43;
-    float hard_pushback_bounce_norm_factor = 44; // For attenuation
-    float hard_pushback_bounce_sheer_factor = 45; // For attenuation
-
     bool blow_up = 46;
     int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
 
@@ -841,7 +838,6 @@ message Bullet {
     float originated_z = 18;
 
     int32 repeat_quota_left = 19;
-    int32 remaining_hard_pushback_bounce_quota = 20;
     uint64 target_ud = 21; 
     int32 damage_dealed = 22;
     IfaceCat hit_on_ifc = 23; // [REMINDER] Together with "BulletConfig.ifc" to determine sound effect.
@@ -892,7 +888,7 @@ message TrapConfig {
     float default_angular_speed = 29; // in "radians/second" 
     int32 default_cooldown_rdf_count = 30;
 
-    string tpt_name = 1024;
+    string name = 1024;
 }
 
 message TrapConfigFromTiled {
@@ -1436,6 +1432,7 @@ message PickableSpawnerConfig {
 
 message TriggerConfig {
     uint32 trt = 1; // Short for "trigger type" 
+    string name = 2;
 }
 
 message TriggerConfigFromTiled {
@@ -1468,8 +1465,6 @@ message TriggerConfigFromTiled {
 
     uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
 
-    uint32 subscribes_to_trigger_id = 22; // [WARNING] Similar to "publishing_to_trigger_id_upon_exhausted" -- points to a "topo_lv" smaller than itself -- but only used when it doesn't equal "publishing_to_trigger_id_upon_exhausted".  
-
     int32 story_point_id = 512;
     int32 bgm_id = 513;
     bool is_boss_savepoint = 514; 
@@ -1491,11 +1486,11 @@ message Trigger {
     uint32 id = 1;
     uint32 group_id = 2;
     int32 frames_to_fire = 3; 
-    int32 frames_to_recover = 4; // if TRIGGER_MASK_BY_CYCLIC_TIMER, resets whenever "0 < sub_cycle_quota" and itself becomes 0
+    int32 frames_to_recover = 4; 
     int32 quota = 5; // the initial value is from static config, but decreases upon use 
     int32 bullet_team_id = 6; 
 
-    int32 sub_cycle_quota = 9; // resets whenever "frames_to_recover" becomes 0; for WaveNpcSpawner, this field is repurposed as the "remaining NPC count of current wave (i.e. current sub-cycle)" 
+    int32 sub_cycle_index = 9; // Only used by "character_spawner_time_seq" or "pickable_spawner_time_seq" 
 
     TriggerState state = 10; 
     int32 frames_in_state = 11; 
@@ -1504,7 +1499,8 @@ message Trigger {
     float y = 13;
     float z = 14;
 
-    uint64 remaining_mask_to_fulfill = 16; // for main- or sub-cycle, depending on "state"
+    uint64 main_cycle_mask_to_fulfill = 15;
+    uint64 sub_cycle_mask_to_fulfill = 16;
 
     uint64 sub_cycle_gen_mask_counter = 19;
 
@@ -1535,6 +1531,7 @@ message ChSpeciesConsts {
     uint32 bladegirl = 1;
     uint32 bountyhunter = 2;
     uint32 blacksaber1 = 3;
+    uint32 blackshooter1 = 4;
 
     uint32 none_ch = 2048;
     uint32 blacksaber_test_no_vision = 2049;
@@ -1739,25 +1736,27 @@ message PrimitiveConsts {
     int32 starting_input_frame_id = 156;
 
     uint32 trt_none = 157; 
+    uint32 trt_victory = 158; 
 
-    uint32 trt_cyclic_timed = 158;
-    uint32 trt_by_movement = 159;
-    uint32 trt_by_attack = 160;
+    uint32 trt_by_init_delay = 159;
+    uint32 trt_by_movement = 160;
+    uint32 trt_by_attack = 161;
 
-    uint32 trt_indi_wave_npc_spawner = 161;
-    uint32 trt_sync_wave_npc_spawner = 162;
+    uint32 trt_indi_wave_npc_spawner = 162;
 
-    uint32 trt_save_point_only = 163;
-    uint32 trt_story_point_only = 164;
-    uint32 trt_save_and_story_point = 165;
+    uint32 trt_sync_wave_group = 163;
 
-    uint32 trt_victory = 166; 
+    uint32 trt_save_point_only = 165;
+    uint32 trt_story_point_only = 166;
+    uint32 trt_save_and_story_point = 167;
 
-    int32 terminating_lower_part_rdf_cnt = 167;
+    int32 terminating_lower_part_rdf_cnt = 168;
+    int32 default_tr_recovery_frames = 169;
 
-    uint32 tpt_none = 168; 
-
-    uint32 tpt_sliding_platform = 169; 
+    uint32 tpt_none = 170; 
+    uint32 tpt_sliding_platform = 171; 
+    uint32 tpt_rotating_platform = 172; 
+    uint32 tpt_conveyor_belt = 173; 
 
     int32 sp_atk_lookup_frames = 512;
 

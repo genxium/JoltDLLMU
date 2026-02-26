@@ -29,9 +29,6 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
             JPH_ASSERT(!downsyncSnapshotHolder->has_ref_rdf());
             downsyncSnapshotHolder->set_ref_rdf_id(dynamicsRdfId); // [WARNING] Unlike [DLLMU-v2.3.4](https://github.com/genxium/DelayNoMoreUnity/blob/v2.3.4/backend/Battle/Room.cs#L1248), we're only sure that "dynamicsRdfId" exists in "rdfBuffer" in the extreme case of "StFrameId eviction upon DryPut()". Moreover the use of "DownsyncSnapshot.ref_rdf" is de-coupled from "DownsyncSnapshot.ifd_batch", i.e. no need to guarantee that "DownsyncSnapshot.ref_rdf" is using one of "DownsyncSnapshot.ifd_batch" for frontend. 
 
-            if (nullptr == downsyncSnapshotHolder->GetArena()) {
-                JPH_ASSERT(nullptr != refRdf->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
-            }
             downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf); // [WARNING] Intentionally avoids memory copy in all possible cases.
         }
         *pOutResult = downsyncSnapshotHolder; 
@@ -41,9 +38,6 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
         for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
             InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId);
             // See comments around "downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf)".
-            if (nullptr == resultIfdBatchHolder) {
-                JPH_ASSERT(nullptr != ifd->GetArena());
-            }
             resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); 
         }
     }

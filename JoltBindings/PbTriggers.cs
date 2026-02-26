@@ -10,7 +10,8 @@ namespace JoltCSharp {
         };
 
         private static TriggerConfig IndiWaveNpcSpawner = new TriggerConfig {
-            Trt = PbPrimitives.underlying.TrtIndiWaveNpcSpawner
+            Trt = PbPrimitives.underlying.TrtIndiWaveNpcSpawner,
+            Name = "IndiWaveDoor1"
         };
 
         public static MapField<uint, TriggerConfig> underlying = new MapField<uint, TriggerConfig>() { };

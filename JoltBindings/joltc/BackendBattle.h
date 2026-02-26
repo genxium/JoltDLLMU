@@ -11,8 +11,11 @@ using namespace JPH;
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
-        downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbRdfAllocator);
-        wsReqHolder = google::protobuf::Arena::CreateMessage<WsReq>(&pbRdfAllocator);
+        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbRdfAllocator);
+        wsReqHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
+
+        JPH_ASSERT (nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
+        JPH_ASSERT(nullptr != wsReqHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
 
         allocPhySys();
         jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);

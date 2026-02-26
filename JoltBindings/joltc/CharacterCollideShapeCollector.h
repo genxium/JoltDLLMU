@@ -76,10 +76,17 @@ public:
     int                     mCurrRdfId;
     RenderFrame*            mNextRdf;
 
+    JPH::BodyID				mCeilingBodyID;
+    JPH::SubShapeID			mCeilingBodySubShapeID;
+    JPH::RVec3				mCeilingPosition = JPH::RVec3::sZero();
+    JPH::Vec3				mCeilingNormal = JPH::Vec3::sZero();
+
     JPH::BodyID				mGroundBodyID;
     JPH::SubShapeID			mGroundBodySubShapeID;
     JPH::RVec3				mGroundPosition = JPH::RVec3::sZero();
     JPH::Vec3				mGroundNormal = JPH::Vec3::sZero();
+
+    bool                    mCrouchForced = false;
     
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
@@ -94,6 +101,11 @@ public:
             mGroundNormal = normal;
             mBestDot = dot;
         }
+
+        float ceilingDot = normal.Dot(-mUp);
+        if (ceilingDot > 0.85f && mBaseBattleFilter->providesCrouchForcing(udRhs)) {
+            mCrouchForced = true;
+        }
     }
 
 private:
@@ -102,8 +114,8 @@ private:
     const uint64_t                mUdt;
     const CharacterDownsync*      mCurrChd;
     CharacterDownsync*            mNextChd;
-    Vec3				      mUp;
-    Vec3                     mBaseOffset;
+    Vec3				          mUp;
+    Vec3                          mBaseOffset;
     BaseBattleCollisionFilter*    mBaseBattleFilter;
     float				          mBestDot = -FLT_MAX;
 };

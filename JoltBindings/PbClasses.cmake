@@ -1,20 +1,34 @@
 #[[
 
-Assuming that "protoc" is installed by either 
-- "vcpkg install protobuf protobuf:x64-windows", or
+Assuming that the static-lib version of "protoc" is installed by either 
+- "vcpkg install protobuf:x64-windows" (I use protobuf:x64-windows@6.33.4 for arena-allocation), or
 - cmake build from source.
+
+As an example, here're my ENV vars for [protobuf:x64-windows@6.33.4](https://vcpkg.io/en/package/protobuf.html) installed by vcpkg
+- VCPKG_INSTALLED = C:/Users/yflu/vcpkg/installed/x64-windows
+    - containing "protobuf-config.cmake" for both `dynamic linking` or `static linking/bundling`, and the whole vcpkg package is built by `Dynamic CRT`. See `<proj-root>/README.md` for more details.
 
 ]]
 
+
 if (MSVC)
-    if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
-        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
+    if(NOT DEFINED ENV{VCPKG_INSTALLED})
+        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
     endif()
-    set(protobuf_DIR "$ENV{VCPKG_INSTALLED_SHARE}/protobuf")
-    find_package(protobuf CONFIG REQUIRED)
-else()
-    find_package(Protobuf CONFIG REQUIRED)
+    set(Protobuf_DIR "$ENV{VCPKG_INSTALLED}/share/protobuf")
+    set(Protobuf_LIBRARY_PATH "$ENV{VCPKG_INSTALLED}/lib")
+    set(Protobuf_INCLUDE_DIR "$ENV{VCPKG_INSTALLED}/include")
+    set(Protobuf_PROTOC_EXECUTABLE "$ENV{VCPKG_INSTALLED}/tools/protobuf/protoc")
+    set(absl_DIR "$ENV{VCPKG_INSTALLED}/share/absl")
+    set(abseil_DIR "$ENV{VCPKG_INSTALLED}/share/abseil")
+    set(utf8_range_DIR "$ENV{VCPKG_INSTALLED}/share/utf8_range")
+    if(BUILD_TYPE STREQUAL "Debug")
+        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/debug/bin)
+    else()
+        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/bin)
+    endif()
 endif()
+find_package(Protobuf CONFIG REQUIRED)
 
 if (USE_STATIC_PB)
     target_link_libraries(${TARGET_NAME} PRIVATE 

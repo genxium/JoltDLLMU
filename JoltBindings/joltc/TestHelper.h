@@ -19,7 +19,7 @@ private:
     static void ProvisionPreallocatedNpcCharacterDownsync(NpcCharacterDownsync* single, int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity);
 public:
     static RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount, google::protobuf::Arena* theAllocator);
-    static void AddHullsToWsReq(WsReq* wsReq, std::vector<std::vector<float>>& hulls, std::vector<bool>& isBoxOptions, std::vector<bool>& providesSlipJumpOptions) {
+    static void AddHullsToWsReq(WsReq* wsReq, std::vector<std::vector<float>>& hulls, std::vector<bool> const& isBoxOptions, std::vector<bool> const& providesSlipJumpOptions) {
         for (int i = 0; i < hulls.size(); i++) {
             auto& hull = hulls[i];
             auto srcBarrier = wsReq->add_serialized_barriers();

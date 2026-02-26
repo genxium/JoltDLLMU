@@ -1342,8 +1342,8 @@ std::map<int, uint64_t> testCmds2 = {
     {0, 3},
     {50, 3},
     {56, 3},
-    {60, 0},
-    {64, 32},
+    {60, 3},
+    {64, 35},
     {68, 3},
     {72, 0},
     {227, 0},
@@ -1787,7 +1787,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1801,7 +1801,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1818,7 +1818,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1835,7 +1835,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1849,7 +1849,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -1867,7 +1867,7 @@ void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 570;
         int receivedEdIfdId = 58;
         int receivedStIfdId = 26;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -1893,7 +1893,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1906,7 +1906,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1923,7 +1923,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1940,7 +1940,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -1954,7 +1954,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -1974,7 +1974,7 @@ void initTest2Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(refRdfId)  - 2; // a slightly smaller "receivedEdIfdId" than "ConvertToDelayedInputFrameId(refRdfId)" such that frontend would have to prefab self cmd after reception.
         int receivedStIfdId = receivedEdIfdId - 20;
         int mid = ((receivedStIfdId + receivedEdIfdId) >> 1);
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2003,7 +2003,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2016,7 +2016,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2033,7 +2033,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 500;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2050,7 +2050,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 560;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2064,7 +2064,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2084,7 +2084,7 @@ void initTest3Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(refRdfId) - 3;
         int receivedStIfdId = 30;
         int mid = ((receivedStIfdId + receivedEdIfdId) >> 1);
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2113,7 +2113,7 @@ void initTest4Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 4;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedEdIfdId - 1) - 1; // A few rdfs after the last self-input generation, right before being used
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2142,7 +2142,7 @@ void initTest5Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 180;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 0;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2160,7 +2160,7 @@ void initTest5Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 570;
         int receivedEdIfdId = 58;
         int receivedStIfdId = 26;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2186,7 +2186,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2204,7 +2204,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2217,7 +2217,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2230,7 +2230,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2247,7 +2247,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 61;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2262,7 +2262,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 120;
         int receivedEdIfdId = 26;
         int receivedStIfdId = 13;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2275,7 +2275,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 155;
         int receivedEdIfdId = 13;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2293,7 +2293,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 300;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 29;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2310,7 +2310,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 320;
         int receivedEdIfdId = 29;
         int receivedStIfdId = 26;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2323,7 +2323,7 @@ void initTest6Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedTimerRdfId = 330;
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(380-1)+1;
         int receivedStIfdId = 60;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2344,7 +2344,7 @@ void initTest7Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 16;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2358,7 +2358,7 @@ void initTest7Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 18;
         int receivedStIfdId = 16;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2373,7 +2373,7 @@ void initTest7Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 16;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2387,7 +2387,7 @@ void initTest7Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
         int receivedEdIfdId = 18;
         int receivedStIfdId = 16;
         int receivedTimerRdfId = 68;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2448,7 +2448,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 3;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = 8;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2462,7 +2462,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 60;
         int receivedStIfdId = 3;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; //19
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2476,7 +2476,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 67;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+2; // 244, such that we're half-way in using an obsolete and incorrectly predicted input of peerJoinIndex==2
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2490,7 +2490,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 76;
         int receivedStIfdId = 67;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1; // 269
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2505,7 +2505,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 77;
         int receivedStIfdId = 76; // first used by rdfId=306, last used by rdfId=309
         int receivedTimerRdfId = BaseBattle::ConvertToLastUsedRenderFrameId(receivedStIfdId)+6; // 315
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2521,7 +2521,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 3;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = 10;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2534,7 +2534,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 60;
         int receivedStIfdId = 3;
         int receivedTimerRdfId = 18;
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2547,7 +2547,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 67;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; // 247
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2560,7 +2560,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 76; 
         int receivedStIfdId = 67;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+5; // 275
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2574,7 +2574,7 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         int receivedEdIfdId = 77;
         int receivedStIfdId = 76; // first used by rdfId=306, last used by rdfId=309
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)+2; // 308, such that we're half-way in using an obsolete and incorrectly predicted input of peerJoinIndex==2
-        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
         srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
@@ -2594,7 +2594,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id()+2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2607,7 +2607,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 6;
         int receivedStIfdId = 2;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2620,7 +2620,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 17;
         int receivedStIfdId = 6;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2633,7 +2633,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 33;
         int receivedStIfdId = 17;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2646,7 +2646,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 48;
         int receivedStIfdId = 33;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2659,7 +2659,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 60;
         int receivedStIfdId = 48;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2672,7 +2672,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 128;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2686,7 +2686,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 240;
         int receivedEdIfdId = 6;
         int receivedStIfdId = 2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2699,7 +2699,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 280;
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2712,7 +2712,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 320;
         int receivedEdIfdId = 17;
         int receivedStIfdId = 6;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2725,7 +2725,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 360;
         int receivedEdIfdId = 128;
         int receivedStIfdId = 60;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2738,7 +2738,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 400;
         int receivedEdIfdId = 33;
         int receivedStIfdId = 17;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2751,7 +2751,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 420;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 48;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2764,7 +2764,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 480;
         int receivedEdIfdId = 48;
         int receivedStIfdId = 33;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2777,7 +2777,7 @@ void initTest11Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 640;
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(1024-1)+1;
         int receivedStIfdId = 128;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2797,7 +2797,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id() + 2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2810,7 +2810,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 6;
         int receivedStIfdId = 2;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2823,7 +2823,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 17;
         int receivedStIfdId = 6;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2836,7 +2836,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 33;
         int receivedStIfdId = 17;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2849,7 +2849,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 48;
         int receivedStIfdId = 33;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2862,7 +2862,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 60;
         int receivedStIfdId = 48;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2875,7 +2875,7 @@ void initTest12Data(WsReq* fallenDeathInitializerMapData, std::vector<std::vecto
         int receivedEdIfdId = 128;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2900,7 +2900,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id() + 2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2913,7 +2913,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 10;
         int receivedStIfdId = 2;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2926,7 +2926,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 16;
         int receivedStIfdId = 10;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2939,7 +2939,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 17;
         int receivedStIfdId = 16;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2952,7 +2952,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 60;
         int receivedStIfdId = 57;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -2965,7 +2965,7 @@ void initTest14Data(WsReq* bountyHunterSkillInitializerMapData, std::vector<std:
         int receivedEdIfdId = 66;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3147,7 +3147,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
         int receivedTimerRdfId = globalPrimitiveConsts->starting_render_frame_id()+2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3160,7 +3160,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 6;
         int receivedStIfdId = 2;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3173,7 +3173,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 17;
         int receivedStIfdId = 6;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId)-1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3186,7 +3186,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 33;
         int receivedStIfdId = 17;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3199,7 +3199,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 48;
         int receivedStIfdId = 33;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3212,7 +3212,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 60;
         int receivedStIfdId = 48;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3225,7 +3225,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedEdIfdId = 128;
         int receivedStIfdId = 60;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3239,7 +3239,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 240;
         int receivedEdIfdId = 6;
         int receivedStIfdId = 2;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3252,7 +3252,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 280;
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3265,7 +3265,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 320;
         int receivedEdIfdId = 17;
         int receivedStIfdId = 6;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3278,7 +3278,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 360;
         int receivedEdIfdId = 128;
         int receivedStIfdId = 60;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3291,7 +3291,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 400;
         int receivedEdIfdId = 33;
         int receivedStIfdId = 17;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3304,7 +3304,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 420;
         int receivedEdIfdId = 60;
         int receivedStIfdId = 48;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3317,7 +3317,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 480;
         int receivedEdIfdId = 48;
         int receivedStIfdId = 33;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3330,7 +3330,7 @@ void initTest18Data(WsReq* rollbackChasingAlignTestInitializerMapData, std::vect
         int receivedTimerRdfId = 640;
         int receivedEdIfdId = BaseBattle::ConvertToDelayedInputFrameId(1024-1)+1;
         int receivedStIfdId = 128;
-        WsReq* req = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
         req->set_join_index(2);
         auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
@@ -3360,38 +3360,38 @@ void initTest20Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     triggerConfigFromTiled1->set_trt(npcSpawnerStartRdf->triggers(0).trt());
     triggerConfigFromTiled1->set_box_half_size_x(200.f);
     triggerConfigFromTiled1->set_box_half_size_y(50.f);
-    triggerConfigFromTiled1->set_quota(1);
+    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(2).id());
 
     auto triggerConfigFromTiled2 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
     triggerConfigFromTiled2->set_id(npcSpawnerStartRdf->triggers(1).id());
     triggerConfigFromTiled2->set_trt(npcSpawnerStartRdf->triggers(1).trt());
-    triggerConfigFromTiled2->set_quota(1);
     triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
     triggerConfigFromTiled2->set_recovery_frames(5*globalPrimitiveConsts->battle_dynamics_fps()); 
     triggerConfigFromTiled2->set_bullet_team_id(3);
-    triggerConfigFromTiled2->set_sub_cycle_trigger_frames(globalPrimitiveConsts->battle_dynamics_fps() + (globalPrimitiveConsts->battle_dynamics_fps() >> 1));
-    triggerConfigFromTiled2->set_sub_cycle_quota(3);
+    triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
     triggerConfigFromTiled2->set_init_q_x(0);
     triggerConfigFromTiled2->set_init_q_y(1);
     triggerConfigFromTiled2->set_init_q_z(0);
     triggerConfigFromTiled2->set_init_q_w(0);
     triggerConfigFromTiled2->set_new_revival_x(npcSpawnerStartRdf->triggers(1).x());
     triggerConfigFromTiled2->set_new_revival_y(npcSpawnerStartRdf->triggers(1).y());
-    triggerConfigFromTiled2->set_subscribes_to_trigger_id(npcSpawnerStartRdf->triggers(0).id());
-    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(2).id());
-    auto* mutableChSpanwerTimeSeq1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
-    mutableChSpanwerTimeSeq1->set_cutoff_rdf_id(1);
-    mutableChSpanwerTimeSeq1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(0).id());
+    // Its own quota is 3, however as it subscribes to a "trt_by_movement" whose "quota" is only 1, this "indi_wave_npc_spawner" will only use the first "characterSpawnerTimeSeq"
+    auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
 
-    auto* mutableChSpanwerTimeSeq2 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
-    mutableChSpanwerTimeSeq2->set_cutoff_rdf_id(2);
-    mutableChSpanwerTimeSeq1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    auto* mutableChSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
 
-    auto* mutableChSpanwerTimeSeq3 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
-    mutableChSpanwerTimeSeq3->set_cutoff_rdf_id(3);
-    mutableChSpanwerTimeSeq1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    auto* mutableChSpanwerTimeSeq2_3 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
+    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
 
     auto triggerConfigFromTiled3 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
     triggerConfigFromTiled3->set_id(npcSpawnerStartRdf->triggers(2).id());
@@ -3407,7 +3407,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -3530,7 +3530,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
@@ -3595,8 +3595,8 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         auto& p2Chd = p2.chd();
         auto ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
-        if (700 <= outerTimerRdfId) {
-            //shouldPrint = true;
+        if (outerTimerRdfId <= 100) {
+            shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -3620,7 +3620,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
         } else if (81 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (326 == outerTimerRdfId && outerTimerRdfId <= 343) {
+        } else if (326 <= outerTimerRdfId && outerTimerRdfId <= 340) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
         }
         
@@ -3642,7 +3642,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int timerRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool ok1 = reusedBattle->GetRdfAndIfdIds(&timerRdfId, &newChaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
         // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
@@ -3719,7 +3719,7 @@ bool runTestCase4(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int printIntervalRdfCnt = (1 << 0);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     int newChaserRdfId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
         if (incomingDownsyncSnapshots4.count(outerTimerRdfId)) {
@@ -3763,7 +3763,7 @@ bool runTestCase5(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int timerRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         if (incomingDownsyncSnapshots5.count(outerTimerRdfId)) {
             DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots5[outerTimerRdfId];
@@ -3813,8 +3813,8 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
-    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         if (incomingUpsyncSnapshotReqs6Intime.count(outerTimerRdfId)) {
@@ -3921,8 +3921,8 @@ bool runTestCase7(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
-    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         if (incomingUpsyncSnapshotReqs7Intime.count(outerTimerRdfId)) {
@@ -4008,7 +4008,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 2);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4037,7 +4037,7 @@ bool runTestCase8(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         bool shouldPrint = false;
         
         if (600 > outerTimerRdfId && 440 <= outerTimerRdfId) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -4106,7 +4106,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4176,7 +4176,7 @@ bool runTestCase10(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4255,8 +4255,8 @@ bool runTestCase11(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
-    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         if (incomingUpsyncSnapshotReqs11Intime.count(outerTimerRdfId)) {
             auto req = incomingUpsyncSnapshotReqs11Intime[outerTimerRdfId];
@@ -4588,7 +4588,7 @@ bool runTestCase15(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         auto& bl1 = outerTimerRdf->bullets(0);
 
         if (1 == outerTimerRdfId) {
-            JPH_ASSERT(3 == tr1.remaining_mask_to_fulfill());
+            JPH_ASSERT(3 == tr1.sub_cycle_mask_to_fulfill());
             JPH_ASSERT(1 == npc1.publishing_mask_upon_exhausted());
             JPH_ASSERT(2 == npc2.publishing_mask_upon_exhausted());
             JPH_ASSERT(42 == npc1.publishing_to_trigger_id_upon_exhausted());
@@ -4630,7 +4630,7 @@ bool runTestCase16(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4686,7 +4686,7 @@ bool runTestCase17(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4762,8 +4762,8 @@ bool runTestCase18(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
-    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         if (incomingUpsyncSnapshotReqs18Intime.count(outerTimerRdfId)) {
             auto req = incomingUpsyncSnapshotReqs18Intime[outerTimerRdfId];
@@ -4865,7 +4865,7 @@ bool runTestCase19(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     int loopRdfCnt = 2048;
     int printIntervalRdfCnt = (1 << 2);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
-    jtshared::RenderFrame* outRdf = google::protobuf::Arena::CreateMessage<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     while (loopRdfCnt > outerTimerRdfId) {
@@ -4886,7 +4886,7 @@ bool runTestCase19(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         bool shouldPrint = false;
         
         if (180 > outerTimerRdfId && 64 <= outerTimerRdfId) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -4913,13 +4913,14 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1600;
+    int loopRdfCnt = 512;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0;
+    bool victoryTriggered = false;
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds20, outerTimerRdfId);
@@ -4951,8 +4952,8 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (1 == outerTimerRdfId) {
-            JPH_ASSERT(1 == tr1.topo_lv());
-            JPH_ASSERT(2 == tr2.topo_lv());
+            JPH_ASSERT(2 == tr1.topo_lv());
+            JPH_ASSERT(3 == tr2.topo_lv());
             JPH_ASSERT(1 == tr3.topo_lv());
         } else if (14 == outerTimerRdfId) {
             JPH_ASSERT(1 == stepResult.fulfilled_triggers_size());
@@ -4965,28 +4966,27 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         } else if (77 == outerTimerRdfId) {
             JPH_ASSERT(2 == outerTimerRdf->npc_count());
         } else if (108 == outerTimerRdfId) {
-            JPH_ASSERT(3 == outerTimerRdf->npc_count());
-        } else if (250 == outerTimerRdfId) {
-            JPH_ASSERT(1 == outerTimerRdf->npc_count());
-            JPH_ASSERT(4 == tr2.remaining_mask_to_fulfill());
-        } else if (307 == outerTimerRdfId) {
+            JPH_ASSERT(2 == outerTimerRdf->npc_count());
+        } else if (248 == outerTimerRdfId) {
             JPH_ASSERT(0 == outerTimerRdf->npc_count());
-            JPH_ASSERT(trMainCycleStates.count(tr2.state()));
-            if (TriggerState::TrReady == tr2.state()) {
-                JPH_ASSERT(1 == tr2.remaining_mask_to_fulfill());
+            if (TriggerState::TrReady == tr2.state() || TriggerState::TrExhaustedYetListening == tr2.state()) {
+                JPH_ASSERT(1 == tr2.main_cycle_mask_to_fulfill());
             } else {
-                JPH_ASSERT(0 == tr2.remaining_mask_to_fulfill());
+                JPH_ASSERT(0 == tr2.main_cycle_mask_to_fulfill());
             }
-        } else if (308 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult.fulfilled_triggers_size());
-            JPH_ASSERT(44 == stepResult.fulfilled_triggers(0).id());
-            JPH_ASSERT(0 == tr3.quota());
-            JPH_ASSERT(TriggerState::TrExhausted == tr3.state());
+        } else if (250 <= outerTimerRdfId) {
+            if (1 == stepResult.fulfilled_triggers_size()) {
+                victoryTriggered = true;
+                JPH_ASSERT(44 == stepResult.fulfilled_triggers(0).id());
+                JPH_ASSERT(0 == tr3.quota());
+                JPH_ASSERT(TriggerState::TrExhausted == tr3.state());
+            }
         }
 
         outerTimerRdfId++;
     }
 
+    JPH_ASSERT(victoryTriggered);
     std::cout << "Passed TestCase20: IndiWave NPC spawner\n" << std::endl;
     reusedBattle->Clear();
 
@@ -5177,103 +5177,103 @@ int main(int argc, char** argv)
     std::cout << "Created battle = " << battle << std::endl;
 
     int selfJoinIndex = 1;
-    WsReq* initializerMapData1 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     
     initTest1Data(initializerMapData1, hulls);
     runTestCase1(battle, initializerMapData1, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* initializerMapData2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest2Data(initializerMapData2, hulls);
     runTestCase2(battle, initializerMapData2, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
      
-    WsReq* initializerMapData3 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest3Data(initializerMapData3, hulls);
     runTestCase3(battle, initializerMapData3, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* initializerMapData4 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData4 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest4Data(initializerMapData4, hulls);
     runTestCase4(battle, initializerMapData4, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* initializerMapData5 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData5 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest5Data(initializerMapData5, hulls);
     runTestCase5(battle, initializerMapData5, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* initializerMapData6 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData6 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest6Data(initializerMapData6, hulls);
     runTestCase6(battle, initializerMapData6, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* initializerMapData7 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData7 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest7Data(initializerMapData7, hulls);
     runTestCase7(battle, initializerMapData7, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* blacksaber1VisionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest8Data(blacksaber1VisionTestInitializerMapData, npcVisionHulls);
     runTestCase8(battle, blacksaber1VisionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* sliderTrapTestInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* sliderTrapTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest9Data(sliderTrapTestInitializerMapData, hulls);
     runTestCase9(battle, sliderTrapTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* initializerMapData10 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* initializerMapData10 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest10Data(initializerMapData10, hulls);
     runTestCase10(battle, initializerMapData10, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* rollbackChasingAlignTestInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* rollbackChasingAlignTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest11Data(rollbackChasingAlignTestInitializerMapData, hulls);
     runTestCase11(battle, rollbackChasingAlignTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* fallenDeathInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest12Data(fallenDeathInitializerMapData, fallenDeathHulls);
     runTestCase12(battle, fallenDeathInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* bladeGirlSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
 
-    WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest14Data(bountyHunterSkillInitializerMapData, hulls);
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest15Data(victoryTriggerInitializerMapData, hulls);
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* sliderTrapTestInitializerMapData2 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* sliderTrapTestInitializerMapData2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest16Data(sliderTrapTestInitializerMapData2, hulls);
     runTestCase16(battle, sliderTrapTestInitializerMapData2, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
      
-    WsReq* sliderTrapTestInitializerMapData3 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* sliderTrapTestInitializerMapData3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest17Data(sliderTrapTestInitializerMapData3, wideMapHulls);
     runTestCase17(battle, sliderTrapTestInitializerMapData3, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* sliderTrapTestInitializerMapData4 = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* sliderTrapTestInitializerMapData4 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest18Data(sliderTrapTestInitializerMapData4, wideMapHulls);
     runTestCase18(battle, sliderTrapTestInitializerMapData4, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* slipJumpTestInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* slipJumpTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest19Data(slipJumpTestInitializerMapData, slipJumpMapHulls);
     runTestCase19(battle, slipJumpTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
     
-    WsReq* npcSpawnerTestInitializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator);
+    WsReq* npcSpawnerTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest20Data(npcSpawnerTestInitializerMapData, hulls);
     runTestCase20(battle, npcSpawnerTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
