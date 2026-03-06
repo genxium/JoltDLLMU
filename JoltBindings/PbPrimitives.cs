@@ -20,11 +20,11 @@ namespace JoltCSharp {
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
 
         public const uint TRT_NONE = 0;
-        public const uint TRT_CYCLIC_TIMED = 1;
+        public const uint TRT_BY_INIT_DELAY = 1;
         public const uint TRT_BY_MOVEMENT = 2;
         public const uint TRT_BY_ATTACK = 3;
         public const uint TRT_INDI_WAVE_NPC_SPAWNER = 4;
-        public const uint TRT_SYNC_WAVE_NPC_SPAWNER = 5;
+        public const uint TRT_SYNC_WAVE_GROUP = 5;
         public const uint TRT_SAVE_POINT_ONLY = 6;
         public const uint TRT_STORY_POINT_ONLY = 7;
         public const uint TRT_SAVE_AND_STORY_POINT = 8;
@@ -131,7 +131,7 @@ namespace JoltCSharp {
             DefaultPerCharacterBuffCapacity = 1,
             DefaultPerCharacterDebuffCapacity = 1,
             DefaultPerCharacterInventoryCapacity = 1,
-            DefaultPerCharacterImmuneBulletRecordCapacity = 3,
+            DefaultPerCharacterImmuneBulletRecordCapacity = 5,
 
             GravityY = -0.52f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             GravityYJumpHolding = -0.28f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
@@ -239,6 +239,7 @@ namespace JoltCSharp {
 
             DefaultFramesToShowDamaged = (int)(1.2 * BATTLE_DYNAMICS_FPS),
             DefaultFramesToContinueCombo = (int)(0.8f * BATTLE_DYNAMICS_FPS),
+            DefaultTrRecoveryFrames = (int)(3.0 * BATTLE_DYNAMICS_FPS),
 
             BackendWsRecvBytelength = (FRONTEND_WS_RECV_BYTE_LENGTH + (FRONTEND_WS_RECV_BYTE_LENGTH >> 1)), // Slightly larger than FrontendWsRecvBytelength because it has to receive some initial collider information
 
@@ -259,12 +260,12 @@ namespace JoltCSharp {
 
             TrtNone = TRT_NONE,
 
-            TrtCyclicTimed = TRT_CYCLIC_TIMED,
+            TrtByInitDelay = TRT_BY_INIT_DELAY,
             TrtByMovement = TRT_BY_MOVEMENT,
             TrtByAttack = TRT_BY_ATTACK,
 
             TrtIndiWaveNpcSpawner = TRT_INDI_WAVE_NPC_SPAWNER,
-            TrtSyncWaveNpcSpawner = TRT_SYNC_WAVE_NPC_SPAWNER,
+            TrtSyncWaveGroup = TRT_SYNC_WAVE_GROUP,
 
             TrtSavePointOnly = TRT_SAVE_POINT_ONLY,
             TrtStoryPointOnly = TRT_STORY_POINT_ONLY,

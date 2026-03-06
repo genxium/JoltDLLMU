@@ -55,6 +55,17 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
+        if (MSVC) 
+            message(STATUS "FrontendTest installing MSVC abseil dll from ${absl_DLL_DIR}")
+            install(DIRECTORY  
+                 ${absl_DLL_DIR}/
+                
+                DESTINATION ${_rt_deps_destination} 
+                
+                FILES_MATCHING 
+                PATTERN "abseil*"
+            )
+        endif()
     endif()
 
     install(FILES ${OVERRIDE_INSTALL_DESTINATION}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)

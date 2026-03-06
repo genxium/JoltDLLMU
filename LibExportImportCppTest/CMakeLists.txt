@@ -66,15 +66,24 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake", kindly note that this test project is NOT shipped, so there's no need to copy any Google Abseil dynamic libraries even if (!USE_STATIC_PB).
 if (MSVC)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
-    if(NOT DEFINED ENV{VCPKG_INSTALLED_SHARE})
-        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_SHARE is not set!")
+    if(NOT DEFINED ENV{VCPKG_INSTALLED})
+        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
     endif()
-    set(protobuf_DIR "$ENV{VCPKG_INSTALLED_SHARE}/protobuf")
-    find_package(protobuf CONFIG REQUIRED)
-else()
-    find_package(Protobuf CONFIG REQUIRED)
+    set(Protobuf_DIR "$ENV{VCPKG_INSTALLED}/share/protobuf")
+    set(Protobuf_LIBRARY_PATH "$ENV{VCPKG_INSTALLED}/lib")
+    set(Protobuf_INCLUDE_DIR "$ENV{VCPKG_INSTALLED}/include")
+    set(Protobuf_PROTOC_EXECUTABLE "$ENV{VCPKG_INSTALLED}/tools/protobuf/protoc")
+    set(absl_DIR "$ENV{VCPKG_INSTALLED}/share/absl")
+    set(abseil_DIR "$ENV{VCPKG_INSTALLED}/share/abseil")
+    set(utf8_range_DIR "$ENV{VCPKG_INSTALLED}/share/utf8_range")
+    if(BUILD_TYPE STREQUAL "Debug")
+        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/debug/bin)
+    else()
+        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/bin)
+    endif()
 endif()
+
+find_package(Protobuf CONFIG REQUIRED)
 
 if(USE_STATIC_PB)
     message(STATUS "Linking against static protobuf")
@@ -129,6 +138,18 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
+
+        if (MSVC) 
+            message(STATUS "LibExportImportCppTest installing MSVC abseil dll from ${absl_DLL_DIR}")
+            install(DIRECTORY  
+                 ${absl_DLL_DIR}/
+                
+                DESTINATION ${_rt_deps_destination} 
+                
+                FILES_MATCHING 
+                PATTERN "abseil*"
+            )
+        endif()
     endif()
 
     install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)

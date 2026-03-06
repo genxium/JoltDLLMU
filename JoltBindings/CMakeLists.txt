@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
+if ($ENV{USE_STATIC_PB} MATCHES "true") 
+    set(USE_STATIC_PB ON)
+    message(STATUS "About to use static protobuf libs")
+else()
+    message(STATUS "About to use shared protobuf dlls")
+endif()
+
 project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
 
 # Requires C++ 17
@@ -21,9 +28,6 @@ endif()
 set(JOLT_BINDINGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(PHYSICS_REPO_ROOT ${JOLT_BINDINGS_ROOT}/../joltphysics_v5.3.0)
 set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
-if ($ENV{USE_STATIC_PB} MATCHES "true") 
-    set(USE_STATIC_PB ON)
-endif()
 
 set(TARGET_NAME joltc)
 SET(CMAKE_INSTALL_RPATH "$ORIGIN") # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify 
@@ -134,6 +138,15 @@ else()
             LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
             RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
         )
+
+        message(STATUS "Installing MSVC abseil dll from ${absl_DLL_DIR}")
+        install(DIRECTORY ${absl_DLL_DIR}/
+
+            DESTINATION ${OVERRIDE_INSTALL_DESTINATION}
+
+            FILES_MATCHING 
+            PATTERN "*.dll"
+        )
     else ()
         install(TARGETS ${TARGET_NAME} 
             EXPORT ${TARGET_NAME}
@@ -152,7 +165,7 @@ else()
         ) 
     endif()
 
-    message(STATUS "Copying protobuf runtime deps")
+    message(STATUS "Copying direct protobuf runtime deps")
     install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
         DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
     )

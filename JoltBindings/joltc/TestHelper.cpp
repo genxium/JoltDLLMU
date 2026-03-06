@@ -58,7 +58,7 @@ void TestHelper::ProvisionPreallocatedNpcCharacterDownsync(NpcCharacterDownsync*
 }
 
 RenderFrame* TestHelper::NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount, google::protobuf::Arena* theAllocator) {
-    auto ret = google::protobuf::Arena::CreateMessage<RenderFrame>(theAllocator);
+    auto ret = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
     ret->set_id(globalPrimitiveConsts->terminating_render_frame_id());
     ret->set_bullet_id_counter(0);
 

@@ -16,12 +16,28 @@ public:
         timerRdfId = globalPrimitiveConsts->starting_input_frame_id();
         onlineArenaMode = isOnlineArenaMode;
 
+        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbRdfAllocator);
+        peerUpsyncSnapshotHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
+        selfUpsyncReqHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
+        JPH_ASSERT(nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
+        JPH_ASSERT(nullptr != peerUpsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
+        JPH_ASSERT(nullptr != selfUpsyncReqHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
+
         allocPhySys();
         jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
     }
 
     virtual ~FrontendBattle() {
         // Calls base destructor (implicitly)
+        if (nullptr != downsyncSnapshotHolder) {
+            downsyncSnapshotHolder = nullptr;
+        }
+        if (nullptr != peerUpsyncSnapshotHolder) {
+            peerUpsyncSnapshotHolder = nullptr;
+        }
+        if (nullptr != selfUpsyncReqHolder) {
+            selfUpsyncReqHolder = nullptr;
+        }
 #ifndef NDEBUG
         Debug::Log("~FrontendBattle/C++", DColor::Green);
 #endif
@@ -83,7 +99,8 @@ protected:
     virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
 
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
-    WsReq* upsyncSnapshotReqHolder = nullptr;
+    WsReq* peerUpsyncSnapshotHolder = nullptr;
+    WsReq* selfUpsyncReqHolder = nullptr;
 
     virtual bool allocPhySys() override {
         if (nullptr != phySys) return false;

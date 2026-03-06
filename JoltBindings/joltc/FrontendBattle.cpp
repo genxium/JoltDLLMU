@@ -34,9 +34,6 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
 }
 
 bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
-    if (nullptr == downsyncSnapshotHolder) {
-        downsyncSnapshotHolder = google::protobuf::Arena::CreateMessage<DownsyncSnapshot>(&pbRdfAllocator);
-    }
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
     return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
@@ -60,6 +57,13 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     *outPostTimerRdfDelayedIfdEvictedCnt = 0;
     int refRdfId = downsyncSnapshot->ref_rdf_id();
     int oldChaserRdfIdLowerBound = chaserRdfIdLowerBound;
+/*
+#ifndef NDEBUG
+    std::ostringstream oss1;
+    oss1 << "OnDownsyncSnapshotReceived#1 @timerRdfId=" << timerRdfId ;
+    Debug::Log(oss1.str(), DColor::Orange);
+#endif
+*/
     if (downsyncSnapshot->has_ref_rdf() && refRdfId != globalPrimitiveConsts->terminating_render_frame_id()) {
         const RenderFrame& refRdf = downsyncSnapshot->ref_rdf();
         if (refRdfId >= oldChaserRdfIdLowerBound) {
@@ -80,16 +84,16 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             }
             
             RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId);
-            JPH_ASSERT(nullptr != targetHolder);
+            JPH_ASSERT(nullptr != targetHolder, "RenderFrame* targetHolder not found for refRdfId=" + refRdfId);
             CopyRdf(&refRdf, targetHolder);
 
             chaserRdfId = refRdfId;
             chaserRdfIdLowerBound = refRdfId;
 /*
 #ifndef NDEBUG
-            std::ostringstream oss;
-            oss << "@timerRdfId=" << timerRdfId << ", @oldLcacIfdId=" << lcacIfdId << ", updated chaserRdfIdLowerBound=chaserRdfId=" << refRdfId << " from refRdf, willEvictRdfSt=" << willEvictRdfSt << ", shouldDragTimerRdfIdForward=" << shouldDragTimerRdfIdForward << ", postTimerRdfEvictedCnt=" << *outPostTimerRdfEvictedCnt;
-            Debug::Log(oss.str(), DColor::Orange);
+            std::ostringstream oss11;
+            oss11 << "OnDownsyncSnapshotReceived#1.1@timerRdfId=" << timerRdfId << ", @oldLcacIfdId=" << lcacIfdId << ", updated chaserRdfIdLowerBound=chaserRdfId=" << refRdfId << " from refRdf, willEvictRdfSt=" << willEvictRdfSt << ", shouldDragTimerRdfIdForward=" << shouldDragTimerRdfIdForward << ", postTimerRdfEvictedCnt=" << *outPostTimerRdfEvictedCnt;
+            Debug::Log(oss11.str(), DColor::Orange);
 #endif
 */
         }
@@ -98,6 +102,13 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     bool shouldDragTimerRdfUsingDelayedIfdIdForward = false; 
     int firstIncorrectlyPredictedIfdId = -1;
     int ifdBatchSize = downsyncSnapshot->ifd_batch_size();
+/*
+#ifndef NDEBUG
+    std::ostringstream oss2;
+    oss2 << "OnDownsyncSnapshotReceived#2 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+    Debug::Log(oss2.str(), DColor::Orange);
+#endif
+*/
     if (0 < ifdBatchSize) {
         int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
         for (int i = 0; i < ifdBatchSize; ++i) {
@@ -108,19 +119,47 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             }
             bool existingInputMutated = false;
             InputFrameDownsync* targetHolder = ifdBuffer.GetByFrameId(ifdId); 
+/*
+#ifndef NDEBUG
+            std::ostringstream oss21;
+            oss21 << "OnDownsyncSnapshotReceived#2.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i;
+            Debug::Log(oss21.str(), DColor::Orange);
+#endif
+*/
             const InputFrameDownsync& refIfd = downsyncSnapshot->ifd_batch(i);
             if (nullptr != targetHolder && -1 == firstIncorrectlyPredictedIfdId) {
+/*
+#ifndef NDEBUG
+                std::ostringstream oss211;
+                oss211 << "OnDownsyncSnapshotReceived#2.1.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", targetHolder->input_list_size=" << targetHolder->input_list_size();
+                Debug::Log(oss211.str(), DColor::Orange);
+#endif
+*/
                 for (int k = 0; k < playersCnt; ++k) {
                     if (targetHolder->input_list(k) != refIfd.input_list(k)) {
                         existingInputMutated = true; 
                         break;
                     }
                 }
+/*
+#ifndef NDEBUG
+                std::ostringstream oss212;
+                oss212 << "OnDownsyncSnapshotReceived#2.1.2 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i;
+                Debug::Log(oss212.str(), DColor::Orange);
+#endif
+*/
             } else {
                 bool willEvictIfdSt = (ifdId >= ifdBuffer.StFrameId + ifdBuffer.N);
+/*
+#ifndef NDEBUG
+                std::ostringstream oss221;
+                oss221 << "OnDownsyncSnapshotReceived#2.2.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", willEvictIfdSt=" << (int)willEvictIfdSt;
+                Debug::Log(oss221.str(), DColor::Orange);
+#endif
+*/
                 if (willEvictIfdSt) {
                     int toEvictIfdCnt = (ifdId - ifdBuffer.StFrameId - ifdBuffer.N + 1);
-                    JPH_ASSERT(1 == toEvictIfdCnt || (1 < toEvictIfdCnt && 0 == i));  
+                    JPH_ASSERT((1 == toEvictIfdCnt || (1 < toEvictIfdCnt && 0 == i)), "Unqualified toEvictIfdCnt=" + toEvictIfdCnt);
                     int postEvictionIfdStFrameId = ifdBuffer.StFrameId + toEvictIfdCnt;
                     bool willDragTimerRdfUsingDelayedIfdIdForward = (delayedIfdId < postEvictionIfdStFrameId);
                     if (willDragTimerRdfUsingDelayedIfdIdForward) {
@@ -150,6 +189,13 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 }
 
                 targetHolder = ifdBuffer.GetByFrameId(ifdId); 
+/*
+#ifndef NDEBUG
+                std::ostringstream oss223;
+                oss223 << "OnDownsyncSnapshotReceived#2.2.2 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", willEvictIfdSt=" << (int)willEvictIfdSt;
+                Debug::Log(oss223.str(), DColor::Orange);
+#endif
+*/
             }
 /*
 #ifndef NDEBUG
@@ -166,11 +212,6 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             for (int k = 0; k < playersCnt; ++k) {
                 if (k == selfJoinIndexArrIdx) continue;
                 if (ifdId <= playerInputFrontIds[k]) { 
-/*
-#ifndef NDEBUG
-                    Debug::Log("OnDownsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(k) + "] NOT updated for ifdId=" + std::to_string(ifdId) + ", origIfdId=" + std::to_string(playerInputFrontIds[k]), DColor::Orange);
-#endif
-*/
                     continue; 
                 }
                 auto it = playerInputFrontIdsSorted.find(playerInputFrontIds[k]);
@@ -180,11 +221,6 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 playerInputFrontIds[k] = ifdId;
                 playerInputFronts[k] = refIfd.input_list(k);
                 playerInputFrontIdsSorted.insert(ifdId);
-/*
-#ifndef NDEBUG
-                Debug::Log("OnDownsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(k) + "] is updated to " + std::to_string(ifdId) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
-#endif
-*/
             }
 
             if (-1 == firstIncorrectlyPredictedIfdId && existingInputMutated) {
@@ -194,11 +230,31 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             lcacIfdId = ifdId;
         }
     }
-
+/*
+#ifndef NDEBUG
+    std::ostringstream oss3;
+    oss3 << "OnDownsyncSnapshotReceived#3 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+    Debug::Log(oss3.str(), DColor::Orange);
+#endif
+*/
     if (-1 != firstIncorrectlyPredictedIfdId) {
+/*
+#ifndef NDEBUG
+        std::ostringstream oss31;
+        oss31 << "OnDownsyncSnapshotReceived#3.1 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+        Debug::Log(oss31.str(), DColor::Orange);
+#endif
+*/
         handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, false, false);
     }
 
+/*
+#ifndef NDEBUG
+    std::ostringstream oss4;
+    oss4 << "OnDownsyncSnapshotReceived#4 @timerRdfId=" << timerRdfId << ", shouldDragTimerRdfIdForward=" << (int)shouldDragTimerRdfIdForward << ", shouldDragTimerRdfUsingDelayedIfdIdForward=" << (int)shouldDragTimerRdfUsingDelayedIfdIdForward;
+    Debug::Log(oss4.str(), DColor::Orange);
+#endif
+*/
     if (shouldDragTimerRdfIdForward || shouldDragTimerRdfUsingDelayedIfdIdForward) {
         timerRdfId = refRdfId;
     }
@@ -209,16 +265,11 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 /*
 #ifndef NDEBUG
         Debug::Log("OnDownsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+    } else {
+        Debug::Log("OnDownsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
 #endif
 */
     }
-/*
-#ifndef NDEBUG
-    else {
-        Debug::Log("OnDownsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
-     }
-#endif
-*/
 
     *outChaserRdfId = chaserRdfId;
     *outLcacIfdId = lcacIfdId;
@@ -227,16 +278,13 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 }
 
 bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
-    if (nullptr == upsyncSnapshotReqHolder) {
-        upsyncSnapshotReqHolder = google::protobuf::Arena::CreateMessage<WsReq>(&pbRdfAllocator);
-    }
-    upsyncSnapshotReqHolder->ParseFromArray(inBytes, inBytesCnt);
+    peerUpsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
 
-    uint32_t peerJoinIndex = upsyncSnapshotReqHolder->join_index();
+    uint32_t peerJoinIndex = peerUpsyncSnapshotHolder->join_index();
     if (0 >= peerJoinIndex) return false;
     if (selfJoinIndex == peerJoinIndex) return false;
-    if (!upsyncSnapshotReqHolder->has_upsync_snapshot()) return false;
-    return OnUpsyncSnapshotReceived(peerJoinIndex, upsyncSnapshotReqHolder->upsync_snapshot(), outChaserRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    if (!peerUpsyncSnapshotHolder->has_upsync_snapshot()) return false;
+    return OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshotHolder->upsync_snapshot(), outChaserRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
 bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
@@ -278,15 +326,6 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, cons
         InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, fromUdp, false, outExistingInputMutated);
         int peerJoinIndexArrIdx = peerJoinIndex - 1;
         bool frontsUpdated = updatePlayerInputFronts(ifdId, peerJoinIndexArrIdx, cmd);
-/*
-#ifndef NDEBUG
-        if (frontsUpdated) {
-            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] is updated to " + std::to_string(ifdId) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
-        } else {
-            Debug::Log("OnUpsyncSnapshotReceived/C++ playerInputFrontIds[" + std::to_string(peerJoinIndexArrIdx) + "] NOT updated for ifdId=" + std::to_string(ifdId) + ", origIfdId=" + std::to_string(playerInputFrontIds[peerJoinIndexArrIdx]) + ", playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
-        }
-#endif
-*/
         if (-1 == firstIncorrectlyPredictedIfdId && outExistingInputMutated) {
             firstIncorrectlyPredictedIfdId = ifdId;
         }
@@ -353,24 +392,24 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
         return false;
     }
 
-    auto result = google::protobuf::Arena::CreateMessage<WsReq>(&pbTempAllocator);
-    result->set_join_index(selfJoinIndex);
-    result->set_auth_key(selfCmdAuthKey);
-    result->set_seq_no(seqNo);
-    result->set_act(UpsyncAct::UA_CMD);
-    auto upsyncSnapshot = result->mutable_upsync_snapshot();
-    upsyncSnapshot->set_st_ifd_id(batchIfdIdSt);
+    selfUpsyncReqHolder->set_join_index(selfJoinIndex);
+    selfUpsyncReqHolder->set_auth_key(selfCmdAuthKey);
+    selfUpsyncReqHolder->set_seq_no(seqNo);
+    selfUpsyncReqHolder->set_act(UpsyncAct::UA_CMD);
+    auto selfUpsyncSnapshot = selfUpsyncReqHolder->mutable_upsync_snapshot();
+    selfUpsyncSnapshot->set_st_ifd_id(batchIfdIdSt);
+    selfUpsyncSnapshot->clear_cmd_list();
     for (auto& cmd : cmdList) {
-        upsyncSnapshot->add_cmd_list(cmd);
+        selfUpsyncSnapshot->add_cmd_list(cmd);
     }
-    long byteSize = result->ByteSizeLong();
+    long byteSize = selfUpsyncReqHolder->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
         *outBytesCntLimit = 0;
         return false;
     }
     *outBytesCntLimit = byteSize;
 
-    result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    selfUpsyncReqHolder->SerializeToArray(outBytesPreallocatedStart, byteSize);
     return true;
 }
 
@@ -583,12 +622,12 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
 
 void FrontendBattle::Clear() {
     BaseBattle::Clear();
-    upsyncSnapshotReqHolder = nullptr;
+    peerUpsyncSnapshotHolder = nullptr;
     downsyncSnapshotHolder = nullptr;
 }
 
 bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
-    WsReq* initializerMapData = google::protobuf::Arena::CreateMessage<WsReq>(&pbTempAllocator);
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
     initializerMapData->ParseFromArray(inBytes, inBytesCnt);
     return ResetStartRdf(initializerMapData, inSelfJoinIndex, inSelfPlayerId, inSelfCmdAuthKey);
 }

@@ -29,7 +29,7 @@ const PrimitiveConsts* globalPrimitiveConsts = nullptr;
 const ConfigConsts* globalConfigConsts = nullptr;
 std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;
 std::unordered_set<uint32_t> trivialTrtSet;
-std::unordered_set<uint32_t> timedTrtSet;
+std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
 std::unordered_set<uint32_t> directNpcSpawnerTrtSet;
 std::unordered_set<uint32_t> collidableTrtSet;
 
@@ -46,21 +46,20 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     globalNpcReactionMap[chSpecies.blacksaber_test_with_vision()] = new BlackSaberTestWithVisionNpcReaction();
 
     trivialTrtSet = {
-        globalPrimitiveConsts->trt_victory(),
+        globalPrimitiveConsts->trt_by_init_delay(),
         globalPrimitiveConsts->trt_by_movement(),
         globalPrimitiveConsts->trt_by_attack(),
+    };
+
+    mixedMainAndSubCycleTrtSet = {
+        globalPrimitiveConsts->trt_victory(),
         globalPrimitiveConsts->trt_save_point_only(),
         globalPrimitiveConsts->trt_story_point_only(),
         globalPrimitiveConsts->trt_save_and_story_point(),
     };
 
-    timedTrtSet = {
-        globalPrimitiveConsts->trt_cyclic_timed(),
-    };
-
     directNpcSpawnerTrtSet = {
         globalPrimitiveConsts->trt_indi_wave_npc_spawner(),
-        globalPrimitiveConsts->trt_sync_wave_npc_spawner(),
     };
 
     collidableTrtSet = {

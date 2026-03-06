@@ -140,8 +140,9 @@ typedef struct InputInducedMotion {
     Vec3 angVelCOM; // Only proactive input (including NPC AI) will write into "angVelCOM" 
     bool jumpTriggered;
     bool slipJumpTriggered;
+    bool crouchForcedWhileSupported;
 
-    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false) {
+    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), crouchForcedWhileSupported(false) {
     }
 } InputInducedMotion;
 
@@ -174,6 +175,7 @@ public:
         holder->angVelCOM.Set(0, 0, 0);
         holder->jumpTriggered = false;
         holder->slipJumpTriggered = false;
+        holder->crouchForcedWhileSupported = false;
         return holder; 
     }
 
@@ -208,8 +210,13 @@ public:
     atomic<uint64_t> inactiveJoinMask; // realtime information
     int battleDurationFrames;
     FrameRingBuffer<RenderFrame, google::protobuf::Arena> rdfBuffer;
+
+    inline bool providesCrouchForcing(const uint64_t inBarrierUd) const {
+        return transientCrouchForcingUds.count(inBarrierUd);
+    }
+
     static inline RenderFrame* ArenaAllocRdf(google::protobuf::Arena* theAllocator) {
-        return google::protobuf::Arena::CreateMessage<RenderFrame>(theAllocator);
+        return google::protobuf::Arena::Create<RenderFrame>(theAllocator);
     }
 
     static inline void ArenaFreeRdf(RenderFrame* val, google::protobuf::Arena* theAllocator) {
@@ -219,7 +226,7 @@ public:
     
     FrameRingBuffer<FrameLog, google::protobuf::Arena> frameLogBuffer;
     static inline FrameLog* ArenaAllocFrameLog(google::protobuf::Arena* theAllocator) {
-        return google::protobuf::Arena::CreateMessage<FrameLog>(theAllocator);
+        return google::protobuf::Arena::Create<FrameLog>(theAllocator);
     }
 
     static inline void ArenaFreeFrameLog(FrameLog* val, google::protobuf::Arena* theAllocator) {
@@ -232,7 +239,7 @@ public:
 
     FrameRingBuffer<InputFrameDownsync, google::protobuf::Arena> ifdBuffer;
     static inline InputFrameDownsync* ArenaAllocIfd(google::protobuf::Arena* theAllocator) {
-        return google::protobuf::Arena::CreateMessage<InputFrameDownsync>(theAllocator);
+        return google::protobuf::Arena::Create<InputFrameDownsync>(theAllocator);
     }
 
     static inline void ArenaFreeIfd(InputFrameDownsync* val, google::protobuf::Arena* theAllocator) {
@@ -376,7 +383,7 @@ public:
         return oldVal;
     }
 
-    inline const CharacterSpawnerConfig* BaseBattle::lowerBoundForSpawnerConfig(int rdfId, const google::protobuf::RepeatedPtrField< ::jtshared::CharacterSpawnerConfig >& characterSpawnerTimeSeq) {
+    inline const CharacterSpawnerConfig* lowerBoundForSpawnerConfig(int rdfId, const google::protobuf::RepeatedPtrField< ::jtshared::CharacterSpawnerConfig >& characterSpawnerTimeSeq) {
         int sz = characterSpawnerTimeSeq.size();
         int l = 0, r = sz;
         while (l < r) {
@@ -403,7 +410,7 @@ public:
     virtual bool ResetStartRdf(char* inBytes, int inBytesCnt);
     virtual bool ResetStartRdf(WsReq* initializerMapData);
 
-    virtual bool initializeTriggerDemandedMask(RenderFrame* startRdf);
+    virtual bool initTriggerMainAndSubCycles(RenderFrame* startRdf);
 
     inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
         /*
@@ -526,7 +533,6 @@ public:
         JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
         JPH_ASSERT(lhsQ.IsClose(rhsQ));
         JPH_ASSERT(lhs.repeat_quota_left() == rhs.repeat_quota_left());
-        JPH_ASSERT(lhs.remaining_hard_pushback_bounce_quota() == rhs.remaining_hard_pushback_bounce_quota());
         JPH_ASSERT(lhs.damage_dealed() == rhs.damage_dealed());
 
         JPH_ASSERT(lhs.hit_on_ifc() == rhs.hit_on_ifc());
@@ -586,6 +592,7 @@ protected:
     BattleSpecificConfig* battleSpecificConfig = nullptr;
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
+    std::unordered_set<uint64_t> transientCrouchForcingUds;
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
@@ -739,12 +746,11 @@ protected:
 
     void processDelayedBulletSelfVel(const int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
 
-    virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState);
+    virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion);
     virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
 
     virtual void topoSortTriggerConfigFromTiledList(WsReq* initializerMapData);
-    virtual void stepSingleTrivialTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
-    virtual void stepSingleTimedTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
+    virtual void stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
     virtual void stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
 
     void leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf);
@@ -946,19 +952,12 @@ protected:
     }
 
     inline bool publishToTrigger(const int currRdfId, uint64_t publishingMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
-        if (directNpcSpawnerTrtSet.count(nextRdfTrigger->trt())) {
-            if (!trSubCycleStates.count(nextRdfTrigger->state())) {
-                return false;
-            }
-        } else {
-            if (!trMainCycleStates.count(nextRdfTrigger->state())) {
-                return false;
-            }
-        }
-        
-        uint64_t oldRemainingMask = nextRdfTrigger->remaining_mask_to_fulfill();
+        uint64_t oldRemainingMask = nextRdfTrigger->sub_cycle_mask_to_fulfill();
         uint64_t newRemainingMask = (oldRemainingMask ^ publishingMask);
-        nextRdfTrigger->set_remaining_mask_to_fulfill(newRemainingMask);
+        nextRdfTrigger->set_sub_cycle_mask_to_fulfill(newRemainingMask);
+        if (mixedMainAndSubCycleTrtSet.count(nextRdfTrigger->trt())) {
+            nextRdfTrigger->set_main_cycle_mask_to_fulfill(newRemainingMask);
+        }
         nextRdfTrigger->set_offender_ud(offenderUd);
         nextRdfTrigger->set_offender_bullet_team_id(offenderBulletTeamId);
         return true;
@@ -1058,12 +1057,22 @@ public:
 
         switch (udtRhs) {
         case UDT_PLAYER: {
+            if (!transientUdToCurrPlayer.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
             auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
             auto& rhsCurrChd = rhsCurrPlayer->chd();
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
         case UDT_NPC: {
+            if (!transientUdToCurrNpc.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
             auto rhsCurrNpc = transientUdToCurrNpc.at(udRhs);
+            if (globalPrimitiveConsts->terminating_character_id() == rhsCurrNpc->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
             auto& rhsCurrChd = rhsCurrNpc->chd();
             return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
         }
@@ -1080,10 +1089,21 @@ public:
                 return JPH::ValidateResult::RejectContact;
             }
             auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
+            if (globalPrimitiveConsts->terminating_bullet_id() == rhsCurrBl->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
         }
         case UDT_TRAP: {
+            if (!transientUdToCurrTrap.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
             auto rhsCurrTp = transientUdToCurrTrap.at(udRhs);
+            if (globalPrimitiveConsts->terminating_trap_id() == rhsCurrTp->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrTp);
         }
         default:
