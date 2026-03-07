@@ -202,7 +202,7 @@ public:
     google::protobuf::Arena pbTempAllocator;
     TempAllocator* globalTempAllocator;
 
-    google::protobuf::Arena pbRdfAllocator; // This is a special pb-arena which shares same lifecycle as the "Battle" object itself w.r.t. memory alloc/free
+    google::protobuf::Arena pbSemiPermAllocator; // This is a special pb-arena which shares same lifecycle as the "Battle" object itself w.r.t. memory alloc/free
 
     bool frameLogEnabled = false;
     int playersCnt;
@@ -552,6 +552,11 @@ public:
     }
     
 protected:
+    CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
+    BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
+    TP_CACHE_KEY_T tpCacheKeyHolder = TP_CACHE_KEY_T(cDefaultTpHalfLength, cDefaultTpHalfLength, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
+    TR_CACHE_KEY_T trCacheKeyHolder = { 0, 0 };
+
     float fallenDeathHeight = 0;
 
     BodyIDVector staticColliderBodyIDs;

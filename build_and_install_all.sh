@@ -47,8 +47,8 @@ elif [[ "LinuxDynamicPb" == $2 ]]; then
     fi
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd JoltBindings && ./build_and_install_joltc.sh $1 linux64"
 else
-    # [WARNING] "USE_STATIC_PB=true" does NOT work for "win64" at the moment 
-    $JoltBindings_basedir/build_and_install_joltc.sh $1 win64
+    #$JoltBindings_basedir/build_and_install_joltc.sh $1 win64
+    USE_STATIC_PB=true $JoltBindings_basedir/build_and_install_joltc.sh $1 win64
 fi
 
 echo "Built $clibname with JoltPhysics engine"
@@ -63,6 +63,6 @@ if [[ "Linux" == $2 ]]; then
 elif [[ "LinuxDynamicPb" == $2 ]]; then
     docker run -it --rm --mount type=bind,src=$basedir/,dst=/app $reusing_id bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1 linux64"
 else
-    # [WARNING] "USE_STATIC_PB=true" does NOT work for "win64" at the moment 
-    $basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 
+    #$basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 
+    USE_STATIC_PB=true $basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 
 fi

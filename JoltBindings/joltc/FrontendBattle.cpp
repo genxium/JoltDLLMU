@@ -175,13 +175,12 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
                 while (ifdBuffer.EdFrameId <= ifdId) {
                     InputFrameDownsync* holder = ifdBuffer.DryPut();
-                    auto inputList = holder->mutable_input_list();
-                    inputList->Clear();
+                    holder->clear_input_list();
                     for (int k = 0; k < playersCnt; ++k) {
                         if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
-                            inputList->Add(0);
+                            holder->add_input_list(0);
                         } else {
-                            inputList->Add(playerInputFronts[k]);
+                            holder->add_input_list(playerInputFronts[k]);
                         }
                     }
                     holder->set_confirmed_list(0);
@@ -396,7 +395,7 @@ bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIf
     selfUpsyncReqHolder->set_auth_key(selfCmdAuthKey);
     selfUpsyncReqHolder->set_seq_no(seqNo);
     selfUpsyncReqHolder->set_act(UpsyncAct::UA_CMD);
-    auto selfUpsyncSnapshot = selfUpsyncReqHolder->mutable_upsync_snapshot();
+    UpsyncSnapshot* selfUpsyncSnapshot = selfUpsyncReqHolder->mutable_upsync_snapshot();
     selfUpsyncSnapshot->set_st_ifd_id(batchIfdIdSt);
     selfUpsyncSnapshot->clear_cmd_list();
     for (auto& cmd : cmdList) {
@@ -423,13 +422,15 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
         ArenaFreeFrameLog(nextFrameLog, &pbTempAllocator);
     }
     nextFrameLog->unsafe_arena_set_allocated_rdf(nextRdf);
-    auto inputListHolder = nextFrameLog->mutable_used_ifd_input_list();
     uint64_t tcpConfirmedList = delayedIfd->confirmed_list();
     uint64_t udpConfirmedList = delayedIfd->udp_confirmed_list();
     nextFrameLog->set_used_ifd_confirmed_list(tcpConfirmedList);
     nextFrameLog->set_used_ifd_udp_confirmed_list(udpConfirmedList);
     nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
-    inputListHolder->CopyFrom(delayedIfd->input_list());
+    nextFrameLog->clear_used_ifd_input_list();
+    for (int k = 0; k < delayedIfd->input_list_size(); k++) {
+        nextFrameLog->add_used_ifd_input_list(delayedIfd->input_list(k));
+    }
     nextFrameLog->set_chaser_rdf_id_lower_bound_snatched(snatched);
     nextFrameLog->set_timer_rdf_id(timerRdfId);
     nextFrameLog->set_chaser_rdf_id(chaserRdfId);
@@ -622,8 +623,6 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
 
 void FrontendBattle::Clear() {
     BaseBattle::Clear();
-    peerUpsyncSnapshotHolder = nullptr;
-    downsyncSnapshotHolder = nullptr;
 }
 
 bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {

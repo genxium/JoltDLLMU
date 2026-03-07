@@ -1,18 +1,20 @@
 # Does this lib actually work?
 
-Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here's [a screen-recording of a battle over the internet (ping around 20ms~300ms during test)](https://pan.baidu.com/s/1SdXJFFyo0_z0G8yhuavpKQ?pwd=43jb).
+Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here're some screen-recordings of battles over the internet (all having `ping` around 20ms~300ms during test).
+- [recording#2, 2026-03](https://pan.baidu.com/s/1vUPCo_V-u_i8aeOfonSsfA?pwd=qmae)
 
-![latest_demo](./Screenshots/DLLMUJolt_milestone_1.gif)
+  ![demo2](./Screenshots/DLLMUJolt_milestone_2.gif)
+
+- [recording#1, 2025-11](https://pan.baidu.com/s/1SdXJFFyo0_z0G8yhuavpKQ?pwd=43jb)
+
+  ![demo1](./Screenshots/DLLMUJolt_milestone_1.gif)
+
 
 Afterall, the underlying netcode is the same as [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4).
 
 # Why NOT use a "static library `joltc`"?
 
 The main target `joltc.dll` (or `libjoltc.so`) is used by `JoltCSharpBindings.cs` via `DllImport("joltc")` which doesn't support static library, so there's no need to support static library build in the cmake scripts.
-
-- This requirement has a profound impact on our choice of `C Runtime Library (CRT)` on Windows, when installing `protobuf` by `vcpkg`, we can only use `protobuf:x64-windows`(built with `Dynamic CRT`) but NOT `protobuf:x64-windows-static` (built with `Static CRT`).
-
-- Kindly note that `protobuf:x64-windows` can also provide `libprotobuf.lib` which is to be `statically linked/bundled`, and the main constraint for this choice is that **eventually `joltc.dll` requires other `Dynamic CRT built/compatible DLLs` from somewhere in the Windows file system to run even if `libprotobuf.lib` is already `statically linked/bundled`**.  
 
 # Why use a "static library `protobuf`" by default?
 

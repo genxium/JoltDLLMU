@@ -24,7 +24,7 @@ int selfCmdAuthKey = 123456;
 RenderFrame* mockStartRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -104,7 +104,7 @@ RenderFrame* mockStartRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockBlacksaber1VisionTestStartRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -204,7 +204,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf(google::protobuf::Arena* theAlloc
 RenderFrame* mockSliderTrapTestStartRdf1(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -292,7 +292,7 @@ RenderFrame* mockSliderTrapTestStartRdf1(google::protobuf::Arena* theAllocator) 
 RenderFrame* mockSliderTrapTestStartRdf2(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -380,7 +380,7 @@ RenderFrame* mockSliderTrapTestStartRdf2(google::protobuf::Arena* theAllocator) 
 RenderFrame* mockSliderTrapTestStartRdf3(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -473,7 +473,7 @@ RenderFrame* mockSliderTrapTestStartRdf3(google::protobuf::Arena* theAllocator) 
 RenderFrame* mockRollbackChasingAlignTestStartRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -577,7 +577,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf(google::protobuf::Arena* theAl
 RenderFrame* mockRollbackChasingAlignTestStartRdf2(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -696,7 +696,7 @@ RenderFrame* mockRollbackChasingAlignTestStartRdf2(google::protobuf::Arena* theA
 RenderFrame* mockFallenDeathRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -774,7 +774,7 @@ RenderFrame* mockFallenDeathRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockBladeGirlSkillRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -878,7 +878,7 @@ RenderFrame* mockBladeGirlSkillRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockBountyHunterSkillRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -982,7 +982,7 @@ RenderFrame* mockBountyHunterSkillRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockVictoryRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -1093,7 +1093,7 @@ RenderFrame* mockVictoryRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockSlipJumpStartRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -1143,7 +1143,7 @@ RenderFrame* mockSlipJumpStartRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockNpcSpawnerRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
-    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -1223,7 +1223,7 @@ RenderFrame* mockNpcSpawnerRdf(google::protobuf::Arena* theAllocator) {
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
-    auto refRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    auto refRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
     refRdf->set_id(refRdfId);
     uint32_t pickableIdCounter = 1;
     uint32_t npcIdCounter = 1;
@@ -3596,7 +3596,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         auto ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
         if (outerTimerRdfId <= 100) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -3901,8 +3901,8 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     }
 
     std::cout << "Passed TestCase6: Basic rollback-chasing\n" << std::endl;
-    reusedBattle->Clear();   
     APP_DestroyBattle(referenceBattle);
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -3997,8 +3997,8 @@ bool runTestCase7(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     }
 
     std::cout << "Passed TestCase7: Basic rollback-chasing, another\n" << std::endl;
-    reusedBattle->Clear();   
     APP_DestroyBattle(referenceBattle);
+    reusedBattle->Clear();   
     return true;
 }
 
@@ -5185,7 +5185,9 @@ int main(int argc, char** argv)
     
     WsReq* initializerMapData2 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest2Data(initializerMapData2, hulls);
+    std::cout << "Before running TestCase#2, pbTestCaseDataAllocator.SpaceUsed=" << pbTestCaseDataAllocator.SpaceUsed() << ", pbTestCaseDataAllocator.SpaceAllocated=" << pbTestCaseDataAllocator.SpaceAllocated() << std::endl;
     runTestCase2(battle, initializerMapData2, selfJoinIndex);
+    std::cout << "After running TestCase#2, pbTestCaseDataAllocator.SpaceUsed=" << pbTestCaseDataAllocator.SpaceUsed() << ", pbTestCaseDataAllocator.SpaceAllocated=" << pbTestCaseDataAllocator.SpaceAllocated() << std::endl;
     pbTestCaseDataAllocator.Reset();
      
     WsReq* initializerMapData3 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);

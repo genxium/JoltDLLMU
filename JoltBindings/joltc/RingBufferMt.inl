@@ -9,9 +9,10 @@ inline RingBufferMt<T>::RingBufferMt(int n) {
 
 template <typename T>
 inline RingBufferMt<T>::~RingBufferMt() {
-    while (0 < Cnt) {
-        T* front = Pop();
-        delete front;
+    for (int i = 0; i < N; i++) {
+        T* ele = Eles[i];
+        if (nullptr == ele) continue;
+        delete ele;
     }
     Clear();
 }

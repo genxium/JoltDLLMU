@@ -11,11 +11,11 @@ using namespace JPH;
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
     BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
-        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbRdfAllocator);
-        wsReqHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
+        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbSemiPermAllocator);
+        wsReqHolder = google::protobuf::Arena::Create<WsReq>(&pbSemiPermAllocator);
 
-        JPH_ASSERT (nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
-        JPH_ASSERT(nullptr != wsReqHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless.
+        JPH_ASSERT (nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
+        JPH_ASSERT(nullptr != wsReqHolder->GetArena()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
 
         allocPhySys();
         jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
