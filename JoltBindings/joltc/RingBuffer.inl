@@ -83,7 +83,7 @@ inline T* RingBuffer<T, AllocatorType>::GetLast() {
 template <typename T, typename AllocatorType>
 inline T* RingBuffer<T, AllocatorType>::Pop() {
     if (0 == Cnt) return nullptr;
-    auto holder = GetFirst();
+    T* holder = GetFirst();
     Cnt--; St++;
 
     if (St >= N) {
@@ -95,7 +95,7 @@ inline T* RingBuffer<T, AllocatorType>::Pop() {
 template <typename T, typename AllocatorType>
 inline T* RingBuffer<T, AllocatorType>::PopTail() {
     if (0 == Cnt) return nullptr;
-    auto holder = GetLast();
+    T* holder = GetLast();
     Cnt--; Ed--;
 
     if (Ed < 0) {

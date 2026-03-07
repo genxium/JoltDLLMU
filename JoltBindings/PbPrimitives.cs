@@ -124,7 +124,7 @@ namespace JoltCSharp {
             MaxReversePushbackFramesToRecover = 30,
             SpeedNotHitNotSpecified = 0,
             DefaultPreallocNpcCapacity = 24, // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
-            DefaultPreallocBulletCapacity = 48, // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)
+            DefaultPreallocBulletCapacity = 128, // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)
             DefaultPreallocTrapCapacity = 12,
             DefaultPreallocTriggerCapacity = 15,
             DefaultPreallocPickableCapacity = 32,

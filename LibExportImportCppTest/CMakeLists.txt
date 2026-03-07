@@ -2,6 +2,17 @@ cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
 project(LibExportImportCppTest VERSION 0.0.1 LANGUAGES CXX)
 
+if ($ENV{USE_STATIC_PB} MATCHES "true") 
+    set(USE_STATIC_PB ON)
+    if (MSVC)
+        # See comments in `<proj-root>/JoltBindings/CMakeLists.txt`.
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+    endif()
+    message(STATUS "About to use static protobuf libs")
+else()
+    message(STATUS "About to use shared protobuf dlls")
+endif()
+
 # Requires C++ 17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,32 +77,37 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake", kindly note that this test project is NOT shipped, so there's no need to copy any Google Abseil dynamic libraries even if (!USE_STATIC_PB).
 if (MSVC)
-    if(NOT DEFINED ENV{VCPKG_INSTALLED})
-        message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
-    endif()
-    set(Protobuf_DIR "$ENV{VCPKG_INSTALLED}/share/protobuf")
-    set(Protobuf_LIBRARY_PATH "$ENV{VCPKG_INSTALLED}/lib")
-    set(Protobuf_INCLUDE_DIR "$ENV{VCPKG_INSTALLED}/include")
-    set(Protobuf_PROTOC_EXECUTABLE "$ENV{VCPKG_INSTALLED}/tools/protobuf/protoc")
-    set(absl_DIR "$ENV{VCPKG_INSTALLED}/share/absl")
-    set(abseil_DIR "$ENV{VCPKG_INSTALLED}/share/abseil")
-    set(utf8_range_DIR "$ENV{VCPKG_INSTALLED}/share/utf8_range")
+    if (USE_STATIC_PB)
+        if(NOT DEFINED ENV{VCPKG_INSTALLED_STATIC})
+            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_STATIC is not set!")
+        endif()
+        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED_STATIC})
+    else ()
+        if(NOT DEFINED ENV{VCPKG_INSTALLED})
+            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
+        endif()
+        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED})
+    endif ()
+    set(Protobuf_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/protobuf)
+    set(Protobuf_LIBRARY_PATH ${EFFECTIVE_VCPKG_INSTALLED}/lib)
+    set(Protobuf_INCLUDE_DIR ${EFFECTIVE_VCPKG_INSTALLED}/include)
+    set(Protobuf_PROTOC_EXECUTABLE ${EFFECTIVE_VCPKG_INSTALLED}/tools/protobuf/protoc)
+    set(absl_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/absl)
+    set(abseil_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/abseil)
+    set(utf8_range_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/utf8_range)
     if(BUILD_TYPE STREQUAL "Debug")
-        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/debug/bin)
+        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/debug/bin)
     else()
-        set(absl_DLL_DIR $ENV{VCPKG_INSTALLED}/bin)
+        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/bin)
     endif()
 endif()
-
 find_package(Protobuf CONFIG REQUIRED)
 
 if(USE_STATIC_PB)
-    message(STATUS "Linking against static protobuf")
     target_link_libraries(${TARGET_NAME} PRIVATE 
             protobuf::libprotobuf
     )
 else()
-    message(STATUS "Linking against dynamic protobuf")
     target_link_libraries(${TARGET_NAME} PUBLIC 
             protobuf::libprotobuf
     )

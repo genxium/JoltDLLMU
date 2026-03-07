@@ -33,25 +33,17 @@ void BackendBattle::produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdI
         }
         *pOutResult = downsyncSnapshotHolder; 
     }
-    if (stIfdId < edIfdId) {
-        auto resultIfdBatchHolder = (*pOutResult)->mutable_ifd_batch();
-        for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
-            InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(ifdId);
-            // See comments around "downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf)".
-            resultIfdBatchHolder->UnsafeArenaAddAllocated(ifd); 
-        }
+    for (int ifdId = stIfdId; ifdId < edIfdId; ++ifdId) {
+        InputFrameDownsync* ifdSrc = ifdBuffer.GetByFrameId(ifdId);
+        InputFrameDownsync* ifdDst = (*pOutResult)->add_ifd_batch();
+        CopyIfd(ifdSrc, ifdDst);
     }
 }
 
 void BackendBattle::releaseDownsyncSnapshotArenaOwnership(DownsyncSnapshot* downsyncSnapshot) {
-    // See comments around "downsyncSnapshotHolder->unsafe_arena_set_allocated_ref_rdf(refRdf)".
-    auto res = downsyncSnapshot->unsafe_arena_release_ref_rdf(); // There's no need to duplicate just for returning an unused local variable, I have the pointer I need in "rdfBuffer"
-
-    auto resultIfdBatchHolder = downsyncSnapshot->mutable_ifd_batch();
-    while (!resultIfdBatchHolder->empty()) {
-        auto res = resultIfdBatchHolder->UnsafeArenaReleaseLast(); // There's no need to duplicate just for returning an unused local variable, I have the pointer I need in "ifdBuffer"
+    if (downsyncSnapshot->has_ref_rdf()) {
+        downsyncSnapshot->unsafe_arena_release_ref_rdf(); // There's no need to duplicate just for returning an unused local variable, I have the pointer I need in "rdfBuffer"
     }
-    
     downsyncSnapshot->Clear();
 }
 
@@ -128,8 +120,9 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
                 Debug::Log(oss.str());
 #endif
                 while (0 < gapCntThisRound) {
-                    auto resultIfdBatchHolder = result->mutable_ifd_batch();
-                    InputFrameDownsync* virtualIfd = resultIfdBatchHolder->Add(); // [REMINDER] Will allocate in the same arena
+                    InputFrameDownsync* virtualIfd = result->add_ifd_batch(); // [REMINDER] Will allocate in the same arena
+                    virtualIfd->set_confirmed_list(allConfirmedMask);
+                    virtualIfd->set_udp_confirmed_list(allConfirmedMask);
                     for (int k = 0; k < playersCnt; ++k) {
                         if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
                             virtualIfd->add_input_list(0);
@@ -137,8 +130,6 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
                             virtualIfd->add_input_list(playerInputFronts[k]);
                         }
                     }
-                    virtualIfd->set_confirmed_list(allConfirmedMask);
-                    virtualIfd->set_udp_confirmed_list(allConfirmedMask);
                     --gapCntThisRound;
                 }
             }
