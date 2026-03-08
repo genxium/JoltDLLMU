@@ -10,7 +10,7 @@ FrameRingBuffer<T, AllocatorType>::~FrameRingBuffer() {
 
 template <typename T, typename AllocatorType>
 T* FrameRingBuffer<T, AllocatorType>::Pop() {
-    auto ret = RB_T::Pop(); 
+    T* ret = RB_T::Pop(); 
     if (nullptr != ret) {
         StFrameId++;
     }
@@ -19,7 +19,7 @@ T* FrameRingBuffer<T, AllocatorType>::Pop() {
 
 template <typename T, typename AllocatorType>
 T* FrameRingBuffer<T, AllocatorType>::PopTail() {
-    auto ret = RB_T::PopTail(); 
+    T* ret = RB_T::PopTail(); 
     if (nullptr != ret) {
         EdFrameId--;
     }
@@ -42,7 +42,7 @@ void FrameRingBuffer<T, AllocatorType>::Clear() {
 
 template <typename T, typename AllocatorType>
 T* FrameRingBuffer<T, AllocatorType>::DryPut() {
-    auto ret = RB_T::DryPut(); 
+    T* ret = RB_T::DryPut(); 
     EdFrameId++;
     return ret;
 }

@@ -43,12 +43,17 @@ const bool   cPlayerCanPushOtherCharacters = true;
 const bool   cOtherCharactersCanPushPlayer = true;
 
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
-static CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
-static BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
-static TP_CACHE_KEY_T tpCacheKeyHolder(cDefaultTpHalfLength, cDefaultTpHalfLength, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
-static TR_CACHE_KEY_T trCacheKeyHolder = { 0, 0 };
 
-BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize, &pbRdfAllocator, BaseBattle::ArenaAllocRdf, BaseBattle::ArenaFreeRdf), ifdBuffer(inputBufferSize, &pbRdfAllocator, BaseBattle::ArenaAllocIfd, BaseBattle::ArenaFreeIfd), frameLogBuffer((renderBufferSize << 1), &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
+BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer((renderBufferSize << 1), &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
+
+    JPH_ASSERT(nullptr != frameLogBuffer.GetAllocator()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
+    
+    /*
+    [REMINDER]
+    
+    It's recommended, but NOT NECESSARY for "rdfBuffer" and "ifdBuffer" to use pb-arena allocation, as long as the "DownsyncSnapshot" and "FrameLog" objects (that might hold references to corresponding "RenderFrame" and "InputFrameDownsync" objects) have correct usage of "unsafe_arena_set_allocated_xxx" & "unsafe_arena_release_xxx". 
+    */
+
     inactiveJoinMask = 0u;
     battleDurationFrames = 0;
 
@@ -78,7 +83,7 @@ BaseBattle::~BaseBattle() {
     delete jobSys;
     jobSys = nullptr;
     deallocPhySys();
-    // "pbRdfAllocator" will be de-scoped and all memory it occupied will be freed automatically
+    // "pbSemiPermAllocator" will be de-scoped and all memory it occupied will be freed automatically
 }
 
 // Backend & Frontend shared functions
@@ -1255,8 +1260,7 @@ void BaseBattle::Clear() {
     battleSpecificConfig = nullptr;
     trapConfigFromTileDict.clear();
     triggerConfigFromTileDict.clear();
-    
-    // Clear book keeping member variables
+
     lcacIfdId = -1;
     rdfBuffer.Clear();
     ifdBuffer.Clear();
@@ -1500,16 +1504,17 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     while (rdfBuffer.EdFrameId <= stRdfId) {
         int gapRdfId = rdfBuffer.EdFrameId;
         RenderFrame* holder = rdfBuffer.DryPut();
-        holder->CopyFrom(*startRdf); // [WARNING] Copied from "pbTempAllocator".
+        CopyRdf(startRdf, holder);
         holder->set_id(gapRdfId);
         initTriggerMainAndSubCycles(holder);
     }
 
+    RenderFrame* effStartRdf = rdfBuffer.GetByFrameId(stRdfId);
     if (frameLogEnabled) {
         while (frameLogBuffer.EdFrameId <= stRdfId) {
             int gapRdfId = frameLogBuffer.EdFrameId;
             FrameLog* holder = frameLogBuffer.DryPut();
-            holder->unsafe_arena_set_allocated_rdf(startRdf);
+            holder->unsafe_arena_set_allocated_rdf(effStartRdf);
         }
     }
 
@@ -1683,7 +1688,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
     safeDeactiviatedPosition = Vec3(65535.0, -65535.0, 0);
 
-    preallocateBodies(startRdf, initializerMapData->preallocate_npc_species_dict());
+    preallocateBodies(effStartRdf, initializerMapData->preallocate_npc_species_dict());
 
     return true;
 }
@@ -2712,19 +2717,17 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
 
     while (ifdBuffer.EdFrameId <= inIfdId) {
         // Fill the gap
-        auto ifdHolder = ifdBuffer.DryPut();
+        InputFrameDownsync* ifdHolder = ifdBuffer.DryPut();
         JPH_ASSERT(nullptr != ifdHolder);
         ifdHolder->set_confirmed_list(0u); // To avoid RingBuffer reuse contamination.
         ifdHolder->set_udp_confirmed_list(0u);
-
-        auto inputList = ifdHolder->mutable_input_list();
-        inputList->Clear(); // [REMINDER] This is just a list of integers, feel free to clear.
+        ifdHolder->clear_input_list(); // [REMINDER] This is just a list of integers, feel free to clear.
         for (auto& prefabbedInput : prefabbedInputList) {
-            inputList->Add(prefabbedInput);
+            ifdHolder->add_input_list(prefabbedInput);
         }
     }
 
-    auto ret = ifdBuffer.GetLast();
+    InputFrameDownsync* ret = ifdBuffer.GetLast();
     if (fromTcp) {
         ret->set_confirmed_list(initConfirmedList);
     }
@@ -4181,7 +4184,12 @@ void BaseBattle::leftShiftDeadDebuffs(const int currRdfId, CharacterDownsync* ne
 }
 
 void BaseBattle::CopyIfd(const InputFrameDownsync* from, InputFrameDownsync* to) {
-    to->CopyFrom(*from);
+    to->set_confirmed_list(from->confirmed_list());
+    to->set_udp_confirmed_list(from->udp_confirmed_list());
+    to->clear_input_list();
+    for (int k = 0; k < from->input_list_size(); k++) {
+        to->add_input_list(from->input_list(k));
+    }
 }
 
 void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
@@ -4201,7 +4209,6 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
     }
     to->mutable_prev_rdf_step_result()->MergeFrom(from->prev_rdf_step_result());
 
-    // [WARNING] Repeated fields of "RenderFrame" are all preallocated, therefore their sizes are all aligned.
     for (int i = 0; i < from->players_size(); i++) {
         const PlayerCharacterDownsync* fromSingle = &(from->players(i));
         PlayerCharacterDownsync * toSingle = i < to->players_size() ? to->mutable_players(i) : to->add_players();

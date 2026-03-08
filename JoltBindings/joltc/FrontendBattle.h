@@ -16,12 +16,12 @@ public:
         timerRdfId = globalPrimitiveConsts->starting_input_frame_id();
         onlineArenaMode = isOnlineArenaMode;
 
-        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbRdfAllocator);
-        peerUpsyncSnapshotHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
-        selfUpsyncReqHolder = google::protobuf::Arena::Create<WsReq>(&pbRdfAllocator);
-        JPH_ASSERT(nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
-        JPH_ASSERT(nullptr != peerUpsyncSnapshotHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
-        JPH_ASSERT(nullptr != selfUpsyncReqHolder->GetArena()); // [WARNING] This case is too inefficient in memory usage such that it's useless
+        downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbSemiPermAllocator);
+        peerUpsyncSnapshotHolder = google::protobuf::Arena::Create<WsReq>(&pbSemiPermAllocator);
+        selfUpsyncReqHolder = google::protobuf::Arena::Create<WsReq>(&pbSemiPermAllocator);
+        JPH_ASSERT(nullptr != downsyncSnapshotHolder->GetArena()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
+        JPH_ASSERT(nullptr != peerUpsyncSnapshotHolder->GetArena()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
+        JPH_ASSERT(nullptr != selfUpsyncReqHolder->GetArena()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
 
         allocPhySys();
         jobSys = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);

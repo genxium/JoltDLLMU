@@ -13,12 +13,13 @@ template <typename T, typename AllocatorType>
 inline RingBuffer<T, AllocatorType>::~RingBuffer() {
     // [WARNING] It's inconvenient to use Google Protobuf Arena Allocation on this "RingBuffer<T>" for general purpose, therefore individual allocation in "DryPut()" and deallocation here are used.
 
-    while (0 < Cnt) {
-        T* front = Pop();
+    for (int i = 0; i < N; i++) {
+        T* ele = Eles[i];
+        if (nullptr == ele) continue;
         if (nullptr == freeTFunc) {
-            delete front;
+            delete ele;
         } else {
-            freeTFunc(front, allocator);
+            freeTFunc(ele, allocator);
         }
     }
 
@@ -83,7 +84,7 @@ inline T* RingBuffer<T, AllocatorType>::GetLast() {
 template <typename T, typename AllocatorType>
 inline T* RingBuffer<T, AllocatorType>::Pop() {
     if (0 == Cnt) return nullptr;
-    auto holder = GetFirst();
+    T* holder = GetFirst();
     Cnt--; St++;
 
     if (St >= N) {
@@ -95,7 +96,7 @@ inline T* RingBuffer<T, AllocatorType>::Pop() {
 template <typename T, typename AllocatorType>
 inline T* RingBuffer<T, AllocatorType>::PopTail() {
     if (0 == Cnt) return nullptr;
-    auto holder = GetLast();
+    T* holder = GetLast();
     Cnt--; Ed--;
 
     if (Ed < 0) {

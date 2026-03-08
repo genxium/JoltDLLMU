@@ -1,13 +1,19 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
+project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
+
 if ($ENV{USE_STATIC_PB} MATCHES "true") 
     set(USE_STATIC_PB ON)
+    if (MSVC)
+        # [WARNING] MANDATORY in practice, otherwise will get `error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MT_Static' doesn't match value 'MD_Dynamic' in cmake_pch.obj` when linking 'serializable_data.pb.cc'.
+
+        # Force the /MT (static release) or /MTd (static debug) runtime library for all targets -- this property MUST be set "AFTER project(...) definition" but "BEFORE adding any target to the project" for the success of matching "RuntimeLibrary" with "protobuf:x64-windows-static" at the first build (i.e. setting it later in "PbClasses.cmake" will succeed only after the second build)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+    endif()
     message(STATUS "About to use static protobuf libs")
 else()
     message(STATUS "About to use shared protobuf dlls")
 endif()
-
-project(JoltBindings VERSION 0.0.1 LANGUAGES CXX)
 
 # Requires C++ 17
 set(CMAKE_CXX_STANDARD 17)
@@ -123,7 +129,7 @@ include(${JOLT_BINDINGS_ROOT}/JoltBindingsAfterTarget.cmake)
 set(OVERRIDE_INSTALL_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../UnityPackageOutput/Runtime/Plugins) 
 
 if (USE_STATIC_PB) 
-    message(STATUS "Static protobuf libs are embedded")
+    message(STATUS "Static protobuf libs are bundled")
     install(TARGETS ${TARGET_NAME} 
         EXPORT ${TARGET_NAME}
         ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}   
