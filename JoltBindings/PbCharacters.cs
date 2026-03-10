@@ -256,9 +256,20 @@ namespace JoltCSharp {
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
 
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, false, false, false, false), HunterChargedPistolId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, true, false, false, false), HunterChargedPistolWalkingId);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, false, false, false, false, false, false), HunterChargedPistolAirId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, true, false, false, false, false, false), HunterChargedPistolWallId);
+
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, true, false, false, false, false, false, false), HunterChargedPistolCrouchId);
+
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
 
             // BLACKSABER1

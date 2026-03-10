@@ -212,6 +212,10 @@ uint64_t APP_SetInactiveJoinMask(void* inBattle, uint64_t value) {
     return battle->SetInactiveJoinMask(value);
 }
 
+uint64_t APP_GetUDT(uint64_t ud) {
+    return BaseBattleCollisionFilter::getUDT(ud);
+}
+
 uint32_t APP_GetUDPayload(uint64_t ud) {
     return BaseBattleCollisionFilter::getUDPayload(ud);
 }
@@ -242,6 +246,10 @@ uint64_t APP_CalcTrapUserData(uint32_t trapId) {
 
 uint64_t APP_CalcPickableUserData(uint32_t pickableId) {
     return BaseBattleCollisionFilter::calcPickableUserData(pickableId);
+}
+
+uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel) {
+    return BaseBattleCollisionFilter::encodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel);
 }
 
 void* BACKEND_CreateBattle(int rdfBufferSize) {

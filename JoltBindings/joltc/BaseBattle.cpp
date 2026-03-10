@@ -5191,7 +5191,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             }
         }
         nextChd->set_hp(nextChd->hp() - newEffDamage);
-        nextChd->set_damaged_hint_rdf_countdown(90); // TODO: Remove this hardcoded constant
+        nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
     }  
 
     if (0 < newEffFramesToRecover) {

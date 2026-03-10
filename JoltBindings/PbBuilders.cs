@@ -198,4 +198,11 @@ namespace jtshared {
             return this;
         }
     }
+
+    public sealed partial class BuffConfig {
+        public BuffConfig AddAssociatedDebuff(uint val) {
+            AssociatedDebuffs.Add(val);
+            return this;
+        }
+    }
 }

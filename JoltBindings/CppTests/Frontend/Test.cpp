@@ -1578,6 +1578,9 @@ std::map<int, uint64_t> testCmds14 = {
     {635, 4},
     {636, 3},
     {640, 3},
+    {644, 35},
+    {800, 35},
+    {804, 291},
     {1024, 0}
 };
 
@@ -4505,6 +4508,18 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         auto& npc1 = outerTimerRdf->npcs(0);
         auto& npc1Chd = npc1.chd();
 
+        if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
+            //shouldPrint = true;
+        }
+
+        if (750 <= outerTimerRdfId && outerTimerRdfId < 900) {
+            shouldPrint = true;
+        }
+        
+        if (shouldPrint) {
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+        }
+
         if (71 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
@@ -4520,25 +4535,19 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (110 < outerTimerRdfId && outerTimerRdfId <= 190) {
-            if (111 == outerTimerRdfId) {
-                shouldPrint = true;
-            }
             JPH_ASSERT(140 == npc1Chd.hp());
         } else if (192 <= outerTimerRdfId && outerTimerRdfId <= 280) {
             JPH_ASSERT(140 == npc1Chd.hp());
         } else if (285 < outerTimerRdfId && outerTimerRdfId <= 400) {
             if (300 == outerTimerRdfId) {
-                shouldPrint = true;
                 JPH_ASSERT(130 == p2Chd.hp());
             }
         }
 
-        if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
-            //shouldPrint = true;
-        }
-        
-        if (shouldPrint) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+        if (800 == outerTimerRdfId) {
+            JPH_ASSERT(globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() <= p1Chd.btn_b_holding_rdf_cnt());
+        } else if (803 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
         }
 
         outerTimerRdfId++;
@@ -5244,7 +5253,7 @@ int main(int argc, char** argv)
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+    
     WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest14Data(bountyHunterSkillInitializerMapData, hulls);
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
