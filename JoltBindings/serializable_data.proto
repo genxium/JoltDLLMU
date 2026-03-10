@@ -264,7 +264,6 @@ message CharacterConfig {
     int32 hp = 3;
     int32 mp = 4;
 
-    int32 lay_down_frames = 5;
     int32 lay_down_frames_to_recover = 6;
 
     int32 get_up_invinsible_frames = 7;
@@ -403,8 +402,9 @@ message CharacterConfig {
     repeated InventorySlotConfig init_inventory_slots = 258;
     map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
     map<int32, int32> looping_ch_states = 260; 
+    map<int32, int32> trailing_rdf_chargeable_ch_states = 261; 
 
-    map<int32, uint32> init_skill_transit = 261; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
+    map<int32, uint32> init_skill_transit = 262; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
 
     bool has_in_air_walking_anim = 512; 
     bool has_turn_around_anim = 513;

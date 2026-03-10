@@ -36,6 +36,10 @@ const uint64_t UDT_BL = (U64_1 << 33) + (U64_1 << 32);
 const uint64_t UDT_TRIGGER = (U64_1 << 34);
 const uint64_t UDT_TRAP = (U64_1 << 34) + (U64_1 << 32);
 const uint64_t UDT_PICKABLE = (U64_1 << 34) + (U64_1 << 33); 
+const uint64_t UDT_PLAYER_HURTBOX = (U64_1 << 34) + (U64_1 << 33) + (U64_1 << 32);
+const uint64_t UDT_NPC_HURTBOX = (U64_1 << 35);
+const uint64_t UDT_PLAYER_SHIELDBOX = (U64_1 << 35) + (U64_1 << 32);
+const uint64_t UDT_NPC_SHIELDBOX = (U64_1 << 35) + (U64_1 << 33);
 
 const uint32_t cMaxBodies = 1024;
 const uint32_t cNumBodyMutexes = 0;
