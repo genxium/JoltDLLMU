@@ -7,7 +7,7 @@ namespace JoltCSharp {
         public static float OnWallYAxisAngularSpeedPerRdf = (float)Math.PI/24; // rads/rdf, this is a bit slower than "StdYAxisAngularSpeedPerRdf" to allow players to tap a "direction" at least 1 InputFrameDownsync before tapping "jump" -- instead of requiring to tap them altogether at the exact same InputFrameDownsync, kindly note that when on wall a character only needs to turn 90 degrees before detaching 
         public static uint BladeGirlGroundSlash1Id = 1, BladeGirlGroundSlash2Id = 2, BladeGirlGroundSlash3Id = 3, BladeGirlGroundSuperSlashId = 4, BladeGirlGroundDashingId = 5, BladeGirlDiverImpactId = 6, BladeGirlSlidingSlashId = 7, BladeGirlCrouchSlashId = 8, BladeGirlAirSlash1Id = 9, BladeGirlAirSlash2Id = 10, BladeGirlDragonPunchId = 11, BladeGirlGroundBackDashingId = 12, BladeGirlAirDashingId = 13;
 
-        public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, MobileThunderCannonPrimerId = 137, MobileThunderCannonPrimerAirId = 138, MobileThunderCannonPrimerCrouchId = 139, MobileThunderCannonPrimerWallId = 140;
+        public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, HunterChargedPistolId = 137, HunterChargedPistolAirId = 138, HunterChargedPistolCrouchId = 139, HunterChargedPistolWallId = 140, HunterChargedPistolWalkingId = 141;
 
         public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
 
@@ -37,7 +37,6 @@ namespace JoltCSharp {
         public const float DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE = 8.0f; // Currently only supports rectilinear rectangle shape.
         public const float DEFAULT_SLIP_JUMP_CHARACTER_DROP = (DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE * 1.5f);
 
-
         public const uint VISION_SEARCH_INTERVAL_IMMEDIATE_U = (1u << 0);
         public const uint VISION_SEARCH_INTERVAL_FAST_U = (1u << 2);
         public const uint VISION_SEARCH_INTERVAL_MID_U = (1u << 3);
@@ -48,6 +47,8 @@ namespace JoltCSharp {
         public const int VISION_SEARCH_INTERVAL_SLOW = (int)VISION_SEARCH_INTERVAL_SLOW_U;
 
         public const int BATTLE_DYNAMICS_FPS = 60;
+        public const int DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER = 1024*BATTLE_DYNAMICS_FPS;
+
         public const int INPUT_SCALE_FRAMES = 2;
         public const int INPUT_SCALE = (1 << INPUT_SCALE_FRAMES);
         public const int FRONTEND_WS_RECV_BYTE_LENGTH = 8196;
@@ -58,6 +59,8 @@ namespace JoltCSharp {
         public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_2 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_2 + INPUT_SCALE - 1) / INPUT_SCALE;
 
         public const int DEFAULT_BACKEND_INPUT_BUFFER_SIZE = ((30 * BATTLE_DYNAMICS_FPS) >> INPUT_SCALE_FRAMES) + 1;
+
+        public const int DEBUFF_ARR_IDX_ELEMENTAL = 0;
 
         public static PrimitiveConsts underlying = new PrimitiveConsts {
             BattleDynamicsFps = BATTLE_DYNAMICS_FPS,

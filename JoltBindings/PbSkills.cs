@@ -151,6 +151,114 @@ namespace JoltCSharp {
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, true, false, false, false), HunterDragonPunchId)
         );
 
+/////////////////////////////////////////////////////////////////////////////////////////
+        private static BulletConfig BasicChargedPistolBulletAir = new BulletConfig {
+            StartupFrames = 6,
+            ActiveFrames = 360,
+            HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+            BlowUp = true,
+            BlockStunFrames = 18,
+            CooldownFrames = 11,
+            Damage = 28,
+            PushbackVelX = 3.0f * BATTLE_DYNAMICS_FPS,
+            PushbackVelY = 4.0f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 16f,
+            HitboxOffsetY = 20f,
+            HitboxHalfSizeX = 2,
+            HitboxHalfSizeY = 2,
+            AnimName = "Fireball2",
+            Speed = 8.5f * BATTLE_DYNAMICS_FPS,
+            Hardness = 7,
+            VanishingAnimRdfCnt = 25,
+            // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
+            BType = BulletType.MechanicalCartridge,
+            CharacterEmitSfxName = "ChargedPistolEmit",
+            HitSfxName = "Piercing",
+            HitOnRockSfxName = "Vanishing8",
+            CancellableStFrame = 11,
+            CancellableEdFrame = 19,
+            CollisionTypeMask = 0, // TODO
+        };
+
+        private static BulletConfig BasicChargedPistolBulletGround = new BulletConfig(BasicChargedPistolBulletAir)
+                                                                .SetHitboxOffsets(16f, 32f)
+                                                                .SetAllowsWalking(true)
+                                                                .SetAllowsCrouching(true);
+
+        private static BulletConfig BasicChargedPistolBulletCrouch = new BulletConfig(BasicChargedPistolBulletAir)
+                                                                .SetSelfLockVel(0, 0, 0)
+                                                                .SetHitboxOffsets(11f, 20f);
+
+        private static BulletConfig BasicChargedPistolBulletWalking = new BulletConfig(BasicChargedPistolBulletAir)
+                                                                .SetHitboxOffsets(22f, 32f)
+                                                                .SetAllowsWalking(true)
+                                                                .SetAllowsCrouching(true);
+
+        public static Skill HunterChargedPistolWall = new Skill {
+            Id = HunterChargedPistolWallId,
+            RecoveryFrames = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+            RecoveryFramesOnBlock = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+            RecoveryFramesOnHit = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.OnWallAtk1
+        }.AddHit(new BulletConfig(BasicChargedPistolBulletAir)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
+        );
+
+        public static Skill HunterChargedPistol = new Skill {
+            Id = HunterChargedPistolId,
+            RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
+            RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
+            RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Atk1
+        }
+        .AddHit(new BulletConfig(BasicChargedPistolBulletGround)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, true), HunterDragonPunchId)
+        );
+
+        public static Skill HunterChargedPistolAir = new Skill {
+            Id = HunterChargedPistolAirId,
+            RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
+            RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
+            RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.InAirAtk1
+        }
+        .AddHit(new BulletConfig(BasicChargedPistolBulletAir)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, false, false, false), HunterAirSlashId)
+        );
+
+        public static Skill HunterChargedPistolWalking = new Skill {
+            Id = HunterChargedPistolWalkingId,
+            RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
+            RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
+            RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.WalkingAtk1
+        }
+        .AddHit(new BulletConfig(BasicChargedPistolBulletWalking)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, true), HunterDragonPunchId)
+        );
+
+        public static Skill HunterChargedPistolCrouch = new Skill {
+            Id = HunterChargedPistolCrouchId,
+            RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
+            RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
+            RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.CrouchAtk1
+        }
+        .AddHit(new BulletConfig(BasicChargedPistolBulletCrouch)
+            .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, true, false, false, false), HunterDragonPunchId)
+        );
+/////////////////////////////////////////////////////////////////////////////////////////
+
         public static BulletConfig BasicBladeHit1 = new BulletConfig {
             StartupFrames = 5,
             StartupInvinsibleFrames = 3,
@@ -450,6 +558,13 @@ namespace JoltCSharp {
             underlying.Add(HunterPistolWallId, HunterPistolWall);
             underlying.Add(HunterPistolWalkingId, HunterPistolWalking);
             underlying.Add(HunterPistolCrouchId, HunterPistolCrouch);
+
+            underlying.Add(HunterChargedPistolAirId, HunterChargedPistolAir);
+            underlying.Add(HunterChargedPistolId, HunterChargedPistol);
+            underlying.Add(HunterChargedPistolWallId, HunterChargedPistolWall);
+            underlying.Add(HunterChargedPistolWalkingId, HunterChargedPistolWalking);
+            underlying.Add(HunterChargedPistolCrouchId, HunterChargedPistolCrouch);
+
             underlying.Add(HunterSlidingId, BountyhunterSliding);
 
             underlying.Add(BlackSaber1GroundSlash1Id, BlackSaber1GroundSlash1);

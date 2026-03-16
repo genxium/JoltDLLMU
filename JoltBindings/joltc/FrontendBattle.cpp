@@ -505,6 +505,7 @@ bool FrontendBattle::ChaseRolledBackRdfs(int* outChaserRdfId, bool toTimerRdfId)
         int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
         InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
         JPH_ASSERT(nullptr != delayedIfd);
+        regulateCmdBeforeChasing(currRdfId, delayedIfdId, delayedIfd);
         auto nextRdf = BaseBattle::CalcSingleStep(currRdfId, delayedIfdId, delayedIfd);
         if (frameLogEnabled) {
             WriteSingleStepFrameLog(currRdfId, nextRdf, fromRdfId, toRdfId, delayedIfdId, delayedIfd, true);
@@ -513,6 +514,60 @@ bool FrontendBattle::ChaseRolledBackRdfs(int* outChaserRdfId, bool toTimerRdfId)
     }
     *outChaserRdfId = chaserRdfId;
     return true;
+}
+
+void FrontendBattle::regulateCmdBeforeChasing(const int currRdfId, const int delayedIfdId, InputFrameDownsync* delayedIfd) {
+    if (delayedIfdId <= lcacIfdId) {
+        return;
+    }
+
+    RenderFrame* currRdf = rdfBuffer.GetByFrameId(currRdfId);
+    for (int i = 0; i < playersCnt; i++) {
+        int joinIndex = (i + 1);
+        if (joinIndex == selfJoinIndex) {
+            continue;
+        }
+        uint64_t newVal = delayedIfd->input_list(i);
+        uint64_t joinMask = (U64_1 << i);
+        auto& playerChd = currRdf->players(i);
+        auto& chd = playerChd.chd();
+        // [WARNING] Remove any predicted "rising edge" or a "falling edge" of any critical button before rendering.
+        bool shouldPredictBtnAHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_a_holding_rdf_cnt()) || (0 < chd.btn_a_holding_rdf_cnt());
+        bool shouldPredictBtnBHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_b_holding_rdf_cnt()) || (0 < chd.btn_b_holding_rdf_cnt());
+        bool shouldPredictBtnCHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_c_holding_rdf_cnt()) || (0 < chd.btn_c_holding_rdf_cnt());
+        bool shouldPredictBtnDHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_d_holding_rdf_cnt()) || (0 < chd.btn_d_holding_rdf_cnt());
+        bool shouldPredictBtnEHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_e_holding_rdf_cnt()) || (0 < chd.btn_e_holding_rdf_cnt());
+
+        if (0 < (delayedIfd->confirmed_list() & joinMask)) {
+            // This regulation is only valid when "delayed input for this player is not yet confirmed"
+            continue;
+        }
+
+        if (0 < (delayedIfd->udp_confirmed_list() & joinMask)) {
+            // Received from UDP, better than local prediction though "InputFrameDownsync.confirmed_list()" is not set until confirmed by TCP path
+            continue;
+        }
+
+        // Local prediction
+        uint64_t refCmd = 0;
+        InputFrameDownsync* previousDelayedIfd = ifdBuffer.GetByFrameId(delayedIfdId - 1);
+        if (playerInputFrontIds[i] < delayedIfdId) {
+            refCmd = playerInputFronts[i];
+        } else if (nullptr != previousDelayedIfd) {
+            refCmd = previousDelayedIfd->input_list(i);
+        }
+
+        newVal = (refCmd & U64_15);
+        if (shouldPredictBtnAHold) newVal |= (refCmd & U64_16);
+        if (shouldPredictBtnBHold) newVal |= (refCmd & U64_32);
+        if (shouldPredictBtnCHold) newVal |= (refCmd & U64_64);
+        if (shouldPredictBtnDHold) newVal |= (refCmd & U64_128);
+        if (shouldPredictBtnEHold) newVal |= (refCmd & U64_256);
+
+        if (newVal != delayedIfd->input_list(i)) {
+            delayedIfd->set_input_list(i, newVal);
+        }
+    }
 }
 
 void FrontendBattle::regulateCmdBeforeRender() {

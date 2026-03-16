@@ -1837,6 +1837,10 @@ void BaseBattle::transitToGroundDodgedChState(const CharacterDownsync& currChd, 
 }
 
 void BaseBattle::jamBtnHolding(CharacterDownsync* nextChd) {
+    /* [REMINDER]
+
+    The magic constant "globalPrimitiveConsts->jammed_btn_holding_rdf_cnt()" is ONLY used for better peer command prediction in "FrontendBattle::regulateCmdBeforeChasing(...)" and "FrontendBattle::regulateCmdBeforeRender()".
+    */
     if (0 < nextChd->btn_a_holding_rdf_cnt()) {
         nextChd->set_btn_a_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
     }
@@ -3647,6 +3651,8 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     }
                 }
                 break;
+            case LayDown1:
+            case GetUp1:
             case Def1:
             case Def1Broken:
                 // Not changing anything.
@@ -5124,6 +5130,27 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_ground_vel_y(newGroundVel.GetY());
         nextChd->set_ground_vel_z(0);
         nextChd->set_ground_ud(newGroundUd);
+
+        if (BlownUp1 == currChd.ch_state()) {
+            nextChd->set_ch_state(LayDown1);
+            nextChd->set_frames_in_ch_state(0);
+            nextChd->set_frames_to_recover(cc->lay_down_frames_to_recover());
+            nextChd->set_vel_x(newGroundVel.GetX());
+            nextChd->set_vel_y(newGroundVel.GetY());
+            nextChd->set_vel_z(0);
+        } else if (LayDown1 == currChd.ch_state()) {
+            if (0 >= currChd.frames_to_recover()) {
+                nextChd->set_ch_state(GetUp1);
+                nextChd->set_frames_in_ch_state(0);
+                nextChd->set_frames_to_recover(cc->get_up_frames_to_recover());
+            }
+        } else if (GetUp1 == currChd.ch_state()) {
+            if (0 >= currChd.frames_to_recover()) {
+                nextChd->set_ch_state(Idle1);
+                nextChd->set_frames_in_ch_state(0);
+                nextChd->set_frames_invinsible(cc->get_up_invinsible_frames());
+            }
+        }
     } else if (groundBodyIsChCollider) {
         nextChd->set_ground_vel_x(0);
         nextChd->set_ground_vel_y(0);
@@ -5181,6 +5208,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     }
 
     if (0 < newEffDamage) {
+        jamBtnHolding(nextChd);
         if (newEffBlownUp) {
             nextChd->set_ch_state(BlownUp1);
         } else {
@@ -5191,7 +5219,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             }
         }
         nextChd->set_hp(nextChd->hp() - newEffDamage);
-        nextChd->set_damaged_hint_rdf_countdown(90); // TODO: Remove this hardcoded constant
+        nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
     }  
 
     if (0 < newEffFramesToRecover) {

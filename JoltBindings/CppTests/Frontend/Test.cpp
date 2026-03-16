@@ -1578,7 +1578,15 @@ std::map<int, uint64_t> testCmds14 = {
     {635, 4},
     {636, 3},
     {640, 3},
-    {1024, 0}
+    {644, 35},
+    {800, 35},
+    {804, 291},
+    {808, 3},
+    {820, 3},
+    {824, 32},
+    {944, 32},
+    {948, 0},
+    {2048, 0}
 };
 
 std::map<int, uint64_t> testCmds15 = {
@@ -1732,6 +1740,10 @@ std::map<int, uint64_t> testCmds20 = {
     {1024, 0}
 };
 
+std::map<int, uint64_t> testCmds21 = {
+    {0, 0},
+};
+
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
     auto it = testCmds.lower_bound(rdfId);
     if (it == testCmds.end()) {
@@ -1776,6 +1788,9 @@ std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs14Intime;
 
 std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs18Intime;
 std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs18Rollback;
+
+std::unordered_map<int, WsReq*> incomingUpsyncSnapshotReqs21; 
+std::unordered_map<int, DownsyncSnapshot*> incomingDownsyncSnapshots21;
 
 void initTest1Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls) {
     auto* startRdf = mockStartRdf(&pbTestCaseDataAllocator);
@@ -3398,6 +3413,102 @@ void initTest20Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     triggerConfigFromTiled3->set_trt(npcSpawnerStartRdf->triggers(2).trt());
 }
 
+void initTest21Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls) {
+    auto* startRdf = mockBladeGirlSkillRdf(&pbTestCaseDataAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    // incomingUpsyncSnapshotReqs21
+    {
+        int receivedTimerRdfId = 120;
+        int receivedEdIfdId = 26; 
+        int receivedStIfdId = 13;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        
+        incomingUpsyncSnapshotReqs21[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 155;
+        int receivedEdIfdId = 13;
+        int receivedStIfdId = 0;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        int mid = 6;
+        for (int ifdId = receivedStIfdId; ifdId < mid; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        for (int ifdId = mid; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        incomingUpsyncSnapshotReqs21[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 500;
+        int receivedEdIfdId = 60;
+        int receivedStIfdId = 29;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        int mid = 44;
+        for (int ifdId = receivedStIfdId; ifdId < mid; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        for (int ifdId = mid; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        incomingUpsyncSnapshotReqs21[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedTimerRdfId = 560;
+        int receivedEdIfdId = 29;
+        int receivedStIfdId = 26;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
+        }
+        incomingUpsyncSnapshotReqs21[receivedTimerRdfId] = req;
+    }
+    // incomingDownsyncSnapshots21
+    {
+        int receivedTimerRdfId = 180;
+        int receivedEdIfdId = 26;
+        int receivedStIfdId = 0;
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
+            ifdBatch->add_input_list(32);
+        }
+        incomingDownsyncSnapshots21[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+    {
+        int receivedTimerRdfId = 570;
+        int receivedEdIfdId = 58;
+        int receivedStIfdId = 26;
+        DownsyncSnapshot* srvDownsyncSnapshot = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbTestCaseDataAllocator);
+        srvDownsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            InputFrameDownsync* ifdBatch = srvDownsyncSnapshot->add_ifd_batch();
+            ifdBatch->add_input_list(getSelfCmdByIfdId(testCmds1, ifdId));
+            ifdBatch->add_input_list(32);
+        }
+        incomingDownsyncSnapshots21[receivedTimerRdfId] = srvDownsyncSnapshot;
+    }
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -4471,7 +4582,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
+    int loopRdfCnt = 1600;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -4484,7 +4595,6 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
             auto req = incomingUpsyncSnapshotReqs14Intime[outerTimerRdfId];
             auto peerUpsyncSnapshot = req->upsync_snapshot();
             reusedBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
-            //shouldPrint = true;
         }
 
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds14, outerTimerRdfId);
@@ -4505,6 +4615,18 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         auto& npc1 = outerTimerRdf->npcs(0);
         auto& npc1Chd = npc1.chd();
 
+        if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
+            //shouldPrint = true;
+        }
+
+        if (960 <= outerTimerRdfId && outerTimerRdfId < 1024) {
+            shouldPrint = true;
+        }
+        
+        if (shouldPrint) {
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+        }
+
         if (71 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
@@ -4520,25 +4642,27 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (110 < outerTimerRdfId && outerTimerRdfId <= 190) {
-            if (111 == outerTimerRdfId) {
-                shouldPrint = true;
-            }
             JPH_ASSERT(140 == npc1Chd.hp());
         } else if (192 <= outerTimerRdfId && outerTimerRdfId <= 280) {
             JPH_ASSERT(140 == npc1Chd.hp());
         } else if (285 < outerTimerRdfId && outerTimerRdfId <= 400) {
             if (300 == outerTimerRdfId) {
-                shouldPrint = true;
                 JPH_ASSERT(130 == p2Chd.hp());
             }
         }
 
-        if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
-            //shouldPrint = true;
-        }
-        
-        if (shouldPrint) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
+        if (800 == outerTimerRdfId) {
+            JPH_ASSERT(globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() <= p1Chd.btn_b_holding_rdf_cnt());
+        } else if (803 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
+        } else if (960 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::BlownUp1 == p2Chd.ch_state());
+        } else if (975 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::LayDown1 == p2Chd.ch_state());
+        } else if (985 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::GetUp1 == p2Chd.ch_state());
+        } else if (1024 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Idle1 == p2Chd.ch_state());
         }
 
         outerTimerRdfId++;
@@ -4993,6 +5117,87 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
     return true;
 }
 
+bool runTestCase21(FrontendBattle* reusedBattle, WsReq* initializerMapData, int inSingleJoinIndex) {
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
+        if (incomingDownsyncSnapshots21.count(outerTimerRdfId)) {
+            DownsyncSnapshot* srvDownsyncSnapshot = incomingDownsyncSnapshots21[outerTimerRdfId];
+            int outPostTimerRdfEvictedCnt = 0, outPostTimerRdfDelayedIfdEvictedCnt = 0;
+            bool applied = reusedBattle->OnDownsyncSnapshotReceived(srvDownsyncSnapshot, &outPostTimerRdfEvictedCnt, &outPostTimerRdfDelayedIfdEvictedCnt, &newChaserRdfId, &newLcacIfdId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+        }
+        if (incomingUpsyncSnapshotReqs21.count(outerTimerRdfId)) {
+            auto req = incomingUpsyncSnapshotReqs21[outerTimerRdfId]; 
+            auto peerUpsyncSnapshot = req->upsync_snapshot();
+            auto peerJoinIndex = req->join_index();
+            bool applied = reusedBattle->OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshot, &newChaserRdfId, &maxPlayerInputFrontId, &minPlayerInputFrontId);
+            if (120 == outerTimerRdfId) {
+                JPH_ASSERT(32ul == reusedBattle->playerInputFronts[1]);
+                JPH_ASSERT(54 == newChaserRdfId);
+                auto lastRecvIfd = reusedBattle->ifdBuffer.GetByFrameId(25);
+                JPH_ASSERT(32ul == lastRecvIfd->input_list(1));
+            }
+        }
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds21, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        int chaserRdfIdSt = newChaserRdfId;
+        int chaserRdfIdEd = newChaserRdfId + globalPrimitiveConsts->max_chasing_render_frames_per_update();
+        if (chaserRdfIdEd > outerTimerRdfId) {
+            chaserRdfIdEd = outerTimerRdfId;
+        }
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+        if (120 <= outerTimerRdfId && chaserRdfIdSt < 103 && 103 <= newChaserRdfId) {
+            auto targetRdf = reusedBattle->rdfBuffer.GetByFrameId(103);
+            auto& targetP2 = targetRdf->players(1);
+            auto& targetP2Chd = targetP2.chd();
+            JPH_ASSERT(0 < targetP2Chd.btn_b_holding_rdf_cnt());
+        }
+
+        if (120 <= outerTimerRdfId && chaserRdfIdSt < 107 && 107 <= newChaserRdfId) {
+            auto targetRdf = reusedBattle->rdfBuffer.GetByFrameId(107);
+            auto& targetP2 = targetRdf->players(1);
+            auto& targetP2Chd = targetP2.chd();
+            JPH_ASSERT(0 < targetP2Chd.btn_b_holding_rdf_cnt());
+        }
+
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        const uint64_t ud1 = BaseBattleCollisionFilter::calcPlayerUserData(p1.join_index());
+        auto& p2 = outerTimerRdf->players(1);
+        auto& p2Chd = p2.chd();
+        const uint64_t ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
+
+        
+        if (120 <= outerTimerRdfId && outerTimerRdfId < 240) {
+            //shouldPrint = true;
+        }
+        
+        if (shouldPrint) {
+            std::cout << "TestCase21/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud1=" << ud1 << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), gud=" << p1Chd.ground_ud() << "\n\tp2Chd ud2=" << ud2 << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", btn_b_holding_rdf_cnt=" << p2Chd.btn_b_holding_rdf_cnt() << ", dir=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ")" << std::endl;
+        }
+        
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase21:Charge prediction\n" << std::endl;
+    reusedBattle->Clear();   
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -5177,8 +5382,8 @@ int main(int argc, char** argv)
     std::cout << "Created battle = " << battle << std::endl;
 
     int selfJoinIndex = 1;
-    WsReq* initializerMapData1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     
+    WsReq* initializerMapData1 = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest1Data(initializerMapData1, hulls);
     runTestCase1(battle, initializerMapData1, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
@@ -5244,12 +5449,12 @@ int main(int argc, char** argv)
     initTest13Data(bladeGirlSkillInitializerMapData, hulls);
     runTestCase13(battle, bladeGirlSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-
+     
     WsReq* bountyHunterSkillInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest14Data(bountyHunterSkillInitializerMapData, hulls);
     runTestCase14(battle, bountyHunterSkillInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
-    
+     
     WsReq* victoryTriggerInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest15Data(victoryTriggerInitializerMapData, hulls);
     runTestCase15(battle, victoryTriggerInitializerMapData, selfJoinIndex);
@@ -5278,6 +5483,11 @@ int main(int argc, char** argv)
     WsReq* npcSpawnerTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
     initTest20Data(npcSpawnerTestInitializerMapData, hulls);
     runTestCase20(battle, npcSpawnerTestInitializerMapData, selfJoinIndex);
+    pbTestCaseDataAllocator.Reset();
+    
+    WsReq* chargePredictionTestInitializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+    initTest21Data(chargePredictionTestInitializerMapData, hulls);
+    runTestCase21(battle, chargePredictionTestInitializerMapData, selfJoinIndex);
     pbTestCaseDataAllocator.Reset();
      
     // clean up

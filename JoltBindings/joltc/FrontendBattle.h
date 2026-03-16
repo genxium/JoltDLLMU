@@ -92,6 +92,7 @@ public:
 protected:
     bool onlineArenaMode = false;
 
+    void regulateCmdBeforeChasing(const int currRdfId, const int delayedIfdId, InputFrameDownsync* delayedIfd);
     void regulateCmdBeforeRender(); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
     void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender);
