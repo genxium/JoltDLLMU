@@ -188,6 +188,28 @@ bool APP_GetFrameLog(void* inBattle, int inRdfId, char* outBytesPreallocatedStar
     return true;
 }
 
+bool APP_GetStepResult(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
+    if (nullptr == battle) return false;
+    StepResult* stepResult = battle->stepResultBuffer.GetByFrameId(inRdfId);
+    if (nullptr == stepResult) {
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "@inRdfId=" << inRdfId << ", couldn't get stepResult, stepResultBuffer stat=" << battle->stepResultBuffer.toSimpleStat();
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+        return false;
+    }
+
+    long byteSize = stepResult->ByteSizeLong();
+    if (byteSize > *outBytesCntLimit) {
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+    stepResult->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
+}
+
 uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex) {
     auto battle = static_cast<BaseBattle*>(inBattle);
     if (nullptr == battle) return 0;

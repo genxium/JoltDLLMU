@@ -48,6 +48,7 @@ JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocated
 JPH_CAPI bool APP_GetRdfBufferBounds(void* inBattle, int* outStRdfId, int* outEdRdfId);
 JPH_CAPI bool APP_SetFrameLogEnabled(void* inBattle, bool val);
 JPH_CAPI bool APP_GetFrameLog(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+JPH_CAPI bool APP_GetStepResult(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI uint64_t APP_SetPlayerActive(void* inBattle, uint32_t joinIndex); // returns the new value
 JPH_CAPI uint64_t APP_SetPlayerInactive(void* inBattle, uint32_t joinIndex); // returns the new value
 JPH_CAPI uint64_t APP_GetInactiveJoinMask(void* inBattle);

@@ -17,6 +17,7 @@ using namespace std::filesystem;
 const int pbBufferSizeLimit = (1 << 14);
 char pbByteBuffer[pbBufferSizeLimit];
 char rdfFetchBuffer[pbBufferSizeLimit];
+char stepResultFetchBuffer[pbBufferSizeLimit];
 char upsyncSnapshotBuffer[pbBufferSizeLimit];
 const char* const selfPlayerId = "foobar";
 int selfCmdAuthKey = 123456;
@@ -3547,7 +3548,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
                 JPH_ASSERT(2 == newChaserRdfId);
                 JPH_ASSERT(-1 == reusedBattle->lcacIfdId);
             } else if (29 == peerUpsyncSnapshot.st_ifd_id()) {
-                JPH_ASSERT(178 == newChaserRdfId);
+                JPH_ASSERT(118 == newChaserRdfId);
                 JPH_ASSERT(25 == reusedBattle->lcacIfdId);
             } else if (26 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(106 == newChaserRdfId);
@@ -3672,7 +3673,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
                 JPH_ASSERT(BaseBattle::ConvertToFirstUsedRenderFrameId(0) == newChaserRdfId);
                 JPH_ASSERT(-1 == reusedBattle->lcacIfdId);
             } else if (29 == peerUpsyncSnapshot.st_ifd_id()) {
-                JPH_ASSERT(178 == newChaserRdfId);
+                JPH_ASSERT(118 == newChaserRdfId);
                 JPH_ASSERT(25 == reusedBattle->lcacIfdId);
             } else if (26 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(106 == newChaserRdfId);
@@ -3782,7 +3783,7 @@ bool runTestCase3(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
                 JPH_ASSERT(2 == newChaserRdfId);
                 JPH_ASSERT(-1 == reusedBattle->lcacIfdId);
             } else if (29 == peerUpsyncSnapshot.st_ifd_id()) {
-                JPH_ASSERT(178 == newChaserRdfId);
+                JPH_ASSERT(118 == newChaserRdfId);
                 JPH_ASSERT(25 == reusedBattle->lcacIfdId);
             } else if (26 == peerUpsyncSnapshot.st_ifd_id()) {
                 JPH_ASSERT(106 == newChaserRdfId);
@@ -3916,7 +3917,7 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     referenceBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 380;
+    int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -3926,13 +3927,13 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
     int referenceBattleChaserRdfId = -1, referenceBattleChaserRdfIdLowerBound = -1, referenceBattleOldLcacIfdId = -1, referenceBattleNewLcacIfdId = -1, referenceBattleMaxPlayerInputFrontId = 0, referenceBattleMinPlayerInputFrontId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
     jtshared::RenderFrame* referenceBattleOutRdf = google::protobuf::Arena::Create<RenderFrame>(&pbTestCaseDataAllocator);
+    jtshared::StepResult*  outStepResult = google::protobuf::Arena::Create<StepResult>(&pbTestCaseDataAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         if (incomingUpsyncSnapshotReqs6Intime.count(outerTimerRdfId)) {
             auto req = incomingUpsyncSnapshotReqs6Intime[outerTimerRdfId];
             auto peerUpsyncSnapshot = req->upsync_snapshot();
             referenceBattle->OnUpsyncSnapshotReceived(req->join_index(), peerUpsyncSnapshot, &newReferenceBattleChaserRdfId, &referenceBattleMaxPlayerInputFrontId, &referenceBattleMinPlayerInputFrontId);
-            //shouldPrint = true;
         }
 
         if (incomingUpsyncSnapshotReqs6Rollback.count(outerTimerRdfId)) {
@@ -3948,7 +3949,6 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             } else if (330 == outerTimerRdfId) {
                 JPH_ASSERT(BaseBattle::ConvertToFirstUsedRenderFrameId(60) == newChaserRdfId);
             }
-            //shouldPrint = true;
         }
 
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds4, outerTimerRdfId);
@@ -3990,9 +3990,8 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
         }
         outerTimerRdfId++;
 
-        // shouldPrint |= (outerTimerRdfId >= loopRdfCnt);
         // Printing
-        if (0 < outerTimerRdfId && shouldPrint) {
+        if (0 < outerTimerRdfId) {
             int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(outerTimerRdfId);
 
             // Fetch reference battle rdf
@@ -4008,6 +4007,12 @@ bool runTestCase6(FrontendBattle* reusedBattle, WsReq* initializerMapData, int i
             outBytesCnt = pbBufferSizeLimit;
             APP_GetRdf(reusedBattle, outerTimerRdfId, rdfFetchBuffer, &outBytesCnt);
             outRdf->ParseFromArray(rdfFetchBuffer, outBytesCnt);
+
+            // Fetch rollback battle step result
+            memset(stepResultFetchBuffer, 0, sizeof(stepResultFetchBuffer));
+            outBytesCnt = pbBufferSizeLimit;
+            APP_GetStepResult(reusedBattle, outerTimerRdfId, stepResultFetchBuffer, &outBytesCnt);
+            outStepResult->ParseFromArray(stepResultFetchBuffer, outBytesCnt);
         }
     }
 
@@ -4620,7 +4625,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (960 <= outerTimerRdfId && outerTimerRdfId < 1024) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -4697,6 +4702,7 @@ bool runTestCase15(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         FRONTEND_Step(reusedBattle);
 
         RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        StepResult* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
 
         auto& tr1 = outerTimerRdf->triggers(0);
 
@@ -4728,15 +4734,13 @@ bool runTestCase15(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         }
 
         if (182 == outerTimerRdfId) {
-            auto& prevRdfStepResult = outerTimerRdf->prev_rdf_step_result();
-            JPH_ASSERT(0 == prevRdfStepResult.fulfilled_triggers_size());
+            JPH_ASSERT(0 == stepResult->fulfilled_triggers_size());
         }
 
         if (300 == outerTimerRdfId) {
-            auto& prevRdfStepResult = outerTimerRdf->prev_rdf_step_result();
-            JPH_ASSERT(1 == prevRdfStepResult.fulfilled_triggers_size());
-            auto& prevRdfFulfilledTr1 = prevRdfStepResult.fulfilled_triggers(0);
-            JPH_ASSERT(globalPrimitiveConsts->trt_victory() == prevRdfFulfilledTr1.trt());
+            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            auto& fulfilledTr1 = stepResult->fulfilled_triggers(0);
+            JPH_ASSERT(globalPrimitiveConsts->trt_victory() == fulfilledTr1.trt());
         }
 
         outerTimerRdfId++;
@@ -5065,7 +5069,7 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
         auto& p1Chd = p1.chd();
         auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
 
-        auto& stepResult = outerTimerRdf->prev_rdf_step_result();
+        auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
 
         if (180 > outerTimerRdfId) {
             //shouldPrint = true;
@@ -5080,11 +5084,11 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
             JPH_ASSERT(3 == tr2.topo_lv());
             JPH_ASSERT(1 == tr3.topo_lv());
         } else if (14 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult.fulfilled_triggers_size());
-            JPH_ASSERT(42 == stepResult.fulfilled_triggers(0).id());
+            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
         } else if (15 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult.fulfilled_triggers_size());
-            JPH_ASSERT(43 == stepResult.fulfilled_triggers(0).id());
+            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(43 == stepResult->fulfilled_triggers(0).id());
         } else if (46 == outerTimerRdfId) {
             JPH_ASSERT(1 == outerTimerRdf->npc_count());
         } else if (77 == outerTimerRdfId) {
@@ -5099,9 +5103,9 @@ bool runTestCase20(FrontendBattle* reusedBattle, WsReq* initializerMapData, int 
                 JPH_ASSERT(0 == tr2.main_cycle_mask_to_fulfill());
             }
         } else if (250 <= outerTimerRdfId) {
-            if (1 == stepResult.fulfilled_triggers_size()) {
+            if (1 == stepResult->fulfilled_triggers_size()) {
                 victoryTriggered = true;
-                JPH_ASSERT(44 == stepResult.fulfilled_triggers(0).id());
+                JPH_ASSERT(44 == stepResult->fulfilled_triggers(0).id());
                 JPH_ASSERT(0 == tr3.quota());
                 JPH_ASSERT(TriggerState::TrExhausted == tr3.state());
             }

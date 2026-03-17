@@ -253,7 +253,8 @@ int BackendBattle::Step(int fromRdfId, int toRdfId, DownsyncSnapshot* virtualIfd
             WriteSingleStepFrameLog(currRdfId, nextRdf, delayedIfdId, delayedIfd);
         }
         dynamicsRdfId = currRdfId + 1;
-        if (isBattleSettled(nextRdf)) {
+        auto* stepResult = stepResultBuffer.GetByFrameId(dynamicsRdfId); 
+        if (isBattleSettled(stepResult)) {
             return nextRdf->id();
         }
     }

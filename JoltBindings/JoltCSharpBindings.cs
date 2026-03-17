@@ -47,6 +47,10 @@ namespace JoltCSharp {
         public static extern bool APP_SetFrameLogEnabled(UIntPtr inBattle, [MarshalAs(UnmanagedType.U1)] bool val);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_GetStepResult(UIntPtr inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ulong APP_SetPlayerActive(UIntPtr inBattle, uint joinIndex);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -463,6 +467,21 @@ namespace JoltCSharp {
             log.ChaserStRdfId = 0;
             log.ChaserEdRdfId = 0;
             log.ChaserRdfIdLowerBoundSnatched = false;
+        }
+
+        public static void PreemptStepResult(StepResult stepResult, PrimitiveConsts primitives) {
+            if (null != stepResult.AimingRays) {
+                stepResult.AimingRays.Clear();
+            }
+            if (null != stepResult.FulfilledTriggers) {
+                stepResult.FulfilledTriggers.Clear();
+            }
+            if (null != stepResult.FulfilledTriggerIds) {
+                stepResult.FulfilledTriggerIds.Clear();
+            }
+            if (null != stepResult.FulfilledTriggerGroupIds) {
+                stepResult.FulfilledTriggerGroupIds.Clear();
+            }
         }
 
         public static (Skill?, BulletConfig?) FindBulletConfig(uint skillId, int skillHit) {

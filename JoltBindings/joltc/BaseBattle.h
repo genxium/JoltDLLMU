@@ -221,6 +221,7 @@ public:
 
     static inline void ArenaFreeRdf(RenderFrame* val, google::protobuf::Arena* theAllocator) {
         if (nullptr == val) return;
+        // [WARNING] If there's any "embedded message field", set and release it by "unsafe_arena_set_allocated_xxx/unsafe_arena_release_xxx"
         val->Clear();
     } 
     
@@ -243,6 +244,16 @@ public:
     }
 
     static inline void ArenaFreeIfd(InputFrameDownsync* val, google::protobuf::Arena* theAllocator) {
+        if (nullptr == val) return;
+        val->Clear();
+    }
+
+    FrameRingBuffer<StepResult, google::protobuf::Arena> stepResultBuffer;
+    static inline StepResult* ArenaAllocStepResult(google::protobuf::Arena* theAllocator) {
+        return google::protobuf::Arena::Create<StepResult>(theAllocator);
+    }
+
+    static inline void ArenaFreeStepResult(StepResult* val, google::protobuf::Arena* theAllocator) {
         if (nullptr == val) return;
         val->Clear();
     }
@@ -968,14 +979,11 @@ protected:
         return true;
     }
 
-    inline bool isBattleSettled(const RenderFrame* rdf) const {
-        if (rdf->has_prev_rdf_step_result()) {
-            auto& prevRdfStepResult = rdf->prev_rdf_step_result();
-            for (int i = 0; i < prevRdfStepResult.fulfilled_triggers_size(); i++) {
-                auto& fulfilledTrigger = prevRdfStepResult.fulfilled_triggers(i);
-                if (globalPrimitiveConsts->trt_victory() == fulfilledTrigger.trt()) {
-                    return true;
-                }
+    inline bool isBattleSettled(const StepResult* stepResult) const {
+        for (int i = 0; i < stepResult->fulfilled_triggers_size(); i++) {
+            auto& fulfilledTrigger = stepResult->fulfilled_triggers(i);
+            if (globalPrimitiveConsts->trt_victory() == fulfilledTrigger.trt()) {
+                return true;
             }
         }
         return false;
