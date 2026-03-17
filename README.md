@@ -1,14 +1,12 @@
 # Does this lib actually work?
 
 Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here're some screen-recordings of battles over the internet (all having `ping` around 20ms~300ms during test).
+- [recording#3, 2026-03](https://pan.baidu.com/s/1PkM0aexLQeE8188rIqQLag?pwd=tjrh)
+
+  ![demo3](./Screenshots/DLLMUJolt_milestone_3.gif)
+
 - [recording#2, 2026-03](https://pan.baidu.com/s/1vUPCo_V-u_i8aeOfonSsfA?pwd=qmae)
-
-  ![demo2](./Screenshots/DLLMUJolt_milestone_2.gif)
-
 - [recording#1, 2025-11](https://pan.baidu.com/s/1SdXJFFyo0_z0G8yhuavpKQ?pwd=43jb)
-
-  ![demo1](./Screenshots/DLLMUJolt_milestone_1.gif)
-
 
 Afterall, the underlying netcode is the same as [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4).
 
