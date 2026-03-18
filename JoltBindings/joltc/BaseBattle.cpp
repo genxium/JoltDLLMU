@@ -44,10 +44,12 @@ const bool   cOtherCharactersCanPushPlayer = true;
 
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 
-BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize), ifdBuffer(inputBufferSize), frameLogBuffer((renderBufferSize << 1), &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
+BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize, &pbSemiPermAllocator, BaseBattle::ArenaAllocRdf, BaseBattle::ArenaFreeRdf), ifdBuffer(inputBufferSize), frameLogBuffer((renderBufferSize << 1), &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), stepResultBuffer(renderBufferSize, &pbTempAllocator, BaseBattle::ArenaAllocStepResult, BaseBattle::ArenaFreeStepResult), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
 
     JPH_ASSERT(nullptr != frameLogBuffer.GetAllocator()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
     
+    JPH_ASSERT(nullptr != stepResultBuffer.GetAllocator()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
+
     /*
     [REMINDER]
     
@@ -597,7 +599,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
     batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf);
 
-    StepResult* stepResult = nextRdf->mutable_prev_rdf_step_result();
+    StepResult* stepResult = stepResultBuffer.GetByFrameId(currRdfId + 1);
+    if (!stepResult) {
+        stepResult = stepResultBuffer.DryPut();
+    }
     stepResult->Clear();
 
     for (int i = 0; i < currRdf->triggers_size(); i++) {
@@ -1264,6 +1269,17 @@ void BaseBattle::Clear() {
     lcacIfdId = -1;
     rdfBuffer.Clear();
     ifdBuffer.Clear();
+
+    if (stepResultBuffer.GetAllocator() == &pbTempAllocator) {
+        for (int fid = stepResultBuffer.StFrameId; fid < stepResultBuffer.EdFrameId; fid++) {
+            int arrIdx = stepResultBuffer.GetArrIdxByOffset(fid - stepResultBuffer.StFrameId);
+            if (-1 == arrIdx) continue;
+            ArenaFreeStepResult(stepResultBuffer.Eles[arrIdx], &pbTempAllocator);
+            stepResultBuffer.Eles[arrIdx] = nullptr; // Making sure that next time "stepResultBuffer.DryPut()" is called, "ArenaAllocStepResult" will be called too -- after "pbTempAllocator.Reset()" within "BaseBattle::Clear()".
+        }
+    }
+    stepResultBuffer.Clear();
+
     if (frameLogBuffer.GetAllocator() == &pbTempAllocator) {
         for (int fid = frameLogBuffer.StFrameId; fid < frameLogBuffer.EdFrameId; fid++) {
             int arrIdx = frameLogBuffer.GetArrIdxByOffset(fid - frameLogBuffer.StFrameId);
@@ -1272,7 +1288,6 @@ void BaseBattle::Clear() {
             frameLogBuffer.Eles[arrIdx] = nullptr; // Making sure that next time "frameLogBuffer.DryPut()" is called, "ArenaAllocFrameLog" will be called too -- after "pbTempAllocator.Reset()" within "BaseBattle::Clear()".
         }
     }
-    
     frameLogBuffer.Clear();
 
     playersCnt = 0;
@@ -1507,6 +1522,10 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         CopyRdf(startRdf, holder);
         holder->set_id(gapRdfId);
         initTriggerMainAndSubCycles(holder);
+    }
+
+    while (stepResultBuffer.EdFrameId <= stRdfId) {
+        stepResultBuffer.DryPut();
     }
 
     RenderFrame* effStartRdf = rdfBuffer.GetByFrameId(stRdfId);
@@ -1839,7 +1858,7 @@ void BaseBattle::transitToGroundDodgedChState(const CharacterDownsync& currChd, 
 void BaseBattle::jamBtnHolding(CharacterDownsync* nextChd) {
     /* [REMINDER]
 
-    The magic constant "globalPrimitiveConsts->jammed_btn_holding_rdf_cnt()" is ONLY used for better peer command prediction in "FrontendBattle::regulateCmdBeforeChasing(...)" and "FrontendBattle::regulateCmdBeforeRender()".
+    The magic constant "globalPrimitiveConsts->jammed_btn_holding_rdf_cnt()" is ONLY used for better peer command prediction in "FrontendBattle::regulateCmdBeforeRender(...)".
     */
     if (0 < nextChd->btn_a_holding_rdf_cnt()) {
         nextChd->set_btn_a_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
@@ -2337,7 +2356,7 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     int oldNextRdfNpcIdCounter = mNextRdfNpcIdCounter.fetch_add(1, std::memory_order_relaxed);
     auto nextNpc = oldNextRdfNpcCount < nextRdf->npcs_size() ? nextRdf->mutable_npcs(oldNextRdfNpcCount) : nextRdf->add_npcs();
 
-    nextNpc->Clear(); // [WARNING] This is recursive, and would NOT free memory immediately to save CPU time (i.e. Arena allocation/freeing is used on the whole "rdfBuffer" by "pbRdfAllocator"). 
+    nextNpc->Clear(); // [WARNING] This is recursive, and would NOT free memory immediately to save CPU time (i.e. Arena allocation/freeing is used on the whole "rdfBuffer" by "pbSemiPermAllocator"). 
     
     CharacterDownsync* nextChd = nextNpc->mutable_chd();
     
@@ -4210,11 +4229,6 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
     to->set_pickable_count(from->pickable_count());
     to->set_dynamic_trap_count(from->dynamic_trap_count());
     
-    if (to->has_prev_rdf_step_result()) {
-        to->mutable_prev_rdf_step_result()->Clear();
-    }
-    to->mutable_prev_rdf_step_result()->MergeFrom(from->prev_rdf_step_result());
-
     for (int i = 0; i < from->players_size(); i++) {
         const PlayerCharacterDownsync* fromSingle = &(from->players(i));
         PlayerCharacterDownsync * toSingle = i < to->players_size() ? to->mutable_players(i) : to->add_players();

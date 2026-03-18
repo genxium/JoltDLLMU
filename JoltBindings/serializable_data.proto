@@ -984,9 +984,10 @@ message PeerUdpAddr {
 }
 
 message StepResult {
-    repeated Trigger fulfilled_triggers = 1;
-    map<uint32, bool> fulfilled_trigger_ids = 2;
-    map<uint32, bool> fulfilled_trigger_group_ids = 3;
+    repeated AimingRay aiming_rays = 1;
+    repeated Trigger fulfilled_triggers = 2;
+    map<uint32, bool> fulfilled_trigger_ids = 3;
+    map<uint32, bool> fulfilled_trigger_group_ids = 4;
 }
 
 message RenderFrame {
@@ -1023,8 +1024,6 @@ message RenderFrame {
 
     // [WARNING] There's no "dynamic_trap_id_counter" by design, every "Trap.id" is assigned in UI almost arbitrarily.
     uint32 dynamic_trap_count = 17;
-
-    StepResult prev_rdf_step_result = 512;
 }
 
 message BattlePrepareInfo {
@@ -1089,6 +1088,7 @@ message DownsyncSnapshot {
     uint64 inactive_join_mask = 12;
     uint32 peer_join_index = 13;
     int32 peer_bullet_team_id = 14;
+    uint32 peer_species_id = 15;
 
     string err_msg = 512;
 }
