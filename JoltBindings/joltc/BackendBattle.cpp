@@ -127,6 +127,7 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
                     InputFrameDownsync* virtualIfd = result->add_ifd_batch(); // [REMINDER] Will allocate in the same arena
                     virtualIfd->set_confirmed_list(allConfirmedMask);
                     virtualIfd->set_udp_confirmed_list(allConfirmedMask);
+                    virtualIfd->set_input_count(playersCnt);
                     for (int k = 0; k < playersCnt; ++k) {
                         if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
                             virtualIfd->add_input_list(0);

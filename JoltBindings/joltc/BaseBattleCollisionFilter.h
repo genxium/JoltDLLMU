@@ -142,7 +142,15 @@ public:
     std::atomic<uint32_t>       mNextRdfNpcIdCounter = 0;
     std::atomic<uint32_t>       mNextRdfNpcCount = 0;
 
+    std::atomic<uint32_t>       mNextRdfAimingRayCount = 0;
+
     virtual bool providesCrouchForcing(const uint64_t inBarrierUd) const = 0;
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const = 0;
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trap* rhsCurrTrap) const = 0;
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Pickable* rhsCurrPickable) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const = 0;
 
@@ -153,6 +161,8 @@ public:
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+
+    virtual ValidateResult validateLhsCharacterAimingRayContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 

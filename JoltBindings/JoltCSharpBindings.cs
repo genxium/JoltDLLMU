@@ -288,18 +288,28 @@ namespace JoltCSharp {
             if (null != chd.BuffList) {
                 chd.BuffList.Clear();
             }
+            chd.BuffCount = 0;
+
             if (null != chd.DebuffList) {
                 chd.DebuffList.Clear();
             }  
+            chd.DebuffCount = 0;
+
             if (null != chd.InventorySlots) {
                 chd.InventorySlots.Clear();
             }
+            chd.IvsCount = 0;
+            
             if (null != chd.BulletImmuneRecords) {
                 chd.BulletImmuneRecords.Clear();
             }
+            chd.BirCount = 0;
+
             if (null != chd.KinematicKnobs) {
                 chd.KinematicKnobs.Clear();
             }
+            chd.KkCount = 0;
+
             if (null != chd.Atk1Magazine) {
                 PreemptInventorySlotBeforeMerge(chd.Atk1Magazine);
             } 
@@ -388,6 +398,7 @@ namespace JoltCSharp {
         public static void PreemptInputFrameDownsyncBeforeMerge(InputFrameDownsync ifd, PrimitiveConsts primitives) {
             ifd.ConfirmedList = 0;
             ifd.UdpConfirmedList = 0;
+            ifd.InputCount = 0;
             ifd.InputList.Clear();
         }
 
@@ -470,6 +481,7 @@ namespace JoltCSharp {
         }
 
         public static void PreemptStepResult(StepResult stepResult, PrimitiveConsts primitives) {
+            stepResult.AimingRayCount = 0;
             if (null != stepResult.AimingRays) {
                 stepResult.AimingRays.Clear();
             }

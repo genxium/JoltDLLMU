@@ -12,7 +12,7 @@ using namespace jtshared;
 
 class JOLTC_EXPORT FrontendBattle : public BaseBattle {
 public:
-    FrontendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator) {
+    FrontendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, bool isOnlineArenaMode) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator, FrontendBattle::ArenaAllocStepResult) {
         timerRdfId = globalPrimitiveConsts->starting_input_frame_id();
         onlineArenaMode = isOnlineArenaMode;
 
@@ -89,6 +89,15 @@ public:
     bool ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
     bool ResetStartRdf(WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
 
+    static inline StepResult* ArenaAllocStepResult(google::protobuf::Arena* theAllocator) {
+        auto* stepResult = google::protobuf::Arena::Create<StepResult>(theAllocator);
+        // Preallocate aiming rays 
+        while (stepResult->aiming_rays_size() < globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
+            stepResult->add_aiming_rays();
+        }
+        return stepResult;
+    }
+
 protected:
     bool onlineArenaMode = false;
 
@@ -96,7 +105,7 @@ protected:
 
     void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender);
 
-    virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
+    virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult);
 
     DownsyncSnapshot* downsyncSnapshotHolder = nullptr;
     WsReq* peerUpsyncSnapshotHolder = nullptr;
