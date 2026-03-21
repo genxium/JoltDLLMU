@@ -85,6 +85,10 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 RenderFrame* holder = rdfBuffer.DryPut();
                 holder->set_id(gapRdfId);
             }
+
+            while (stepResultBuffer.EdFrameId <= refRdfId) {
+                stepResultBuffer.DryPut();
+            }
             
             RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId);
             JPH_ASSERT(nullptr != targetHolder, "RenderFrame* targetHolder not found for refRdfId=" + refRdfId);
