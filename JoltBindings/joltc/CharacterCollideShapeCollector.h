@@ -121,6 +121,9 @@ public:
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
+        if (UDT_TRIGGER == udtRhs || UDT_PICKABLE == udtRhs) {
+            return;
+        }
         auto normal = -inResult.mPenetrationAxis.Normalized();
         float dot = normal.Dot(mUp);
         if (dot > mBestDot) {

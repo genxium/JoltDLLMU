@@ -3712,7 +3712,6 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
     }
 
     std::cout << "Passed TestCase1\n" << std::endl;
-    StepResult* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(513);
     theAllocator->Reset();
     reusedBattle->Clear();   
     return true;
@@ -4527,6 +4526,8 @@ bool runTestCase11(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
 
             auto referencedRdf = referenceBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
             auto challengingRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+            StepResult*  challengingStepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId); 
+            JPH_ASSERT(nullptr != challengingStepResult);
 
             const PlayerCharacterDownsync& referencedP1 = referencedRdf->players(0);
             const CharacterDownsync& p1Chd = referencedP1.chd();
@@ -4738,6 +4739,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
 
         RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
         StepResult*  outStepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId); 
+        JPH_ASSERT(nullptr != outStepResult);
         auto& p1 = outerTimerRdf->players(0);
         auto& p1Chd = p1.chd();
         auto& p2 = outerTimerRdf->players(1);
