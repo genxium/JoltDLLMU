@@ -8,6 +8,7 @@ namespace JoltCSharp {
         public static uint BladeGirlGroundSlash1Id = 1, BladeGirlGroundSlash2Id = 2, BladeGirlGroundSlash3Id = 3, BladeGirlGroundSuperSlashId = 4, BladeGirlGroundDashingId = 5, BladeGirlDiverImpactId = 6, BladeGirlSlidingSlashId = 7, BladeGirlCrouchSlashId = 8, BladeGirlAirSlash1Id = 9, BladeGirlAirSlash2Id = 10, BladeGirlDragonPunchId = 11, BladeGirlGroundBackDashingId = 12, BladeGirlAirDashingId = 13;
 
         public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, HunterChargedPistolId = 137, HunterChargedPistolAirId = 138, HunterChargedPistolCrouchId = 139, HunterChargedPistolWallId = 140, HunterChargedPistolWalkingId = 141;
+        public static float HunterPistolOffsetY = 28f, HunterPistolOffsetYOnWall = 28f, HunterPistolOffsetYAir = 30f, HunterPistolOffsetYCrouch = 20f;
 
         public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
 

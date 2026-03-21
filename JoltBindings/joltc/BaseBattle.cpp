@@ -44,7 +44,7 @@ const bool   cOtherCharactersCanPushPlayer = true;
 
 const EBackFaceMode cBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 
-BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : rdfBuffer(renderBufferSize, &pbSemiPermAllocator, BaseBattle::ArenaAllocRdf, BaseBattle::ArenaFreeRdf), ifdBuffer(inputBufferSize), frameLogBuffer((renderBufferSize << 1), &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), stepResultBuffer(renderBufferSize, &pbTempAllocator, BaseBattle::ArenaAllocStepResult, BaseBattle::ArenaFreeStepResult), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
+BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, ALLOC_T_FUNC<StepResult, google::protobuf::Arena> arenaAllocStepResultFunc) : rdfBuffer(renderBufferSize, &pbSemiPermAllocator, BaseBattle::ArenaAllocRdf, BaseBattle::ArenaFreeRdf), ifdBuffer(inputBufferSize), frameLogBuffer(renderBufferSize, &pbTempAllocator, BaseBattle::ArenaAllocFrameLog, BaseBattle::ArenaFreeFrameLog), stepResultBuffer(renderBufferSize, &pbSemiPermAllocator, arenaAllocStepResultFunc, BaseBattle::ArenaFreeStepResult), globalTempAllocator(inGlobalTempAllocator), defaultBplf(ovbLayerFilter, MyObjectLayers::MOVING), defaultOlf(ovoLayerFilter, MyObjectLayers::MOVING), collisionUdHolderStockCache(256, 16), inputInducedMotionStockCache(256) {
 
     JPH_ASSERT(nullptr != frameLogBuffer.GetAllocator()); // [WARNING] Otherwise too inefficient in memory usage, e.g. when calling "unsafe_arena_set_allocated_xxx" would "delete" existing field first
     
@@ -603,7 +603,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     if (!stepResult) {
         stepResult = stepResultBuffer.DryPut();
     }
-    stepResult->Clear();
+    ResetStepResult(stepResult);
+    mNextRdfAimingRayCount = 0;
 
     for (int i = 0; i < currRdf->triggers_size(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
@@ -797,7 +798,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     JobSystem::Barrier* postPhysicsUpdateMTBarrier = jobSys->CreateBarrier();
     const BaseBattle* battle = this;
     for (int i = 0; i < playersCnt; i++) {
-        auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+        auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, stepResult]() {
             auto currPlayer = currRdf->players(i);
             auto nextPlayer = nextRdf->mutable_players(i); // [WARNING] The indices of "currRdf->players" and "nextRdf->players" are ALWAYS FULLY ALIGNED.
             const CharacterDownsync& currChd = currPlayer.chd();
@@ -820,7 +821,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
-            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
+
+            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
@@ -881,7 +883,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
     for (int i = 0; i < currRdf->npcs_size(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs(i).id()) break;
-        auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+        auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, stepResult]() {
             const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
             auto nextNpc = nextRdf->mutable_npcs(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs" and "nextRdf->npcs" are FULLY ALIGNED.
 
@@ -904,7 +906,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
-            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
+            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             Quat currChdQ;
             Vec3 currChdFacing;
@@ -965,6 +967,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     case UDT_NPC:
                     case UDT_TRAP:
                     case UDT_OBSTACLE:
+                    case UDT_TRIGGER:
                         switch (lhsBlConfig->b_type()) {
                         case BulletType::MechanicalCartridge: {
                             shouldVanish = true;
@@ -983,9 +986,6 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         default:
                             break;
                         }
-                        break;
-                    case UDT_TRIGGER:
-                        // TODO: Depending on the type of trigger, might NOT explode
                         break;
                     default:
                         break;
@@ -1123,6 +1123,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
     leftShiftDeadPickables(currRdfId, nextRdf);
     leftShiftDeadTriggers(currRdfId, nextRdf);
+
+    stepResult->set_aiming_ray_count(mNextRdfAimingRayCount.load());
+
     batchRemoveFromPhySysAndCache(currRdfId, currRdf);
 
     return nextRdf;
@@ -1405,6 +1408,11 @@ void BaseBattle::topoSortTriggerConfigFromTiledList(WsReq* initializerMapData) {
 }
 
 bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
+    if (nullptr != initializerMapData->GetArena() && initializerMapData->GetArena() != &pbTempAllocator) {
+        WsReq* copyWriter = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+        copyWriter->CopyFrom(*initializerMapData);
+        initializerMapData = copyWriter; 
+    }
     /* [WARNING] 
 
     When running unit tests to compare a "reference battle" with a "reused battle" for "rollback-chasing determinism", any mismatch of "BodyID" (i.e. managed by "BodyManager.mBodyIDFreeListStart" in "BodyManager::AddBody" and "BodyManager::RemoveBodyInternal" if the "PhysicsSystem" instance is not re-allocated) impacts the comparison by 
@@ -1808,10 +1816,6 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
     }
 
     return true;
-}
-
-bool BaseBattle::isEffInAir(const CharacterDownsync& chd, bool notDashing) {
-    return (inAirSet.count(chd.ch_state()) && notDashing);
 }
 
 bool BaseBattle::isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc) {
@@ -2249,7 +2253,7 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
     }
 
     JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
-    if (OnWallAtk1 == skillConfig->bound_ch_state() && (BulletType::Melee != bulletConfig.b_type())) {
+    if (OnWallAtk1 == skillConfig->bound_ch_state()) {
         offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
     }
     JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
@@ -2356,7 +2360,7 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     int oldNextRdfNpcIdCounter = mNextRdfNpcIdCounter.fetch_add(1, std::memory_order_relaxed);
     auto nextNpc = oldNextRdfNpcCount < nextRdf->npcs_size() ? nextRdf->mutable_npcs(oldNextRdfNpcCount) : nextRdf->add_npcs();
 
-    nextNpc->Clear(); // [WARNING] This is recursive, and would NOT free memory immediately to save CPU time (i.e. Arena allocation/freeing is used on the whole "rdfBuffer" by "pbSemiPermAllocator"). 
+    ClearNpcChd(nextNpc);
     
     CharacterDownsync* nextChd = nextNpc->mutable_chd();
     
@@ -2744,9 +2748,14 @@ InputFrameDownsync* BaseBattle::getOrPrefabInputFrameDownsync(int inIfdId, uint3
         JPH_ASSERT(nullptr != ifdHolder);
         ifdHolder->set_confirmed_list(0u); // To avoid RingBuffer reuse contamination.
         ifdHolder->set_udp_confirmed_list(0u);
-        ifdHolder->clear_input_list(); // [REMINDER] This is just a list of integers, feel free to clear.
-        for (auto& prefabbedInput : prefabbedInputList) {
-            ifdHolder->add_input_list(prefabbedInput);
+        ifdHolder->set_input_count(playersCnt);
+        for (int k = 0; k < playersCnt; k++) {
+            uint64_t prefabbedInput = prefabbedInputList[k];
+            if (k < ifdHolder->input_list_size()) {
+                ifdHolder->set_input_list(k, prefabbedInput);
+            } else {
+                ifdHolder->add_input_list(prefabbedInput);
+            }
         }
     }
 
@@ -3240,6 +3249,8 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
 
     mNextRdfNpcIdCounter = 1;
     mNextRdfNpcCount = 0;
+
+    mNextRdfAimingRayCount = 0;
 }
 
 void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, bool currEffInAir, bool notDashing, const InputFrameDecoded& ifDecoded, int& outPatternId, bool& outJumpedOrNot, bool& outSlipJumpedOrNot, int& outEffDx, int& outEffDy) {
@@ -3565,7 +3576,7 @@ void BaseBattle::processDelayedBulletSelfVel(const int currRdfId, const Characte
     }
 }
 
-void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion) {
+void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
     CharacterState oldNextChState = nextChd->ch_state();
    
     uint32_t activeSkillId = currChd.active_skill_id();
@@ -4100,6 +4111,7 @@ void BaseBattle::leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* 
         terminatingCand->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
         terminatingCand->set_remaining_lifetime_rdf_count(0);
     }
+    nextChd->set_bir_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadIvSlots(const int currRdfId, CharacterDownsync* nextChd) {
@@ -4136,6 +4148,7 @@ void BaseBattle::leftShiftDeadIvSlots(const int currRdfId, CharacterDownsync* ne
         terminatingCand->set_stock_type(InventorySlotStockType::NoneIv);
         terminatingCand->set_quota(0);
     }
+    nextChd->set_ivs_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadBuffs(const int currRdfId, CharacterDownsync* nextChd) {
@@ -4171,6 +4184,8 @@ void BaseBattle::leftShiftDeadBuffs(const int currRdfId, CharacterDownsync* next
         terminatingCand->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
         terminatingCand->set_stock(0);
     }
+    
+    nextChd->set_buff_count(aliveI);
 }
 
 void BaseBattle::leftShiftDeadDebuffs(const int currRdfId, CharacterDownsync* nextChd) {
@@ -4206,14 +4221,165 @@ void BaseBattle::leftShiftDeadDebuffs(const int currRdfId, CharacterDownsync* ne
         terminatingCand->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
         terminatingCand->set_stock(0);
     }
+
+    nextChd->set_debuff_count(aliveI);
+}
+
+void BaseBattle::ClearChd(CharacterDownsync* chd) {
+    // [WARNING] Recursively clear "RepeatedPtrField<>" members, would NOT free memory immediately to save CPU time REGARDLESS OF whether or not pb-arena is used. 
+    chd->set_buff_count(0);
+    if (0 < chd->buff_list_size()) {
+        Buff* toSingle = chd->mutable_buff_list(0);
+        toSingle->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
+    }
+
+    chd->set_debuff_count(0);
+    if (0 < chd->debuff_list_size()) {
+        Debuff* toSingle = chd->mutable_debuff_list(0);
+        toSingle->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
+    }
+
+    chd->set_ivs_count(0);
+    if (0 < chd->inventory_slots_size()) {
+        InventorySlot* toSingle = chd->mutable_inventory_slots(0);
+        toSingle->set_stock_type(InventorySlotStockType::NoneIv);
+        toSingle->set_quota(0);
+    }
+
+    chd->set_bir_count(0);
+    if (0 < chd->bullet_immune_records_size()) {
+        BulletImmuneRecord* toSingle = chd->mutable_bullet_immune_records(0);
+        toSingle->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
+    }
+
+    chd->set_kk_count(0);
+    
+    /*
+    [REMINDER] See corresponding comments in "CopyChd". 
+    */
+    if (chd->has_atk1_magazine()) {
+        chd->mutable_atk1_magazine()->Clear();
+    }
+
+    if (chd->has_super_atk_gauge()) {
+        chd->mutable_super_atk_gauge()->Clear();
+    }
+
+    chd->set_x(0);
+    chd->set_y(0);
+    chd->set_z(0);
+
+    chd->set_q_x(0);
+    chd->set_q_y(0);
+    chd->set_q_z(0);
+    chd->set_q_w(1);
+
+    chd->set_vel_x(0);
+    chd->set_vel_y(0);
+    chd->set_vel_z(0);
+
+    chd->set_ground_vel_x(0);
+    chd->set_ground_vel_y(0);
+    chd->set_ground_vel_z(0);
+
+    chd->set_aiming_q_x(0);
+    chd->set_aiming_q_y(0);
+    chd->set_aiming_q_z(0);
+    chd->set_aiming_q_w(1);
+
+    chd->set_walkstopping_rdf_countdown(0);
+    chd->set_fallstopping_rdf_countdown(0);
+
+    chd->set_omit_gravity(false);
+
+    chd->set_species_id(globalPrimitiveConsts->species_none_ch());
+
+    chd->set_ground_ud(0);
+
+    chd->set_frames_to_recover(0);
+
+    chd->set_new_birth_rdf_countdown(0);
+
+    chd->set_frames_invinsible(0);
+
+    chd->set_bullet_team_id(globalPrimitiveConsts->terminating_bullet_team_id());
+    chd->set_remaining_air_jump_quota(0);
+    chd->set_remaining_air_dash_quota(0);
+
+    chd->set_damaged_hint_rdf_countdown(0);
+    chd->set_damaged_elemental_attrs(0);
+
+    chd->set_remaining_def1_quota(0);
+
+    chd->set_combo_hit_cnt(0);
+    chd->set_combo_frames_remained(0);
+
+    chd->set_last_damaged_by_ud(0);
+    chd->set_last_damaged_by_bullet_team_id(globalPrimitiveConsts->terminating_bullet_team_id());
+    
+    chd->set_active_skill_id(globalPrimitiveConsts->no_skill());
+    chd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
+
+    chd->set_btn_a_holding_rdf_cnt(0);
+    chd->set_btn_b_holding_rdf_cnt(0);
+    chd->set_btn_c_holding_rdf_cnt(0);
+    chd->set_btn_d_holding_rdf_cnt(0);
+    chd->set_btn_e_holding_rdf_cnt(0);
+    chd->set_parry_prep_rdf_cnt_down(0);
+    chd->set_mp_regen_rdf_countdown(0);
+
+    chd->set_flying_rdf_countdown(0);
+
+    chd->set_locking_on_ud(0);
+
+    chd->set_ch_collision_team_id(globalPrimitiveConsts->terminating_bullet_team_id());
+    chd->set_speed(0);
+
+    chd->set_hp(0);
+    chd->set_mp(0);
+
+    chd->set_ch_state(CharacterState::Idle1);
+    chd->set_frames_in_ch_state(0);   
+    chd->set_lower_part_rdf_cnt(0);
+}
+
+void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
+    npc->set_id(globalPrimitiveConsts->terminating_character_id());
+
+    npc->set_activated_rdf_id(0);
+    npc->set_cached_cue_cmd(0);
+
+    npc->set_waiving_patrol_cue_id(0);
+    npc->set_goal_as_npc(NpcGoal::NIdle);
+
+    npc->set_publishing_mask_upon_exhausted(0); 
+    npc->set_publishing_to_trigger_id_upon_exhausted(globalPrimitiveConsts->terminating_trigger_id());
+
+    npc->set_subscribes_to_trigger_id(globalPrimitiveConsts->terminating_trigger_id()); 
+    npc->set_subscribes_to_trigger_group_id(globalPrimitiveConsts->terminating_trigger_group_id()); 
+
+    npc->set_captured_by_patrol_cue(0);
+    npc->set_frames_in_patrol_cue(0);
+
+    npc->set_exhausted_to_drop_consumable_species_id(globalPrimitiveConsts->terminating_consumable_species_id());
+    npc->set_exhausted_to_drop_buff_species_id(globalPrimitiveConsts->terminating_buff_species_id());
+    npc->set_exhausted_to_drop_pickup_skill_id(globalPrimitiveConsts->no_skill());
+
+    npc->set_is_main_tower_of_team(false);
+
+    ClearChd(npc->mutable_chd());
 }
 
 void BaseBattle::CopyIfd(const InputFrameDownsync* from, InputFrameDownsync* to) {
     to->set_confirmed_list(from->confirmed_list());
     to->set_udp_confirmed_list(from->udp_confirmed_list());
-    to->clear_input_list();
+    to->set_input_count(from->input_count());
     for (int k = 0; k < from->input_list_size(); k++) {
-        to->add_input_list(from->input_list(k));
+        if (k < to->input_list_size()) {
+            to->set_input_list(k, from->input_list(k));
+        } else {
+            to->add_input_list(from->input_list(k));
+        }
     }
 }
 
@@ -4244,8 +4410,8 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         NpcCharacterDownsync* toSingle = i < to->npcs_size() ? to->mutable_npcs(i) : to->add_npcs();
         CopyNpcChd(fromSingle, toSingle);
     }
-    if (from->npcs_size() < to->npcs_size()) {
-        NpcCharacterDownsync* toSingle = to->mutable_npcs(from->npcs_size());
+    if (0 < to->npcs_size() && to->npc_count() < to->npcs_size()) {
+        NpcCharacterDownsync* toSingle = to->mutable_npcs(to->npc_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_character_id());
     }
 
@@ -4254,8 +4420,8 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Bullet* toSingle = i < to->bullets_size() ? to->mutable_bullets(i) : to->add_bullets();
         CopyBullet(fromSingle, toSingle);
     }
-    if (from->bullets_size() < to->bullets_size()) {
-        Bullet* toSingle = to->mutable_bullets(from->bullets_size());
+    if (0 < to->bullets_size() && to->bullet_count() < to->bullets_size()) {
+        Bullet* toSingle = to->mutable_bullets(to->bullet_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
 
@@ -4264,8 +4430,8 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Trap* toSingle = i < to->dynamic_traps_size() ? to->mutable_dynamic_traps(i) : to->add_dynamic_traps();
         CopyTrap(fromSingle, toSingle);
     }
-    if (from->dynamic_traps_size() < to->dynamic_traps_size()) {
-        Trap* toSingle = to->mutable_dynamic_traps(from->dynamic_traps_size());
+    if (0 < to->dynamic_traps_size() && to->dynamic_trap_count() < to->dynamic_traps_size()) {
+        Trap* toSingle = to->mutable_dynamic_traps(to->dynamic_trap_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_trap_id());
     }
 
@@ -4274,8 +4440,8 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Trigger* toSingle = i < to->triggers_size() ? to->mutable_triggers(i) : to->add_triggers();
         CopyTrigger(fromSingle, toSingle);
     }
-    if (from->triggers_size() < to->triggers_size()) {
-        Trigger* toSingle = to->mutable_triggers(from->triggers_size());
+    if (0 < to->triggers_size() && to->trigger_count() < to->triggers_size()) {
+        Trigger* toSingle = to->mutable_triggers(to->trigger_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_trigger_id());
     }
 
@@ -4284,8 +4450,8 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Pickable* toSingle = i < to->pickables_size() ? to->mutable_pickables(i) : to->add_pickables();
         CopyPickable(fromSingle, toSingle);
     }
-    if (from->pickables_size() < to->pickables_size()) {
-        Pickable* toSingle = to->mutable_pickables(from->pickables_size());
+    if (0 < to->pickables_size() && to->pickable_count() < to->pickables_size()) {
+        Pickable* toSingle = to->mutable_pickables(to->pickable_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_pickable_id());
     }
 }
@@ -4343,20 +4509,65 @@ void BaseBattle::CopyNpcChd(const NpcCharacterDownsync* from, NpcCharacterDownsy
 
 void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     // After checking its field types, I don't have a better choice at the moment
-    to->clear_buff_list();
-    to->mutable_buff_list()->MergeFrom(from->buff_list());
 
-    to->clear_debuff_list();
-    to->mutable_debuff_list()->MergeFrom(from->debuff_list());
+    // Buff list
+    to->set_buff_count(from->buff_count());
+    for (int i = 0; i < from->buff_list_size(); i++) {
+        const Buff* fromSingle = &(from->buff_list(i));
+        Buff* toSingle = i < to->buff_list_size() ? to->mutable_buff_list(i) : to->add_buff_list();
+        toSingle->CopyFrom(*fromSingle); // All primitive types, no memory alloc/free would happen
+    }
+    if (0 < to->buff_list_size() && to->buff_count() < to->buff_list_size()) {
+        Buff* toSingle = to->mutable_buff_list(to->buff_count());
+        toSingle->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
+    }
 
-    to->clear_inventory_slots();
-    to->mutable_inventory_slots()->MergeFrom(from->inventory_slots());
+    // Debuff list
+    to->set_debuff_count(from->debuff_count());
+    for (int i = 0; i < from->debuff_list_size(); i++) {
+        const Debuff* fromSingle = &(from->debuff_list(i));
+        Debuff* toSingle = i < to->debuff_list_size() ? to->mutable_debuff_list(i) : to->add_debuff_list();
+        toSingle->CopyFrom(*fromSingle); // All primitive types, no memory alloc/free would happen
+    }
+    if (0 < to->debuff_list_size() && to->debuff_count() < to->debuff_list_size()) {
+        Debuff* toSingle = to->mutable_debuff_list(to->debuff_count());
+        toSingle->set_species_id(globalPrimitiveConsts->terminating_debuff_species_id());
+    }
 
-    to->clear_bullet_immune_records();
-    to->mutable_bullet_immune_records()->MergeFrom(from->bullet_immune_records());
+    // Inventory slots
+    to->set_ivs_count(from->ivs_count());
+    for (int i = 0; i < from->inventory_slots_size(); i++) {
+        const InventorySlot* fromSingle = &(from->inventory_slots(i));
+        InventorySlot* toSingle = i < to->inventory_slots_size() ? to->mutable_inventory_slots(i) : to->add_inventory_slots();
+        toSingle->CopyFrom(*fromSingle); // All primitive types, no memory alloc/free would happen
+    }
+    if (0 < to->inventory_slots_size() && to->ivs_count() < to->inventory_slots_size()) {
+        InventorySlot* toSingle = to->mutable_inventory_slots(to->ivs_count());
+        toSingle->set_stock_type(InventorySlotStockType::NoneIv);
+        toSingle->set_quota(0);
+    }
 
-    to->clear_kinematic_knobs();
-    to->mutable_kinematic_knobs()->MergeFrom(from->kinematic_knobs());
+    // Bullet immune records
+    to->set_bir_count(from->bir_count());
+    for (int i = 0; i < from->bullet_immune_records_size(); i++) {
+        const BulletImmuneRecord* fromSingle = &(from->bullet_immune_records(i));
+        BulletImmuneRecord* toSingle = i < to->bullet_immune_records_size() ? to->mutable_bullet_immune_records(i) : to->add_bullet_immune_records();
+        toSingle->CopyFrom(*fromSingle);  // All primitive types, no memory alloc/free would happen
+    }
+    if (0 < to->bullet_immune_records_size() && to->bir_count() < to->bullet_immune_records_size()) {
+        BulletImmuneRecord* toSingle = to->mutable_bullet_immune_records(to->bir_count());
+        toSingle->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
+    }
+
+    // Kinematic knobs
+    to->set_kk_count(from->kk_count());
+    for (int i = 0; i < from->kinematic_knobs_size(); i++) {
+        if (i < to->kinematic_knobs_size()) {
+            to->set_kinematic_knobs(i, from->kinematic_knobs(i));
+        } else {
+            to->add_kinematic_knobs(from->kinematic_knobs(i));
+        }
+    }
     
     /*
     [REMINDER] Fields "atk1_magazine" and "super_atk_gauage" are why merely "to->CopyFrom(*from)" is not used, I'd like to avoid any "delete" or "re-assign and leave the old field object maintained by pb-arena" behaviour. 
@@ -5103,8 +5314,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     auto groundBodyID = single->GetGroundBodyID();
     groundBodyIsChCollider = transientUdToChCollider.count(newGroundUd);
-    JPH::Quat nextChdQ(nextChd->q_x(), nextChd->q_y(), nextChd->q_z(), nextChd->q_w());
-    Vec3 nextChdFacing = nextChdQ*Vec3(1, 0, 0);
+    JPH::Quat nextChdQ;
+    Vec3 nextChdFacing;
+    calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
     float groundNormalAlignment = nextChdFacing.Dot(single->GetGroundNormal());
     cvOnWall = (0 > groundNormalAlignment && !groundBodyID.IsInvalid() && !groundBodyIsChCollider && !transientSlipJumpableUds.count(newGroundUd) && single->IsSlopeTooSteep(single->GetGroundNormal()));
     cvSupported = (single->IsSupported() && !cvOnWall && !groundBodyID.IsInvalid() && !groundBodyIsChCollider); // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
@@ -5209,7 +5421,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             } else if (UDT_TRIGGER == udtRhs) {
                 const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
                 Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
-                if (collidableTrtSet.count(currTrigger->trt()) && TriggerState::TrReady == currTrigger->state() && TriggerState::TrReady == nextTrigger->state() && 0 < currTrigger->quota()) {
+                if (globalPrimitiveConsts->trt_by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
+                    // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
                     nextTrigger->set_main_cycle_mask_to_fulfill(0);
 #ifndef NDEBUG
                     std::ostringstream oss;
@@ -5292,7 +5505,7 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
 
         nextTrigger->set_frames_in_state(0);
 
-        auto fulfilledTrigger = stepResult->add_fulfilled_triggers();
+        auto* fulfilledTrigger = stepResult->add_fulfilled_triggers();
         CopyTrigger(&currTrigger, fulfilledTrigger);
         auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
         mutableFulfilledTriggerIds->insert({currTrigger.id(), true});
@@ -5498,7 +5711,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     if (rhsBlConfig->remains_upon_hit()) {
         int immuneRcdI = 0;
         bool shouldBeImmune = false;
-        while (immuneRcdI < nextChd->bullet_immune_records_size()) {
+        while (immuneRcdI < nextChd->bir_count()) {
             auto& candidate = nextChd->bullet_immune_records(immuneRcdI);
             if (globalPrimitiveConsts->terminating_bullet_id() == candidate.bullet_id()) break;
             if (candidate.bullet_id() == rhsCurrBl->id()) {
@@ -5520,10 +5733,6 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         if (!(successfulDef1 && rhsBlConfig->takes_def1_as_hard_pushback())) {
             int nextImmuneRcdI = immuneRcdI;
             int terminatingImmuneRcdI = nextImmuneRcdI + 1;
-            if (nextImmuneRcdI == nextChd->bullet_immune_records_size()) {
-                nextImmuneRcdI = 0;
-                terminatingImmuneRcdI = nextChd->bullet_immune_records_size(); // [WARNING] DON'T update termination in this case! 
-            }
             auto nextImmuneRcd = nextImmuneRcdI < nextChd->bullet_immune_records_size() ? nextChd->mutable_bullet_immune_records(nextImmuneRcdI) : nextChd->add_bullet_immune_records();
             nextImmuneRcd->set_bullet_id(rhsCurrBl->id());
             int effImmuneRdfCnt = 2 + std::min(rhsBlConfig->hit_stun_frames(), rhsBlConfig->active_frames());
@@ -5534,6 +5743,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
                 terminatingImmuneRcd->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
                 terminatingImmuneRcd->set_remaining_lifetime_rdf_count(0);
             }
+            nextChd->set_bir_count(terminatingImmuneRcdI);
         }
     }
 
@@ -5543,6 +5753,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         if (successfulDef1) {
             effDamage = (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage());
         }
+/*
 #ifndef NDEBUG
         if (UDT_PLAYER == udtLhs) {
             std::ostringstream oss;
@@ -5556,6 +5767,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             Debug::Log(oss.str(), DColor::Orange);
         }
 #endif
+*/
         outNewDamage += effDamage; 
         if (rhsBlConfig->blow_up()) {
             outNewEffBlownUp = true;

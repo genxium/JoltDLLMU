@@ -63,7 +63,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
 
     BodyID toHandleMvBlockerBodyID;
 
-    extractKeyEntitiesInVision(currRdfId, antiGravityNorm, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfNpcPositionDiffForAllyUd, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, toHandleOppoBlUd, selfNpcPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
+    extractKeyEntitiesInVision(currRdfId, antiGravityNorm, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, baseBattleFilter, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfNpcPositionDiffForAllyUd, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, toHandleOppoBlUd, selfNpcPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
 
     bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     bool canJumpWithinInertia = BaseBattleCollisionFilter::chCanJumpWithInertia(currChd, cc, notDashing, inJumpStartupOrJustEnded);
@@ -283,7 +283,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     outCmd = newCachedCueCmd;
 }
 
-void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionCastResultCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
+void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionCastResultCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
     if (!visionCastResultCollector.HadHit()) return;
     bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
@@ -332,12 +332,13 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
         switch (udtRhs) {
         case UDT_PLAYER: 
         case UDT_NPC: {
-            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, nullptr);
+            VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, baseBattleFilter);
             RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
             bool rayTestPassed = false;
             RayCastResult rcResult;
             narrowPhaseQuery->CastRay(ray, rcResult, {}, {}, visionRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
             if (!rcResult.mBodyID.IsInvalid() && rcResult.mBodyID != rhsBodyID) {
+                // If blocked by others.
                 continue;
             }
             const CharacterDownsync* rhsCurrChd = nullptr;

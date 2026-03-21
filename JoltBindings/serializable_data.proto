@@ -524,16 +524,23 @@ message CharacterDownsync {
     However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
     */
 
-    repeated Buff buff_list = 59; 
-    repeated Debuff debuff_list = 60; 
+    InventorySlot atk1_magazine = 59; 
+    InventorySlot super_atk_gauge = 60; 
 
-    InventorySlot atk1_magazine = 61; 
-    InventorySlot super_atk_gauge = 62; 
-    repeated InventorySlot inventory_slots = 63;
+    repeated Buff buff_list = 61; 
+    uint32 buff_count = 62;
 
-    repeated BulletImmuneRecord bullet_immune_records = 64; 
+    repeated Debuff debuff_list = 63; 
+    uint32 debuff_count = 64;
 
-    repeated float kinematic_knobs = 65; // including both forward-kinematics and inverse-kinematics   
+    repeated InventorySlot inventory_slots = 65;
+    uint32 ivs_count = 66;
+
+    repeated BulletImmuneRecord bullet_immune_records = 67; 
+    uint32 bir_count = 68;
+
+    repeated float kinematic_knobs = 69; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 70;
 }
 
 message PlayerCharacterDownsync {
@@ -985,9 +992,10 @@ message PeerUdpAddr {
 
 message StepResult {
     repeated AimingRay aiming_rays = 1;
-    repeated Trigger fulfilled_triggers = 2;
-    map<uint32, bool> fulfilled_trigger_ids = 3;
-    map<uint32, bool> fulfilled_trigger_group_ids = 4;
+    uint32 aiming_ray_count = 2;
+    repeated Trigger fulfilled_triggers = 3;
+    map<uint32, bool> fulfilled_trigger_ids = 4;
+    map<uint32, bool> fulfilled_trigger_group_ids = 5;
 }
 
 message RenderFrame {
@@ -1035,9 +1043,10 @@ message BattlePrepareInfo {
 }
 
 message InputFrameDownsync {
-    repeated uint64 input_list = 1; // Indexed by "join_index", we try to compress the "single player input" into 1 word (64-bit for 64-bit Golang runtime) because atomic compare-and-swap only works on 1 word. Although CAS on custom struct is possible in C# https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked?view=netstandard-2.1, using a single word is still faster whenever possible. 
-    uint64 confirmed_list = 2; // Indexed by "join_index", same compression concern as above
-    uint64 udp_confirmed_list = 3; // [WARNING] Only used by frontend, i.e. on backend this field can be always zero because backend sets "InputFrameDownsync.confirmed_list" by UDP packets too while frontend shouldn't. 
+    uint32 input_count = 1;
+    repeated uint64 input_list = 2; // Indexed by "join_index", we try to compress the "single player input" into 1 word (64-bit for 64-bit Golang runtime) because atomic compare-and-swap only works on 1 word. Although CAS on custom struct is possible in C# https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked?view=netstandard-2.1, using a single word is still faster whenever possible. 
+    uint64 confirmed_list = 3; // Indexed by "join_index", same compression concern as above
+    uint64 udp_confirmed_list = 4; // [WARNING] Only used by frontend, i.e. on backend this field can be always zero because backend sets "InputFrameDownsync.confirmed_list" by UDP packets too while frontend shouldn't. 
 }
 
 enum UpsyncAct {
@@ -1765,14 +1774,15 @@ message PrimitiveConsts {
 
 message AimingRay {
     uint64 offender_ud = 1;
-    float orig_x = 2;
-    float orig_y = 3;
-    float orig_z = 4;
+    uint64 offender_udt = 2;
 
-    // [WARNING] The "direction" includes magnitude 
-    float dir_x = 5;
-    float dir_y = 6;
-    float dir_z = 7;
+    float st_x = 3;
+    float st_y = 4;
+    float st_z = 5;
+
+    float ed_x = 6;
+    float ed_y = 7;
+    float ed_z = 8;
 }
 
 message ConfigConsts {

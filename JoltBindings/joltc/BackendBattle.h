@@ -10,7 +10,7 @@ using namespace JPH;
 
 class JOLTC_EXPORT BackendBattle : public BaseBattle {
 public:
-    BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator)  {
+    BackendBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator) : BaseBattle(renderBufferSize, inputBufferSize, inGlobalTempAllocator, BackendBattle::ArenaAllocStepResult)  {
         downsyncSnapshotHolder = google::protobuf::Arena::Create<DownsyncSnapshot>(&pbSemiPermAllocator);
         wsReqHolder = google::protobuf::Arena::Create<WsReq>(&pbSemiPermAllocator);
 
@@ -53,6 +53,12 @@ public:
     virtual bool ResetStartRdf(WsReq* initializerMapData);
 
     int GetDynamicsRdfId();
+
+    static inline StepResult* ArenaAllocStepResult(google::protobuf::Arena* theAllocator) {
+        auto* stepResult = google::protobuf::Arena::Create<StepResult>(theAllocator);
+        // Don't preallocate aiming rays for backend
+        return stepResult;
+    }
 
 protected:
     void produceDownsyncSnapshot(uint64_t unconfirmedMask, int stIfdId, int edIfdId, bool withRefRdf, DownsyncSnapshot** outResult);

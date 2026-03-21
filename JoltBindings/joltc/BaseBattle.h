@@ -195,7 +195,7 @@ using namespace jtshared;
 
 class JOLTC_EXPORT BaseBattle : public JPH::ContactListener, public BaseBattleCollisionFilter {
 public:
-    BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator);
+    BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator* inGlobalTempAllocator, ALLOC_T_FUNC<StepResult, google::protobuf::Arena> arenaAllocStepResultFunc);
     virtual ~BaseBattle();
 
 public:
@@ -249,13 +249,17 @@ public:
     }
 
     FrameRingBuffer<StepResult, google::protobuf::Arena> stepResultBuffer;
-    static inline StepResult* ArenaAllocStepResult(google::protobuf::Arena* theAllocator) {
-        return google::protobuf::Arena::Create<StepResult>(theAllocator);
-    }
 
     static inline void ArenaFreeStepResult(StepResult* val, google::protobuf::Arena* theAllocator) {
         if (nullptr == val) return;
         val->Clear();
+    }
+
+    static inline void ResetStepResult(StepResult* stepResult) {
+        stepResult->set_aiming_ray_count(0); // [WARNING] Don't call "clear_aiming_rays" which is designed to be used in a multi-threaded context.
+        stepResult->clear_fulfilled_triggers();
+        stepResult->clear_fulfilled_trigger_ids();
+        stepResult->clear_fulfilled_trigger_group_ids();
     }
 
     std::vector<uint64_t> prefabbedInputList;
@@ -530,6 +534,11 @@ public:
         JPH_ASSERT(isNearlySame(lhs.x(), lhs.y(), lhs.z(), rhs.x(), rhs.y(), rhs.z()));
         JPH::Quat lhsQ(lhs.q_x(), lhs.q_y(), lhs.q_z(), lhs.q_w()), rhsQ(rhs.q_x(), rhs.q_y(), rhs.q_z(), rhs.q_w());
         JPH_ASSERT(lhsQ.IsClose(rhsQ));
+        JPH_ASSERT(lhs.bir_count() == rhs.bir_count());
+        JPH_ASSERT(lhs.buff_count() == rhs.buff_count());
+        JPH_ASSERT(lhs.debuff_count() == rhs.debuff_count());
+        JPH_ASSERT(lhs.ivs_count() == rhs.ivs_count());
+        JPH_ASSERT(lhs.kk_count() == rhs.kk_count());
     }
 
     inline static void AssertNearlySame(const Bullet& lhs, const Bullet& rhs) {
@@ -705,7 +714,9 @@ protected:
         return (CrouchIdle1 == state || CrouchAtk1 == state || CrouchAtked1 == state || (Sliding == state && cc->crouching_enabled()));
     }
 
-    inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing);
+    inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing) {
+        return (inAirSet.count(chd.ch_state()) && notDashing);
+    }
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
 
@@ -763,7 +774,8 @@ protected:
     void processDelayedBulletSelfVel(const int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
 
     virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion);
-    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion);
+
+    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult);
 
     virtual void topoSortTriggerConfigFromTiledList(WsReq* initializerMapData);
     virtual void stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
@@ -779,6 +791,9 @@ protected:
     void leftShiftDeadIvSlots(const int currRdfId, CharacterDownsync* nextChd);
     void leftShiftDeadBuffs(const int currRdfId, CharacterDownsync* nextChd);
     void leftShiftDeadDebuffs(const int currRdfId, CharacterDownsync* nextChd);
+
+    void ClearNpcChd(NpcCharacterDownsync* npc);
+    void ClearChd(CharacterDownsync* chd);
 
     void CopyIfd(const InputFrameDownsync* from, InputFrameDownsync* to);
     void CopyRdf(const RenderFrame* from, RenderFrame* to);
@@ -1051,6 +1066,19 @@ public:
         return JPH::ValidateResult::AcceptContact;
     }
 
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const {
+        const uint32_t trt = rhsCurrTrigger->trt();
+        
+        if (globalPrimitiveConsts->trt_by_movement() == trt && TriggerState::TrReady == rhsCurrTrigger->state() && 0 < rhsCurrTrigger->quota()) {
+            return JPH::ValidateResult::AcceptContact;
+        }
+        return JPH::ValidateResult::RejectContact;
+    }
+
+    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Pickable* rhsCurrPickable) const {
+        return JPH::ValidateResult::AcceptContact;
+    }
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         if (transientSlipJumpableUds.count(udRhs)) {
             // Check early returns
@@ -1119,6 +1147,17 @@ public:
             } 
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrTp);
         }
+        case UDT_TRIGGER: {
+            if (!transientUdToCurrTrigger.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrTr = transientUdToCurrTrigger.at(udRhs);
+            if (globalPrimitiveConsts->terminating_trigger_id() == rhsCurrTr->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
+            return validateLhsCharacterContact(lhsCurrChd, rhsCurrTr);
+        }
         default:
             return JPH::ValidateResult::AcceptContact;
         }
@@ -1146,6 +1185,73 @@ public:
             }
             default:
                 return JPH::ValidateResult::AcceptContact;
+        }
+    }
+
+    virtual JPH::ValidateResult validateLhsCharacterAimingRayContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+        if (transientSlipJumpableUds.count(udRhs)) {
+            return JPH::ValidateResult::RejectContact;
+        }
+
+        switch (udtRhs) {
+        case UDT_PLAYER: {
+            if (!transientUdToCurrPlayer.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrPlayer = transientUdToCurrPlayer.at(udRhs);
+            auto& rhsCurrChd = rhsCurrPlayer->chd();
+            return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
+        }
+        case UDT_NPC: {
+            if (!transientUdToCurrNpc.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrNpc = transientUdToCurrNpc.at(udRhs);
+            if (globalPrimitiveConsts->terminating_character_id() == rhsCurrNpc->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
+            auto& rhsCurrChd = rhsCurrNpc->chd();
+            return validateLhsCharacterContact(lhsCurrChd, &rhsCurrChd);
+        }
+        case UDT_BL: {
+            if (!transientUdToCurrBl.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
+            if (globalPrimitiveConsts->terminating_bullet_id() == rhsCurrBl->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
+            return validateLhsCharacterContact(lhsCurrChd, rhsCurrBl);
+        }
+        case UDT_TRAP: {
+            if (!transientUdToCurrTrap.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrTp = transientUdToCurrTrap.at(udRhs);
+            if (globalPrimitiveConsts->terminating_trap_id() == rhsCurrTp->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
+            return validateLhsCharacterContact(lhsCurrChd, rhsCurrTp);
+        }
+        case UDT_TRIGGER: {
+            if (!transientUdToCurrTrigger.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrTr = transientUdToCurrTrigger.at(udRhs);
+            if (globalPrimitiveConsts->terminating_trigger_id() == rhsCurrTr->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            } 
+            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
+                return JPH::ValidateResult::AcceptContact;
+            }
+            return JPH::ValidateResult::RejectContact;
+        }
+        default:
+            return JPH::ValidateResult::AcceptContact;
         }
     }
 
@@ -1187,6 +1293,20 @@ public:
                 return JPH::ValidateResult::RejectContact;
             }
             return JPH::ValidateResult::AcceptContact;
+        }
+        case UDT_TRIGGER: {
+            if (!transientUdToCurrTrigger.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrTr = transientUdToCurrTrigger.at(udRhs);
+            if (globalPrimitiveConsts->terminating_trigger_id() == rhsCurrTr->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            }
+            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
+                return JPH::ValidateResult::AcceptContact;
+            }
+            return JPH::ValidateResult::RejectContact;
         }
         default:
             return JPH::ValidateResult::AcceptContact;

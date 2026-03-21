@@ -1,5 +1,8 @@
 #include "FrontendBattle.h"
-#include <string>
+#include "CharacterCollideShapeCollector.h"
+
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 
 bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) {
     int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
@@ -175,12 +178,16 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
                 while (ifdBuffer.EdFrameId <= ifdId) {
                     InputFrameDownsync* holder = ifdBuffer.DryPut();
-                    holder->clear_input_list();
+                    holder->set_input_count(playersCnt);
                     for (int k = 0; k < playersCnt; ++k) {
-                        if (0 < (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
-                            holder->add_input_list(0);
+                        uint64_t predictedCmd = 0;
+                        if (0 == (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
+                            predictedCmd = playerInputFronts[k];
+                        }
+                        if (k < holder->input_list_size()) {
+                            holder->set_input_list(k, predictedCmd);
                         } else {
-                            holder->add_input_list(playerInputFronts[k]);
+                            holder->add_input_list(predictedCmd);
                         }
                     }
                     holder->set_confirmed_list(0);
@@ -643,8 +650,71 @@ bool FrontendBattle::ResetStartRdf(WsReq* initializerMapData, const uint32_t inS
     return res;
 }
 
-void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion) {
-    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, chCollider, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
+void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+    if (nullptr != stepResult && cc->has_btn_b_charging() && globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() < nextChd->btn_b_holding_rdf_cnt()) {
+        auto nextChState = nextChd->ch_state();
+        bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+        bool nextDashing = !nextNotDashing;
+        bool nextWalking = walkingSet.count(nextChState);
+        bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
+        bool nextOnWall = onWallSet.count(nextChState);
+        bool nextCrouching = isCrouching(nextChState, cc);
+        int potentialEncodedPattern = EncodePatternForCancelTransit(globalPrimitiveConsts->pattern_released_b(), nextEffInAir, nextCrouching, nextOnWall, nextDashing, nextWalking);
+        auto initSkillDict = &(cc->init_skill_transit());
+        if (nullptr != battleSpecificConfig && 0 < battleSpecificConfig->character_overrides_size()) {
+            auto& characterOverrides = battleSpecificConfig->character_overrides();
+            if (characterOverrides.count(ud)) {
+                auto& characterOverride = characterOverrides.at(ud);
+                if (0 < characterOverride.init_skill_transit_size()) {
+                    initSkillDict = &(characterOverride.init_skill_transit());
+                }
+            }
+        }
+
+        if (initSkillDict->count(potentialEncodedPattern)) {
+            auto potentialSkillId = initSkillDict->at(potentialEncodedPattern);
+            if (globalConfigConsts->skill_configs().count(potentialSkillId)) {
+                const Skill& potentialSkillConfig = globalConfigConsts->skill_configs().at(potentialSkillId);
+                const BulletConfig& potentialBulletConfig = potentialSkillConfig.hits(0);
+                BodyID bodyID = chCollider->GetBodyID();
+                AimingRayBodyFilter aimingRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, bodyID, ud, this);
+                
+                JPH::Quat nextChdQ;
+                Vec3 nextChdFacing;
+                calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
+
+                JPH::Quat offenderEffQ = 0 < nextChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                if (OnWallAtk1 == potentialSkillConfig.bound_ch_state()) {
+                    offenderEffQ = cTurnbackAroundYAxis * offenderEffQ;
+                }
+                JPH::Quat offenderEffAimingQ = JPH::Quat(nextChd->aiming_q_x(), nextChd->aiming_q_y(), nextChd->aiming_q_z(), nextChd->aiming_q_w()) * offenderEffQ;
+
+                Vec3 blInitOffset(potentialBulletConfig.hitbox_offset_x(), potentialBulletConfig.hitbox_offset_y(), 0);
+                Vec3 blEffOffset = offenderEffAimingQ * blInitOffset;
+
+                RVec3 potentialBulletStPos(nextChd->x() + blEffOffset.GetX(), nextChd->y() + blEffOffset.GetY(), nextChd->z());
+                Vec3 blEffAiming = offenderEffAimingQ * cXAxis;
+                RVec3 potentialAimingRayFacingVec = cDefaultAimingRayLength * blEffAiming;
+                RRayCast ray(potentialBulletStPos, potentialAimingRayFacingVec);
+                bool rayTestPassed = false;
+                RayCastResult rcResult;
+                narrowPhaseQueryNoLock->CastRay(ray, rcResult, {}, {}, aimingRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
+                uint32_t oldAimingRayCount = mNextRdfAimingRayCount.fetch_add(1);
+                AimingRay* newAimingRay = stepResult->mutable_aiming_rays(oldAimingRayCount);
+                newAimingRay->set_offender_ud(ud);
+                newAimingRay->set_offender_udt(udt);
+                newAimingRay->set_st_x(potentialBulletStPos.GetX());
+                newAimingRay->set_st_y(potentialBulletStPos.GetY());
+                newAimingRay->set_st_z(potentialBulletStPos.GetZ());
+                newAimingRay->set_ed_x(potentialBulletStPos.GetX()+rcResult.mFraction*potentialAimingRayFacingVec.GetX());
+                newAimingRay->set_ed_y(potentialBulletStPos.GetY()+rcResult.mFraction*potentialAimingRayFacingVec.GetY());
+                newAimingRay->set_ed_z(potentialBulletStPos.GetZ()+rcResult.mFraction*potentialAimingRayFacingVec.GetZ());
+            }
+        }
+    }
+
+    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, chCollider, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+
 /*
 #ifndef NDEBUG
     auto udPayload = getUDPayload(ud);

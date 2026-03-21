@@ -65,6 +65,7 @@ const float  cLengthEps = 1e-3;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;
 const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
+const float  cDefaultAimingRayLength = 2048.0;
 
 const std::vector<std::vector<int>> DIRECTION_DECODER = {
     { 0, 0 }, // 0

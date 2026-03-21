@@ -55,7 +55,7 @@ namespace JoltCSharp {
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 16f,
-            HitboxOffsetY = 20f,
+            HitboxOffsetY = HunterPistolOffsetYAir,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             AnimName = "Fireball1",
@@ -73,18 +73,21 @@ namespace JoltCSharp {
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(16f, 32f)
+                                                                .SetHitboxOffsets(16f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
         private static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetSelfLockVel(0, 0, 0)
-                                                                .SetHitboxOffsets(11f, 20f);
+                                                                .SetHitboxOffsets(11f, HunterPistolOffsetYCrouch);
 
         private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
-                                                                .SetHitboxOffsets(22f, 32f)
+                                                                .SetHitboxOffsets(22f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
+
+        private static BulletConfig BasicPistolBulletOnWall = new BulletConfig(BasicPistolBulletAir)
+                                                                .SetHitboxOffsets(BasicPistolBulletAir.HitboxOffsetX, HunterPistolOffsetYOnWall);
 
         public static Skill HunterPistolWall = new Skill {
             Id = HunterPistolWallId,
@@ -93,7 +96,7 @@ namespace JoltCSharp {
             RecoveryFramesOnHit = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.OnWallAtk1
-        }.AddHit(new BulletConfig(BasicPistolBulletAir)
+        }.AddHit(new BulletConfig(BasicPistolBulletOnWall)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
         );
 
@@ -166,7 +169,7 @@ namespace JoltCSharp {
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 16f,
-            HitboxOffsetY = 20f,
+            HitboxOffsetY = HunterPistolOffsetYAir,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
             AnimName = "Fireball2",
@@ -184,18 +187,21 @@ namespace JoltCSharp {
         };
 
         private static BulletConfig BasicChargedPistolBulletGround = new BulletConfig(BasicChargedPistolBulletAir)
-                                                                .SetHitboxOffsets(16f, 32f)
+                                                                .SetHitboxOffsets(16f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
         private static BulletConfig BasicChargedPistolBulletCrouch = new BulletConfig(BasicChargedPistolBulletAir)
                                                                 .SetSelfLockVel(0, 0, 0)
-                                                                .SetHitboxOffsets(11f, 20f);
+                                                                .SetHitboxOffsets(11f, HunterPistolOffsetYCrouch);
 
         private static BulletConfig BasicChargedPistolBulletWalking = new BulletConfig(BasicChargedPistolBulletAir)
-                                                                .SetHitboxOffsets(22f, 32f)
+                                                                .SetHitboxOffsets(22f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
+
+        private static BulletConfig BasicChargedPistolBulletOnWall = new BulletConfig(BasicChargedPistolBulletAir)
+                                                                .SetHitboxOffsets(BasicChargedPistolBulletAir.HitboxOffsetX, HunterPistolOffsetYOnWall);
 
         public static Skill HunterChargedPistolWall = new Skill {
             Id = HunterChargedPistolWallId,
@@ -204,7 +210,7 @@ namespace JoltCSharp {
             RecoveryFramesOnHit = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
             InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.OnWallAtk1
-        }.AddHit(new BulletConfig(BasicChargedPistolBulletAir)
+        }.AddHit(new BulletConfig(BasicChargedPistolBulletOnWall)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
         );
 
