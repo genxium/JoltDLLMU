@@ -564,6 +564,7 @@ void FrontendBattle::regulateCmdBeforeRender(const int currRdfId, const int dela
         // Local prediction
         if (playerInputFrontIds[i] < delayedIfdId) {
             newVal = (playerInputFronts[i] & U64_15);
+        } else {
         }
 
         if (shouldPredictBtnAHold) newVal |= U64_16;

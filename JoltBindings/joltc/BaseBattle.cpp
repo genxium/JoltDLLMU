@@ -597,6 +597,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     mNextRdfNpcIdCounter = nextRdf->npc_id_counter();
     mNextRdfNpcCount = nextRdf->npc_count();
 
+    mNextRdfPickableIdCounter = nextRdf->pickable_id_counter();
+    mNextRdfPickableCount = nextRdf->pickable_count();
+
+    mNextRdfTriggerCount = nextRdf->trigger_count();
+
+    mNextRdfDynamicTrapCount = nextRdf->dynamic_trap_count();
+
     batchPutIntoPhySysFromCache(currRdfId, currRdf, nextRdf);
 
     StepResult* stepResult = stepResultBuffer.GetByFrameId(currRdfId + 1);
@@ -606,7 +613,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     ResetStepResult(stepResult);
     mNextRdfAimingRayCount = 0;
 
-    for (int i = 0; i < currRdf->triggers_size(); i++) {
+    for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
         const uint32_t trt = currTrigger.trt();
@@ -673,7 +680,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->npcs_size(); i++) {
+    for (int i = 0; i < currRdf->npc_count(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs(i).id()) break;
         auto handle = jobSys->CreateJob("npc-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
@@ -732,7 +739,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     }
 
     // Update positions and velocities of active bullets
-    for (int i = 0; i < currRdf->bullets_size(); i++) {
+    for (int i = 0; i < currRdf->bullet_count(); i++) {
         const Bullet& currBl = currRdf->bullets(i);
         if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
         auto handle = jobSys->CreateJob("bullet-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
@@ -758,7 +765,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+    for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         const Trap& currTp = currRdf->dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
         auto handle = jobSys->CreateJob("dynamic-trap-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
@@ -881,7 +888,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->npcs_size(); i++) {
+    for (int i = 0; i < currRdf->npc_count(); i++) {
         if (globalPrimitiveConsts->terminating_character_id() == currRdf->npcs(i).id()) break;
         auto handle = jobSys->CreateJob("npc-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, stepResult]() {
             const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
@@ -937,7 +944,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->bullets_size(); i++) {
+    for (int i = 0; i < currRdf->bullet_count(); i++) {
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
         auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const Bullet& currBl = currRdf->bullets(i);
@@ -957,9 +964,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
                 int cntNow = holder->GetCnt_Realtime();
                 uint64_t udRhs;
-                ContactPoints contactPointsLhs;                
+                ContactPoints contactPointsLhs;
+                Vec3 worldSpaceNorm;
                 for (int j = 0; j < holder->GetCnt_Realtime(); ++j) {
-                    bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs);
+                    bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNorm);
                     if (!fetched) continue;
                     uint64_t udtRhs = getUDT(udRhs);
                     switch (udtRhs) {
@@ -969,26 +977,67 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     case UDT_OBSTACLE:
                     case UDT_TRIGGER:
                         switch (lhsBlConfig->b_type()) {
-                        case BulletType::MechanicalCartridge: {
-                            shouldVanish = true;
-                            for (int k = 0; k < contactPointsLhs.size(); ++k) {
-                                vanishingPosAdds += contactPointsLhs.at(k);
-                                vanishingPosAddsCnt += 1;
+                        case BulletType::Melee:
+                            if (!lhsBlConfig->remains_upon_hit() && (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs)) {
+                                shouldVanish = true;
+                                if (0 < lhsBlConfig->melee_hit_self_stun_frames()) {
+                                    uint64_t offenderUd = currBl.offender_ud(); 
+                                    CharacterDownsync* offenderNextChd = mutableNextChdFromUd(offenderUd);
+                                    // [REMINDER] We're in a multi-threaded callback handler, in theory it's NOT thread-safe to update "offenderNextChd" here, but in this specific case it's thread-safe because there'd be AT MOST ONE ACTIVE MELEE bullet satisfying "0 < lhsBlConfig->melee_hit_self_stun_frames()" from an offender at each RenderFrame.     
+                                    if (offenderNextChd->ch_state() == lhsSkill->bound_ch_state()) {
+                                        //int remainingActiveRdfCnt = (lhsBlConfig->active_frames() - currBl.frames_in_bl_state());
+                                        offenderNextChd->set_hit_self_stun_frames(lhsBlConfig->melee_hit_self_stun_frames() + lhsBlConfig->cooldown_frames() - 1);
+                                        offenderNextChd->set_frames_to_recover(1);
+                                    }
+                                }
                             }
                             break;
-                        }
+                        case BulletType::MechanicalCartridge: 
+                            if (!lhsBlConfig->remains_upon_hit()) {
+                                shouldVanish = true;
+                            }
+                            break;
                         case BulletType::MagicalFireball:
-                        case BulletType::Melee:
+                            if (!lhsBlConfig->remains_upon_hit()) {
+                                shouldVanish = true;
+                            }
                             break;
                         case BulletType::GroundWave:
-                            // TODO: Only explode when it's NOT colliding with the supporting barrier
+                            if (!lhsBlConfig->remains_upon_hit()) {
+                                if (UDT_PLAYER == udtRhs || UDT_NPC == udRhs) {
+                                    shouldVanish = true;
+                                } else if (UDT_TRIGGER == udtRhs || UDT_OBSTACLE == udtRhs) {
+                                    if (0 >= worldSpaceNorm.GetY()) {
+                                        shouldVanish = true;
+                                    }
+                                }
+                            }
                             break;
                         default:
                             break;
                         }
                         break;
+                    case UDT_BL: {
+                        if (!transientUdToCurrBl.count(udRhs)) {
+                            break;
+                        }
+                        const Bullet* rhsCurrBl = transientUdToCurrBl.at(udRhs);
+                        const Skill* rhsSkill = nullptr;
+                        const BulletConfig* rhsBlConfig = nullptr;
+                        FindBulletConfig(rhsCurrBl->skill_id(), rhsCurrBl->active_skill_hit(), rhsSkill, rhsBlConfig);
+                        if (rhsBlConfig->hardness() >= lhsBlConfig->hardness()) {
+                            shouldVanish = true;
+                        }
+                        break;
+                    }
                     default:
                         break;
+                    }
+                    if (shouldVanish) {
+                        for (int k = 0; k < contactPointsLhs.size(); ++k) {
+                            vanishingPosAdds += contactPointsLhs.at(k);
+                            vanishingPosAddsCnt += 1;
+                        }
                     }
                 }
             }
@@ -998,7 +1047,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 RVec3 newPos;
                 Quat newRot;
                 biNoLock->GetPositionAndRotation(bodyID, newPos, newRot);
-                auto newVel = biNoLock->GetLinearVelocity(bodyID);
+                Vec3 newVel(currBl.vel_x(), currBl.vel_y(), currBl.vel_z());
+                Vec3 newVelFromPhySys = biNoLock->GetLinearVelocity(bodyID);
+                if (lhsBlConfig->takes_gravity()) {
+                    newVel.SetY(newVelFromPhySys.GetY());
+                }
+                // [TODO] Takes "newVelFromPhySys.GetX()" too if "lhsBlConfig" accepts bouncing
 
                 nextBl->set_x(newPos.GetX());
                 nextBl->set_y(newPos.GetY());
@@ -1030,7 +1084,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+    for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         if (globalPrimitiveConsts->terminating_trap_id() == currRdf->dynamic_traps(i).id()) break;
         auto handle = jobSys->CreateJob("dynamic-trap-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
                 const Trap& currTp = currRdf->dynamic_traps(i);
@@ -1071,7 +1125,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->triggers_size(); i++) {
+    for (int i = 0; i < currRdf->trigger_count(); i++) {
         if (globalPrimitiveConsts->terminating_trigger_id() == currRdf->triggers(i).id()) break;
         
     }
@@ -1080,7 +1134,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier);
     
     // Special handling for triggers that MUST subscribe to its own "publishing_to_trigger_id_upon_exhausted"
-    for (int i = 0; i < currRdf->triggers_size(); i++) {
+    for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
         if (!directNpcSpawnerTrtSet.count(currTrigger.trt())) {
@@ -1122,7 +1176,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     nextRdf->set_bullet_id_counter(mNextRdfBulletIdCounter.load());
 
     leftShiftDeadPickables(currRdfId, nextRdf);
+    nextRdf->set_pickable_count(mNextRdfPickableCount.load());
+
+    leftShiftDeadDynamicTraps(currRdfId, nextRdf);
+    nextRdf->set_dynamic_trap_count(mNextRdfDynamicTrapCount.load());
+
     leftShiftDeadTriggers(currRdfId, nextRdf);
+    nextRdf->set_trigger_count(mNextRdfTriggerCount.load());
 
     stepResult->set_aiming_ray_count(mNextRdfAimingRayCount.load());
 
@@ -2266,15 +2326,15 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
     float newY = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd.y() + blEffOffset.GetY() : referenceBullet->y() + blEffOffset.GetY();
 
     if (nullptr != prevBulletConfig && prevBulletConfig->ground_impact_melee_collision()) {
-        newY = currChd.y() + bulletConfig.hitbox_offset_y();
+        newY = currChd.y() + blEffOffset.GetY();
     } else if (BulletType::GroundWave == bulletConfig.b_type()) {
         // TODO: Lower "newY" if on slope and facing down?
     }
 
     // To favor startup vfx display which is based on bullet originatedVx&originatedVy.
     if (nullptr != referenceBulletConfig && MultiHitType::FromVisionSeekOrDefault == referenceBulletConfig->mh_type()) {
-        newX = currChd.x() + bulletConfig.hitbox_offset_x();
-        newY = currChd.y() + bulletConfig.hitbox_offset_y();
+        newX = currChd.x() + blEffOffset.GetX();
+        newY = currChd.y() + blEffOffset.GetY();
         newOriginatedX = newX;
         newOriginatedY = newY;
     }
@@ -2503,8 +2563,12 @@ void BaseBattle::elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* 
 }
 
 void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, CharacterDownsync* cd, const CharacterConfig* cc) {
-    cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
-    cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
+    if (0 < cd->hit_self_stun_frames()) {
+        cd->set_hit_self_stun_frames(cd->hit_self_stun_frames() - 1);
+    } else {
+        cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
+        cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
+    }
     if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
         cd->set_lower_part_rdf_cnt(cd->lower_part_rdf_cnt() + 1);
     }
@@ -2794,7 +2858,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
     }
 
-    for (int i = 0; i < currRdf->npcs_size(); i++) {
+    for (int i = 0; i < currRdf->npc_count(); i++) {
         const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
         NpcCharacterDownsync* nextNpc = nextRdf->mutable_npcs(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadNpcs", hence the indices of "currRdf->npcs" and "nextRdf->npcs" are FULLY ALIGNED.
@@ -2815,7 +2879,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
     The callstack "getOrCreateCachedCharacterCollider_NotThreadSafe -> createDefaultCharacterCollider" implicitly adds the "JPH::Character.mBodyID" into "BroadPhase", therefore "bodyIDsToAdd" starts here.
     */ 
     bodyIDsToAdd.clear();
-    for (int i = 0; i < currRdf->bullets_size(); i++) {
+    for (int i = 0; i < currRdf->bullet_count(); i++) {
         const Bullet& currBl = currRdf->bullets(i);
         if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
         Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
@@ -2827,6 +2891,21 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
         if (BulletState::Active == currBl.bl_state()) {
             Vec3 newPos(currBl.x(), currBl.y(), currBl.z());
+            if (Melee == bulletConfig->b_type()) {
+                const CharacterDownsync& currChd = immutableCurrChdFromUd(currBl.offender_ud());
+                Quat currChdQ;
+                Vec3 currChdFacing;
+                BaseBattleCollisionFilter::calcChdFacing(currChd, currChdQ, currChdFacing);
+                JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                if (OnWallAtk1 == skill->bound_ch_state()) {
+                    offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
+                }
+                JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
+                Vec3 blInitOffset(bulletConfig->hitbox_offset_x(), bulletConfig->hitbox_offset_y(), 0);
+                Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
+                newPos.SetX(currChd.x() + blEffOffset.GetX());
+                newPos.SetY(currChd.y() + blEffOffset.GetY());
+            }
             Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
             auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), bulletConfig->b_type(), newPos, newRot);
             transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
@@ -2838,7 +2917,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         }
     }
 
-    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+    for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         const Trap& currTp = currRdf->dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
         Trap* nextTp = nextRdf->mutable_dynamic_traps(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadDynamicTraps", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
@@ -2886,7 +2965,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         }
     }
 
-    for (int i = 0; i < currRdf->triggers_size(); i++) {
+    for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTr = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTr.id()) break;
         Trigger* nextTr = nextRdf->mutable_triggers(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadTriggers", hence the indices of "currRdf->triggers" and "nextRdf->triggers" are FULLY ALIGNED.
@@ -2934,7 +3013,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
 void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf) {
     JobSystem::Barrier* nonContactConstraintSetupMTBarrier = jobSys->CreateBarrier();
-    for (int i = 0; i < currRdf->dynamic_traps_size(); i++) {
+    for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         const Trap& currTp = currRdf->dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
         Trap* nextTp = nextRdf->mutable_dynamic_traps(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadDynamicTraps", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
@@ -3249,6 +3328,13 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
 
     mNextRdfNpcIdCounter = 1;
     mNextRdfNpcCount = 0;
+
+    mNextRdfPickableIdCounter = 0;
+    mNextRdfPickableCount = 0;
+
+    mNextRdfTriggerCount = 0;
+
+    mNextRdfDynamicTrapCount = 0;
 
     mNextRdfAimingRayCount = 0;
 }
@@ -3722,6 +3808,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     // Remove any active skill if not attacking
     bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     if (nonAttackingSet.count(nextChd->ch_state()) && notDashing) {
+        nextChd->set_hit_self_stun_frames(0);
         nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
         nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
     }
@@ -3891,7 +3978,7 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
         candI++;
         aliveI++;
     }
-    if (aliveI < mNextRdfNpcCountVal) {
+    if (aliveI < nextRdf->npcs_size()) {
         auto terminatingCand = nextRdf->mutable_npcs(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_character_id());
     }
@@ -3971,7 +4058,7 @@ void BaseBattle::leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf)
         candI++;
         aliveI++;
     }
-    if (aliveI < mNextRdfBulletCountVal) {
+    if (aliveI < nextRdf->bullets_size()) {
         auto terminatingCand = nextRdf->mutable_bullets(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
@@ -3980,18 +4067,19 @@ void BaseBattle::leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf)
 
 void BaseBattle::leftShiftDeadPickables(const int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
-    while (candI < nextRdf->pickables_size()) {
+    int mNextRdfPickableCountVal = mNextRdfPickableCount.load();
+    while (candI < mNextRdfPickableCountVal) {
         const Pickable* cand = &(nextRdf->pickables(candI));
         if (globalPrimitiveConsts->terminating_pickable_id() == cand->id()) {
             break;
         }
-        while (candI < nextRdf->pickables_size() && globalPrimitiveConsts->terminating_pickable_id() != cand->id() && !isPickableAlive(cand, currRdfId)) {
+        while (candI < mNextRdfPickableCountVal && globalPrimitiveConsts->terminating_pickable_id() != cand->id() && !isPickableAlive(cand, currRdfId)) {
             candI++;
-            if (candI >= nextRdf->pickables_size()) break;
+            if (candI >= mNextRdfPickableCountVal) break;
             cand = &(nextRdf->pickables(candI));
         }
 
-        if (candI >= nextRdf->pickables_size() || globalPrimitiveConsts->terminating_pickable_id() == nextRdf->pickables(candI).id()) {
+        if (candI >= mNextRdfPickableCountVal || globalPrimitiveConsts->terminating_pickable_id() == nextRdf->pickables(candI).id()) {
             break;
         }
 
@@ -4008,23 +4096,24 @@ void BaseBattle::leftShiftDeadPickables(const int currRdfId, RenderFrame* nextRd
         auto terminatingCand = nextRdf->mutable_pickables(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_pickable_id());
     }
-    nextRdf->set_pickable_count(aliveI);
+    mNextRdfPickableCount = aliveI;
 }
 
 void BaseBattle::leftShiftDeadDynamicTraps(const int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
-    while (candI < nextRdf->dynamic_traps_size()) {
+    int mNextRdfDynamicTrapCountVal = mNextRdfDynamicTrapCount.load();
+    while (candI < mNextRdfDynamicTrapCountVal) {
         const Trap* cand = &(nextRdf->dynamic_traps(candI));
         if (globalPrimitiveConsts->terminating_trap_id() == cand->id()) {
             break;
         }
-        while (candI < nextRdf->dynamic_traps_size() && globalPrimitiveConsts->terminating_trap_id() != cand->id() && !isTrapAlive(cand, currRdfId)) {
+        while (candI < mNextRdfDynamicTrapCountVal && globalPrimitiveConsts->terminating_trap_id() != cand->id() && !isTrapAlive(cand, currRdfId)) {
             candI++;
-            if (candI >= nextRdf->dynamic_traps_size()) break;
+            if (candI >= mNextRdfDynamicTrapCountVal) break;
             cand = &(nextRdf->dynamic_traps(candI));
         }
 
-        if (candI >= nextRdf->dynamic_traps_size() || globalPrimitiveConsts->terminating_trap_id() == nextRdf->dynamic_traps(candI).id()) {
+        if (candI >= mNextRdfDynamicTrapCountVal || globalPrimitiveConsts->terminating_trap_id() == nextRdf->dynamic_traps(candI).id()) {
             break;
         }
 
@@ -4041,23 +4130,24 @@ void BaseBattle::leftShiftDeadDynamicTraps(const int currRdfId, RenderFrame* nex
         auto terminatingCand = nextRdf->mutable_dynamic_traps(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_trap_id());
     }
-    nextRdf->set_dynamic_trap_count(aliveI);
+    mNextRdfDynamicTrapCount = aliveI;
 }
 
 void BaseBattle::leftShiftDeadTriggers(const int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
-    while (candI < nextRdf->triggers_size()) {
+    int mNextRdfTriggerCountVal = mNextRdfTriggerCount.load();
+    while (candI < mNextRdfTriggerCountVal) {
         const Trigger* cand = &(nextRdf->triggers(candI));
         if (globalPrimitiveConsts->terminating_trigger_id() == cand->id()) {
             break;
         }
-        while (candI < nextRdf->triggers_size() && globalPrimitiveConsts->terminating_trigger_id() != cand->id() && !isTriggerAlive(cand, currRdfId)) {
+        while (candI < mNextRdfTriggerCountVal && globalPrimitiveConsts->terminating_trigger_id() != cand->id() && !isTriggerAlive(cand, currRdfId)) {
             candI++;
-            if (candI >= nextRdf->triggers_size()) break;
+            if (candI >= mNextRdfTriggerCountVal) break;
             cand = &(nextRdf->triggers(candI));
         }
 
-        if (candI >= nextRdf->triggers_size() || globalPrimitiveConsts->terminating_trigger_id() == nextRdf->triggers(candI).id()) {
+        if (candI >= mNextRdfTriggerCountVal || globalPrimitiveConsts->terminating_trigger_id() == nextRdf->triggers(candI).id()) {
             break;
         }
 
@@ -4074,7 +4164,7 @@ void BaseBattle::leftShiftDeadTriggers(const int currRdfId, RenderFrame* nextRdf
         auto terminatingCand = nextRdf->mutable_triggers(aliveI);
         terminatingCand->set_id(globalPrimitiveConsts->terminating_trigger_id());
     }
-    nextRdf->set_trigger_count(aliveI);
+    mNextRdfTriggerCount = aliveI;
 }
 
 void BaseBattle::leftShiftDeadBlImmuneRecords(int currRdfId, CharacterDownsync* nextChd) {
@@ -4410,7 +4500,7 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         NpcCharacterDownsync* toSingle = i < to->npcs_size() ? to->mutable_npcs(i) : to->add_npcs();
         CopyNpcChd(fromSingle, toSingle);
     }
-    if (0 < to->npcs_size() && to->npc_count() < to->npcs_size()) {
+    if (to->npc_count() < to->npcs_size()) {
         NpcCharacterDownsync* toSingle = to->mutable_npcs(to->npc_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_character_id());
     }
@@ -4420,7 +4510,7 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Bullet* toSingle = i < to->bullets_size() ? to->mutable_bullets(i) : to->add_bullets();
         CopyBullet(fromSingle, toSingle);
     }
-    if (0 < to->bullets_size() && to->bullet_count() < to->bullets_size()) {
+    if (to->bullet_count() < to->bullets_size()) {
         Bullet* toSingle = to->mutable_bullets(to->bullet_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_bullet_id());
     }
@@ -4430,7 +4520,7 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Trap* toSingle = i < to->dynamic_traps_size() ? to->mutable_dynamic_traps(i) : to->add_dynamic_traps();
         CopyTrap(fromSingle, toSingle);
     }
-    if (0 < to->dynamic_traps_size() && to->dynamic_trap_count() < to->dynamic_traps_size()) {
+    if (to->dynamic_trap_count() < to->dynamic_traps_size()) {
         Trap* toSingle = to->mutable_dynamic_traps(to->dynamic_trap_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_trap_id());
     }
@@ -4440,7 +4530,7 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Trigger* toSingle = i < to->triggers_size() ? to->mutable_triggers(i) : to->add_triggers();
         CopyTrigger(fromSingle, toSingle);
     }
-    if (0 < to->triggers_size() && to->trigger_count() < to->triggers_size()) {
+    if (to->trigger_count() < to->triggers_size()) {
         Trigger* toSingle = to->mutable_triggers(to->trigger_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_trigger_id());
     }
@@ -4450,7 +4540,7 @@ void BaseBattle::CopyRdf(const RenderFrame* from, RenderFrame* to) {
         Pickable* toSingle = i < to->pickables_size() ? to->mutable_pickables(i) : to->add_pickables();
         CopyPickable(fromSingle, toSingle);
     }
-    if (0 < to->pickables_size() && to->pickable_count() < to->pickables_size()) {
+    if (to->pickable_count() < to->pickables_size()) {
         Pickable* toSingle = to->mutable_pickables(to->pickable_count());
         toSingle->set_id(globalPrimitiveConsts->terminating_pickable_id());
     }
@@ -4614,6 +4704,8 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     to->set_ground_ud(from->ground_ud());
 
     to->set_frames_to_recover(from->frames_to_recover());
+
+    to->set_hit_self_stun_frames(from->hit_self_stun_frames());
 
     to->set_new_birth_rdf_countdown(from->new_birth_rdf_countdown());
 
@@ -4849,13 +4941,13 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
-/*
+
 #ifndef NDEBUG
     std::ostringstream oss3;
     oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by [currVel=(" << currChd.vel_x() << "," << currChd.vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << "], [nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextPos=(" << nextChd->x() << ", " << nextChd->y() << ")], patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy;
     Debug::Log(oss3.str(), DColor::Orange);
 #endif // !NDEBUG
-*/
+
     return true;
 }
 
@@ -5409,9 +5501,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         int cntNow = holder->GetCnt_Realtime();
         uint64_t udRhs;
         ContactPoints contactPointsLhs;
+        Vec3 worldSpaceNorm;
         int holderCnt = holder->GetCnt_Realtime();
         for (int j = 0; j < holderCnt; ++j) {
-            bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs);
+            bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNorm);
             if (!fetched) continue;
             uint64_t udtRhs = getUDT(udRhs);
             if (UDT_BL == udtRhs) {
@@ -5779,7 +5872,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             nextChd->set_last_damaged_by_ud(rhsCurrBl->offender_ud());
         }
 
-        if (rhsBlConfig->remains_upon_hit()) {
+        if (Melee == rhsBlConfig->b_type() || rhsBlConfig->remains_upon_hit()) {
             Vec3 hitPos(currChd->x(), currChd->y(), currChd->z()); 
             Vec3 hitPosAdds(0, 0, 0); 
             int hitPosAddsCnt = 0; 
@@ -5814,11 +5907,11 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     }
 
     if (!successfulDef1) {
-        if (rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
+        if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->hit_stun_frames(); 
         }
     } else {
-        if (rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
+        if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->block_stun_frames(); 
         }
     }

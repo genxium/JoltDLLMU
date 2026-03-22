@@ -1551,7 +1551,7 @@ std::map<int, uint64_t> testCmds12 = {
 
 std::map<int, uint64_t> testCmds13 = {
     {0, 0},
-    {8, 32},
+    {8, 0},
     {9, 0},
     {16, 3},
     {58, 3}, 
@@ -4682,7 +4682,7 @@ bool runTestCase13(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         } else if (70 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atked1 == npc1Chd.ch_state());
-            JPH_ASSERT(1 == npc1Chd.bir_count());
+            JPH_ASSERT(0 < p1Chd.hit_self_stun_frames());
         } else if (103 <= outerTimerRdfId && outerTimerRdfId <= 124) {
             JPH_ASSERT(CharacterState::Dashing == p1Chd.ch_state());
             int expectedFc = outerTimerRdfId-103;

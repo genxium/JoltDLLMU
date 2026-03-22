@@ -465,6 +465,8 @@ message CharacterDownsync {
     int32 walkstopping_rdf_countdown = 18;
     int32 fallstopping_rdf_countdown = 19;
 
+    int32 hit_self_stun_frames = 20;
+
     bool omit_gravity = 21;
 
     uint32 species_id = 22; // For evolution during battle
@@ -707,6 +709,8 @@ message BulletConfig {
     float hitbox_offset_y = 16;
     float hitbox_half_size_x = 17;
     float hitbox_half_size_y = 18;
+
+    int32 melee_hit_self_stun_frames = 19; // [WARNING] Exclusive against "remains_upon_hit". 
 
     string anim_name = 20;
     int32 active_anim_looping_rdf_offset = 21;  

@@ -90,6 +90,8 @@ const std::unordered_set<CharacterState> invinsibleSet = {
 const std::unordered_set<CharacterState> nonAttackingSet = {
     Idle1,
     Walking,
+    WalkingAtk1_Charging,
+    Atk1_Charging,
     BackWalking, 
     Dashing,
     BackDashing,
@@ -106,20 +108,25 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     InAirWalking,
     InAirBackDashing,
     OnWallIdle1,
+    OnWallAtk1_Charging,
     CrouchIdle1,
+    CrouchAtk1_Charging,
     GetUp1,
     Def1, 
     Def1Atked1,
     Def1Broken,
     Atked1,
+    InAirAtk1_Charging,
     InAirAtked1,
     CrouchAtked1,
+    CrouchWalking,
     BlownUp1,
     LayDown1,
     Dying,
     Dimmed, 
     TransformingInto,
-    Awaking
+    Awaking,
+    Parried
 };
 
 const std::unordered_set<CharacterState> shrinkedSizeSet = {
