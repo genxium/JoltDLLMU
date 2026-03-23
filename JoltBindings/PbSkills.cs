@@ -286,6 +286,7 @@ namespace JoltCSharp {
             CancellableEdFrame = 21,
             AnimName = "MeleeSlash2",
             HitAnimRdfCnt = 25,
+            VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 5,
             GuardBreakerExtraHitCnt = 1,
@@ -317,6 +318,7 @@ namespace JoltCSharp {
             CancellableEdFrame = 24,
             AnimName = "MeleeSlash2",
             HitAnimRdfCnt = 25,
+            VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 6,
             GuardBreakerExtraHitCnt = 1,
@@ -346,6 +348,7 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 18f,
             AnimName = "MeleeSlash2",
             HitAnimRdfCnt = 25,
+            VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 7,
             GuardBreakerExtraHitCnt = 1,
@@ -377,17 +380,25 @@ namespace JoltCSharp {
             CancellableEdFrame = 24,
             AnimName = "MeleeSlash2",
             HitAnimRdfCnt = 25,
+            VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 4,
             GuardBreakerExtraHitCnt = 1,
             ReflectFireballXIfNotHarder = true,
             CharacterEmitSfxName = "SlashEmitSpd1",
             HitSfxName="Melee_Vanishing2",
-            RemainsUponHit = true,
+            RemainsUponHit = false,
+            MeleeHitSelfStunFrames = PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES,
             CollisionTypeMask = 0, // TODO
         };
 
         public static BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1)
+                                                       .SetActiveFrames(20)
+                                                       .SetCancellableFrames(0, 0)
+                                                       .SetHitboxOffsets(12f, 16f)
+                                                       .SetHitboxHalfSizes(20f, 18f)
+                                                       .SetRemainsUponHit(false)
+                                                       .SetMeleeHitSelfStunFrames(PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES)
                                                        .SetSelfLockVel(PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel);
 
         public static Skill BladeGirlGroundSlash1 = new Skill {

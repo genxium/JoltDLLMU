@@ -41,6 +41,7 @@ class CollisionUdHolder_ThreadSafe {
 private:
     std::vector<uint64_t> uds; 
     std::vector<ContactPoints> contactPointsPerUd;
+    std::vector<Vec3> worldSpaceNorms;
     atomic<int> cnt;
     int size;
 
@@ -54,13 +55,14 @@ public:
         for (int i = 0; i < inSize; ++i) {
             uds.push_back(0);
             contactPointsPerUd.push_back(ContactPoints());
+            worldSpaceNorms.push_back(Vec3::sZero());
         }
         cnt = 0;
     }
 
     // [WARNING] All fields, including "contactPointsPerUd", will be destructed implicitly when "delete holder" is called in "~CollisionUdHolderStockCache_ThreadSafe". See https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L44 for more information.
 
-    bool Add_ThreadSafe(const uint64_t inUd, const ContactPoints& inContactPoints) {
+    bool Add_ThreadSafe(const uint64_t inUd, const ContactPoints& inContactPoints, const Vec3& inWorldSpaceNorm) {
         int idx = cnt.fetch_add(1);
         if (idx >= size) {
             --cnt;
@@ -68,6 +70,7 @@ public:
         }
         uds[idx] = inUd;
         contactPointsPerUd[idx] = inContactPoints; // It does work this way, see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L225.
+        worldSpaceNorms[idx] = inWorldSpaceNorm;
         return true;
     }
 
@@ -76,11 +79,12 @@ public:
         return cnt;
     }
 
-    bool GetUd_NotThreadSafe(const int idx, uint64_t& outUd, ContactPoints& outContactPoints) {
+    bool GetUd_NotThreadSafe(const int idx, uint64_t& outUd, ContactPoints& outContactPoints, Vec3& outWorldSpaceNorm) {
         uint64_t cand = uds[idx];
         if (seenUdsDuringReading_NotThreadSafe.count(cand)) return false;
         outUd = cand;
         outContactPoints = contactPointsPerUd[idx];
+        outWorldSpaceNorm = worldSpaceNorms[idx];
         seenUdsDuringReading_NotThreadSafe.insert(cand);
         return true;
     }
@@ -523,6 +527,8 @@ public:
         JPH_ASSERT(lhs.btn_e_holding_rdf_cnt() == rhs.btn_e_holding_rdf_cnt());
         JPH_ASSERT(lhs.frames_invinsible() == rhs.frames_invinsible());
         JPH_ASSERT(lhs.frames_to_recover() == rhs.frames_to_recover());
+        JPH_ASSERT(lhs.hit_self_stun_frames() == rhs.hit_self_stun_frames());
+
         JPH_ASSERT(lhs.lower_part_rdf_cnt() == rhs.lower_part_rdf_cnt());
         JPH_ASSERT(lhs.walkstopping_rdf_countdown() == rhs.walkstopping_rdf_countdown());
         JPH_ASSERT(lhs.fallstopping_rdf_countdown() == rhs.fallstopping_rdf_countdown());
@@ -1281,7 +1287,7 @@ public:
 
         }
         case UDT_BL: {
-            auto rhsCurrBl = transientUdToCurrBl.at(udRhs);
+            const Bullet* rhsCurrBl = transientUdToCurrBl.at(udRhs);
             if (lhsCurrBl->team_id() == rhsCurrBl->team_id()) {
                 return JPH::ValidateResult::RejectContact;
             }
@@ -1316,7 +1322,7 @@ public:
     virtual JPH::ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const JPH::Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
-        auto lhsCurrBl = transientUdToCurrBl.at(udLhs);
+        const Bullet* lhsCurrBl = transientUdToCurrBl.at(udLhs);
         return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs, rhs);
     }
 
@@ -1355,12 +1361,12 @@ public:
         if (transientCollisionHolderApplicableUdtPairs.count({ udt1, udt2 })) {
             if (transientUdToCollisionUdHolder.count(ud1)) {
                 CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder.at(ud1);
-                udHolder->Add_ThreadSafe(ud2, inManifold.mRelativeContactPointsOn1);
+                udHolder->Add_ThreadSafe(ud2, inManifold.mRelativeContactPointsOn1, inManifold.mWorldSpaceNormal);
             }
 
             if (transientUdToCollisionUdHolder.count(ud2)) {
                 CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder.at(ud2);
-                udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2);
+                udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2, -inManifold.mWorldSpaceNormal);
             }
         }
 

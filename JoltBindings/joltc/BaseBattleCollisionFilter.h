@@ -142,6 +142,13 @@ public:
     std::atomic<uint32_t>       mNextRdfNpcIdCounter = 0;
     std::atomic<uint32_t>       mNextRdfNpcCount = 0;
 
+    std::atomic<uint32_t>       mNextRdfPickableIdCounter = 0;
+    std::atomic<uint32_t>       mNextRdfPickableCount = 0;
+
+    std::atomic<uint32_t>       mNextRdfTriggerCount = 0;
+
+    std::atomic<uint32_t>       mNextRdfDynamicTrapCount = 0;
+
     std::atomic<uint32_t>       mNextRdfAimingRayCount = 0;
 
     virtual bool providesCrouchForcing(const uint64_t inBarrierUd) const = 0;

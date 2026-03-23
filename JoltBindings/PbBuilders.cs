@@ -168,6 +168,11 @@ namespace jtshared {
             ActiveAnimLoopingRdfOffset = val;
             return this;
         }
+
+        public BulletConfig SetMeleeHitSelfStunFrames(int val) {
+            MeleeHitSelfStunFrames = val;
+            return this;
+        }
     }
 
     public sealed partial class Skill {

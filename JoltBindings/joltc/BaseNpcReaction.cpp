@@ -73,7 +73,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     bool opponentIsFacingMe = false;
 
     int newVisionReaction = TARGET_CH_REACTION_UNCHANGED;
-    if (0 != toHandleOppoChUd) {
+    if (0 != toHandleOppoChUd && (0 == currChd.locking_on_ud() || toHandleOppoChUd == currChd.locking_on_ud())) {
         newVisionReaction = deriveNpcVisionReactionAgainstOppoChUd(currRdfId, currPlayersMap, currNpcsMap, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionDirection, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe);
 
        bool shouldHunt = true;
@@ -118,11 +118,13 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             default:
                 break;
             }
+            nextChd->set_locking_on_ud(toHandleOppoChUd);
         } else {
             // As if hadn't seen the opponent.
             toHandleOppoChUd = 0;
             newVisionReaction = TARGET_CH_REACTION_UNCHANGED;
             outNextNpcGoal = currNpcGoal;
+            nextChd->set_locking_on_ud(0);
         }
     } else {
         switch (currNpcGoal) {
@@ -145,6 +147,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         default:
             break;
         }
+        nextChd->set_locking_on_ud(0);
     }
 
     switch (newVisionReaction) {
