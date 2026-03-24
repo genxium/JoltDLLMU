@@ -110,6 +110,7 @@ const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transi
     {UDT_BL, UDT_TRAP},
     {UDT_BL, UDT_TRIGGER},
     {UDT_BL, UDT_OBSTACLE},
+    {UDT_BL, UDT_BL},
 
     {UDT_OBSTACLE, UDT_BL},
     {UDT_TRIGGER, UDT_BL},

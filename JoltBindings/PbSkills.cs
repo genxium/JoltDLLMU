@@ -393,7 +393,7 @@ namespace JoltCSharp {
         };
 
         public static BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1)
-                                                       .SetActiveFrames(20)
+                                                       .SetActiveFrames(16)
                                                        .SetCancellableFrames(0, 0)
                                                        .SetHitboxOffsets(12f, 16f)
                                                        .SetHitboxHalfSizes(20f, 18f)

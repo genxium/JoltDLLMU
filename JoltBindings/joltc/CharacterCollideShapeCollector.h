@@ -106,10 +106,11 @@ public:
     int                     mCurrRdfId;
     RenderFrame*            mNextRdf;
 
-    JPH::BodyID				mCeilingBodyID;
-    JPH::SubShapeID			mCeilingBodySubShapeID;
-    JPH::RVec3				mCeilingPosition = JPH::RVec3::sZero();
-    JPH::Vec3				mCeilingNormal = JPH::Vec3::sZero();
+    JPH::BodyID				mWallBodyID;
+    JPH::SubShapeID			mWallBodySubShapeID;
+    JPH::RVec3				mWallPosition = JPH::RVec3::sZero();
+    JPH::Vec3				mWallNormal = JPH::Vec3::sZero();
+    uint64_t                mWallUd = 0;
 
     JPH::BodyID				mGroundBodyID;
     JPH::SubShapeID			mGroundBodySubShapeID;
@@ -133,6 +134,15 @@ public:
             mGroundPosition = mBaseOffset + inResult.mContactPointOn2;
             mGroundNormal = normal;
             mBestDot = dot;
+        } 
+
+        if (abs(dot) < mWallBestDot) {
+            mWallBodyID = inResult.mBodyID2;
+            mWallBodySubShapeID = inResult.mSubShapeID2;
+            mWallPosition = mBaseOffset + inResult.mContactPointOn2;
+            mWallNormal = normal;
+            mWallBestDot = dot;
+            mWallUd = udRhs;
         }
 
         float ceilingDot = normal.Dot(-mUp);
@@ -151,6 +161,7 @@ private:
     Vec3                          mBaseOffset;
     BaseBattleCollisionFilter*    mBaseBattleFilter;
     float				          mBestDot = -FLT_MAX;
+    float				          mWallBestDot = FLT_MAX;
 };
 
 #endif

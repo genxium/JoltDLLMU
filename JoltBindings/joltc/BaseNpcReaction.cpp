@@ -286,8 +286,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     outCmd = newCachedCueCmd;
 }
 
-void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionCastResultCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
-    if (!visionCastResultCollector.HadHit()) return;
+void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionHitCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
+    if (!visionHitCollector.HadHit()) return;
     bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
     const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
@@ -302,7 +302,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
     float bestVisionAlignmentForMvBlocker = FLT_MAX;
 
     const Vec3 lhsPos = selfNpcCollider->GetPosition(false); 
-    int hitsCnt = visionCastResultCollector.mHits.size();
+    int hitsCnt = visionHitCollector.mHits.size();
 
     const BodyID& selfNpcGroundBodyID = cvSupported ? selfNpcCollider->GetGroundBodyID() : BodyID();
     float selfNpcGroundAABBJumpingAxisAlignment1 = 0;
@@ -317,8 +317,9 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
         selfNpcGroundAABBVisionAlignment1 = selfNpcGroundAABB.mMax.Dot(visionDirection);
         selfNpcGroundAABBVisionAlignment2 = selfNpcGroundAABB.mMin.Dot(visionDirection);
     }
+    bool foundSameLockedUd = false;
     for (int i = 0; i < hitsCnt; i++) {
-        const CollideShapeCollector::ResultType hit = visionCastResultCollector.mHits.at(i);
+        const CollideShapeCollector::ResultType hit = visionHitCollector.mHits.at(i);
         const BodyID rhsBodyID = hit.mBodyID2;
         const float rhsVisionAlignmentFromNpcChdPosition = visionDirection.Dot(hit.mContactPointOn1 + effVisionOffsetFromNpcChd);
         if (!rhsBodyID.IsInvalid() && rhsBodyID == selfNpcGroundBodyID) {
@@ -335,6 +336,9 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
         switch (udtRhs) {
         case UDT_PLAYER: 
         case UDT_NPC: {
+            if (foundSameLockedUd) {
+                continue;
+            }
             VisionBodyFilter visionRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, baseBattleFilter);
             RRayCast ray(visionNarrowPhaseInBaseOffset, hit.mContactPointOn1);
             bool rayTestPassed = false;
@@ -355,10 +359,15 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
             const Vec3 selfNpcPositionDiff = rhsPos - lhsPos;
             if (rhsCurrChd->bullet_team_id() != currChd.bullet_team_id()) {
-                if (rhsVisionAlignmentFromNpcChdPosition >= bestVisionAlignmentForOppo) {
-                    continue;
+                if (currChd.locking_on_ud() == udRhs) {
+                    // [REMINDER] Lock on the same opponent whenever possible.
+                    foundSameLockedUd = true;
+                } else {
+                    if (rhsVisionAlignmentFromNpcChdPosition >= bestVisionAlignmentForOppo) {
+                        continue;
+                    }
+                    bestVisionAlignmentForOppo = rhsVisionAlignmentFromNpcChdPosition;
                 }
-                bestVisionAlignmentForOppo = rhsVisionAlignmentFromNpcChdPosition;
                  
                 outToHandleOppoChUd = udRhs;
                 outToHandleOppoBlUd = 0;
@@ -376,6 +385,9 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
             break;
         }
         case UDT_BL: {
+            if (foundSameLockedUd) {
+                continue;
+            }
             const Bullet* rhsCurrBl = currBulletsMap.at(udRhs);
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
             const Vec3 selfNpcPositionDiff = rhsPos - lhsPos;
@@ -708,13 +720,12 @@ bool BaseNpcReaction::isGapJumpable(const float gravityMagnitude, const float fo
     if (0 >= forwardSpeed) return false;
     if (0 >= forwardDistanceAbs) {
         // Only need evaluate if we can jump vertically first and then slowly move over onto the new platform.
-        float airingTimeSingleTrip = (chJumpInitSpeed / gravityMagnitude) - chJumpAccSeconds;
+        float airingTimeSingleTrip = (chJumpInitSpeed / gravityMagnitude);
         float estimatedYHighestInTrajectory = extraAccendingY + 0.5f*chJumpInitSpeed*airingTimeSingleTrip;
         return estimatedYHighestInTrajectory > jumpingAxisDistance;
     }
     float estimatedTSeconds = forwardDistanceAbs / forwardSpeed;
-    float estimatedTSecondsExcludingAccending = (estimatedTSeconds - chJumpAccSeconds);
 
-    float estimatedYInTrajectory = extraAccendingY + chJumpInitSpeed * estimatedTSecondsExcludingAccending - 0.5f * gravityMagnitude * estimatedTSecondsExcludingAccending * estimatedTSecondsExcludingAccending;
+    float estimatedYInTrajectory = extraAccendingY + chJumpInitSpeed * estimatedTSeconds - 0.5f * gravityMagnitude * estimatedTSeconds * estimatedTSeconds;
     return estimatedYInTrajectory > jumpingAxisDistance;
 }

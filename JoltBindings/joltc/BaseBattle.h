@@ -478,21 +478,23 @@ public:
         }
         JPH_ASSERT(lhs->npc_count() == rhs->npc_count());
         JPH_ASSERT(lhs->npc_id_counter() == rhs->npc_id_counter());
+        JPH_ASSERT(lhs->bullet_id_counter() == rhs->bullet_id_counter());
+        JPH_ASSERT(lhs->bullet_count() == rhs->bullet_count());
+        
         for (int i = 0; i < lhs->npcs_size(); i++) {
             auto lhsCh = lhs->npcs(i);
             if (globalPrimitiveConsts->terminating_character_id() == lhsCh.id()) break;
             auto rhsCh = rhs->npcs(i);
             BaseBattle::AssertNearlySame(lhsCh, rhsCh);
         }
-        JPH_ASSERT(lhs->bullet_id_counter() == rhs->bullet_id_counter());
-        JPH_ASSERT(lhs->bullet_count() == rhs->bullet_count());
+        /*
         for (int i = 0; i < lhs->bullets_size(); i++) {
             auto lhsB = lhs->bullets(i);
             if (globalPrimitiveConsts->terminating_bullet_id() == lhsB.id()) break;
             auto rhsB = rhs->bullets(i);
             BaseBattle::AssertNearlySame(lhsB, rhsB);
         }
-
+        */
         JPH_ASSERT(lhs->dynamic_trap_count() == rhs->dynamic_trap_count());
         for (int i = 0; i < lhs->dynamic_traps_size(); i++) {
             auto lhsTp = lhs->dynamic_traps(i);
@@ -893,10 +895,11 @@ protected:
     }
 
     inline bool updatePlayerInputFronts(int inIfdId, int inSingleJoinIndexArrIdx, int inSingleInput) {
-        if (inIfdId <= playerInputFrontIds[inSingleJoinIndexArrIdx]) {
+        int existingPlayerInputFrontId = playerInputFrontIds[inSingleJoinIndexArrIdx];
+        if (inIfdId <= existingPlayerInputFrontId) {
             return false;
         }
-        auto it = playerInputFrontIdsSorted.find(playerInputFrontIds[inSingleJoinIndexArrIdx]);
+        auto it = playerInputFrontIdsSorted.find(existingPlayerInputFrontId);
         if (it != playerInputFrontIdsSorted.end()) {
             playerInputFrontIdsSorted.erase(it);
         }

@@ -339,16 +339,16 @@ bool FRONTEND_ProduceUpsyncSnapshotRequest(void* inBattle, int seqNo, int propos
     return frontendBattle->ProduceUpsyncSnapshotRequest(seqNo, proposedBatchIfdIdSt, proposedBatchIfdIdEd, outLastIfdId, outBytesPreallocatedStart, outBytesCntLimit);
 }
 
-bool FRONTEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FRONTEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;
-    return frontendBattle->OnUpsyncSnapshotReqReceived(inBytes, inBytesCnt, outChaserRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    return frontendBattle->OnUpsyncSnapshotReqReceived(inBytes, inBytesCnt, outChaserRdfId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;
-    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    return frontendBattle->OnDownsyncSnapshotReceived(inBytes, inBytesCnt, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
 bool FRONTEND_Step(void* inBattle) {
@@ -363,10 +363,10 @@ bool FRONTEND_ChaseRolledBackRdfs(void* inBattle, int* outChaserRdfId, bool toTi
     return frontendBattle->ChaseRolledBackRdfs(outChaserRdfId, toTimerRdfId);
 }
 
-bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outUdpLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;
-    return frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
+    return frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outUdpLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
 }
 
 JPH_SUPPRESS_WARNING_POP

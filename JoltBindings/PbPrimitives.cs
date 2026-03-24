@@ -65,6 +65,8 @@ namespace JoltCSharp {
 
         public const int DEBUFF_ARR_IDX_ELEMENTAL = 0;
 
+        public const float GRAVITY_Y_MAGNITUDE = 0.30f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS;
+
         public static PrimitiveConsts underlying = new PrimitiveConsts {
             BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
             DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
@@ -139,12 +141,11 @@ namespace JoltCSharp {
             DefaultPerCharacterInventoryCapacity = 1,
             DefaultPerCharacterImmuneBulletRecordCapacity = 5,
 
-            GravityY = -0.52f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
-            GravityYJumpHolding = -0.28f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            GravityY = -GRAVITY_Y_MAGNITUDE,
+            GravityYJumpHolding = -0.6f * GRAVITY_Y_MAGNITUDE,
 
             DefaultPatrolCueWaivingFrames = 150, // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
             NoPatrolCueId = 0,
-            NoVfxId = 0,
 
             DefaultPickableHurtboxHalfSizeX = 10f,
             DefaultPickableHurtboxHalfSizeY = 12f,
@@ -160,7 +161,7 @@ namespace JoltCSharp {
             DefaultFramesDelayedOfBossSavepoint = 8,
             InputDelayFrames = 2, // in the count of render frames
             InputScaleFrames = INPUT_SCALE_FRAMES, // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
-            MaxChasingRenderFramesPerUpdate = 8,
+            MaxChasingRenderFramesPerUpdate = (3 << INPUT_SCALE_FRAMES),
             MagicFramesToBeOnWall = (BATTLE_DYNAMICS_FPS >> 2),
             MagicFramesToBeOnWallAirJump = (BATTLE_DYNAMICS_FPS >> 1),
 

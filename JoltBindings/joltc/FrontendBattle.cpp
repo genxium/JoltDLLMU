@@ -36,12 +36,12 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
     return true;
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
-    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     /*
     Assuming that rdfBuffer & ifdBuffer are both sufficiently large (e.g. 5 seconds) such that when 
     - "timerRdfId" is to be evicted from "rdfBuffer.StFrameId", or
@@ -55,6 +55,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     */
     *outChaserRdfId = chaserRdfId;
     *outLcacIfdId = lcacIfdId;
+    *outUdpLcacIfdId = udpLcacIfdId;
     bool shouldDragTimerRdfIdForward = false;
     *outPostTimerRdfEvictedCnt = 0;
     *outPostTimerRdfDelayedIfdEvictedCnt = 0;
@@ -221,16 +222,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
             
             for (int k = 0; k < playersCnt; ++k) {
                 if (k == selfJoinIndexArrIdx) continue;
-                if (ifdId <= playerInputFrontIds[k]) { 
-                    continue; 
-                }
-                auto it = playerInputFrontIdsSorted.find(playerInputFrontIds[k]);
-                if (it != playerInputFrontIdsSorted.end()) {
-                    playerInputFrontIdsSorted.erase(it);
-                }
-                playerInputFrontIds[k] = ifdId;
-                playerInputFronts[k] = refIfd.input_list(k);
-                playerInputFrontIdsSorted.insert(ifdId);
+                bool frontsUpdated = updatePlayerInputFronts(ifdId, k, refIfd.input_list(k));
             }
 
             if (-1 == firstIncorrectlyPredictedIfdId && existingInputMutated) {
@@ -239,6 +231,10 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
         
             lcacIfdId = ifdId;
         }
+    }
+
+    if (lcacIfdId > udpLcacIfdId) {
+        udpLcacIfdId = lcacIfdId;
     }
 /*
 #ifndef NDEBUG
@@ -283,21 +279,22 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
 
     *outChaserRdfId = chaserRdfId;
     *outLcacIfdId = lcacIfdId;
+    *outUdpLcacIfdId = udpLcacIfdId;
 
     return true;
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     peerUpsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
 
     uint32_t peerJoinIndex = peerUpsyncSnapshotHolder->join_index();
     if (0 >= peerJoinIndex) return false;
     if (selfJoinIndex == peerJoinIndex) return false;
     if (!peerUpsyncSnapshotHolder->has_upsync_snapshot()) return false;
-    return OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshotHolder->upsync_snapshot(), outChaserRdfId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+    return OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshotHolder->upsync_snapshot(), outChaserRdfId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
 }
 
-bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
     // See "BackendBattle::OnUpsyncSnapshotReceived" for reference.
     bool fromUdp = true; // by design
     int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
@@ -361,9 +358,41 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, cons
      }
 #endif
 */
+    uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
+    int oldUdpLcacIfdId = moveForwardUdpLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
+    if (lcacIfdId > udpLcacIfdId) {
+        udpLcacIfdId = lcacIfdId;
+    }
     *outChaserRdfId = chaserRdfId;
+    *outUdpLcacIfdId = udpLcacIfdId;
 
     return true;
+}
+
+int FrontendBattle::moveForwardUdpLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask) {
+    int oldUdpLcacIfdId = udpLcacIfdId;
+    int proposedIfdStFrameId = udpLcacIfdId + 1;
+    if (proposedIfdStFrameId >= proposedIfdEdFrameId) {
+        return oldUdpLcacIfdId;
+    }
+    if (proposedIfdStFrameId < ifdBuffer.StFrameId) {
+        proposedIfdStFrameId = ifdBuffer.StFrameId;
+    }
+    for (int inputFrameId = proposedIfdStFrameId; inputFrameId < proposedIfdEdFrameId; inputFrameId++) {
+        InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
+
+        if (allConfirmedMask != (ifd->udp_confirmed_list() | skippableJoinMask | selfJoinIndexMask)) {
+            // [WARNING] The use of "selfJoinIndexMask" here is slightly different than "moveForwardLastConsecutivelyAllConfirmedIfdId", because we don't want to block any self-input later than an InputFrameDownsync prefabbed by a faster peer. 
+            break;
+        }
+
+        ifd->set_udp_confirmed_list(ifd->udp_confirmed_list() | skippableJoinMask);
+        if (udpLcacIfdId < inputFrameId) {
+            udpLcacIfdId = inputFrameId;
+        }
+    }
+
+    return oldUdpLcacIfdId;
 }
 
 bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
@@ -630,6 +659,7 @@ void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFram
 
 void FrontendBattle::Clear() {
     BaseBattle::Clear();
+    udpLcacIfdId = -1;
 }
 
 bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
@@ -652,6 +682,7 @@ bool FrontendBattle::ResetStartRdf(WsReq* initializerMapData, const uint32_t inS
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
     timerRdfId = rdfBuffer.GetLast()->id();
     chaserRdfId = chaserRdfIdLowerBound = timerRdfId;
+    
     return res;
 }
 
