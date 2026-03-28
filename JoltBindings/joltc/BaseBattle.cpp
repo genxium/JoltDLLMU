@@ -109,7 +109,6 @@ int BaseBattle::moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdF
 
         ifd->set_confirmed_list(allConfirmedMask);
         if (lcacIfdId < inputFrameId) {
-            // Such that "lastConsecutivelyAllConfirmedIfdId" is monotonic.
             lcacIfdId = inputFrameId;
         }
     }
@@ -4941,13 +4940,13 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
-
+/*
 #ifndef NDEBUG
     std::ostringstream oss3;
     oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by [currVel=(" << currChd.vel_x() << "," << currChd.vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << "], [nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextPos=(" << nextChd->x() << ", " << nextChd->y() << ")], patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy;
     Debug::Log(oss3.str(), DColor::Orange);
 #endif // !NDEBUG
-
+*/
     return true;
 }
 
@@ -5093,8 +5092,8 @@ BL_COLLIDER_T* BaseBattle::createDefaultBulletCollider(const float immediateBoxH
     bodyCreationSettings.mRotation = newRot;
     Body* body = biNoLock->CreateBody(bodyCreationSettings);
     JPH_ASSERT(nullptr != body);
-
-    inBodyInterface->SetMotionQuality(body->GetID(), EMotionQuality::Discrete);
+    
+    inBodyInterface->SetMotionQuality(body->GetID(), EMotionQuality::LinearCast);
 
     return body;
 }
@@ -5409,8 +5408,13 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     JPH::Quat nextChdQ;
     Vec3 nextChdFacing;
     calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
-    float groundNormalAlignment = nextChdFacing.Dot(single->GetGroundNormal());
-    cvOnWall = (0 > groundNormalAlignment && !groundBodyID.IsInvalid() && !groundBodyIsChCollider && !transientSlipJumpableUds.count(newGroundUd) && single->IsSlopeTooSteep(single->GetGroundNormal()));
+    if (groundBodyIsChCollider) {
+        float wallNormalAlignment = nextChdFacing.Dot(collector.mWallNormal);
+        cvOnWall = (0 > wallNormalAlignment && !collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && single->IsSlopeTooSteep(collector.mWallNormal));
+    } else {
+        float groundNormalAlignment = nextChdFacing.Dot(single->GetGroundNormal());
+        cvOnWall = (0 > groundNormalAlignment && !groundBodyID.IsInvalid() && !transientSlipJumpableUds.count(newGroundUd) && single->IsSlopeTooSteep(single->GetGroundNormal()));
+    }
     cvSupported = (single->IsSupported() && !cvOnWall && !groundBodyID.IsInvalid() && !groundBodyIsChCollider); // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
     /* [WARNING]
     When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0.

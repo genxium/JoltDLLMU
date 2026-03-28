@@ -259,7 +259,6 @@ enum PickableState {
 
 message CharacterConfig {
     uint32 species_id = 1;
-    string species_name = 2;
 
     int32 hp = 3;
     int32 mp = 4;
@@ -284,7 +283,12 @@ message CharacterConfig {
     float wall_slide_vel_y = 19;
     float wall_jump_free_speed = 20;
 
+    float min_falling_vel_y = 21;
+    float max_ascending_vel_y = 22;
+
     bool atk1_uses_magazine = 25;
+    InventorySlotConfig atk1_magazine = 26; 
+    InventorySlotConfig super_atk_gauge = 27; 
 
     int32 ground_dodged_frames_to_recover = 28;
     int32 ground_dodged_frames_invinsible = 29;
@@ -337,16 +341,12 @@ message CharacterConfig {
 
     bool isolated_air_jump_and_dash_quota = 62; // default is false, in most cases Air_jump and Air_dash quotas are deduced together (but default initial quota can be different) 
 
-    int32 air_jump_vfx_species_id = 63;
 
     uint32 transform_into_species_id_upon_death = 66;
     bool jump_holding_to_fly = 67;
     bool has_def1 = 68;
     bool has_def1_atked1_anim = 69;
     int32 default_def1_broken_frames_to_recover = 70;
-    int32 def1_active_vfx_species_id = 71;
-    int32 def1_atked_vfx_species_id = 72;
-    int32 def1_broken_vfx_species_id = 73;
     int32 def1_startup_frames = 74;
     float def1_damage_yield = 75;
     bool def1_defies_ele_weakness_penetration = 76;
@@ -359,7 +359,6 @@ message CharacterConfig {
     uint32 ele_weakness = 81;
     uint32 ele_resistance = 82;
     bool has_btn_b_charging = 83;
-    int32 btn_b_charged_vfx_species_id = 84;
 
     bool is_key_ch = 85;
 
@@ -383,7 +382,7 @@ message CharacterConfig {
 
     bool use_idle1_as_flying_idle = 99;
 
-    bool no_flee = 100;
+    bool no_flee_as_npc = 100;
 
     bool dashing_enabled = 101;
     bool sliding_enabled = 102;
@@ -393,11 +392,13 @@ message CharacterConfig {
     bool ground_dodge_enabled_by_iv_slot_c_in_block_stun = 106;
     int32 ground_dodge_enabled_by_rdf_cnt_from_beginning = 107;
 
-    float min_falling_vel_y = 108;
-    float max_ascending_vel_y = 109;
-
-    InventorySlotConfig atk1_magazine = 256; 
-    InventorySlotConfig super_atk_gauge = 257; 
+    bool has_in_air_walking_anim = 110; 
+    bool has_turn_around_anim = 111;
+    bool has_in_air_turn_around_anim = 112;
+    bool has_walk_stopping_anim = 113; 
+    bool has_in_air_walk_stopping_anim = 114; 
+    bool has_dimmed_anim = 115;
+    bool has_awaking_anim = 116;
 
     repeated InventorySlotConfig init_inventory_slots = 258;
     map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
@@ -405,14 +406,12 @@ message CharacterConfig {
     map<int32, int32> trailing_rdf_chargeable_ch_states = 261; 
 
     map<int32, uint32> init_skill_transit = 262; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
-
-    bool has_in_air_walking_anim = 512; 
-    bool has_turn_around_anim = 513;
-    bool has_in_air_turn_around_anim = 514;
-    bool has_walk_stopping_anim = 515; 
-    bool has_in_air_walk_stopping_anim = 516; 
-    bool has_dimmed_anim = 517;
-    bool has_awaking_anim = 518;
+    string species_name = 263;
+    string air_jump_vfx_anim_name = 264;
+    string def1_active_vfx_anim_name = 265;
+    string def1_atked_vfx_anim_name = 266;
+    string def1_broken_vfx_anim_name = 267;
+    string btn_b_charged_vfx_anim_name = 268;
 }
 
 enum SpecialMoveOverrideStatus {
@@ -712,7 +711,6 @@ message BulletConfig {
 
     int32 melee_hit_self_stun_frames = 19; // [WARNING] Exclusive against "remains_upon_hit". 
 
-    string anim_name = 20;
     int32 active_anim_looping_rdf_offset = 21;  
     int32 vanishing_anim_rdf_cnt = 23;
     int32 vanishing_anim_looping_rdf_offset = 24;  
@@ -732,6 +730,7 @@ message BulletConfig {
     int32 perp_acc_mag = 37; // acceleration magnitude perpendicular to instantaneous velocity per second
 
     bool delay_self_vel_to_active = 38; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
+    bool hit_on_multi_contact = 39; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
 
     bool omit_soft_pushback = 40; // Only used for melee bullets
 
@@ -755,8 +754,6 @@ message BulletConfig {
     bool allows_crouching = 56;
 
     uint32 elemental_attrs = 59;
-
-    map<int32, uint32> cancel_transit = 62; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
 
     float beam_visual_size_y = 64;
 
@@ -798,12 +795,12 @@ message BulletConfig {
     int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
     bool no_vanish_anim_on_hard_pushback = 98;
 
-    bool hit_on_multi_contact = 99; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
-
     uint64 collision_type_mask = 1029;
     bool takes_gravity = 1030; // e.g. a bomb, a ground-wave
 
     BuffConfig buff_config = 1031;
+
+    map<int32, uint32> cancel_transit = 1032; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
 
     // Sfx configs
     string character_emit_sfx_name = 2048;
@@ -814,6 +811,7 @@ message BulletConfig {
     string hit_on_rock_sfx_name = 2053;
     string hit_on_metal_sfx_name = 2054;
     string hit_on_wood_sfx_name = 2055;
+    string anim_name = 2056;
 }
 
 message Bullet {
@@ -1631,7 +1629,6 @@ message PrimitiveConsts {
     float gravity_y_jump_holding = 64;
     int32 default_patrol_cue_waiving_frames = 65; // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
     int32 no_patrol_cue_id = 66;
-    int32 no_vfx_id = 67;
 
     float default_pickable_hurtbox_half_size_x = 68;
     float default_pickable_hurtbox_half_size_y = 69;

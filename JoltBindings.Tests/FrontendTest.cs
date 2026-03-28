@@ -183,8 +183,8 @@ public class FrontendTest {
 
                     Bindings.FRONTEND_Step(battle);
 
-                    int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
-                    Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &toGenIfdId, &localRequiredIfdId);
+                    int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, oldUdpLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
+                    Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &oldUdpLcacIfdId, &toGenIfdId, &localRequiredIfdId);
 
                     long* outBytesCntPtr = &outBytesCnt;
                     *outBytesCntPtr = pbBufferSizeLimit;
@@ -192,7 +192,7 @@ public class FrontendTest {
                     Assert.True(rdfFetched);
                     Bindings.PreemptRenderFrameBeforeMerge(rdfHolder, primitives);
                     rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
-                    _logger.WriteLine(rdfHolder.PlayersArr.ToString());
+                    _logger.WriteLine(rdfHolder.Players.ToString());
                 }
             }
 

@@ -50,6 +50,7 @@ public:
     Backend also has a "backendTimerRdfId" maintained on C# side, which is NOT coupled with "Step(...)" or "UpsertSelfCmd(...)".
     */
     int timerRdfId;
+    int udpLcacIfdId = -1; // ALWAYS maintained "udpLcacIfdId >= lcacIfdId"
     int localExtraInputDelayFrames = 0;
     int chaserRdfId = globalPrimitiveConsts->terminating_render_frame_id();
     int chaserRdfIdLowerBound = globalPrimitiveConsts->terminating_render_frame_id();
@@ -64,21 +65,22 @@ public:
 
     bool ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
-    bool OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
-    bool OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
-    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
-    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
+    bool OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 
     bool WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing, bool snatched=false);
     bool Step(); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
     bool ChaseRolledBackRdfs(int* outNewChaserRdfId, bool toTimerRdfId = false);
 
-    inline bool GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
+    inline bool GetRdfAndIfdIds(int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outUdpLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId) {
         *outTimerRdfId = timerRdfId;
         *outChaserRdfId = chaserRdfId;
         *outChaserRdfIdLowerBound = chaserRdfIdLowerBound;
         *outLcacIfdId = lcacIfdId;
+        *outUdpLcacIfdId = udpLcacIfdId;
         *outTimerRdfIdGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
         *outTimerRdfIdToUseIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
         return true;
@@ -104,6 +106,8 @@ protected:
     void regulateCmdBeforeRender(const int currRdfId, const int delayedIfdId, InputFrameDownsync* delayedIfd); // [WARNING] Implicitly calls "handleIncorrectlyRenderedPrediction" if needed
 
     void handleIncorrectlyRenderedPrediction(int inputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender);
+
+    int moveForwardUdpLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 
     virtual void postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult);
 

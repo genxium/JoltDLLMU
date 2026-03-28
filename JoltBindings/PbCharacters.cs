@@ -11,6 +11,16 @@ namespace JoltCSharp {
          The "CapsuleHalfHeight" component of "BlownUp/LayDown/Dying" MUST be smaller or equal to that of "Shrinked", such that when a character is blown up and falled onto a "slip-jump provider", it wouldn't trigger an unexpected slip-jump.
 
          Reference value for "JumpStartupFrames" -- Ibuki in Street Figher IV/V has a pre-jump frame count of 4, according to https://streetfighter.fandom.com/wiki/Jump. I also counted that of Ken in Street Fighter VI by 60fps recording and got the same result.
+
+         In the current jumping implementation, "descending time t_desc" is proportional to "lambda = jump_acc_mag_y/gravity_y_magnitude", i.e. 
+
+         ```
+         t_desc = jump_ascending_seconds*sqrt{(lambda)*(1+lambda)}
+
+         where 
+
+         jump_ascending_seconds = (jump_startup_frames+1)*estimated_seconds_per_rdf
+         ``` 
          */
         public static CharacterConfig BLADEGIRL = new CharacterConfig {
             SpeciesId = SPECIES_BLADEGIRL,
@@ -20,9 +30,9 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
-            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS, 
+            JumpAccMagY = 4.4f * GRAVITY_Y_MAGNITUDE, 
             JumpStartupFrames = 3,
-            AccMagX = 7.8f * BATTLE_DYNAMICS_FPS,
+            AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             DashingEnabled = true,
             SlidingEnabled = true,
@@ -30,8 +40,8 @@ namespace JoltCSharp {
             CrouchingEnabled = true,
             CrouchingAtkEnabled = true, // It's actually weird to have "false == CrouchingAtkEnabled && true == CrouchingEnabled", but flexibility provided anyway
             WallJumpFramesToRecover = 8,
-            WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
-            WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
+            WallJumpAccMagX = 0.25f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            WallJumpAccMagY = 1.5f * GRAVITY_Y_MAGNITUDE,
             WallSlideVelY = (-1f) * BATTLE_DYNAMICS_FPS,
             WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
@@ -67,10 +77,22 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 34,
             GetUpFramesToRecover = 30,
             Speed = 2.3f * BATTLE_DYNAMICS_FPS,
-            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 4.4f * GRAVITY_Y_MAGNITUDE,
             JumpStartupFrames = 3,
-            AccMagX = 7.8f * BATTLE_DYNAMICS_FPS,
+            AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+            DashingEnabled = true,
+            SlidingEnabled = true,
+            OnWallEnabled = true,
+            CrouchingEnabled = true,
+            CrouchingAtkEnabled = true,
+            WallJumpFramesToRecover = 8,
+            WallJumpAccMagX = 0.25f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            WallJumpAccMagY = 1.5f * GRAVITY_Y_MAGNITUDE,
+            WallSlideVelY = (-1) * BATTLE_DYNAMICS_FPS,
+            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+            WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
+
             CapsuleRadius = (8.0f),
             CapsuleHalfHeight = (16.0f),
             ShrinkedCapsuleRadius = (8.0f),
@@ -80,23 +102,10 @@ namespace JoltCSharp {
             DyingCapsuleRadius = (16.0f),
             DyingCapsuleHalfHeight = (6.0f),
             HasTurnAroundAnim = false,
-            CrouchingEnabled = true,
-            CrouchingAtkEnabled = true,
-            OnWallEnabled = true,
-            WallJumpFramesToRecover = 8,
-            WallJumpAccMagX = 16f * BATTLE_DYNAMICS_FPS,
-            WallJumpAccMagY = 35f * BATTLE_DYNAMICS_FPS,
-            WallSlideVelY = (-1) * BATTLE_DYNAMICS_FPS,
-            WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
-            WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
-            DashingEnabled = true,
-            SlidingEnabled = true,
             Hardness = 5,
             MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
             DefaultAirDashQuota = 1,
             DefaultAirJumpQuota = 1,
-            AirJumpVfxSpeciesId = 0, // TODO
-            BtnBChargedVfxSpeciesId = 0, // 0
             GroundDodgeEnabledByRdfCntFromBeginning = 12,
             GroundDodgedFramesInvinsible = 25,
             GroundDodgedFramesToRecover = 30,
@@ -128,9 +137,9 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 0.6f * BATTLE_DYNAMICS_FPS,
-            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
             JumpStartupFrames = 2,
-            AccMagX = 3.0f * BATTLE_DYNAMICS_FPS,
+            AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),
@@ -166,7 +175,7 @@ namespace JoltCSharp {
             GetUpFramesToRecover = 14,
             Speed = 0.8f * BATTLE_DYNAMICS_FPS,
             JumpAccMagY = 0, 
-            AccMagX = 6.8f * BATTLE_DYNAMICS_FPS,
+            AccMagX = 0.1f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             CapsuleHalfHeight = (8.0f),
@@ -193,9 +202,9 @@ namespace JoltCSharp {
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
             Speed = 0.6f * BATTLE_DYNAMICS_FPS,
-            JumpAccMagY = 120f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
             JumpStartupFrames = 2,
-            AccMagX = 3.0f * BATTLE_DYNAMICS_FPS,
+            AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
             AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
             VisionOffsetX = (16.0f),
             VisionOffsetY = (10.0f),

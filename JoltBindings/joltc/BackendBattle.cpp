@@ -147,6 +147,8 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
                     *outBytesCntLimit = 0;
                     releaseDownsyncSnapshotArenaOwnership(result);
                 }
+                *outNewLcacIfdId = lcacIfdId;
+                *outNewDynamicsRdfId = dynamicsRdfId;
                 return false;
             }
 
