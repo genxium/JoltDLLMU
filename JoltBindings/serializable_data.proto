@@ -1607,7 +1607,7 @@ message PrimitiveConsts {
 
     int32 bgm_no_change = 45;
 
-    int32 invalid_default_player_id = 46;
+    string invalid_default_player_id = 46;
     float estimated_seconds_per_rdf = 47;
 
     int32 max_btn_holding_rdf_cnt = 48;

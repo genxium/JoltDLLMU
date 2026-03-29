@@ -616,7 +616,7 @@ namespace jtshared {
             "c3Rfc2VudF9pbnB1dF9mcmFtZV9pZF9ub3JtYWxfYWRkZWQYKyABKAUSLgom",
             "bWFnaWNfbGFzdF9zZW50X2lucHV0X2ZyYW1lX2lkX3JlYWRkZWQYLCABKAUS",
             "FQoNYmdtX25vX2NoYW5nZRgtIAEoBRIhChlpbnZhbGlkX2RlZmF1bHRfcGxh",
-            "eWVyX2lkGC4gASgFEiEKGWVzdGltYXRlZF9zZWNvbmRzX3Blcl9yZGYYLyAB",
+            "eWVyX2lkGC4gASgJEiEKGWVzdGltYXRlZF9zZWNvbmRzX3Blcl9yZGYYLyAB",
             "KAISHwoXbWF4X2J0bl9ob2xkaW5nX3JkZl9jbnQYMCABKAUSGgoSbWF4X2Zs",
             "eWluZ19yZGZfY250GDEgASgFEi4KJm1heF9yZXZlcnNlX3B1c2hiYWNrX2Zy",
             "YW1lc190b19yZWNvdmVyGDIgASgFEiMKG3NwZWVkX25vdF9oaXRfbm90X3Nw",
@@ -40273,13 +40273,13 @@ namespace jtshared {
 
     /// <summary>Field number for the "invalid_default_player_id" field.</summary>
     public const int InvalidDefaultPlayerIdFieldNumber = 46;
-    private int invalidDefaultPlayerId_;
+    private string invalidDefaultPlayerId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int InvalidDefaultPlayerId {
+    public string InvalidDefaultPlayerId {
       get { return invalidDefaultPlayerId_; }
       set {
-        invalidDefaultPlayerId_ = value;
+        invalidDefaultPlayerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -42045,7 +42045,7 @@ namespace jtshared {
       if (MagicLastSentInputFrameIdNormalAdded != 0) hash ^= MagicLastSentInputFrameIdNormalAdded.GetHashCode();
       if (MagicLastSentInputFrameIdReadded != 0) hash ^= MagicLastSentInputFrameIdReadded.GetHashCode();
       if (BgmNoChange != 0) hash ^= BgmNoChange.GetHashCode();
-      if (InvalidDefaultPlayerId != 0) hash ^= InvalidDefaultPlayerId.GetHashCode();
+      if (InvalidDefaultPlayerId.Length != 0) hash ^= InvalidDefaultPlayerId.GetHashCode();
       if (EstimatedSecondsPerRdf != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(EstimatedSecondsPerRdf);
       if (MaxBtnHoldingRdfCnt != 0) hash ^= MaxBtnHoldingRdfCnt.GetHashCode();
       if (MaxFlyingRdfCnt != 0) hash ^= MaxFlyingRdfCnt.GetHashCode();
@@ -42369,9 +42369,9 @@ namespace jtshared {
         output.WriteRawTag(232, 2);
         output.WriteInt32(BgmNoChange);
       }
-      if (InvalidDefaultPlayerId != 0) {
-        output.WriteRawTag(240, 2);
-        output.WriteInt32(InvalidDefaultPlayerId);
+      if (InvalidDefaultPlayerId.Length != 0) {
+        output.WriteRawTag(242, 2);
+        output.WriteString(InvalidDefaultPlayerId);
       }
       if (EstimatedSecondsPerRdf != 0F) {
         output.WriteRawTag(253, 2);
@@ -43063,9 +43063,9 @@ namespace jtshared {
         output.WriteRawTag(232, 2);
         output.WriteInt32(BgmNoChange);
       }
-      if (InvalidDefaultPlayerId != 0) {
-        output.WriteRawTag(240, 2);
-        output.WriteInt32(InvalidDefaultPlayerId);
+      if (InvalidDefaultPlayerId.Length != 0) {
+        output.WriteRawTag(242, 2);
+        output.WriteString(InvalidDefaultPlayerId);
       }
       if (EstimatedSecondsPerRdf != 0F) {
         output.WriteRawTag(253, 2);
@@ -43712,8 +43712,8 @@ namespace jtshared {
       if (BgmNoChange != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(BgmNoChange);
       }
-      if (InvalidDefaultPlayerId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(InvalidDefaultPlayerId);
+      if (InvalidDefaultPlayerId.Length != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(InvalidDefaultPlayerId);
       }
       if (EstimatedSecondsPerRdf != 0F) {
         size += 2 + 4;
@@ -44237,7 +44237,7 @@ namespace jtshared {
       if (other.BgmNoChange != 0) {
         BgmNoChange = other.BgmNoChange;
       }
-      if (other.InvalidDefaultPlayerId != 0) {
+      if (other.InvalidDefaultPlayerId.Length != 0) {
         InvalidDefaultPlayerId = other.InvalidDefaultPlayerId;
       }
       if (other.EstimatedSecondsPerRdf != 0F) {
@@ -44817,8 +44817,8 @@ namespace jtshared {
             BgmNoChange = input.ReadInt32();
             break;
           }
-          case 368: {
-            InvalidDefaultPlayerId = input.ReadInt32();
+          case 370: {
+            InvalidDefaultPlayerId = input.ReadString();
             break;
           }
           case 381: {
@@ -45523,8 +45523,8 @@ namespace jtshared {
             BgmNoChange = input.ReadInt32();
             break;
           }
-          case 368: {
-            InvalidDefaultPlayerId = input.ReadInt32();
+          case 370: {
+            InvalidDefaultPlayerId = input.ReadString();
             break;
           }
           case 381: {
