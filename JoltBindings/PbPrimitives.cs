@@ -67,6 +67,29 @@ namespace JoltCSharp {
 
         public const float GRAVITY_Y_MAGNITUDE = 0.30f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS;
 
+        public const int ROOM_ID_NONE = 0;        
+
+        public const long ROOM_STATE_IMPOSSIBLE = 0;
+        public const long ROOM_STATE_IDLE = 1;
+        public const long ROOM_STATE_WAITING = 2;
+        public const long ROOM_STATE_PREPARE = 3;
+        public const long ROOM_STATE_IN_BATTLE = 4;
+        public const long ROOM_STATE_IN_SETTLEMENT = 5;
+        public const long ROOM_STATE_STOPPED = 6;
+        public const long ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN = 7;
+        public const long ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN = 8;
+        public const long ROOM_STATE_FRONTEND_REJOINING = 9;
+
+        // Deliberately NOT using enum for "player battle states" to make use of "C# CompareAndExchange" 
+        public const long PLAYER_BATTLE_STATE_IMPOSSIBLE = -2;
+        public const long PLAYER_BATTLE_STATE_ADDED_PENDING_BATTLE_COLLIDER_ACK = 0;
+        public const long PLAYER_BATTLE_STATE_READDED_PENDING_FORCE_RESYNC = 1;
+        public const long PLAYER_BATTLE_STATE_ACTIVE = 2;
+        public const long PLAYER_BATTLE_STATE_DISCONNECTED = 3;
+        public const long PLAYER_BATTLE_STATE_LOST = 4;
+        public const long PLAYER_BATTLE_STATE_EXPELLED_DURING_GAME = 5;
+        public const long PLAYER_BATTLE_STATE_EXPELLED_IN_DISMISSAL = 6;
+
         public static PrimitiveConsts underlying = new PrimitiveConsts {
             BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
             DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
@@ -177,6 +200,7 @@ namespace JoltCSharp {
             SpeciesNoneCh = 0,
             UpsyncStIfdIdTolerance = 8,
 
+            InvalidDefaultPlayerId = "INVALID_PLAYER_ID",
             TerminatingCharacterId = 0,
             TerminatingTrapId = 0,
             TerminatingTriggerId = 0,
