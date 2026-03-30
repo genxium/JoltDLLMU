@@ -74,16 +74,16 @@ inline T* RingBufferMt<T>::GetLast() {
 
 template <typename T>
 inline T* RingBufferMt<T>::Pop() {
-    int oldCnt = Cnt.fetch_sub(1);
+    PairCntGuard cntGuard(PairCntMode::DecInc, &Cnt, &St);
+
+    int oldCnt = cntGuard.getCnt1Old();
     if (0 >= oldCnt) {
-        // [Cnt-protection]
-        ++Cnt;
         return nullptr;
     }
 
     // [WARNING] It's OK that "Pop" passes the empty-check due to thread switch immediately after "Cnt.fetch_add" from other threads' calls of "DryPut" -- in that case we might be popping a pointer to the being-written-element, and synchronization of such element should be a caller's responsibility AS LONG AS we maintain correct relationships among [St, Ed, Cnt, dirtyPuttingCnt].  
 
-    int holderIdx = St.fetch_add(1);
+    int holderIdx = cntGuard.getCnt2Old();
     int expectedOldSt = holderIdx + 1;
     if (holderIdx >= N) {
         // [Holder-protection] In the case of fast consecutive popping, "St.fetch_add(1)" might be called many times before a successful "compare_exchange_xxx" below occurs.
@@ -116,33 +116,31 @@ inline T* RingBufferMt<T>::Pop() {
         --retryCnt;
     } while(0 < retryCnt);
 
-    if (!success) {
-        // Recovery
-        --St;
-        ++Cnt;
+    if (success) {
+        cntGuard.confirm();
+        return holder;
+    } else {
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "[FAILED TO UPDATE St/Pop] thId=" << std::this_thread::get_id() << ", expectedOldSt=" << expectedOldSt << ", proposedNewSt=" << proposedNewSt << ", holderIdx=" << holderIdx; 
         Debug::Log(oss.str(), DColor::Red);
 #endif
         return nullptr;
-    } 
-    
-    return holder;
+    }
 }
 
 template <typename T>
 inline T* RingBufferMt<T>::PopTail() {
-    int oldCnt = Cnt.fetch_sub(1);
+    PairCntGuard cntGuard(PairCntMode::DecDec, &Cnt, &Ed);
+
+    int oldCnt = cntGuard.getCnt1Old();
     if (0 >= oldCnt) {
-        // [Cnt-protection]
-        ++Cnt;
         return nullptr;
     }
 
     // [WARNING] It's OK that "PopTail" passes the empty-check due to thread switch immediately after "Cnt.fetch_add" from other threads' calls of "DryPut" -- in that case we might be popping a pointer to the being-written-element, and synchronization of such element should be a caller's responsibility AS LONG AS we maintain correct relationships among [St, Ed, Cnt, dirtyPuttingCnt].  
 
-    int holderIdx = Ed.fetch_sub(1) - 1;
+    int holderIdx = cntGuard.getCnt2Old() - 1;
     int expectedOldEd = holderIdx;
     if (holderIdx < 0) {
         // [Holder-protection] In the case of fast consecutive popping, "Ed.fetch_sub(1)" might be called many times before a successful "compare_exchange_xxx" below occurs.
@@ -176,19 +174,17 @@ inline T* RingBufferMt<T>::PopTail() {
         --retryCnt;
     } while (0 < retryCnt);
 
-    if (!success) {
-        // Recovery
+    if (success) {
+        cntGuard.confirm();
+        return holder;
+    } else {
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "[FAILED TO UPDATE Ed/PopTail] thId=" << std::this_thread::get_id() << ", expectedOldEd=" << expectedOldEd << ", proposedNewEd=" << proposedNewEd << ", holderIdx=" << holderIdx;
         Debug::Log(oss.str(), DColor::Red);
 #endif
-        ++Ed;
-        ++Cnt;
         return nullptr;
     }
-
-    return holder;
 }
 
 template <typename T>
@@ -212,7 +208,9 @@ inline T* RingBufferMt<T>::DryPut() {
 
     Carrying a working bug is not too bad for DLLMU-v2.3.4, but it's to be fixed here.
     */
-    int oldDirtyPuttingCnt = dirtyPuttingCnt.fetch_add(1);
+    PairCntGuard cntGuard(PairCntMode::IncInc, &dirtyPuttingCnt, &Ed);
+
+    int oldDirtyPuttingCnt = cntGuard.getCnt1Old();
     if (oldDirtyPuttingCnt >= N) {
         // [Cnt-protection] The worst case is that N threads are concurrently calling "DryPut()", and all switched after calling the above "Cnt.fetch_add(1) & Ed.fetch_add(1)" statements, then "holderIdx" should be capped by "2*N" in "the last thread" to AVOID evicting a "to-be-filled holder of the first thread" during this concurrency sprint. 
 #ifndef NDEBUG
@@ -220,11 +218,10 @@ inline T* RingBufferMt<T>::DryPut() {
         oss << "[TOO MANY DIRTY] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " << oldDirtyPuttingCnt << ", N=" << this->N;
         Debug::Log(oss.str(), DColor::Red);
 #endif
-        --dirtyPuttingCnt;
         return nullptr;
     }
 
-    int holderIdx = Ed.fetch_add(1);
+    int holderIdx = cntGuard.getCnt2Old();
     int expectedOldEd = holderIdx+1;
     if (holderIdx >= N) {
         // [Holder-protection]
@@ -261,11 +258,12 @@ inline T* RingBufferMt<T>::DryPut() {
     } while (0 < retryCnt);
 
     if (success) {
+        cntGuard.confirm2Only();
         if (nullptr == holder) {
             Eles[holderIdx] = new T();
             holder = Eles[holderIdx];
         } 
-        int oldCnt = Cnt.fetch_add(1); // [Cnt-protection] Decremented first when popping, incremented last when putting.
+        int oldCnt = Cnt.fetch_add(1); // [Cnt-protection] Decremented first when popping, incremented last when putting -- moreover due to the protection from "dirtyPuttingCnt" this increment here WOULDN'T NEED A ROLLBACK. 
         bool overflowed = (N <= oldCnt);
         if (overflowed) {
             /*
@@ -313,8 +311,6 @@ inline T* RingBufferMt<T>::DryPut() {
             Pop();
         }
     } else {
-        // Recovery 
-        --Ed;
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "[FAILED TO UPDATE Ed/DryPut] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " + oldDirtyPuttingCnt << ", expectedOldEd=" << expectedOldEd << ", proposedNewEd=" << proposedNewEd << ", holderIdx=" << holderIdx;
@@ -322,6 +318,5 @@ inline T* RingBufferMt<T>::DryPut() {
 #endif
     }
      
-    --dirtyPuttingCnt;
     return holder;
 }

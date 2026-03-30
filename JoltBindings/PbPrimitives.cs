@@ -152,6 +152,7 @@ namespace JoltCSharp {
 
             MaxBtnHoldingRdfCnt = 999999999,
             MaxFlyingRdfCnt = 999999999,
+            DefaultSlipJumpGracePeriodRdfCnt = 15,
             MaxReversePushbackFramesToRecover = 30,
             SpeedNotHitNotSpecified = 0,
             DefaultPreallocNpcCapacity = 24, // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 

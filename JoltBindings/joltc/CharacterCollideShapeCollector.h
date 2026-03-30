@@ -136,13 +136,15 @@ public:
             mBestDot = dot;
         } 
 
-        if (abs(dot) < mWallBestDot) {
-            mWallBodyID = inResult.mBodyID2;
-            mWallBodySubShapeID = inResult.mSubShapeID2;
-            mWallPosition = mBaseOffset + inResult.mContactPointOn2;
-            mWallNormal = normal;
-            mWallBestDot = dot;
-            mWallUd = udRhs;
+        if (UDT_PLAYER != udtRhs && UDT_NPC != udtRhs) {
+            if (abs(dot) < mWallBestDot) {
+                mWallBodyID = inResult.mBodyID2;
+                mWallBodySubShapeID = inResult.mSubShapeID2;
+                mWallPosition = mBaseOffset + inResult.mContactPointOn2;
+                mWallNormal = normal;
+                mWallBestDot = dot;
+                mWallUd = udRhs;
+            }
         }
 
         float ceilingDot = normal.Dot(-mUp);
