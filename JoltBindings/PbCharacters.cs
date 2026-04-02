@@ -113,11 +113,9 @@ namespace JoltCSharp {
             Atk1UsesMagazine = true,
             Atk1Magazine = new InventorySlotConfig {
                 StockType = InventorySlotStockType.TimedMagazineIv,
-                Quota = 18,
+                Quota = 16,
                 FramesToRecover = 25,
-                BuffSpeciesId = 0,
-                SkillId = HunterPistolId,
-                SkillIdAir = HunterPistolId,
+                BadgeName = "Pistol"
             },
             GaugeIncWhenExhausted = 80,
             HasBtnBCharging = true,

@@ -45,7 +45,7 @@ namespace JoltCSharp {
         private static BulletConfig BasicPistolBulletAir = new BulletConfig {
             StartupFrames = 6,
             ActiveFrames = 360,
-            HitStunFrames = 7,
+            HitStunFrames = 8,
             BlockStunFrames = 7,
             CooldownFrames = 11,
             Damage = 10,
@@ -61,6 +61,7 @@ namespace JoltCSharp {
             AnimName = "Fireball1",
             Speed = 6.0f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
             BType = BulletType.MechanicalCartridge,
@@ -69,7 +70,7 @@ namespace JoltCSharp {
             HitOnRockSfxName = "Vanishing8",
             CancellableStFrame = 11,
             CancellableEdFrame = 19,
-            CollisionTypeMask = 0, // TODO
+            CollisionTypeMask = 0 // TODO
         };
 
         private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
@@ -95,7 +96,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             RecoveryFramesOnHit = BasicPistolBulletAir.StartupFrames+BasicPistolBulletAir.CooldownFrames,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.OnWallAtk1
+            BoundChState = CharacterState.OnWallAtk1,
+            Atk1MagazineDelta = 1,
         }.AddHit(new BulletConfig(BasicPistolBulletOnWall)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
         );
@@ -106,7 +108,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.Atk1
+            BoundChState = CharacterState.Atk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicPistolBulletGround)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
@@ -121,7 +124,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.InAirAtk1
+            BoundChState = CharacterState.InAirAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicPistolBulletAir)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, false, false, false), HunterAirSlashId)
@@ -133,7 +137,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.WalkingAtk1
+            BoundChState = CharacterState.WalkingAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicPistolBulletWalking)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
@@ -148,7 +153,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.CrouchAtk1
+            BoundChState = CharacterState.CrouchAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicPistolBulletCrouch)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, true, false, false, false), HunterDragonPunchId)
@@ -175,6 +181,7 @@ namespace JoltCSharp {
             AnimName = "Fireball2",
             Speed = 8.5f * BATTLE_DYNAMICS_FPS,
             Hardness = 7,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
             BType = BulletType.MechanicalCartridge,
@@ -209,7 +216,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
             RecoveryFramesOnHit = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.OnWallAtk1
+            BoundChState = CharacterState.OnWallAtk1,
+            Atk1MagazineDelta = 1,
         }.AddHit(new BulletConfig(BasicChargedPistolBulletOnWall)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, true, false, false), HunterAirSlashId)
         );
@@ -220,7 +228,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.Atk1
+            BoundChState = CharacterState.Atk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicChargedPistolBulletGround)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
@@ -233,7 +242,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.InAirAtk1
+            BoundChState = CharacterState.InAirAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicChargedPistolBulletAir)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, true, false, false, false, false), HunterAirSlashId)
@@ -245,7 +255,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.WalkingAtk1
+            BoundChState = CharacterState.WalkingAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicChargedPistolBulletWalking)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, false, false, false, false), HunterDragonPunchId)
@@ -258,7 +269,8 @@ namespace JoltCSharp {
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
             InvocationType = SkillInvocation.RisingEdge,
-            BoundChState = CharacterState.CrouchAtk1
+            BoundChState = CharacterState.CrouchAtk1,
+            Atk1MagazineDelta = 1,
         }
         .AddHit(new BulletConfig(BasicChargedPistolBulletCrouch)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternUpB, false, true, false, false, false), HunterDragonPunchId)
@@ -285,7 +297,7 @@ namespace JoltCSharp {
             CancellableStFrame = 10,
             CancellableEdFrame = 21,
             AnimName = "MeleeSlash2",
-            HitAnimRdfCnt = 25,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 5,
@@ -317,7 +329,7 @@ namespace JoltCSharp {
             CancellableStFrame = 11,
             CancellableEdFrame = 24,
             AnimName = "MeleeSlash2",
-            HitAnimRdfCnt = 25,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 6,
@@ -347,7 +359,7 @@ namespace JoltCSharp {
             HitboxHalfSizeX = 22f,
             HitboxHalfSizeY = 18f,
             AnimName = "MeleeSlash2",
-            HitAnimRdfCnt = 25,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 7,
@@ -379,7 +391,7 @@ namespace JoltCSharp {
             CancellableStFrame = 10,
             CancellableEdFrame = 24,
             AnimName = "MeleeSlash2",
-            HitAnimRdfCnt = 25,
+            HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             BType = BulletType.Melee,
             Hardness = 4,

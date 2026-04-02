@@ -12,6 +12,113 @@
 #include <sstream>
 #endif
 
+enum PairCntMode {
+    IncInc,
+    IncDec,
+    DecDec,
+    DecInc
+};
+
+class PairCntGuard {
+private:
+    PairCntMode mode;
+    std::atomic<int>* cnt1 = nullptr;
+    std::atomic<int>* cnt2 = nullptr;
+    int cnt1Old;
+    int cnt2Old;
+    bool confirmed, confirmed1Only, confirmed2Only;
+
+public:
+    PairCntGuard(const PairCntMode inMode, std::atomic<int>* inCnt1, std::atomic<int>* inCnt2) {
+        confirmed = false;
+        confirmed1Only = false;
+        confirmed2Only = false;
+        mode = inMode;
+        cnt1 = inCnt1;
+        cnt2 = inCnt2;
+        switch (inMode) {
+        case IncInc:
+            cnt1Old = cnt1->fetch_add(1);
+            cnt2Old = cnt2->fetch_add(1);
+            break;
+        case IncDec:
+            cnt1Old = cnt1->fetch_add(1);
+            cnt2Old = cnt2->fetch_sub(1);
+            break;
+        case DecDec:
+            cnt1Old = cnt1->fetch_sub(1);
+            cnt2Old = cnt2->fetch_sub(1);
+            break;
+        case DecInc:
+            cnt1Old = cnt1->fetch_sub(1);
+            cnt2Old = cnt2->fetch_add(1);
+            break;
+        default:
+            break;
+        }
+    }
+
+    int getCnt1Old() {
+        return cnt1Old;
+    }
+
+    int getCnt2Old() {
+        return cnt2Old;
+    }
+
+    void confirm() {
+        confirmed = true;
+    }
+
+    void confirm1Only() {
+        confirmed1Only = true;
+    }
+
+    void confirm2Only() {
+        confirmed2Only = true;
+    }
+
+    ~PairCntGuard() {
+        if (confirmed) return;
+        switch (mode) {
+        case IncInc:
+            if (!confirmed1Only) {
+                cnt1->fetch_sub(1);
+            }
+            if (!confirmed2Only) {
+                cnt2->fetch_sub(1);
+            }
+            break;
+        case IncDec:
+            if (!confirmed1Only) {
+                cnt1->fetch_sub(1);
+            }
+            if (!confirmed2Only) {
+                cnt2->fetch_add(1);
+            }
+            break;
+        case DecDec:
+            if (!confirmed1Only) {
+                cnt1->fetch_add(1);
+            }
+            if (!confirmed2Only) {
+                cnt2->fetch_add(1);
+            }
+            break;
+        case DecInc:
+            if (!confirmed1Only) {
+                cnt1->fetch_add(1);
+            }
+            if (!confirmed2Only) {
+                cnt2->fetch_sub(1);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+};
+
 /*
 [WARNING]
 

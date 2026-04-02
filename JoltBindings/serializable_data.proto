@@ -423,7 +423,9 @@ enum SpecialMoveOverrideStatus {
 message CharacterBattleSpecificConfig {
     map<int32, uint32> init_skill_transit = 1;     
     repeated InventorySlotConfig init_inventory_slots = 2;
-    SpecialMoveOverrideStatus air_jump_override = 3;
+    InventorySlotConfig atk1_magazine = 3; 
+    InventorySlotConfig super_atk_gauge = 4; 
+    SpecialMoveOverrideStatus air_jump_override = 5;
 }
 
 message BattleSpecificConfig {
@@ -1105,6 +1107,7 @@ message DownsyncSnapshot {
 }
 
 message Skill {
+    uint32 id = 1;
     int32 recovery_frames = 2;
     int32 recovery_frames_on_block = 3; 
     int32 recovery_frames_on_hit = 4; 
@@ -1112,7 +1115,8 @@ message Skill {
     CharacterState bound_ch_state = 6;
     CharacterState bound_ch_state_on_hit = 7; 
     int32 mp_delta = 8; // Usually used as "mp consumption"
-    uint32 id = 9;
+    int32 atk1_magazine_delta = 9;
+    int32 super_atk_gauge_delta = 10;
 
     repeated BulletConfig hits = 1024; // Hits within a "Skill" are automatically triggered
     BuffConfig self_non_stock_buff = 1025;
@@ -1246,12 +1250,8 @@ message InventorySlotConfig {
     InventorySlotStockType stock_type = 1;
     uint32 quota = 2; 
     int32 frames_to_recover = 3; 
-    uint32 buff_species_id = 4;
-    uint32 skill_id = 5;
-    uint32 skill_id_air = 6;
-    int32 gauge_required = 7;
-    uint32 full_charge_buff_species_id = 8;
-    uint32 full_charge_skill_id = 9;
+    int32 gauge_required = 4;
+    string badge_name = 64; // This is the default and it can change at runtime (maintained by "InventorySlot").
 }
 
 message InventorySlot {
@@ -1259,6 +1259,7 @@ message InventorySlot {
     uint32 quota = 2; 
     int32 frames_to_recover = 3; 
     int32 gauge_charged = 4;
+    uint32 adhoc_skill_id = 5; // [WARNING] An "adhoc_skill_id" here DOESN'T distinguish "air/ground/crouch/onwall" versions! Moreover an "adhoc_buff" can be carried by an "adhoc_skill" too.   
 }
 
 message BattleEquipment {
@@ -1384,9 +1385,7 @@ enum PickupType {
     MpMediumImmediate = 5;
     MpBigImmediate = 6;
 
-    Skill1IntoInventory = 512;
-
-    Buff1IntoInventory = 1024;
+    PutIntoInventory = 512;
 }
 
 message PickableConfig {
@@ -1613,6 +1612,8 @@ message PrimitiveConsts {
     int32 max_btn_holding_rdf_cnt = 48;
     int32 max_flying_rdf_cnt = 49;
     int32 max_reverse_pushback_frames_to_recover = 50;
+
+    int32 default_slip_jump_grace_period_rdf_cnt = 51;
 
     int32 speed_not_hit_not_specified = 53;
     int32 default_prealloc_npc_capacity = 54; // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
