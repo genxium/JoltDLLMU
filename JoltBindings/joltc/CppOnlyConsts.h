@@ -61,6 +61,7 @@ const float  cDefaultBlDensity = 0.1f;
 const float  cDefaultTpHalfLength = cDefaultHalfThickness;
 const float  cDefaultTpDensity = 10000.f;
 const float  cCollisionTolerance = 0.05f;
+const float  cAngleEps = 3.14159265/720.f;
 const float  cLengthEps = 1e-3;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;

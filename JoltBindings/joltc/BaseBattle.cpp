@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
 #include <Jolt/Physics/Constraints/SliderConstraint.h>
+#include <Jolt/Physics/Constraints/DistanceConstraint.h>
 
 // STL includes
 #include <cstdarg>
@@ -319,7 +320,7 @@ TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t 
     bool immediateIsSensor = forConstraintHelperBody;
     calcTpCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, immediateMotionType, immediateIsSensor, immediateObjectLayer, tpCacheKeyHolder);
     Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
-    float newConvexRadius = 0;
+    float newConvexRadius = cDefaultHalfThickness;
     TP_COLLIDER_T* tpCollider = nullptr;
     auto it = cachedTpColliders.find(tpCacheKeyHolder);
     if (it == cachedTpColliders.end() || it->second.empty()) {
@@ -467,6 +468,15 @@ NON_CONTACT_CONSTRAINT_T* BaseBattle::getOrCreateCachedNonContactConstraint_NotT
             SliderConstraint* newSliderConstraint = new (newNonContactConstraintBuffer) SliderConstraint(*body1, *body2, *(castedExistingSliderSettings));
             // [WARNING] No need to call ["SliderConstraint::NotifyShapeChanged(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/Constraint.h#L161 ) here because "getOrCreateCachedNonContactConstraint_NotThreadSafe" is always called after the creation and update of "Body"s.
             nonContactConstraint->c = newSliderConstraint;
+            break;
+        }
+        case EConstraintSubType::Distance: {
+            Constraint* cachedC = nonContactConstraint->c;
+            DistanceConstraintSettings* castedExistingSliderSettings = static_cast<DistanceConstraintSettings*>(inConstraintSettings);
+            void* newNonContactConstraintBuffer = (void*)cachedC;
+            DistanceConstraint* newDistanceConstraint = new (newNonContactConstraintBuffer) DistanceConstraint(*body1, *body2, *(castedExistingSliderSettings));
+            // [WARNING] No need to call ["DistanceConstraint::NotifyShapeChanged(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/Constraint.h#L161 ) here because "getOrCreateCachedNonContactConstraint_NotThreadSafe" is always called after the creation and update of "Body"s.
+            nonContactConstraint->c = newDistanceConstraint;
             break;
         }
         default:
@@ -770,24 +780,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         const Trap& currTp = currRdf->dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
         auto handle = jobSys->CreateJob("dynamic-trap-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
-            const Trap& currTp = currRdf->dynamic_traps(i);
-            Trap* nextTp = nextRdf->mutable_dynamic_traps(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadTraps", hence the indices of "currRdf->dynamic_traps" and "nextRdf->dynamic_traps" are FULLY ALIGNED.
-            auto ud = calcUserData(currTp);
-            if (!transientUdToBodyID.count(ud)) return;
-            const TrapConfig* tpConfig = nullptr;
-            const TrapConfigFromTiled* tpConfigFromTile = nullptr;
-            const uint32_t tpt = currTp.tpt();
-            FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
-            JPH_ASSERT(nullptr != tpConfig);
-            const BodyID bodyID = *(transientUdToBodyID.at(ud));
-            bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextTp->vel_x(), nextTp->vel_y(), nextTp->vel_z()), Vec3::sZero());
-            if (globalPrimitiveConsts->tpt_sliding_platform() == currTp.tpt()) {
-                JPH_ASSERT(nullptr != tpConfigFromTile);
-                const BodyID constraintHelperBodyID = *(transientUdToConstraintHelperBodyID.at(ud));
-                const BodyID obsIfaceBodyID = *(transientUdToConstraintObsIfaceBodyID.at(ud));
-                bi->SetLinearAndAngularVelocity(obsIfaceBodyID, Vec3(nextTp->vel_x(), nextTp->vel_y(), nextTp->vel_z()), Vec3::sZero());
-            }
-            }, 0);
+            /*
+            [REMINDER]
+
+            W.r.t. the phySys, position and rotation setup was done earlier in "batchPutIntoPhySysFromCache", and velocity setup will be done later in "batchNonContactConstraintsSetupFromCache", both single-threaded.
+            */ 
+        }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
@@ -1083,21 +1081,18 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 Trap* nextTp = nextRdf->mutable_dynamic_traps(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadTraps", hence the indices of "currRdf->dynamic_traps" and "nextRdf->dynamic_traps" are FULLY ALIGNED.
                 auto ud = calcUserData(currTp);
                 const uint32_t tpt = currTp.tpt();
-                BodyID targetBodyID;
-                if (globalPrimitiveConsts->tpt_sliding_platform() == tpt) {
-                    if (transientUdToConstraintObsIfaceBodyID.count(ud)) {
-                        targetBodyID = *(transientUdToConstraintObsIfaceBodyID.at(ud));
-                    }
-                } else {
-                    if (transientUdToBodyID.count(ud)) {
-                        targetBodyID = *(transientUdToBodyID.at(ud));
-                    }
-                }
-                if (!targetBodyID.IsInvalid()) {
+                const TrapConfig* tpConfig = nullptr;
+                const TrapConfigFromTiled* tpConfigFromTile = nullptr;
+                FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
+
+                const BodyID effBodyID = (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) ? *(transientUdToConstraintObsIfaceBodyID.at(ud)) : *(transientUdToBodyID.at(ud));
+
+                if (!effBodyID.IsInvalid()) {
                     RVec3 newPos;
                     Quat newRot;
-                    biNoLock->GetPositionAndRotation(targetBodyID, newPos, newRot);
-                    auto newVel = biNoLock->GetLinearVelocity(targetBodyID);
+                    biNoLock->GetPositionAndRotation(effBodyID, newPos, newRot);
+                    Vec3 newVel, newAngVel;
+                    biNoLock->GetLinearAndAngularVelocity(effBodyID, newVel, newAngVel);
 
                     JPH_ASSERT(transientUdToNextTrap.count(ud));
                     Trap* nextTp = transientUdToNextTrap.at(ud);
@@ -1112,6 +1107,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextTp->set_vel_x(IsLengthNearZero(newVel.GetX()* dt) ? 0 : newVel.GetX());
                     nextTp->set_vel_y(IsLengthNearZero(newVel.GetY()* dt) ? 0 : newVel.GetY());
                     nextTp->set_vel_z(0);
+
+                    nextTp->set_ang_vel_x(IsAngleNearZero(newAngVel.GetX()* dt) ? 0 : newAngVel.GetX());
+                    nextTp->set_ang_vel_y(IsAngleNearZero(newAngVel.GetY()* dt) ? 0 : newAngVel.GetY());
+                    nextTp->set_ang_vel_z(IsAngleNearZero(newAngVel.GetZ()* dt) ? 0 : newAngVel.GetZ());
                 }
             }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
@@ -1520,6 +1519,8 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             effTrapConfigFromTiled->set_slider_axis_x(worldSpaceSliderAxis.GetX());
             effTrapConfigFromTiled->set_slider_axis_y(worldSpaceSliderAxis.GetY());
             effTrapConfigFromTiled->set_slider_axis_z(worldSpaceSliderAxis.GetZ());
+        } else if (globalPrimitiveConsts->tpt_conveyor_belt() == c.tpt()) {
+            effTrapConfigFromTiled->set_init_not_moving(true);
         }
         trapConfigFromTileDict[c.id()] = effTrapConfigFromTiled;
     }
@@ -1537,11 +1538,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         tp->set_q_z(0);
         tp->set_q_w(1);
         Vec3 initVel(defaultC.default_linear_speed(), 0, 0);
-        tp->set_vel_x(initVel.GetX());
-        tp->set_vel_y(initVel.GetY());
-        tp->set_vel_z(initVel.GetZ());
-        tp->set_trap_state(TrapState::TpWalking);
-
+        
         if (!trapConfigFromTileDict.count(tp->id())) continue;
         const TrapConfigFromTiled* c = trapConfigFromTileDict.at(tp->id());
         tp->set_x(c->init_x());
@@ -1554,16 +1551,20 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             tp->set_q_z(initQ.GetZ());
             tp->set_q_w(initQ.GetW());
         }
-        if (0 != c->init_vel_x() || 0 != c->init_vel_y() || 0 != c->init_vel_z()) {
-            initVel.Set(c->init_vel_x(), c->init_vel_y(), c->init_vel_z());
-            tp->set_vel_x(initVel.GetX());
-            tp->set_vel_y(initVel.GetY());
-            tp->set_vel_z(initVel.GetZ());
-        }
+        
         if (!c->init_not_moving()) {
+            if (0 != c->init_vel_x() || 0 != c->init_vel_y() || 0 != c->init_vel_z()) {
+                initVel.Set(c->init_vel_x(), c->init_vel_y(), c->init_vel_z());
+                tp->set_vel_x(initVel.GetX());
+                tp->set_vel_y(initVel.GetY());
+                tp->set_vel_z(initVel.GetZ());
+            }
             tp->set_trap_state(TrapState::TpWalking);
         } else {
             tp->set_trap_state(TrapState::TpIdle);
+            tp->set_vel_x(0);
+            tp->set_vel_y(0);
+            tp->set_vel_z(0);
         }
     }
 
@@ -1606,9 +1607,6 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         const uint64_t staticColliderUd = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
         if (barrierAttr.provides_slip_jump()) {
             transientSlipJumpableUds.insert(staticColliderUd);
-        }
-        if (barrierAttr.forces_crouching()) {
-            transientCrouchForcingUds.insert(staticColliderUd);
         }
         const BodyID* newBodyID = nullptr;
         int pointsCnt = convexPolygon->points_size();
@@ -1730,7 +1728,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         }
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
+        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
         for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
             auto& p = convexPolygon->points(pi);
             auto x = p.x();
@@ -2942,12 +2940,34 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             }
             bodyIDsToActivate.push_back(constraintHelperBodyID);   
 
-            TP_COLLIDER_T* obsIfaceBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, true, newTrapPos, newTrapRot);
-            auto obsIfaceBodyID = obsIfaceBody->GetID();
-            if (!obsIfaceBody->IsInBroadPhase()) {
-                bodyIDsToAdd.push_back(obsIfaceBodyID);
+            if (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) {
+                TP_COLLIDER_T* obsIfaceBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, true, newTrapPos, newTrapRot);
+                auto obsIfaceBodyID = obsIfaceBody->GetID();
+                if (!obsIfaceBody->IsInBroadPhase()) {
+                    bodyIDsToAdd.push_back(obsIfaceBodyID);
+                }
+                bodyIDsToActivate.push_back(obsIfaceBodyID);
             }
-            bodyIDsToActivate.push_back(obsIfaceBodyID);
+        } else if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+            JPH_ASSERT(nullptr != tpConfigFromTile);
+            
+            Vec3Arg newHelperPos(tpConfigFromTile->init_x(), tpConfigFromTile->init_y(), tpConfigFromTile->init_z());
+            QuatArg newHelperRot(tpConfigFromTile->init_q_x(), tpConfigFromTile->init_q_y(), tpConfigFromTile->init_q_z(), tpConfigFromTile->init_q_w());
+            TP_COLLIDER_T* constraintHelperBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, true, false, newHelperPos, newHelperRot);
+            auto constraintHelperBodyID = constraintHelperBody->GetID();
+            if (!constraintHelperBody->IsInBroadPhase()) {
+                bodyIDsToAdd.push_back(constraintHelperBodyID);
+            }
+            bodyIDsToActivate.push_back(constraintHelperBodyID);   
+
+            if (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) {
+                TP_COLLIDER_T* obsIfaceBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, true, newTrapPos, newTrapRot);
+                auto obsIfaceBodyID = obsIfaceBody->GetID();
+                if (!obsIfaceBody->IsInBroadPhase()) {
+                    bodyIDsToAdd.push_back(obsIfaceBodyID);
+                }
+                bodyIDsToActivate.push_back(obsIfaceBodyID);
+            }
         }
     }
 
@@ -3009,7 +3029,23 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
         const uint32_t tpt = currTp.tpt();
         FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
         JPH_ASSERT(nullptr != tpConfig);
-        TP_COLLIDER_T* tpCollider = tpConfig->use_kinematic() ? transientUdToConstraintObsIfaceBody.at(ud) : transientUdToTpCollider.at(ud); // [WARNING] To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC!
+
+        Vec3 newTpLinearVel = Vec3(nextTp->vel_x(), nextTp->vel_y(), nextTp->vel_z());
+        Vec3 newTpAngVel = Vec3(nextTp->ang_vel_x(), nextTp->ang_vel_y(), nextTp->ang_vel_z());
+        /**
+        [WARNING]
+
+        The following velocity assignments by "obsIfaceBodyID" COULDN'T serve "CharacterDownsync.ground_vel_*" because "MyObjectLayers::TRAP_OBSTACLE_INTERFACE" DOESN'T collide with "MyObjectLayers::MOVING".
+
+        The use of "obsIfaceBodyID" in "dynamic-trap-post-physics-update" CAN serve to stop a dynamic-trap upon collision of an obstacle and it's by far the only usage.
+        */
+        
+        TP_COLLIDER_T* tpMainCollider = transientUdToTpCollider.at(ud);
+        TP_COLLIDER_T* obsIfaceBody = nullptr;
+        bool usingObsIface = isTrapUsingObsIface(tpConfig, tpConfigFromTile);
+        if (usingObsIface) {
+            obsIfaceBody = transientUdToConstraintObsIfaceBody.at(ud);
+        }
 
         if (globalPrimitiveConsts->tpt_sliding_platform() == currTp.tpt()) {
             JPH_ASSERT(nullptr != tpConfigFromTile);
@@ -3018,7 +3054,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             const Vec3 worldSpaceSliderAxis(tpConfigFromTile->slider_axis_x(), tpConfigFromTile->slider_axis_y(), tpConfigFromTile->slider_axis_z());
             SliderConstraintSettings sliderSettings;
             sliderSettings.mAutoDetectPoint = false;
-            sliderSettings.mPoint1 = tpCollider->GetCenterOfMassPosition();
+            sliderSettings.mPoint1 = tpMainCollider->GetCenterOfMassPosition();
             sliderSettings.mPoint2 = constraintHelperBody->GetCenterOfMassPosition();
             // The combination of "mAutoDetectPoint & mPoint1 & mPoint2" makes "SliderConstraint.mLocalSpacePosition1 == SliderConstraint.mLocalSpacePosition2 == Vec3::sZero()".
             sliderSettings.SetSliderAxis(worldSpaceSliderAxis);
@@ -3026,7 +3062,8 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             sliderSettings.mLimitsMax = tpConfigFromTile->limit_2();
             sliderSettings.mLimitsSpringSettings.mFrequency = tpConfigFromTile->limit_3();
             sliderSettings.mLimitsSpringSettings.mDamping = tpConfigFromTile->limit_4();
-            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Slider, tpCollider, constraintHelperBody, &sliderSettings);
+            
+            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Slider, (usingObsIface ? obsIfaceBody : tpMainCollider), constraintHelperBody, &sliderSettings); // [WARNING] To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC!;
             JPH_ASSERT(nullptr != cachedConstraint); 
             JPH::Constraint* c = cachedConstraint->c;
             SliderConstraint* sc = static_cast<SliderConstraint*>(c);
@@ -3050,6 +3087,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
 */
                     nextTp->set_trap_state(TrapState::TpIdle);
                     nextTp->set_frames_in_trap_state(0);
+                    newTpLinearVel = Vec3::sZero();
                 } else if (TrapState::TpIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
 /*
 #ifndef NDEBUG
@@ -3061,7 +3099,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                     nextTp->set_trap_state(TrapState::TpWalking);
                     nextTp->set_frames_in_trap_state(0);
-                    biNoLock->SetLinearVelocity(tpCollider->GetID(), projectedVel);
+                    newTpLinearVel = projectedVel;
                 }
             } else if (mD >= tpConfigFromTile->limit_2()) {
                 if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
@@ -3074,6 +3112,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
 */
                     nextTp->set_trap_state(TrapState::TpIdle);
                     nextTp->set_frames_in_trap_state(0);
+                    newTpLinearVel = Vec3::sZero();
                 } else if (TrapState::TpIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
 /*
 #ifndef NDEBUG
@@ -3085,9 +3124,36 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                     nextTp->set_trap_state(TrapState::TpWalking);
                     nextTp->set_frames_in_trap_state(0);
-                    biNoLock->SetLinearVelocity(tpCollider->GetID(), projectedVel);
+                    newTpLinearVel = projectedVel;
                 }
             }
+        } else if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+            JPH_ASSERT(nullptr != tpConfigFromTile);
+            Body* constraintHelperBody = transientUdToConstraintHelperBody.at(ud);
+
+            DistanceConstraintSettings distanceSettings;
+            distanceSettings.mPoint1 = tpMainCollider->GetCenterOfMassPosition();
+            distanceSettings.mPoint2 = constraintHelperBody->GetCenterOfMassPosition();
+            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Distance, (usingObsIface ? obsIfaceBody : tpMainCollider), constraintHelperBody, &distanceSettings); // [WARNING] To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC!;
+            JPH_ASSERT(nullptr != cachedConstraint); 
+            JPH::Constraint* c = cachedConstraint->c;
+            DistanceConstraint* dc = static_cast<DistanceConstraint*>(c);
+            nextTp->set_trap_state(TrapState::TpWalking);
+
+            const Vec3 initAngVel(tpConfigFromTile->init_ang_vel_x(), tpConfigFromTile->init_ang_vel_y(), tpConfigFromTile->init_ang_vel_z());
+            newTpAngVel = initAngVel;
+            // [TODO] Set actual "DistanceConstraint" and then let "tpCollider" rotate w.r.t. "constraintHelperBody", changing its orientation (in quaternion) effectively in world space.
+        }
+
+        /*
+        [REMINDER]
+
+        Unlike "BodyInterface::SetPositionAndRotation", "BodyInterface::SetLinearAndAngularVelocity" WOULDN'T cause "BroadPhaseQuadTree AABB change", hence it's relatively cheap to be executed in a single-threaded traversal here.
+
+        */
+        biNoLock->SetLinearAndAngularVelocity(tpMainCollider->GetID(), newTpLinearVel, newTpAngVel);
+        if (usingObsIface) {
+            biNoLock->SetLinearAndAngularVelocity(obsIfaceBody->GetID(), newTpLinearVel, newTpAngVel);
         }
     }
 
@@ -3201,9 +3267,6 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         if (transientSlipJumpableUds.count(ud)) {
             transientSlipJumpableUds.erase(ud);
         }
-        if (transientCrouchForcingUds.count(ud)) {
-            transientCrouchForcingUds.erase(ud);
-        } 
         const Trap& tp = *(transientUdToCurrTrap.at(ud));
         JPH_ASSERT(globalPrimitiveConsts->terminating_trap_id() != tp.id());
         const TrapConfig* tpConfig = nullptr;
@@ -3650,7 +3713,7 @@ void BaseBattle::processDelayedBulletSelfVel(const int currRdfId, const Characte
 
 void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
     CharacterState oldNextChState = nextChd->ch_state();
-   
+
     uint32_t activeSkillId = currChd.active_skill_id();
     int activeSkillHit = currChd.active_skill_hit();
     const Skill* activeSkill = nullptr;
@@ -3773,6 +3836,40 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 }
                 break;
             }
+        }
+
+        const CharacterState oldNextChStateLv2 = nextChd->ch_state();
+        if (inputInducedMotion->crouchForcedWhileSupported && !isCrouching(oldNextChStateLv2, cc)) {
+            switch (oldNextChStateLv2) {
+            case Idle1:
+            case InAirIdle1ByJump:
+            case InAirIdle2ByJump:
+            case InAirIdle1NoJump:
+            case InAirIdle1ByWallJump:
+            case Walking:
+            case GetUp1:
+            case TurnAround:
+                nextChd->set_ch_state(CrouchIdle1);
+                break;
+            case Atk1:
+                if (cc->crouching_atk_enabled()) {
+                    nextChd->set_ch_state(CrouchAtk1);
+                } else {
+                    nextChd->set_ch_state(CrouchIdle1);
+                }
+                break;
+            case Atked1:
+            case Def1Atked1:
+                nextChd->set_ch_state(CrouchAtked1);
+                break;
+            case BlownUp1:
+            case LayDown1:
+            case Dying:
+                break;
+            default:
+                break;
+            }
+
         }
     }
 
@@ -5210,6 +5307,15 @@ NON_CONTACT_CONSTRAINT_T* BaseBattle::createDefaultNonContactConstraint(const EC
             NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(sliderConstraint, ud1, ud2);
             return ret;
         }
+        case EConstraintSubType::Distance: {
+            const uint64_t ud1 = inBody1->GetUserData();
+            const uint64_t ud2 = inBody2->GetUserData();
+            const uint64_t udt1 = getUDT(ud1);
+            const DistanceConstraintSettings* inDistanceSettings = static_cast<DistanceConstraintSettings*>(inConstraintSettings);
+            DistanceConstraint* distanceConstraint = new DistanceConstraint(*inBody1, *inBody2, *inDistanceSettings);
+            NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(distanceConstraint, ud1, ud2);
+            return ret;
+        }
         default:
             break;
         }
@@ -5414,22 +5520,18 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     CharacterCollideShapeCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), narrowPhaseInBaseOffset, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
 
     auto chCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
-
-    // Settings for collide shape
-    CollideShapeSettings settings;
-    settings.mMaxSeparationDistance = cCollisionTolerance;
-    settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
-    settings.mActiveEdgeMovementDirection = newOverallVel;
-    settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-    
+    CollideShapeSettings chNarrowPhaseCollideShapeSettings;
+    chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
+    chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
+    chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
+    chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
     ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, this);
-    narrowPhaseQueryNoLock->CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, settings, narrowPhaseInBaseOffset, collector, defaultBplf, defaultOlf, chBodyFilter);
-    
+
+    narrowPhaseQueryNoLock->CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, narrowPhaseInBaseOffset, collector, defaultBplf, defaultOlf, chBodyFilter);
+
     // Copy results
     single->SetGroundBodyID(collector.mGroundBodyID, collector.mGroundBodySubShapeID);
     single->SetGroundBodyPosition(collector.mGroundPosition, collector.mGroundNormal);
-
-    inputInducedMotion->crouchForcedWhileSupported = (collector.mCrouchForced && cvSupported); 
 
     uint64_t newGroundUd = 0;
     Vec3 newGroundVel = Vec3::sZero();
@@ -5468,6 +5570,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         cvOnWall = (0 > groundNormalAlignment && !groundBodyID.IsInvalid() && !transientSlipJumpableUds.count(newGroundUd) && single->IsSlopeTooSteep(single->GetGroundNormal()));
     }
     cvSupported = (single->IsSupported() && !cvOnWall && !groundBodyID.IsInvalid() && !groundBodyIsChCollider); // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
+    
     /* [WARNING]
     When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0.
 
@@ -5618,6 +5721,41 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     }
 
     isDead = (0 >= nextChd->hp());
+    CharacterState oldNextChState = nextChd->ch_state();
+    if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
+        CharacterCollideShapeCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), narrowPhaseInBaseOffset, this);
+
+        const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
+        const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());
+
+        const CapsuleShape nonCrouchingInnerShape(cc->capsule_half_height(), cc->capsule_radius());
+        nonCrouchingInnerShape.SetEmbedded();
+        const RotatedTranslatedShape nonCrouchingShape(currShape->GetPosition(), currShape->GetRotation(), &nonCrouchingInnerShape);
+        nonCrouchingShape.SetEmbedded();
+        narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, narrowPhaseInBaseOffset, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
+
+        if (crouchCollector.mCrouchForced) {
+            inputInducedMotion->crouchForcedWhileSupported = true;
+/*
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " forced to crouch#1 from oldNextChState=" << oldNextChState << std::endl;
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+        }
+    } else {
+        if (cvSupported && collector.mCrouchForced) {
+/*
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " forced to crouch#2 from oldNextChState=" << oldNextChState << std::endl;
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+            inputInducedMotion->crouchForcedWhileSupported = true;
+        }
+    }
 }
 
 void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult) {
@@ -5928,15 +6066,13 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             nextChd->set_last_damaged_by_ud(rhsCurrBl->offender_ud());
         }
 
-        Vec3 hitPos(currChd->x(), currChd->y(), currChd->z()); 
+        float capsuleRadius = 0, capsuleHalfHeight = 0;
+        calcChdShape(currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+        Vec3 hitPos(currChd->x(), currChd->y() + capsuleRadius + capsuleHalfHeight, currChd->z()); 
         Vec3 hitPosAdds(0, 0, 0); 
         int hitPosAddsCnt = 0; 
         for (int k = 0; k < contactPointsLhs.size(); ++k) {
             auto& contactPoint = contactPointsLhs.at(k);
-            if (0 > contactPoint.GetY()) {
-                // [REMINDER] Y-coordinate "currChd->y()" is the bottom of the character, therefore any y-offset less than 0 should be avoided.
-                continue;
-            }
             hitPosAdds += contactPoint;
             hitPosAddsCnt += 1;
         }

@@ -151,8 +151,6 @@ public:
 
     std::atomic<uint32_t>       mNextRdfAimingRayCount = 0;
 
-    virtual bool providesCrouchForcing(const uint64_t inBarrierUd) const = 0;
-
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const = 0;
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trap* rhsCurrTrap) const = 0;
@@ -334,6 +332,10 @@ public:
         y = y * (threehalfs - (x2 * y * y));
 
         return y;
+    }
+
+    inline static bool IsAngleNearZero(float angle) {
+        return -cAngleEps < angle && angle < cAngleEps;
     }
 
     inline static bool IsLengthNearZero(float length) {

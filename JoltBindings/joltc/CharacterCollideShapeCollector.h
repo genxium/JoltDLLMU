@@ -134,22 +134,23 @@ public:
             mGroundPosition = mBaseOffset + inResult.mContactPointOn2;
             mGroundNormal = normal;
             mBestDot = dot;
-        } 
+        }
 
         if (UDT_PLAYER != udtRhs && UDT_NPC != udtRhs) {
-            if (abs(dot) < mWallBestDot) {
+            float absDot = abs(dot);
+            if (absDot < 0.10f && absDot < mWallBestDot) {
                 mWallBodyID = inResult.mBodyID2;
                 mWallBodySubShapeID = inResult.mSubShapeID2;
                 mWallPosition = mBaseOffset + inResult.mContactPointOn2;
                 mWallNormal = normal;
                 mWallBestDot = dot;
                 mWallUd = udRhs;
+            } else {
+                float ceilingDot = -dot;
+                if (ceilingDot > 0.85f) {
+                    mCrouchForced = true;
+                }
             }
-        }
-
-        float ceilingDot = normal.Dot(-mUp);
-        if (ceilingDot > 0.85f && mBaseBattleFilter->providesCrouchForcing(udRhs)) {
-            mCrouchForced = true;
         }
     }
 

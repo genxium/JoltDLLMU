@@ -899,7 +899,15 @@ message TrapConfig {
     float default_angular_speed = 29; // in "radians/second" 
     int32 default_cooldown_rdf_count = 30;
 
+    bool use_obstable_interface_body = 31;
+
     string name = 1024;
+}
+
+enum OverrideObsIfaceBodyOption {
+    OOIBOKeep = 0;    
+    OOIBOTrue = 1;    
+    OOIBOFalse = 2;    
 }
 
 message TrapConfigFromTiled {
@@ -922,18 +930,24 @@ message TrapConfigFromTiled {
     float init_q_z = 13;
     float init_q_w = 14;
 
-    // "init_vel" is allowed to have different direction than "init_q" 
+    // "init_vel" is allowed to have different direction than "init_q", because it's for (tpCollider w.r.t. constraintHelperBody) 
     float init_vel_x = 15;
     float init_vel_y = 16;
     float init_vel_z = 17;
 
-    int32 cooldown_rdf_count = 18;
+    // "init_ang_vel" is allowed to have different direction than "init_q", because it's for (tpCollider w.r.t. constraintHelperBody) 
+    float init_ang_vel_x = 18;
+    float init_ang_vel_y = 19;
+    float init_ang_vel_z = 20;
 
-    float slider_axis_x = 19;
-    float slider_axis_y = 20;
-    float slider_axis_z = 21;
+    int32 cooldown_rdf_count = 21;
 
-    BarrierColliderAttr barrier_attr = 22;  
+    float slider_axis_x = 22;
+    float slider_axis_y = 23;
+    float slider_axis_z = 24;
+
+    BarrierColliderAttr barrier_attr = 25;  
+    OverrideObsIfaceBodyOption ooibo = 26;
 
     // Used for constraint limit assignment
     float limit_1 = 128;  
@@ -949,7 +963,6 @@ message BarrierColliderAttr {
     bool provides_hard_pushback = 1;
     bool provides_slip_jump = 2;
     bool prohibits_wall_grabbing = 3;
-    bool forces_crouching = 4;
     int32 only_allows_aligned_vel_x = 5;
     int32 only_allows_aligned_vel_y = 6;
 }
@@ -1768,6 +1781,7 @@ message PrimitiveConsts {
     uint32 tpt_sliding_platform = 171; 
     uint32 tpt_rotating_platform = 172; 
     uint32 tpt_conveyor_belt = 173; 
+    uint32 tpt_falling_rock = 174; 
 
     int32 sp_atk_lookup_frames = 512;
 

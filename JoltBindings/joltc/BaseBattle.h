@@ -215,10 +215,6 @@ public:
     int battleDurationFrames;
     FrameRingBuffer<RenderFrame, google::protobuf::Arena> rdfBuffer;
 
-    inline bool providesCrouchForcing(const uint64_t inBarrierUd) const {
-        return transientCrouchForcingUds.count(inBarrierUd);
-    }
-
     static inline RenderFrame* ArenaAllocRdf(google::protobuf::Arena* theAllocator) {
         return google::protobuf::Arena::Create<RenderFrame>(theAllocator);
     }
@@ -626,7 +622,6 @@ protected:
     const google::protobuf::Map<uint64_t, CharacterBattleSpecificConfig>* characterOverrides = nullptr;
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
-    std::unordered_set<uint64_t> transientCrouchForcingUds;
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
@@ -999,6 +994,12 @@ protected:
         playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
         playerInputFrontIdsSorted.insert(inIfdId);
         return true;
+    }
+
+    inline bool isTrapUsingObsIface(const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTiled) {
+        if (OOIBOFalse == tpConfigFromTiled->ooibo()) return false;
+        if (OOIBOTrue == tpConfigFromTiled->ooibo()) return true;
+        return tpConfig->use_obstable_interface_body();
     }
 
     inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
@@ -1409,12 +1410,12 @@ public:
     /*
     On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" within "OnContactCommon" -- take "Character" as an example,  
     - during BroadPhase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
-    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of BroadPhase multithreading to solve constraints (including "regular NonContactConstraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of BroadPhase multi-threading to solve constraints (including "regular NonContactConstraint" and "ContactConstraint") we balance both efficiency and simplicity.  
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold,
-        const JPH::ContactSettings& ioSettings) {
+        JPH::ContactSettings& ioSettings) {
 
         uint64_t ud1 = inBody1.GetUserData();
         uint64_t ud2 = inBody2.GetUserData();
@@ -1431,6 +1432,38 @@ public:
             if (transientUdToCollisionUdHolder.count(ud2)) {
                 CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder.at(ud2);
                 udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2, -inManifold.mWorldSpaceNormal);
+            }
+        }
+
+        if (UDT_TRAP == udt1) {
+            uint32_t trapId = getUDPayload(ud1);
+            if (trapConfigFromTileDict.count(trapId)) {
+                const TrapConfigFromTiled* trapConfigFromTiled = trapConfigFromTileDict.at(trapId);
+                if (globalPrimitiveConsts->tpt_conveyor_belt() == trapConfigFromTiled->tpt()) {
+                    const AABox& trapAABB = inBody1.GetWorldSpaceBounds();
+                    const AABox& rhsAABB = inBody2.GetWorldSpaceBounds();
+                    bool isConveyorBelow = (trapAABB.mMax.GetY() < rhsAABB.mMax.GetY());
+                    Vec3 conveyorInitVel(trapConfigFromTiled->init_vel_x(), trapConfigFromTiled->init_vel_y(), trapConfigFromTiled->init_vel_z());
+                    Vec3 body1LinearSurfaceVel = inBody1.GetRotation() * (isConveyorBelow ? conveyorInitVel : -conveyorInitVel);
+                    Vec3 body2LinearSurfaceVel = inBody2.GetLinearVelocity();
+                    ioSettings.mRelativeLinearSurfaceVelocity = (body2LinearSurfaceVel - body1LinearSurfaceVel);
+                }
+            }
+        }
+
+        if (UDT_TRAP == udt2) {
+            uint32_t trapId = getUDPayload(ud2);
+            if (trapConfigFromTileDict.count(trapId)) {
+                const TrapConfigFromTiled* trapConfigFromTiled = trapConfigFromTileDict.at(trapId);
+                if (globalPrimitiveConsts->tpt_conveyor_belt() == trapConfigFromTiled->tpt()) {
+                    const AABox& lhsAABB = inBody1.GetWorldSpaceBounds();
+                    const AABox& trapAABB = inBody2.GetWorldSpaceBounds();
+                    bool isConveyorBelow = (trapAABB.mMax.GetY() < lhsAABB.mMax.GetY());
+                    Vec3 conveyorInitVel(trapConfigFromTiled->init_vel_x(), trapConfigFromTiled->init_vel_y(), trapConfigFromTiled->init_vel_z());
+                    Vec3 body1LinearSurfaceVel = inBody1.GetLinearVelocity();
+                    Vec3 body2LinearSurfaceVel = inBody2.GetRotation() * (isConveyorBelow ? conveyorInitVel : -conveyorInitVel);
+                    ioSettings.mRelativeLinearSurfaceVelocity = body2LinearSurfaceVel - body1LinearSurfaceVel;
+                }
             }
         }
 
