@@ -1768,6 +1768,7 @@ message PrimitiveConsts {
     uint32 tpt_sliding_platform = 171; 
     uint32 tpt_rotating_platform = 172; 
     uint32 tpt_conveyor_belt = 173; 
+    uint32 tpt_falling_rock = 174; 
 
     int32 sp_atk_lookup_frames = 512;
 

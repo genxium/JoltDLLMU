@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
 
-public abstract class AbstractCacheableAnimNodePoolTemplate<T, S, C, G, A> where A : AbstractCacheableAnimNodeTemplate<T, S, C, G> {
+public abstract class AbstractCacheableAnimNodePoolTemplate<T, S, C, G, A> where A : AbstractCacheableAnimNodeTemplate<T, S, C, G> where G : IComparable {
     protected ulong terminatingUd;
     protected G terminatingCacheGroupId;
     protected float effectivelyInfinitelyFar;
@@ -31,7 +32,7 @@ public abstract class AbstractCacheableAnimNodePoolTemplate<T, S, C, G, A> where
             bool wasUsedInLastRdf = (g.GetLastActiveRdfId() == atTheEndOfRdfId);
             if (wasUsedInLastRdf) continue;
             activeAnimNodes.Remove(ud);
-            G? cacheGroupId = g.GetCacheGroupId();
+            G cacheGroupId = g.GetCacheGroupId();
             g.hideSelf(effectivelyInfinitelyFar, defaultZ);
             if (null != cacheGroupId) {
                 if (!cachedAnimNodes.ContainsKey(cacheGroupId)) {
@@ -56,30 +57,46 @@ public abstract class AbstractCacheableAnimNodePoolTemplate<T, S, C, G, A> where
         }
     }
 
-    public (A?, ulong) GetOrCreateAnimNode(in ulong ud, in G cachedGroupId, in C insConfig) {
-        A? a = null;
+    public (A?, ulong) GetOrCreateAnimNode(in ulong ud, in G cacheGroupId, in C insConfig) {
+        A? g = null;
         ulong oldUd = terminatingUd;
         if (activeAnimNodes.ContainsKey(ud)) {
-            a = activeAnimNodes[ud];
-        } else if (!cachedAnimNodes.ContainsKey(cachedGroupId)) {
-            a = CreateAnimNode(cachedGroupId, insConfig);
-        } else {
-            var cachedQ = cachedAnimNodes[cachedGroupId];
-            if (0 >= cachedQ.Count) {
-                a = CreateAnimNode(cachedGroupId, insConfig);
+            var existingG = activeAnimNodes[ud];
+            G existingCacheGroupId = existingG.GetCacheGroupId();
+            if (0 == cacheGroupId.CompareTo(existingG.GetCacheGroupId())) {
+                g = existingG;
             } else {
-                a = cachedQ.Last.Value;
-                cachedQ.RemoveLast();
+                activeAnimNodes.Remove(ud);
+                existingG.hideSelf(effectivelyInfinitelyFar, defaultZ);
+                if (!cachedAnimNodes.ContainsKey(existingCacheGroupId)) {
+                    cachedAnimNodes[existingCacheGroupId] = new LinkedList<A>();
+                }
+                var cachedQ = cachedAnimNodes[existingCacheGroupId];
+                cachedQ.AddLast(existingG);
             }
         }
 
-        if (null != a) {
-            oldUd = a.GetUd();
-            a.SetUd(ud);
-            activeAnimNodes[ud] = a;
+        if (null == g) {
+            if (!cachedAnimNodes.ContainsKey(cacheGroupId)) {
+                g = CreateAnimNode(cacheGroupId, insConfig);
+            } else {
+                var cachedQ = cachedAnimNodes[cacheGroupId];
+                if (0 >= cachedQ.Count) {
+                    g = CreateAnimNode(cacheGroupId, insConfig);
+                } else {
+                    g = cachedQ.Last.Value;
+                    cachedQ.RemoveLast();
+                }
+            }
+        }
+
+        if (null != g) {
+            oldUd = g.GetUd();
+            g.SetUd(ud);
+            activeAnimNodes[ud] = g;
         } 
         
-        return (a, oldUd);
+        return (g, oldUd);
     }
 
     public abstract A CreateAnimNode(in G cachedGroupId, in C insConfig); 

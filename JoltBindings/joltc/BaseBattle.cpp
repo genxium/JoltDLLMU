@@ -5928,15 +5928,13 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             nextChd->set_last_damaged_by_ud(rhsCurrBl->offender_ud());
         }
 
-        Vec3 hitPos(currChd->x(), currChd->y(), currChd->z()); 
+        float capsuleRadius = 0, capsuleHalfHeight = 0;
+        calcChdShape(currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+        Vec3 hitPos(currChd->x(), currChd->y() + capsuleRadius + capsuleHalfHeight, currChd->z()); 
         Vec3 hitPosAdds(0, 0, 0); 
         int hitPosAddsCnt = 0; 
         for (int k = 0; k < contactPointsLhs.size(); ++k) {
             auto& contactPoint = contactPointsLhs.at(k);
-            if (0 > contactPoint.GetY()) {
-                // [REMINDER] Y-coordinate "currChd->y()" is the bottom of the character, therefore any y-offset less than 0 should be avoided.
-                continue;
-            }
             hitPosAdds += contactPoint;
             hitPosAddsCnt += 1;
         }

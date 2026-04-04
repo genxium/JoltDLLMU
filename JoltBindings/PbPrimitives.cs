@@ -34,11 +34,12 @@ namespace JoltCSharp {
 
         public const uint TPT_NONE = 0;
         public const uint TPT_SLIDING_PLATFORM = 1;
+        public const uint TPT_ROTATING_PLATFORM = 2;
+        public const uint TPT_CONVEYOR_BELT = 3;
+        public const uint TPT_FALLING_ROCK = 4;
 
         public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (1 << INPUT_SCALE_FRAMES);
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
-        public const float DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE = 8.0f; // Currently only supports rectilinear rectangle shape.
-        public const float DEFAULT_SLIP_JUMP_CHARACTER_DROP = (DEFAULT_SLIP_JUMP_THRESHOLD_BELOW_TOP_FACE * 1.5f);
 
         public const uint VISION_SEARCH_INTERVAL_IMMEDIATE_U = (1u << 0);
         public const uint VISION_SEARCH_INTERVAL_FAST_U = (1u << 2);
@@ -308,6 +309,9 @@ namespace JoltCSharp {
             TptNone = TPT_NONE,
 
             TptSlidingPlatform = TPT_SLIDING_PLATFORM,
+            TptRotatingPlatform = TPT_ROTATING_PLATFORM,
+            TptConveyorBelt = TPT_CONVEYOR_BELT,
+            TptFallingRock = TPT_FALLING_ROCK,
 
             ChSpecies = new ChSpeciesConsts {
                 Bladegirl = SPECIES_BLADEGIRL,

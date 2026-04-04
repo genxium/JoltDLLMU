@@ -23,18 +23,29 @@ namespace JoltCSharp {
             UseKinematic = true,
             DefaultBoxHalfSizeX = 100.0f,
             DefaultBoxHalfSizeY = 100.0f,
-            DefaultLinearSpeed = 7.0f*BATTLE_DYNAMICS_FPS, 
+            DefaultLinearSpeed = 0, 
             DefaultCooldownRdfCount = 60
         };
 
         private static TrapConfig ConveyorBeltTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptConveyorBelt,
             Name = "ConveyorBelt",
-            NoXFlipRendering = true,
+            NoXFlipRendering = false,
             UseKinematic = true,
             DefaultBoxHalfSizeX = 100.0f,
             DefaultBoxHalfSizeY = 100.0f,
-            DefaultLinearSpeed = 7.0f*BATTLE_DYNAMICS_FPS, 
+            DefaultLinearSpeed = 0, 
+            DefaultCooldownRdfCount = 60
+        };
+
+        private static TrapConfig FallingRockTrap = new TrapConfig {
+            Tpt = PbPrimitives.underlying.TptFallingRock,
+            Name = "FallingRock",
+            NoXFlipRendering = false,
+            UseKinematic = true,
+            DefaultBoxHalfSizeX = 100.0f,
+            DefaultBoxHalfSizeY = 100.0f,
+            DefaultLinearSpeed = 0, 
             DefaultCooldownRdfCount = 60
         };
 
@@ -42,6 +53,9 @@ namespace JoltCSharp {
 
         static PbTraps() {
             underlying.Add(PbPrimitives.underlying.TptSlidingPlatform, SlidingPlatformTrap);
+            underlying.Add(PbPrimitives.underlying.TptRotatingPlatform, RotatingPlatformTrap);
+            underlying.Add(PbPrimitives.underlying.TptConveyorBelt, ConveyorBeltTrap);
+            underlying.Add(PbPrimitives.underlying.TptFallingRock, FallingRockTrap);
         }
     }
 }
