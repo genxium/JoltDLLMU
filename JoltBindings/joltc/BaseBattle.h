@@ -661,7 +661,7 @@ protected:
         return immutableCurrChdFromUd(udt, ud);
     }
 
-    inline CharacterDownsync* mutableNextChdFromUd(uint64_t ud) {
+    inline CharacterDownsync* mutableNextChdFromUd(uint64_t ud) const {
         uint64_t udt = getUDT(ud);
         return mutableNextChdFromUd(udt, ud);
     }
@@ -670,8 +670,16 @@ protected:
         return (UDT_PLAYER == udt ? transientUdToCurrPlayer.at(ud)->chd() : transientUdToCurrNpc.at(ud)->chd());
     }
 
-    inline CharacterDownsync* mutableNextChdFromUd(uint64_t udt, uint64_t ud) {
-        return (UDT_PLAYER == udt ? transientUdToNextPlayer.at(ud)->mutable_chd() : transientUdToNextNpc.at(ud)->mutable_chd());
+    inline CharacterDownsync* mutableNextChdFromUd(uint64_t udt, uint64_t ud) const {
+        if (UDT_PLAYER == udt) {
+            if (!transientUdToNextPlayer.count(ud)) return nullptr;
+            return transientUdToNextPlayer.at(ud)->mutable_chd();
+        } else if (UDT_NPC == udt) {
+            if (!transientUdToNextNpc.count(ud)) return nullptr;
+            return transientUdToNextNpc.at(ud)->mutable_chd();
+        } else {
+            return nullptr;
+        }
     }
 
     inline void calcChCacheKey(const CharacterConfig* cc, CH_CACHE_KEY_T& ioCacheKey) {
@@ -1009,47 +1017,16 @@ protected:
         if (BulletState::Hit == bullet->bl_state()) {
             return bullet->frames_in_bl_state() < bc->hit_anim_rdf_cnt();
         }
-        if (BulletState::StartUp == bullet->bl_state() && BulletType::Melee == bc->b_type()) {
-            uint64_t offenderUd = bullet->offender_ud();
-            uint64_t offenderUdt = getUDT(offenderUd);
-            switch (offenderUdt) {
-                case UDT_PLAYER: {
-                    if (!transientUdToNextPlayer.count(offenderUd)) {
-                        return false; // The offender might've been dead
-                    }
-                    auto nextOffenderPlayer = transientUdToNextPlayer.at(offenderUd); 
-                    auto nextOffenderChd = nextOffenderPlayer->chd(); 
-                    if (atkedSet.count(nextOffenderChd.ch_state()) || noOpSet.count(nextOffenderChd.ch_state())) {
-                        return false; // The offender is hit
-                    }
-                    break;
-                }
-                case UDT_NPC: {
-                    if (!transientUdToNextNpc.count(offenderUd)) {
-#ifndef NDEBUG
-                        std::ostringstream oss;
-                        auto bulletId = bullet->id();
-                        oss << "isBulletAlive returning false#1 because bulletId=" << bulletId << ", offenderUd=" << offenderUd << " doesn't exist in transientUdToNextNpc";
-                        Debug::Log(oss.str(), DColor::Orange);
-#endif
-                        return false; // The offender might've been dead
-                    }
-                    auto nextOffenderNpc = transientUdToNextNpc.at(offenderUd); 
-                    auto nextOffenderChd = nextOffenderNpc->chd(); 
-                    if (atkedSet.count(nextOffenderChd.ch_state()) || noOpSet.count(nextOffenderChd.ch_state())) {
-#ifndef NDEBUG
-                        std::ostringstream oss;
-                        auto bulletId = bullet->id();
-                        oss << "isBulletAlive returning false#2 because bulletId=" << bulletId << ", offenderUd=" << offenderUd << " has next_ch_state=" << (int)nextOffenderChd.ch_state();
-                        Debug::Log(oss.str(), DColor::Orange);
-#endif
-                        return false; // The offender is hit
-                    }
-                    break;
-                }
-                default: {
-                    break;
-                }
+        uint64_t offenderUd = bullet->offender_ud();
+        uint64_t offenderUdt = getUDT(offenderUd);
+        bool isOffenderUdtCharacter = (UDT_PLAYER == offenderUdt || UDT_NPC == offenderUdt);
+        CharacterDownsync* nextOffenderChd = mutableNextChdFromUd(offenderUdt, offenderUd);
+        if (BulletType::Melee == bc->b_type() && isOffenderUdtCharacter) {
+            if (nullptr == nextOffenderChd) {
+                return false; // The offender might've been dead
+            }
+            if (bullet->skill_id() != nextOffenderChd->active_skill_id() || bullet->active_skill_hit() != nextOffenderChd->active_skill_hit()) {
+                return false; // The bullet should be no longer active
             }
         }
         return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
