@@ -311,9 +311,9 @@ public:
     */
     CH_COLLIDER_Q activeChColliders;
     /*
-     [TODO]
+    [TODO]
 
-     Make "cachedChColliders" keyed by "CharacterConfig.species_id()" to fit the need of multi-shape character (at different ch_state).
+    Make "cachedChColliders" keyed by "CharacterConfig.species_id()" to fit the need of multi-shape character (at different ch_state).
 
     It's by design that "ScaledShape" is NOT used here, because when mixed with translation and rotation, the order of affine transforms matters but is difficult to keep in mind.
 
@@ -702,13 +702,21 @@ protected:
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
 
-    /* [WARNING] The following functions "batchPutIntoPhySysFromCache & batchNonContactConstraintsSetupFromCache & batchRemoveFromPhySysAndCache" are all single-threaded, using "getOrCreateCachedXxx_NotThreadSafe" extensively. Why are they NOT made multi-threaded? Here're a few concerns.
+    /* 
+    [WARNING] 
+
+    The following functions "batchPutIntoPhySysFromCache & batchNonContactConstraintsSetupFromCache & batchRemoveFromPhySysAndCache" are all single-threaded, using "getOrCreateCachedXxx_NotThreadSafe" extensively. Why are they NOT made multi-threaded? Here're a few concerns.
     
-    - C++11 (or any later version) "new" used in "createDefaultXxx" is thread-safe, but thread-safe "new/delete" will have "lock contention" for the non-thread-safe "sbrk" anyway regardless of thread-local-cache optimization, see https://app.yinxiang.com/fx/b5affa04-b7d0-412f-9c74-6cf5f2bc6def for more information 
-    - Operation "activeXxxColliders.push_back(...)" is not thread-safe, and we can use preallocated vector with an atomic counter to solve this
-    - Operation "transientUdToXxx[]" is not thread-safe either, espectially the setter "transientUdToXxx[ud] = Xxx", we have to choose a map class which is built thread-safe instead (like ConcurrentHashMap in Java)
-    - Failure of "FrontendTest/runTestCase11" might occurr due to multi-threaded randomness of vector traversal of "activeXxxColliders" even if all the above succeeded
-    - Single-threaded traversals in "batchXxx" for just setting positions, activating/deactivating "BodyID"s in batch is already very efficient -- same big-O time comlexity as just dispatching the jobs -- while multi-threaded overhead and the use of "bi" instead of "biNoLock" might be slower when there's no heavy workload like "BroadPhase/NarrowPhaseQuery"
+    - C++11 (or any later version) "new" used in "createDefaultXxx" is thread-safe, but thread-safe "new/delete" will have "lock contention" for the non-thread-safe "sbrk" anyway regardless of thread-local-cache optimization, see https://app.yinxiang.com/fx/b5affa04-b7d0-412f-9c74-6cf5f2bc6def for more information. 
+    - Operation "activeXxxColliders.push_back(...)" is not thread-safe, and we can use preallocated vector with an atomic counter to solve this.
+    - Operation "transientUdToXxx[]" is not thread-safe either, espectially the setter "transientUdToXxx[ud] = Xxx", we have to choose a map class which is built thread-safe instead (like ConcurrentHashMap in Java).
+        - Same applies to "cachedXxColliders[]" and "cachedNonContactConstraints[]". 
+    - Failure of "FrontendTest/runTestCase11" might occurr due to multi-threaded randomness of vector traversal of "activeXxxColliders" even if all the above succeeded.
+    - Single-threaded traversals in "batchXxx" for just setting positions, activating/deactivating "BodyID"s in batch is already very efficient -- same big-O time comlexity as just dispatching the jobs -- while multi-threaded overhead and the use of "bi" instead of "biNoLock" might be slower when there's no heavy workload like "BroadPhase/NarrowPhaseQuery".
+
+    On the contrary, "Body* BodyInterface::CreateBody(const BodyCreationSettings &inSettings)" works well in multi-threaded context because
+    - It DOESN'T care about de-duplication w.r.t. my custom definition of "key"s, e.g. the key of "cachedChColliders[]". 
+    - It USES "BodyID" which is essentially an "array index" for "BodyManager::mBodies", moreover [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L294) also uses a mutex [BodyManager.mBodiesMutex](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.h#L332), hence it would be AT BEST just equivalent to the aforementioned "preallocated vector with an atomic counter" solution. 
     */
     void batchPutIntoPhySysFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
     void batchNonContactConstraintsSetupFromCache(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf);
