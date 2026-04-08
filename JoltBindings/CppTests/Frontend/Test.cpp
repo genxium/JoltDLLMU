@@ -391,7 +391,7 @@ RenderFrame* mockSliderTrapTestStartRdf3(google::protobuf::Arena* theAllocator) 
     auto playerCh1 = player1->mutable_chd();
     auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
-    playerCh1->set_x(-400);
+    playerCh1->set_x(0);
     playerCh1->set_y(200);
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -1441,6 +1441,122 @@ RenderFrame* mockPistolMagazineTestStartRdf(google::protobuf::Arena* theAllocato
     return startRdf;
 }
 
+RenderFrame* mockConveyorBeltTestStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(0);
+    playerCh1->set_y(640);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpt_conveyor_belt());
+    ++dynamicTrapCount;
+
+    auto dynamicTrap2 = startRdf->add_dynamic_traps();
+    dynamicTrap2->set_id(43);
+    dynamicTrap2->set_tpt(globalPrimitiveConsts->tpt_rotating_platform());
+    ++dynamicTrapCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
+RenderFrame* mockCrouchTestStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(784);
+    playerCh1->set_y(160);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -1878,32 +1994,6 @@ std::map<int, uint64_t> testCmds16 = {
 
 std::map<int, uint64_t> testCmds17 = {
     {0, 0},
-    {23, 0},
-    {24, 19},
-    {64, 19},
-    {65, 3},
-    {108, 3},
-    {127, 3},
-    {128, 19},
-    {129, 19},
-    {140, 3},
-    {144, 19},
-    {148, 19},
-    {152, 19},
-    {156, 19},
-    {164, 19},
-    {168, 3},
-    {172, 3},
-    {176, 3},
-    {180, 19},
-    {184, 19},
-    {188, 3},
-    {192, 3},
-    {196, 19},
-    {208, 3},
-    {212, 3},
-    {216, 3},
-    {220, 3},
     {250, 0},
     {254, 3},
     {320, 3},
@@ -2045,6 +2135,26 @@ std::map<int, uint64_t> testCmds24 = {
     {1023, 0},
     {1024, 32},
     {2048, 0}, 
+};
+
+std::map<int, uint64_t> testCmds25 = {
+    {0, 0},
+    {443, 0},
+    {446, 259},
+    {447, 0},
+    {499, 0},
+    {500, 256},
+    {2048, 0},
+};
+
+std::map<int, uint64_t> testCmds26 = {
+    {0, 0},
+    {99, 0},
+    {100, 3},
+    {239, 3},
+    {240, 259},
+    {241, 0},
+    {2048, 0},
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -4036,6 +4146,57 @@ void initTest24Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     initializerMapData->set_allocated_self_parsed_rdf(pistolMagazineTestStartRdf);
 }
 
+void initTest25Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockConveyorBeltTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
+    Vec3 initVel1(+1.5f * globalPrimitiveConsts->battle_dynamics_fps(), 0, 0);
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_linear_speed(initVel1.Length());
+    trapConfigFromTiled1->set_box_half_size_x(256.f);
+    trapConfigFromTiled1->set_box_half_size_y(64.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+
+    trapConfigFromTiled1->set_init_vel_x(initVel1.GetX());
+    trapConfigFromTiled1->set_init_vel_y(initVel1.GetY());
+    trapConfigFromTiled1->set_init_vel_z(initVel1.GetZ());
+    
+    trapConfigFromTiled1->set_init_x(0);
+    trapConfigFromTiled1->set_init_y(256);
+    trapConfigFromTiled1->set_init_z(0);
+
+    auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
+    Vec3 initAngVel2(0, JPH_PI*0.05f, 0);
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(1).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(1).tpt());
+    trapConfigFromTiled2->set_box_half_size_x(64.f);
+    trapConfigFromTiled2->set_box_half_size_y(8.f);
+    trapConfigFromTiled2->set_init_q_x(0);
+    trapConfigFromTiled2->set_init_q_y(0);
+    trapConfigFromTiled2->set_init_q_z(0);
+    trapConfigFromTiled2->set_init_q_w(1);
+
+    trapConfigFromTiled2->set_init_ang_vel_x(initAngVel2.GetX());
+    trapConfigFromTiled2->set_init_ang_vel_y(initAngVel2.GetY());
+    trapConfigFromTiled2->set_init_ang_vel_z(initAngVel2.GetZ());
+
+    trapConfigFromTiled2->set_init_x(320);
+    trapConfigFromTiled2->set_init_y(512);
+    trapConfigFromTiled2->set_init_z(0);
+}
+
+void initTest26Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockCrouchTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -4103,6 +4264,9 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         auto& p2Chd = p2.chd();
         const uint64_t ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
+        if (680 <= outerTimerRdfId && outerTimerRdfId < 705) {
+            shouldPrint = true;
+        }
         
         if (770 <= outerTimerRdfId && outerTimerRdfId < 1000) {
             //shouldPrint = true;
@@ -5126,7 +5290,7 @@ bool runTestCase13(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(CharacterState::Atked1 == npc1Chd.ch_state());
             JPH_ASSERT(0 < npc1Chd.bir_count());
         } else if (103 <= outerTimerRdfId && outerTimerRdfId <= 124) {
-            JPH_ASSERT(CharacterState::Dashing == p1Chd.ch_state());
+            JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
             int expectedFc = outerTimerRdfId-103;
             JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFc);
         } else if (125 == outerTimerRdfId) {
@@ -5409,6 +5573,10 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& tp1 = outerTimerRdf->dynamic_traps(0);        
         auto& tp2 = outerTimerRdf->dynamic_traps(1);
 
+        if (10 < outerTimerRdfId && outerTimerRdfId < 64) {
+            //shouldPrint = true;
+        }
+
         if (540 < outerTimerRdfId && outerTimerRdfId < 700) {
             //shouldPrint = true;
         }
@@ -5417,22 +5585,20 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << "), cs=" << (int)p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", groundUd=" << p1Chd.ground_ud() << ", groundVel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\ttrap1, pos=(" << tp1.x() << ", " << tp1.y() << "), q=(" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << "), trapState=" << (int)tp1.trap_state() << ", framesInTrapState=" << tp1.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp1.id()) << "\n\ttrap2, pos=(" << tp2.x() << ", " << tp2.y() << "), q=(" << tp2.q_x() << ", " << tp2.q_y() << ", " << tp2.q_z() << ", " << tp2.q_w() << "), vel=(" << tp2.vel_x() << ", " << tp2.vel_y() << "), trapState=" << (int)tp2.trap_state() << ", framesInTrapState=" << tp2.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp2.id()) << std::endl;
         }
 
-        if (10 < outerTimerRdfId && outerTimerRdfId < 150) {
+        if (10 < outerTimerRdfId && outerTimerRdfId < 24) {
             JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
             JPH_ASSERT(0 > tp1.x() && -300 < tp1.x());
+        } else if (24 == outerTimerRdfId) {
+            JPH_ASSERT(p1Chd.ground_ud() == APP_CalcTrapUserData(tp1.id()));
+            JPH_ASSERT(!BaseBattle::IsLengthNearZero(p1Chd.ground_vel_x()));
+            JPH_ASSERT(0 < p1Chd.vel_x() * p1Chd.ground_vel_x());
         } else if (150 <= outerTimerRdfId && outerTimerRdfId <= 248) {
-            JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
-        } else if (249 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::OnWallIdle1 == p1Chd.ch_state());
             JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
         } else if (303 < outerTimerRdfId && outerTimerRdfId <= 420) {
             JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
         } else if (550 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
             JPH_ASSERT(127.5 < tp2.y() && tp2.y() < 128.5);
-        } else if (580 == outerTimerRdfId) {
-            // JPH_ASSERT(p1Chd.ground_ud() == APP_CalcTrapUserData(tp2.id()));
-            JPH_ASSERT(p1Chd.vel_x() == p1Chd.ground_vel_x());
         } else {
             JPH_ASSERT(104.5 < tp1.y() && tp1.y() < 105.5);
         }
@@ -6035,6 +6201,140 @@ bool runTestCase24(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase25(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest25Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds25, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+
+        bool shouldPrint = false;
+        int chaserRdfIdEd = outerTimerRdfId;
+
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        StepResult* outStepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        const PlayerCharacterDownsync& p1 = outerTimerRdf->players(0);
+        const CharacterDownsync& p1Chd = p1.chd();
+
+        const Trap& trap1 = outerTimerRdf->dynamic_traps(0);
+        const uint64_t trap1Ud = APP_CalcTrapUserData(trap1.id());
+
+        const Trap& trap2 = outerTimerRdf->dynamic_traps(1);
+        const uint64_t trap2Ud = APP_CalcTrapUserData(trap2.id());
+
+        if (500 <= outerTimerRdfId && outerTimerRdfId < 550) {
+            //shouldPrint = true;
+        }
+
+        if (trap1Ud == p1Chd.ground_ud()) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase25/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\ttrap1 ud=" << trap1Ud << ", pos=(" << trap1.x() << ", " << trap1.y() << "), vel=(" << trap1.vel_x() << ", " << trap1.vel_y() << "), dir=(" << trap1.q_x() << ", " << trap1.q_y() << ", " << trap1.q_z() << ", " << trap1.q_w() << "), ang_vel=(" << trap1.ang_vel_x() << ", " << trap1.ang_vel_y() << ", " << trap1.ang_vel_z() << ")\n\ttrap2 ud=" << trap2Ud << ", pos=(" << trap2.x() << ", " << trap2.y() << "), vel=(" << trap2.vel_x() << ", " << trap2.vel_y() << "), dir=(" << trap2.q_x() << ", " << trap2.q_y() << ", " << trap2.q_z() << ", " << trap2.q_w() << "), ang_vel=(" << trap2.ang_vel_x() << ", " << trap2.ang_vel_y() << ", " << trap2.ang_vel_z() << ")" << std::endl;
+        }
+
+        if (280 == outerTimerRdfId) {
+            JPH_ASSERT(trap1Ud == p1Chd.ground_ud());
+            JPH_ASSERT(0 < p1Chd.vel_x());
+        } else if (480 <= outerTimerRdfId && outerTimerRdfId < 500) {
+            JPH_ASSERT(CrouchIdle1 == p1Chd.ch_state());
+        } else if (510 == outerTimerRdfId) {
+            JPH_ASSERT(Sliding == p1Chd.ch_state());
+            JPH_ASSERT(0 < p1Chd.vel_x());
+        } else if (600 == outerTimerRdfId) {
+            JPH_ASSERT(CrouchIdle1 == p1Chd.ch_state());
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase25: Conveyor belt\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
+bool runTestCase26(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest26Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds26, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+
+        bool shouldPrint = false;
+        int chaserRdfIdEd = outerTimerRdfId;
+
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        StepResult* outStepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        const PlayerCharacterDownsync& p1 = outerTimerRdf->players(0);
+        const CharacterDownsync& p1Chd = p1.chd();
+
+        if (240 <= outerTimerRdfId && outerTimerRdfId < 300) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase26/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")" << std::endl;
+        }
+
+        if (250 == outerTimerRdfId) {
+            JPH_ASSERT(Sliding == p1Chd.ch_state());
+        } else if (300 == outerTimerRdfId) {
+            JPH_ASSERT(CrouchIdle1 == p1Chd.ch_state());
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase26: Force crouching\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -6182,7 +6482,7 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> wideMapHull4 = {
-        // Upper-Left  pillar
+        // Upper-Left pillar
         -300, 100,
         -300, 300,
         -320, 300,
@@ -6203,12 +6503,98 @@ int main(int argc, char** argv)
         -20, 150
     };
 
+    std::vector<float> trapMapHull1 = {
+        // Lower floor
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> trapMapHull2 = {
+        // Left pillar
+        -800, 0,
+        -800, 1000,
+        -500, 1000,
+        -500, 0
+    };
+
+    std::vector<float> trapMapHull3 = {
+        // Right pillar
+        500, 1000,
+        800, 1000,
+        800, 0,
+        500, 0,
+    };
+
+    std::vector<float> trapMapHull4 = {
+        // Lower-right pillar
+        300, 142,
+        300, 206,
+        420, 206,
+        420, 142
+    };
+
+    std::vector<float> trapMapHull5 = {
+        // Top Ceiling
+        -500, 900,
+        -500, 1000,
+        500, 1000,
+        500, 900
+    };
+
+    std::vector<float> crouchMapHull1 = {
+        // Right pillar
+        1920, 528,
+        2352, 528,
+        2352, 0,
+        1920, 0
+    };
+
+    std::vector<float> crouchMapHull2 = {
+        // Left pillar
+        224, 528,
+        640, 528,
+        640, 0,
+        224, 0
+    };
+
+    std::vector<float> crouchMapHull3 = {
+        // Top ceiling
+        640, 528,
+        1920, 528,
+        1920, 512,
+        640, 512,
+    };
+
+    std::vector<float> crouchMapHull4 = {
+        // Crouch forcer
+        832, 136,
+        1088, 136,
+        1088, 120,
+        832, 120
+    };
+
+    std::vector<float> crouchMapHull5 = {
+        // Floor
+        528, 80,
+        1920, 80,
+        1920, 0,
+        528, 0
+    };
     
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
     std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
     std::vector<std::vector<float>> wideMapHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4};
     std::vector<std::vector<float>> slipJumpMapHulls = {slipJumpHull1, slipJumpHull2};
+    std::vector<std::vector<float>> trapMapHulls = {trapMapHull1, trapMapHull2, trapMapHull3, trapMapHull4, trapMapHull5};
+    std::vector<std::vector<float>> crouchMapHulls = {
+        crouchMapHull1
+        , crouchMapHull2
+        , crouchMapHull3
+        , crouchMapHull4
+        , crouchMapHull5};
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -6228,6 +6614,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
+    
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -6237,7 +6624,9 @@ int main(int argc, char** argv)
     runTestCase7(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase8(battle, npcVisionHulls, selfJoinIndex, pbTestCaseDataAllocator);
+
     runTestCase9(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase10(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase11(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase12(battle, fallenDeathHulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -6246,8 +6635,10 @@ int main(int argc, char** argv)
     runTestCase14(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase15(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase16(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase17(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase18(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase19(battle, slipJumpMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
@@ -6257,6 +6648,8 @@ int main(int argc, char** argv)
     
     runTestCase23(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase24(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase25(battle, trapMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase26(battle, crouchMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"

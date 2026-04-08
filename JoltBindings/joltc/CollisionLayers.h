@@ -12,7 +12,7 @@ namespace MyObjectLayers
     static constexpr ObjectLayer NON_MOVING = 0;
     static constexpr ObjectLayer MOVING = 1;
     static constexpr ObjectLayer TRAP_OBSTACLE_INTERFACE = 2; // Use to stop tangible traps with "EMotionType::Dynamic" at obstacles
-    static constexpr ObjectLayer TRAP_HELPER = 3; // Use to put non-collidible trap helper bodies
+    static constexpr ObjectLayer TRAP_HELPER = 3; // Use to put non-collidable trap helper bodies
     static constexpr ObjectLayer NUM_LAYERS = 4;
 };
 

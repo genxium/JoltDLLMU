@@ -1,21 +1,26 @@
+using System;
 using System.Collections.Generic;
 
-public abstract class AbstractCacheableAnimNodeTemplate<T, S, C, G> {
+public abstract class AbstractCacheableAnimNodeTemplate<T, S, C, G> where G : IComparable {
+    public AbstractCacheableAnimNodeTemplate(in ulong inUd, in G inGroupId) {
+        ud = inUd;
+        cacheGroupId = inGroupId;
+    }
 
     private ulong ud = 0;
     public ulong GetUd() {
         return ud;
     }
-    public void SetUd(ulong val) {
+    public void SetUd(in ulong val) {
         ud = val;
     }
 
-    private G? cacheGroupId;
-    public G? GetCacheGroupId() {
+    private G cacheGroupId;
+    public G GetCacheGroupId() {
         return cacheGroupId;
     }
 
-    public void SetCacheGroupId(G val) {
+    public void SetCacheGroupId(in G val) {
         cacheGroupId = val;
     }
 
