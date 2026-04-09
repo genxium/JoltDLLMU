@@ -4916,7 +4916,15 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
             return false;
         }
 
-        if (currChd.frames_in_ch_state() < activeBulletConfig->cancellable_st_frame() || currChd.frames_in_ch_state() > activeBulletConfig->cancellable_ed_frame()) {
+        int effFramesInChState = currChd.frames_in_ch_state() + (activeBulletConfig->melee_hit_self_stun_frames() - currChd.hit_self_stun_frames());
+
+        bool activeSkillHitCancellable = (
+                                            activeBulletConfig->cancellable_st_frame() <= effFramesInChState  
+                                            && 
+                                            effFramesInChState <= activeBulletConfig->cancellable_ed_frame()
+                                         ); 
+
+        if (false == activeSkillHitCancellable) {
 /*
 #ifndef NDEBUG
             std::ostringstream oss;

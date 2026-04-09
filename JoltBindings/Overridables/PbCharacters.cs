@@ -244,12 +244,16 @@ namespace JoltCSharp {
 
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
 
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
 
             BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);

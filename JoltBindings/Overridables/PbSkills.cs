@@ -422,6 +422,8 @@ namespace JoltCSharp {
             BoundChState = CharacterState.Atk1
         }.AddHit(
             new BulletConfig(BasicBladeHit1)
+            .SetRemainsUponHit(false)
+            .SetMeleeHitSelfStunFrames(10)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternB, false, false, false, false, false), BladeGirlGroundSlash2Id)
             .UpsertCancelTransit(EncodePatternForCancelTransit(PbPrimitives.underlying.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId)
         );
