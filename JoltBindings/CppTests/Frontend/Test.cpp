@@ -1557,6 +1557,81 @@ RenderFrame* mockCrouchTestStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockBulletHitReactionTestStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(100);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto npc1 = startRdf->mutable_npcs(0);
+    npc1->set_id(npcIdCounter++);
+    npc1->set_goal_as_npc(NpcGoal::NIdleIfGoHuntingThenPatrol);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = chSpecies.blacksaber1();
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+80);
+    npcCh1->set_y(100);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(0);
+    npcCh1->set_q_y(0);
+    npcCh1->set_q_z(0);
+    npcCh1->set_q_w(1);
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -2153,6 +2228,16 @@ std::map<int, uint64_t> testCmds26 = {
     {100, 3},
     {239, 3},
     {240, 259},
+    {241, 0},
+    {2048, 0},
+};
+
+std::map<int, uint64_t> testCmds27 = {
+    {0, 0},
+    {99, 0},
+    {100, 0},
+    {239, 0},
+    {240, 32},
     {241, 0},
     {2048, 0},
 };
@@ -4193,6 +4278,12 @@ void initTest25Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 
 void initTest26Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     auto startRdf = mockCrouchTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+}
+
+void initTest27Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockBulletHitReactionTestStartRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
@@ -6335,6 +6426,69 @@ bool runTestCase26(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest27Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds27, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+
+        bool shouldPrint = false;
+        int chaserRdfIdEd = outerTimerRdfId;
+
+        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
+        FRONTEND_Step(reusedBattle);
+
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        StepResult* outStepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        const PlayerCharacterDownsync& p1 = outerTimerRdf->players(0);
+        const CharacterDownsync& p1Chd = p1.chd();
+
+        const NpcCharacterDownsync& npc1 = outerTimerRdf->npcs(0);
+        const CharacterDownsync& npc1Chd = npc1.chd();
+
+        if (272 <= outerTimerRdfId && outerTimerRdfId < 380) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase27/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ")" << std::endl;
+        }
+
+        if (360 == outerTimerRdfId) {
+            JPH_ASSERT(30 == npc1Chd.hp());
+            JPH_ASSERT(0 > npc1Chd.vel_x());
+            JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
+            JPH_ASSERT(0 == npc1Chd.locking_on_ud());
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase27: NPC bullet hit reaction from far away offender\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -6650,6 +6804,8 @@ int main(int argc, char** argv)
     runTestCase24(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase25(battle, trapMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase26(battle, crouchMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
+    runTestCase27(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"
