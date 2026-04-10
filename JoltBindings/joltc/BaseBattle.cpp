@@ -827,7 +827,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
+            uint64_t closestOffenderUd = 0;
+            float closestOffenderScore = FLT_MAX;
+            Vec3 closestOffenderPosDiff = Vec3::sZero();
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
 
             postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
@@ -902,7 +905,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             bool cvOnWall = false, cvSupported = false, cvInAir = true, inJumpStartupOrJustEnded = false; 
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion);
+            uint64_t closestOffenderUd = 0;
+            float closestOffenderScore = FLT_MAX;
+            Vec3 closestOffenderPosDiff = Vec3::sZero();
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
             postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             Quat currChdQ;
@@ -924,7 +930,11 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         uint64_t newCmd = 0;
                         const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
                         const MassProperties massProps = shape->GetMassProperties();
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd);
+                        
+                        uint64_t toRevengeOppoUd = closestOffenderUd;
+                        uint64_t toRevengeOppoUdt = getUDT(closestOffenderUd);
+                        
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd);
                         nextNpc->set_goal_as_npc(newGoal);
                         nextNpc->set_cached_cue_cmd(newCmd);
                     }   
@@ -5505,7 +5515,7 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     }
 }
 
-void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion) {
+void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
     auto bodyID = single->GetBodyID();
 
     RVec3 newPos;
@@ -5677,7 +5687,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             if (UDT_BL == udtRhs) {
                 handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, nextChd,
                     udRhs, udtRhs, contactPointsLhs,
-                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY);
+                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderScore, outClosestOffenderPosDiff);
             } else if (UDT_TRIGGER == udtRhs) {
                 const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
                 Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
@@ -5979,7 +5989,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const ContactPoints& contactPointsLhs,
-    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY) {
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
 
     if (!transientUdToCurrBl.count(udRhs)) {
 #ifndef NDEBUG
@@ -6070,8 +6080,34 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
         if (0 < effDamage) {
             // [REMINDER] Randomness comes from ordering of "transientUdToCollisionUdHolder".
+            uint64_t rhsOffenderUd = rhsCurrBl->offender_ud();
+            uint64_t rhsOffenderUdt = getUDT(rhsCurrBl->offender_ud());
             nextChd->set_last_damaged_by_bullet_team_id(rhsCurrBl->team_id());
-            nextChd->set_last_damaged_by_ud(rhsCurrBl->offender_ud());
+            nextChd->set_last_damaged_by_ud(rhsOffenderUd);
+
+            switch (rhsOffenderUdt) {
+                case UDT_PLAYER:
+                case UDT_NPC: {
+                    const CharacterDownsync& rhsOffenderChd = immutableCurrChdFromUd(rhsOffenderUdt, rhsOffenderUd); 
+                    float newDx = rhsOffenderChd.x() - currChd->x();
+                    float newDy = rhsOffenderChd.y() - currChd->y();
+                    float newDz = rhsOffenderChd.z() - currChd->z();
+                    float newOffenderScore = (newDx*newDx + newDy*newDy + newDz*newDz);
+                    if (newOffenderScore < outClosestOffenderScore) {
+                        outClosestOffenderScore = newOffenderScore;
+                        outClosestOffenderUd = rhsOffenderUd; 
+                        outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
+                    } else if (newOffenderScore == outClosestOffenderScore && (0 == outClosestOffenderUd || rhsOffenderUd < outClosestOffenderUd)) {
+                        outClosestOffenderScore = newOffenderScore;
+                        outClosestOffenderUd = rhsOffenderUd; 
+                        outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
+                    }
+                    break;
+                }
+                // [TODO] What if "UDT_TRAP"?
+                default:
+                break;
+            }
         }
 
         float capsuleRadius = 0, capsuleHalfHeight = 0;
