@@ -1,5 +1,5 @@
 #include "BaseNpcReaction.h"
-#include "CharacterCollideShapeCollector.h"
+#include "CharacterCollisionCollector.h"
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
 
@@ -47,6 +47,15 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
     
 	const AABox visionAABB = effVisionShape->GetWorldSpaceBounds(visionCOMTransform, scaling);
+
+    /*
+    For "narrowPhaseInBaseOffset", in most cases any value will work BUT it's recommended to choose ONLY among {Vec3::sZero(), centerOfMassTranslationOfBody1InWorldSpace}
+
+    - using "narrowPhaseInBaseOffset = Vec3::sZero()" makes "CollideShapeResult.mContactPointOn[1|2]" in world space, and
+
+    - using "narrowPhaseInBaseOffset = centerOfMassTranslationOfBody1InWorldSpace" makes "CollideShapeResult.mContactPointOn[1|2]" in "body1 local space"
+    */
+
     narrowPhaseQuery->CollideShape(effVisionShape, scaling, visionCOMTransform, settings, visionNarrowPhaseInBaseOffset, visionHitCollector, bplf, olf, visionBodyFilter);
     
     bool hasVisionHit = visionHitCollector.HadHit();

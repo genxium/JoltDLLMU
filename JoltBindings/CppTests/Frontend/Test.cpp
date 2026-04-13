@@ -2214,8 +2214,8 @@ std::map<int, uint64_t> testCmds24 = {
 
 std::map<int, uint64_t> testCmds25 = {
     {0, 0},
-    {443, 0},
-    {446, 259},
+    {459, 0},
+    {460, 259},
     {447, 0},
     {499, 0},
     {500, 256},
@@ -4355,8 +4355,12 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         auto& p2Chd = p2.chd();
         const uint64_t ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
+        if (231 <= outerTimerRdfId && outerTimerRdfId < 251) {
+            //shouldPrint = true;
+        }
+
         if (680 <= outerTimerRdfId && outerTimerRdfId < 705) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (770 <= outerTimerRdfId && outerTimerRdfId < 1000) {
@@ -5449,8 +5453,8 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (960 <= outerTimerRdfId && outerTimerRdfId < 1024) {
-            //shouldPrint = true;
+        if (954 <= outerTimerRdfId && outerTimerRdfId < 1024) {
+            shouldPrint = true;
         }
         
         if (shouldPrint) {
@@ -5482,6 +5486,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
         } else if (960 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::BlownUp1 == p2Chd.ch_state());
+            JPH_ASSERT(0 < p2Chd.vel_y());
         } else if (985 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::LayDown1 == p2Chd.ch_state());
         } else if (1000 == outerTimerRdfId) {
@@ -6333,7 +6338,7 @@ bool runTestCase25(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         const Trap& trap2 = outerTimerRdf->dynamic_traps(1);
         const uint64_t trap2Ud = APP_CalcTrapUserData(trap2.id());
 
-        if (500 <= outerTimerRdfId && outerTimerRdfId < 550) {
+        if (446 <= outerTimerRdfId && outerTimerRdfId < 550) {
             //shouldPrint = true;
         }
 
@@ -6348,7 +6353,8 @@ bool runTestCase25(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         if (280 == outerTimerRdfId) {
             JPH_ASSERT(trap1Ud == p1Chd.ground_ud());
             JPH_ASSERT(0 < p1Chd.vel_x());
-        } else if (480 <= outerTimerRdfId && outerTimerRdfId < 500) {
+            JPH_ASSERT(Idle1 == p1Chd.ch_state());
+        } else if (490 <= outerTimerRdfId && outerTimerRdfId < 500) {
             JPH_ASSERT(CrouchIdle1 == p1Chd.ch_state());
         } else if (510 == outerTimerRdfId) {
             JPH_ASSERT(Sliding == p1Chd.ch_state());
@@ -6786,6 +6792,7 @@ int main(int argc, char** argv)
     runTestCase12(battle, fallenDeathHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase13(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase14(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase15(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -6802,6 +6809,7 @@ int main(int argc, char** argv)
     
     runTestCase23(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase24(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase25(battle, trapMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase26(battle, crouchMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     

@@ -1,5 +1,4 @@
 #include "FrontendBattle.h"
-#include "CharacterCollideShapeCollector.h"
 
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>

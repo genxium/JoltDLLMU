@@ -1,5 +1,4 @@
 #include "BaseBattle.h"
-#include "CharacterCollideShapeCollector.h"
 #include "NpcReactionConsts.h"
 
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
@@ -34,7 +33,7 @@ const float  cUpRotationZ = 0;
 const float  cMaxSlopeAngle = DegreesToRadians(45.0f);
 const float  cMaxStrength = 100.0f;
 const float  cCharacterPadding = 0.02f;
-const float  cPenetrationRecoveryspeed = 1.0f;
+const float  cPenetrationRecoverySpeed = 1.0f;
 const float  cPredictiveContactDistance = 0.1f;
 const bool   cEnableWalkStairs = true;
 const bool   cEnableStickToFloor = true;
@@ -965,9 +964,11 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 int cntNow = holder->GetCnt_Realtime();
                 uint64_t udRhs;
                 ContactPoints contactPointsLhs;
-                Vec3 worldSpaceNorm;
+                Vec3 worldSpaceNormIntoPeer;
+                BodyID peerBodyID; 
+                SubShapeID peerSubShapeID;
                 for (int j = 0; j < holder->GetCnt_Realtime(); ++j) {
-                    bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNorm);
+                    bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
                     if (!fetched) continue;
                     uint64_t udtRhs = getUDT(udRhs);
                     switch (udtRhs) {
@@ -1007,7 +1008,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                                 if (UDT_PLAYER == udtRhs || UDT_NPC == udRhs) {
                                     shouldVanish = true;
                                 } else if (UDT_TRIGGER == udtRhs || UDT_OBSTACLE == udtRhs) {
-                                    if (0 >= worldSpaceNorm.GetY()) {
+                                    if (0 >= worldSpaceNormIntoPeer.GetY()) {
                                         shouldVanish = true;
                                     }
                                 }
@@ -1879,6 +1880,14 @@ bool BaseBattle::isInJumpStartup(const CharacterDownsync& cd, const CharacterCon
         effProactiveJumpStartupFrames = 4; // A default
     }
     return proactiveJumpingSet.count(cd.ch_state()) && (effProactiveJumpStartupFrames > cd.frames_in_ch_state());
+}
+
+bool BaseBattle::isInBlownUpStartup(const CharacterDownsync& cd, const CharacterConfig* cc) {
+    int effProactiveJumpStartupFrames = cc->jump_startup_frames();
+    if (0 >= effProactiveJumpStartupFrames) {
+        effProactiveJumpStartupFrames = 4; // A default
+    }
+    return BlownUp1 == cd.ch_state() && (effProactiveJumpStartupFrames > cd.frames_in_ch_state());
 }
 
 bool BaseBattle::isJumpStartupJustEnded(const CharacterDownsync& currChd, const CharacterDownsync* nextChd, const CharacterConfig* cc) {
@@ -3578,6 +3587,7 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
             bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
             if (!nextNotDashing) {
                 bi->SetFriction(chBodyID, cGroundDashingChFriction);
+                ioFrictionDirty = true;
             }
         }
 /*
@@ -5526,68 +5536,123 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     /*
     [TODO] For NPCs with more complicated shapes, use an extra collector with a compound shape and specified hurt-box to pick up damage.
     */
+    
+    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    
+    bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
+    bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
+    inJumpStartupOrJustEnded = (inJumpStartUp || isJumpStartupJustEnded(currChd, nextChd, cc));
+    uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
+    int                     newEffDamage = 0;
+    bool                    newEffBlownUp = false;
+    int                     newEffFramesToRecover = 0;
+    int                     newEffDef1QuotaReduction = 0;
+    float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
+    float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
-    Vec3 narrowPhaseInBaseOffset = newPos;
-    /*
-    For "narrowPhaseInBaseOffset", in most cases any value will work BUT it's recommended to choose ONLY among {Vec3::sZero(), centerOfMassTranslationOfBody1InWorldSpace}
+    if (transientUdToCollisionUdHolder.count(ud)) {
+        CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
+        int cntNow = holder->GetCnt_Realtime();
+        uint64_t udRhs;
+        ContactPoints contactPointsLhs;
+        Vec3 worldSpaceNormIntoPeer;
+        BodyID peerBodyID;
+        SubShapeID peerSubShapeID;
+        int holderCnt = holder->GetCnt_Realtime();
+        for (int j = 0; j < holderCnt; ++j) {
+            bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
+            if (!fetched) continue;
+            uint64_t udtRhs = getUDT(udRhs);
+            if (UDT_BL == udtRhs) {
+                /*
+                [WARNING] 
 
-    - using "narrowPhaseInBaseOffset = Vec3::sZero()" makes "CollideShapeResult.mContactPointOn[1|2]" in world space, and
-
-    - using "narrowPhaseInBaseOffset = centerOfMassTranslationOfBody1InWorldSpace" makes "CollideShapeResult.mContactPointOn[1|2]" in "body1 local space"
-    */
-    CharacterCollideShapeCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), narrowPhaseInBaseOffset, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
-
-    auto chCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
-    CollideShapeSettings chNarrowPhaseCollideShapeSettings;
-    chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
-    chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
-    chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
-    chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-    ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, this);
-
-    narrowPhaseQueryNoLock->CollideShape(single->GetShape(), Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, narrowPhaseInBaseOffset, collector, defaultBplf, defaultOlf, chBodyFilter);
+                Bullets whose "JPH::Body" instances with "EMotionType::Dynamic" might've already been deflected during "phySys->Update(...)" and thus could escape "per-character-NarrowPhase-collision-detection", i.e. we MUST capture damage dealing hits in BroadPhase!
+                */
+                bool shouldSkipGroundServing = true;
+                bool shouldSkipWallServing = true;
+                handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, nextChd,
+                    udRhs, udtRhs, contactPointsLhs,
+                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
+                if (!shouldSkipGroundServing || !shouldSkipWallServing) {
+                    Vec3 peerPos(newPos);
+                    if (0 < contactPointsLhs.size()) {
+                        Vec3 peerPosAdds(0, 0, 0);
+                        int peerAddsCnt = 0;
+                        for (int k = 0; k < contactPointsLhs.size(); ++k) {
+                            peerPosAdds += contactPointsLhs.at(k);
+                            peerAddsCnt += 1;
+                        }
+                        peerPos += peerPosAdds / peerAddsCnt;
+                    }
+                    collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, shouldSkipGroundServing, shouldSkipWallServing);
+                }
+            } else if (UDT_TRIGGER == udtRhs) {
+                const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
+                Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
+                if (globalPrimitiveConsts->trt_by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
+                    // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
+                    nextTrigger->set_main_cycle_mask_to_fulfill(0);
+#ifndef NDEBUG
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled trigger id=" << currTrigger->id() << std::endl;
+                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+                }
+            } else {
+                Vec3 peerPos(newPos);
+                if (0 < contactPointsLhs.size()) {
+                    Vec3 peerPosAdds(0, 0, 0);
+                    int peerAddsCnt = 0;
+                    for (int k = 0; k < contactPointsLhs.size(); ++k) {
+                        peerPosAdds += contactPointsLhs.at(k);
+                        peerAddsCnt += 1;
+                    }
+                    peerPos += peerPosAdds / peerAddsCnt;
+                }
+                collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, false, false);
+            }
+        }
+    }
 
     // Copy results
     single->SetGroundBodyID(collector.mGroundBodyID, collector.mGroundBodySubShapeID);
     single->SetGroundBodyPosition(collector.mGroundPosition, collector.mGroundNormal);
 
-    uint64_t newGroundUd = 0;
+    uint64_t newGroundUd = collector.mGroundUd;
     Vec3 newGroundVel = Vec3::sZero();
     if (!collector.mGroundBodyID.IsInvalid()) {
-        newGroundUd = biNoLock->GetUserData(collector.mGroundBodyID);
-        newGroundVel = biNoLock->GetLinearVelocity(collector.mGroundBodyID); 
+        newGroundVel = biNoLock->GetLinearVelocity(collector.mGroundBodyID);
         // Update ground state
-        RMat44 inv_transform = RMat44::sInverseRotationTranslation(newRot, newPos);
-        if (single->GetSupportingVolume()->SignedDistance(Vec3(inv_transform * collector.mGroundPosition)) > 0.0f)
-            single->SetGroundState(JPH::CharacterBase::EGroundState::NotSupported);
-        else if (single->IsSlopeTooSteep(collector.mGroundNormal))
-            single->SetGroundState(JPH::CharacterBase::EGroundState::OnSteepGround);
-        else
-            single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
-
+        single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
         // Copy other body properties
         single->SetGroundBodyUd(biNoLock->GetMaterial(collector.mGroundBodyID, collector.mGroundBodySubShapeID), newGroundVel, newGroundUd);
     } else {
         single->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
         single->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, newGroundVel, newGroundUd);
     }
-
-    inJumpStartupOrJustEnded = (isInJumpStartup(*nextChd, cc) || isJumpStartupJustEnded(currChd, nextChd, cc));
     cvGroundState = single->GetGroundState();
 
-    auto groundBodyID = single->GetGroundBodyID();
+    auto newGroundBodyID = collector.mGroundBodyID;
     groundBodyIsChCollider = transientUdToChCollider.count(newGroundUd);
     JPH::Quat nextChdQ;
     Vec3 nextChdFacing;
     calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
-    if (groundBodyIsChCollider) {
+    if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd)) {
+        // Possibly on wall
         float wallNormalAlignment = nextChdFacing.Dot(collector.mWallNormal);
-        cvOnWall = (0 > wallNormalAlignment && !collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && single->IsSlopeTooSteep(collector.mWallNormal));
-    } else {
-        float groundNormalAlignment = nextChdFacing.Dot(single->GetGroundNormal());
-        cvOnWall = (0 > groundNormalAlignment && !groundBodyID.IsInvalid() && !transientSlipJumpableUds.count(newGroundUd) && single->IsSlopeTooSteep(single->GetGroundNormal()));
+        if (groundBodyIsChCollider) {
+            cvOnWall = (0 > wallNormalAlignment);
+        } else {
+            cvOnWall = (0 > wallNormalAlignment && collector.mGroundBodyID.IsInvalid());
+        }
     }
-    cvSupported = (single->IsSupported() && !cvOnWall && !groundBodyID.IsInvalid() && !groundBodyIsChCollider); // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
+
+    if (cvOnWall) {
+        cvSupported = false; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
+    } else {
+        cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
+    }
     
     /* [WARNING]
     When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0.
@@ -5665,45 +5730,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
     }
 
-    uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
-    int                     newEffDamage = 0;
-    bool                    newEffBlownUp = false;
-    int                     newEffFramesToRecover = 0;
-    int                     newEffDef1QuotaReduction = 0;
-    float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
-    float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
-
-    if (transientUdToCollisionUdHolder.count(ud)) {
-        CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
-        int cntNow = holder->GetCnt_Realtime();
-        uint64_t udRhs;
-        ContactPoints contactPointsLhs;
-        Vec3 worldSpaceNorm;
-        int holderCnt = holder->GetCnt_Realtime();
-        for (int j = 0; j < holderCnt; ++j) {
-            bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNorm);
-            if (!fetched) continue;
-            uint64_t udtRhs = getUDT(udRhs);
-            if (UDT_BL == udtRhs) {
-                handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, nextChd,
-                    udRhs, udtRhs, contactPointsLhs,
-                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderScore, outClosestOffenderPosDiff);
-            } else if (UDT_TRIGGER == udtRhs) {
-                const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
-                Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
-                if (globalPrimitiveConsts->trt_by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
-                    // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
-                    nextTrigger->set_main_cycle_mask_to_fulfill(0);
-#ifndef NDEBUG
-                    std::ostringstream oss;
-                    oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled trigger id=" << currTrigger->id() << std::endl;
-                    Debug::Log(oss.str(), DColor::Orange);
-#endif
-                }
-            }
-        }
-    }
-
     if (0 < newEffDamage) {
         jamBtnHolding(nextChd);
         if (newEffBlownUp) {
@@ -5739,9 +5765,11 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     }
 
     isDead = (0 >= nextChd->hp());
+    
     CharacterState oldNextChState = nextChd->ch_state();
+
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
-        CharacterCollideShapeCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), narrowPhaseInBaseOffset, this);
+        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this);
 
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());
@@ -5750,7 +5778,16 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nonCrouchingInnerShape.SetEmbedded();
         const RotatedTranslatedShape nonCrouchingShape(currShape->GetPosition(), currShape->GetRotation(), &nonCrouchingInnerShape);
         nonCrouchingShape.SetEmbedded();
-        narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, narrowPhaseInBaseOffset, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
+
+        auto chCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
+        CollideShapeSettings chNarrowPhaseCollideShapeSettings;
+        chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
+        chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
+        chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
+        chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
+        ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, this);
+
+        narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
 
         if (crouchCollector.mCrouchForced) {
             inputInducedMotion->crouchForcedWhileSupported = true;
@@ -5989,7 +6026,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const ContactPoints& contactPointsLhs,
-    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
 
     if (!transientUdToCurrBl.count(udRhs)) {
 #ifndef NDEBUG
@@ -6000,10 +6037,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 #endif
         return;
     }
-
-    if (0 < currChd->frames_invinsible()) {
-        return;
-    }
+    
     const Bullet* rhsCurrBl = transientUdToCurrBl.at(udRhs);
     if (BulletState::Active != rhsCurrBl->bl_state()) {
         return;
@@ -6011,6 +6045,18 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const Skill* rhsSkill = nullptr;
     const BulletConfig* rhsBlConfig = nullptr;
     FindBulletConfig(rhsCurrBl->skill_id(), rhsCurrBl->active_skill_hit(), rhsSkill, rhsBlConfig);
+
+    if (rhsBlConfig->provides_yhard_pushback_top()) {
+        outShouldSkipGroundServing = false;
+    }
+
+    if (rhsBlConfig->provides_xhard_pushback()) {
+        outShouldSkipWallServing = false;
+    }
+
+    if (0 < currChd->frames_invinsible()) {
+        return;
+    }
 
     bool successfulDef1 = false; // TODO
     if (rhsBlConfig->remains_upon_hit()) {
@@ -6054,6 +6100,9 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
     const CharacterConfig* cc = getCc(currChd->species_id());
     if (!(successfulDef1 && 0 >= cc->def1_damage_yield())) {
+        outShouldSkipGroundServing = true;
+        outShouldSkipWallServing = true;
+
         int effDamage = rhsBlConfig->damage();
         if (successfulDef1) {
             effDamage = (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage());
@@ -6143,10 +6192,14 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     if (!successfulDef1) {
         if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->hit_stun_frames(); 
+            outShouldSkipGroundServing = true;
+            outShouldSkipWallServing = true;
         }
     } else {
         if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->block_stun_frames(); 
+            outShouldSkipGroundServing = true;
+            outShouldSkipWallServing = true;
         }
     }
 }

@@ -8,6 +8,7 @@
 #include <Jolt//Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
+#include "CharacterCollisionCollector.h"
 
 #include <vector>
 #include <map>
@@ -19,11 +20,11 @@
 
 It's by design that "JPH::Character" instead of "JPH::CharacterVirtual" is used here while [their differences]("https://jrouwe.github.io/JoltPhysics/index.html#character-controllers) are understood.
 
-The lack of use of broadphase makes "JPH::CharacterVirtual" very inefficient in "Character v.s. Character" collision handling. See [CharacterVsCharacterCollisionSimple](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L34) for its official default implementation.
+The lack of use of "BroadPhase" makes "JPH::CharacterVirtual" very inefficient in "Character v.s. Character" collision handling. See [CharacterVsCharacterCollisionSimple](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.cpp#L34) for its official default implementation.
 
 My current choice is to
-- use "JPH::Character" for efficient "(Regular)Constraint & ContactConstraint" calculation in "JPH::PhysicsSystem" along with other "JPH:Body"s, then 
-- use "NarrowPhase" collision detection to handle application specific state transitions.
+- use "JPH::Character" for efficient "(Regular)Constraint & ContactConstraint" calculation in "JPH::PhysicsSystem" along with other "JPH:Body" instances as well as a "CollisionUdHolder_ThreadSafe" collector in "OnContactCommon", then 
+- use the collected "CollisionUdHolder_ThreadSafe" per character to handle application specific state transitions.
 */
 
 typedef struct VectorFloatHasher {
@@ -35,106 +36,6 @@ typedef struct VectorFloatHasher {
         return seed;
     }
 } VectorFloatHasher;
-
-using ContactPoints = StaticArray<Vec3, 64>;
-class CollisionUdHolder_ThreadSafe {
-private:
-    std::vector<uint64_t> uds; 
-    std::vector<ContactPoints> contactPointsPerUd;
-    std::vector<Vec3> worldSpaceNorms;
-    atomic<int> cnt;
-    int size;
-
-    std::unordered_set<uint64_t> seenUdsDuringReading_NotThreadSafe;
-
-public:
-    CollisionUdHolder_ThreadSafe(const int inSize) {
-        size = inSize;
-        uds.reserve(inSize);
-        contactPointsPerUd.reserve(inSize);
-        for (int i = 0; i < inSize; ++i) {
-            uds.push_back(0);
-            contactPointsPerUd.push_back(ContactPoints());
-            worldSpaceNorms.push_back(Vec3::sZero());
-        }
-        cnt = 0;
-    }
-
-    // [WARNING] All fields, including "contactPointsPerUd", will be destructed implicitly when "delete holder" is called in "~CollisionUdHolderStockCache_ThreadSafe". See https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L44 for more information.
-
-    bool Add_ThreadSafe(const uint64_t inUd, const ContactPoints& inContactPoints, const Vec3& inWorldSpaceNorm) {
-        int idx = cnt.fetch_add(1);
-        if (idx >= size) {
-            --cnt;
-            return false;
-        }
-        uds[idx] = inUd;
-        contactPointsPerUd[idx] = inContactPoints; // It does work this way, see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Core/StaticArray.h#L225.
-        worldSpaceNorms[idx] = inWorldSpaceNorm;
-        return true;
-    }
-
-
-    int GetCnt_Realtime() const {
-        return cnt;
-    }
-
-    bool GetUd_NotThreadSafe(const int idx, uint64_t& outUd, ContactPoints& outContactPoints, Vec3& outWorldSpaceNorm) {
-        uint64_t cand = uds[idx];
-        if (seenUdsDuringReading_NotThreadSafe.count(cand)) return false;
-        outUd = cand;
-        outContactPoints = contactPointsPerUd[idx];
-        outWorldSpaceNorm = worldSpaceNorms[idx];
-        seenUdsDuringReading_NotThreadSafe.insert(cand);
-        return true;
-    }
-
-    void Clear_ThreadSafe() {
-        cnt = 0;
-        seenUdsDuringReading_NotThreadSafe.clear();
-    }
-};
-
-class CollisionUdHolderStockCache_ThreadSafe {
-private:
-    std::vector<CollisionUdHolder_ThreadSafe*> holders; 
-    atomic<int> cnt;
-    int size;
-
-public:
-    CollisionUdHolderStockCache_ThreadSafe(const int inSize, const int holderSize) {
-        size = inSize;
-        holders.reserve(inSize);
-        for (int i = 0; i < inSize; ++i) {
-            holders.push_back(new CollisionUdHolder_ThreadSafe(holderSize));
-        }
-        cnt = 0;
-    }
-
-    CollisionUdHolder_ThreadSafe* Take_ThreadSafe() {
-        int idx = cnt.fetch_add(1);
-        if (idx >= size) {
-            --cnt;
-            return nullptr;
-        }
-        CollisionUdHolder_ThreadSafe* holder = holders[idx];   
-        holder->Clear_ThreadSafe();
-        return holder; 
-    }
-
-    void Clear_ThreadSafe() {
-        cnt = 0;
-    }
-
-    ~CollisionUdHolderStockCache_ThreadSafe() {
-        cnt = 0;
-        while (!holders.empty()) {
-            CollisionUdHolder_ThreadSafe* holder = holders.back();
-            holders.pop_back();
-            delete holder;
-        }
-    }
-};
 
 typedef struct InputInducedMotion {
     // "COM" refers to "Center Of Mass"
@@ -746,6 +647,7 @@ protected:
 
     void transitToGroundDodgedChState(const CharacterDownsync& currChd, const Vec3 currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, bool currParalyzed, InputInducedMotion* ioInputInducedMotion);
     void calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRdf);
+    bool isInBlownUpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
     bool isInJumpStartup(const CharacterDownsync& cd, const CharacterConfig* cc);
     bool isJumpStartupJustEnded(const CharacterDownsync& currCd, const CharacterDownsync* nextCd, const CharacterConfig* cc);
     void jamBtnHolding(CharacterDownsync* nextChd);
@@ -776,7 +678,7 @@ protected:
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff);
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
 
     bool addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed);
     bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
@@ -1417,9 +1319,9 @@ public:
     */
 
     /*
-    On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterCollideShapeCollector" within "OnContactCommon" -- take "Character" as an example,  
-    - during BroadPhase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterCollideShapeCollector.mBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
-    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterCollideShapeCollector") -- by ONLY making use of BroadPhase multi-threading to solve constraints (including "regular NonContactConstraint" and "ContactConstraint") we balance both efficiency and simplicity.  
+    On the other hand, it's INTENTIONALLY AVOIDED to call "CharacterContactPushbackCollector" within "OnContactCommon" -- take "Character" as an example,  
+    - during BroadPhase multi-threading, a same "Character" might enter "OnContactCommon" from different threads concurrently, if we'd like to manage "CharacterContactPushbackCollector.mGroundBestDot" in a thread-safe manner, the same "do { ...... compare_exchange_weak(...) ...... } while(0 < retryCnt)" trick in "RingBufferMt::DryPut/Pop/PopTail" can be used; 
+    - HOWEVER it's NOT worth such hassle! It's much simpler to handle "same-(character/bullet/trap)-NarrowPhase-in-same-thread" in later traversal (i.e. to call "PostSimulationWithCollector -> CharacterContactPushbackCollector") -- by ONLY making use of BroadPhase multi-threading to solve constraints (including "regular NonContactConstraint" and "ContactConstraint") we balance both efficiency and simplicity.  
     */
     virtual void OnContactCommon(const JPH::Body& inBody1,
         const JPH::Body& inBody2,
@@ -1435,12 +1337,12 @@ public:
         if (transientCollisionHolderApplicableUdtPairs.count({ udt1, udt2 })) {
             if (transientUdToCollisionUdHolder.count(ud1)) {
                 CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder.at(ud1);
-                udHolder->Add_ThreadSafe(ud2, inManifold.mRelativeContactPointsOn1, inManifold.mWorldSpaceNormal);
+                udHolder->Add_ThreadSafe(ud2, inManifold.mRelativeContactPointsOn1, inManifold.mWorldSpaceNormal, inBody2.GetID(), inManifold.mSubShapeID2);
             }
 
             if (transientUdToCollisionUdHolder.count(ud2)) {
                 CollisionUdHolder_ThreadSafe* udHolder = transientUdToCollisionUdHolder.at(ud2);
-                udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2, -inManifold.mWorldSpaceNormal);
+                udHolder->Add_ThreadSafe(ud1, inManifold.mRelativeContactPointsOn2, -inManifold.mWorldSpaceNormal, inBody1.GetID(), inManifold.mSubShapeID1);
             }
         }
 
