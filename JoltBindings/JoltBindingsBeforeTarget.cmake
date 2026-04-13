@@ -205,7 +205,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}
 
 set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
-    ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
+    ${JOLTC_ROOT}/CharacterCollisionCollector.h
     ${JOLTC_ROOT}/BaseNpcReaction.h
     ${JOLTC_ROOT}/BaseNpcReaction.cpp
     ${JOLTC_ROOT}/BlackSaber1NpcReaction.h
@@ -223,7 +223,6 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/FrontendBattle.h
     ${JOLTC_ROOT}/FrontendBattle.cpp
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
-    ${JOLTC_ROOT}/CharacterCollideShapeCollector.h
     ${JOLTC_ROOT}/joltc_api.h
     ${JOLTC_ROOT}/joltc_api.cpp
     ${JOLTC_ROOT}/RingBuffer.h

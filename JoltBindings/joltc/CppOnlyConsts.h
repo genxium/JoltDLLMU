@@ -45,6 +45,7 @@ const uint32_t cMaxBodies = 1024;
 const uint32_t cNumBodyMutexes = 0;
 const uint32_t cMaxBodyPairs = 1024;
 const uint32_t cMaxContactConstraints = 1024;
+const float  cDefaultWallDotThreshold = 0.10f;
 const float  cDefaultChDensity = 0.5f;
 const float  cDefaultChFriction = 0.01f; 
 const float  cGroundDashingChFriction = 0.001f; 
@@ -102,6 +103,26 @@ const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transi
     {UDT_NPC,    UDT_TRIGGER},
     {UDT_TRIGGER, UDT_PLAYER},
     {UDT_TRIGGER, UDT_NPC},
+
+    {UDT_PLAYER, UDT_OBSTACLE},
+    {UDT_NPC,    UDT_OBSTACLE},
+    {UDT_OBSTACLE, UDT_PLAYER},
+    {UDT_OBSTACLE, UDT_NPC},
+
+    {UDT_PLAYER, UDT_TRAP},
+    {UDT_NPC,    UDT_TRAP},
+    {UDT_TRAP, UDT_PLAYER},
+    {UDT_TRAP, UDT_NPC},
+
+    {UDT_PLAYER, UDT_PICKABLE},
+    {UDT_NPC,    UDT_PICKABLE},
+    {UDT_PICKABLE, UDT_PLAYER},
+    {UDT_PICKABLE, UDT_NPC},
+
+    {UDT_PLAYER, UDT_NPC_SHIELDBOX},
+    {UDT_NPC,    UDT_NPC_SHIELDBOX},
+    {UDT_NPC_SHIELDBOX, UDT_PLAYER},
+    {UDT_NPC_SHIELDBOX, UDT_NPC},
 
     {UDT_PLAYER, UDT_BL},
     {UDT_NPC,    UDT_BL},
