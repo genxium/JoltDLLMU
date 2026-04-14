@@ -24,6 +24,11 @@ class JPH_EXPORT CharacterVirtualSettings : public CharacterBaseSettings
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
+	/// Constructor
+										CharacterVirtualSettings() = default;
+										CharacterVirtualSettings(const CharacterVirtualSettings &) = default;
+	CharacterVirtualSettings &			operator = (const CharacterVirtualSettings &) = default;
+
 	/// ID to give to this character. This is used for deterministically sorting and as an identifier to represent the character in the contact removal callback.
 	CharacterID							mID = CharacterID::sNextCharacterID();
 
@@ -60,8 +65,6 @@ public:
 
 	/// Layer that the inner rigid body will be added to
 	ObjectLayer							mInnerBodyLayer = 0;
-
-    bool                                mInnerBodyCollideKinematicVsNonDynamic = false;
 };
 
 /// This class contains settings that allow you to override the behavior of a character's collision response
@@ -78,6 +81,7 @@ public:
 };
 
 /// This class receives callbacks when a virtual character hits something.
+/// Once created, register it on a CharacterVirtual by using the character's SetListener method.
 class JPH_EXPORT CharacterContactListener
 {
 public:
@@ -382,8 +386,6 @@ public:
 	/// @param inAllocator An allocator for temporary allocations. All memory will be freed by the time this function returns.
 	void								ExtendedUpdate(float inDeltaTime, Vec3Arg inGravity, const ExtendedUpdateSettings &inSettings, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
-	void								PostSimulation(float inDeltaTime, Vec3Arg old_position, Vec3Arg old_vel, bool onGroundBeforeUpdate, Vec3Arg inGravity, const ExtendedUpdateSettings &inSettings, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
-
 	/// This function can be used after a character has teleported to determine the new contacts with the world.
 	void								RefreshContacts(const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
@@ -422,6 +424,9 @@ public:
 	/// @param inBodyFilter Filter that is used to check if a character collides with a body.
 	/// @param inShapeFilter Filter that is used to check if a character collides with a subshape.
 	void								CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
+
+	/// Get the character settings that can recreate this character
+	CharacterVirtualSettings			GetCharacterVirtualSettings() const;
 
 	// Saving / restoring state for replay
 	virtual void						SaveState(StateRecorder &inStream) const override;
@@ -527,8 +532,6 @@ public:
 	{
 		return HasCollidedWith(inCharacter->GetID());
 	}
-
-	
 
 private:
 	// Sorting predicate for making contact order deterministic

@@ -73,6 +73,7 @@ void BroadPhaseQuadTree::Optimize()
 {
 	JPH_PROFILE_FUNCTION();
 
+	// Free the previous tree so we can create a new optimized tree
 	FrameSync();
 
 	LockModifications();
@@ -90,7 +91,7 @@ void BroadPhaseQuadTree::Optimize()
 
 	UnlockModifications();
 
-    // Free the tree from before we created a new optimized tree
+	// Free the tree from before we created a new optimized tree
 	FrameSync();
 
 	mNextLayerToUpdate = 0;

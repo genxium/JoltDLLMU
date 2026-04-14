@@ -77,6 +77,7 @@ protected:
 
         PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
         clonedPhySettings.mUseManifoldReduction = true;
+        clonedPhySettings.mMinVelocityForRestitution = globalPrimitiveConsts->default_min_speed_for_restitution();
 
         /*
         clonedPhySettings.mConstraintWarmStart = true; 

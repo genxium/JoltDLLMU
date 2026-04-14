@@ -1,46 +1,13 @@
 using Google.Protobuf.Collections;
 using jtshared;
 using static JoltCSharp.PbPrimitives;
+using static jtshared.PbBuilders;
 
 namespace JoltCSharp {
     public class PbSkills {
-        public static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
-            /*
-            For simplicity,
-            - "currSliding" = "currCrouching" + "currDashing"
-            */
-            int encodedPatternId = patternId;
-            if (currEffInAir) {
-                encodedPatternId += (1 << 16);
-            }
-            if (currCrouching) {
-                encodedPatternId += (1 << 17);
-            }
-            if (currOnWall) {
-                encodedPatternId += (1 << 18);
-            }
-            if (currDashing) {
-                encodedPatternId += (1 << 19);
-            }
-            if (currWalking) {
-                encodedPatternId += (1 << 20);
-            }
-            return encodedPatternId;
-        }
-
-        public static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
-            int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
-            if (currInBlockStun) {
-                encodedPatternId += (1 << 21);
-            }
-            if (currAtked) {
-                encodedPatternId += (1 << 22);
-            }
-            if (currParalyzed) {
-                encodedPatternId += (1 << 23);
-            }
-            return encodedPatternId;
-        }
+        
+        public static System.Numerics.Quaternion cTurn45DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, 0.7853981625f);
+        public static System.Numerics.Quaternion cTurn60DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, 1.0472f);
 
         private static BulletConfig BasicPistolBulletAir = new BulletConfig {
             StartupFrames = 6,
@@ -58,7 +25,7 @@ namespace JoltCSharp {
             HitboxOffsetY = HunterPistolOffsetYAir,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
-            AnimName = "Fireball1",
+            AnimName = "PistolBullet1",
             Speed = 6.0f * BATTLE_DYNAMICS_FPS,
             Hardness = 4,
             HitAnimRdfCnt = 45,
@@ -178,7 +145,7 @@ namespace JoltCSharp {
             HitboxOffsetY = HunterPistolOffsetYAir,
             HitboxHalfSizeX = 2,
             HitboxHalfSizeY = 2,
-            AnimName = "Fireball2",
+            AnimName = "PistolBullet2",
             Speed = 8.5f * BATTLE_DYNAMICS_FPS,
             Hardness = 7,
             HitAnimRdfCnt = 45,
@@ -215,7 +182,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
             RecoveryFramesOnBlock = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
             RecoveryFramesOnHit = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
-            InvocationType = SkillInvocation.RisingEdge,
+            InvocationType = SkillInvocation.FallingEdge,
             BoundChState = CharacterState.OnWallAtk1,
             Atk1MagazineDelta = 1,
         }.AddHit(new BulletConfig(BasicChargedPistolBulletOnWall)
@@ -227,7 +194,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
-            InvocationType = SkillInvocation.RisingEdge,
+            InvocationType = SkillInvocation.FallingEdge,
             BoundChState = CharacterState.Atk1,
             Atk1MagazineDelta = 1,
         }
@@ -241,7 +208,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
-            InvocationType = SkillInvocation.RisingEdge,
+            InvocationType = SkillInvocation.FallingEdge,
             BoundChState = CharacterState.InAirAtk1,
             Atk1MagazineDelta = 1,
         }
@@ -254,7 +221,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
-            InvocationType = SkillInvocation.RisingEdge,
+            InvocationType = SkillInvocation.FallingEdge,
             BoundChState = CharacterState.WalkingAtk1,
             Atk1MagazineDelta = 1,
         }
@@ -268,7 +235,7 @@ namespace JoltCSharp {
             RecoveryFrames = HunterChargedPistolWall.RecoveryFrames,
             RecoveryFramesOnBlock = HunterChargedPistolWall.RecoveryFramesOnBlock,
             RecoveryFramesOnHit = HunterChargedPistolWall.RecoveryFramesOnHit,
-            InvocationType = SkillInvocation.RisingEdge,
+            InvocationType = SkillInvocation.FallingEdge,
             BoundChState = CharacterState.CrouchAtk1,
             Atk1MagazineDelta = 1,
         }
@@ -573,6 +540,146 @@ namespace JoltCSharp {
             BoundChState = CharacterState.Atk1
         }.AddHit(SlowBladeHit1);
 
+        private static BulletConfig BasicRapidFireHit1 = new BulletConfig {
+            StartupFrames = 45,
+            ActiveFrames = 60,
+            HitStunFrames = 8,
+            BlockStunFrames = 8,
+            CooldownFrames = 12,
+            Damage = 2,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 16f,
+            HitboxOffsetY = BlackShooter1RapidFireOffsetY,
+            HitboxHalfSizeX = 2,
+            HitboxHalfSizeY = 2,
+            AnimName = "MiniBullet1",
+            Speed = 6.5f * BATTLE_DYNAMICS_FPS,
+            Hardness = 4,
+            HitAnimRdfCnt = 45,
+            VanishingAnimRdfCnt = 25,
+            // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
+            BType = BulletType.MechanicalCartridge,
+            CharacterEmitSfxName = "PistolEmit",
+            HitSfxName = "Piercing",
+            HitOnRockSfxName = "Vanishing7",
+            TakesGravity = false,
+            RenderRotationAlongVelocity = false,
+            MhType = MultiHitType.FromEmission,
+            SimultaneousMultiHitCnt = 3,
+            CollisionTypeMask = 0 // TODO
+        };
+
+        private static BulletConfig BasicRapidFireHit2 = new BulletConfig(BasicRapidFireHit1)
+                                                                .SetStartupFrames(BasicRapidFireHit1.StartupFrames + 9)
+                                                                .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY + 4f)
+                                                                .SetSimultaneousMultiHitCnt(2);
+
+        private static BulletConfig BasicRapidFireHit3 = new BulletConfig(BasicRapidFireHit2)
+                                                                .SetStartupFrames(BasicRapidFireHit2.StartupFrames + 9)
+                                                                .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY - 4f)
+                                                                .SetSimultaneousMultiHitCnt(1);
+
+        private static BulletConfig BasicRapidFireHit4 = new BulletConfig(BasicRapidFireHit3)
+                                                                .SetStartupFrames(BasicRapidFireHit3.StartupFrames + 9)
+                                                                .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY - 2f)
+                                                                .SetMhType(MultiHitType.None)
+                                                                .SetSimultaneousMultiHitCnt(0);
+
+        public static Skill BlackShooter1RapidFire = new Skill{
+            Id = BlackShooter1RapidFireId,
+            RecoveryFrames = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
+            MpDelta = 220,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Atk1,
+        }
+        .AddHit(BasicRapidFireHit1) 
+        .AddHit(BasicRapidFireHit2) 
+        .AddHit(BasicRapidFireHit3) 
+        .AddHit(BasicRapidFireHit4); 
+
+        private static BulletConfig BasicTimedBombHit1 = new BulletConfig {
+            StartupFrames = 80,
+            ActiveFrames = 180,
+            HitStunFrames = 4,
+            BlockStunFrames = 4,
+            CooldownFrames = 40,
+            Damage = 0,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 16f,
+            HitboxOffsetY = 14f,
+            HitboxHalfSizeX = 5f,
+            HitboxHalfSizeY = 5f,
+            AnimName = "TimedBomb1",
+            Speed = 3.5f * BATTLE_DYNAMICS_FPS,
+            Hardness = 7,
+            HitAnimRdfCnt = 45,
+            VanishingAnimRdfCnt = 25,
+            BType = BulletType.MechanicalBouncerSpherical,
+            CharacterEmitSfxName = "PistolEmit",
+            HitSfxName = "Piercing",
+            HitOnRockSfxName = "Vanishing8",
+            TakesGravity = true,
+            MhType = MultiHitType.FromPrevHitActualOrActiveTimeUp,
+            InitQ = new PbQuat {
+                X = cTurn45DegsWrtZAxis.X,
+                Y = cTurn45DegsWrtZAxis.Y,
+                Z = cTurn45DegsWrtZAxis.Z,
+                W = cTurn45DegsWrtZAxis.W,
+            },
+            NoHitAnim = true,
+            Restitution = 0.92f,
+            GravityFactor = 0.55f,
+            CollisionTypeMask = 0 // TODO
+        };
+        private static BulletConfig BasicTimedBombHit2 = new BulletConfig {
+            StartupFrames = 4,
+            ActiveFrames = 8,
+            HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+            BlowUp = true,
+            BlockStunFrames = 60,
+            CooldownFrames = 12,
+            Damage = 36,
+            PushbackVelX = 3.5f * BATTLE_DYNAMICS_FPS,
+            PushbackVelY = 5.5f * BATTLE_DYNAMICS_FPS,
+            SelfLockVelX = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 0f,
+            HitboxOffsetY = 0f,
+            HitboxHalfSizeX = 16f,
+            HitboxHalfSizeY = 16f,
+            Hardness = 8,
+            HitAnimRdfCnt = 45,
+            VanishingAnimRdfCnt = 25,
+            BType = BulletType.MagicalFireball,
+            CharacterEmitSfxName = "PistolEmit",
+            HitSfxName = "Piercing",
+            HitOnRockSfxName = "Vanishing8",
+            CollisionTypeMask = 0 // TODO
+        };
+
+        public static Skill BlackThrower1TimedBomb = new Skill{
+            Id = BlackThrower1TimedBombId,
+            RecoveryFrames = BasicTimedBombHit1.StartupFrames+BasicTimedBombHit1.CooldownFrames,
+            RecoveryFramesOnBlock = BasicTimedBombHit1.StartupFrames+BasicTimedBombHit1.CooldownFrames,
+            RecoveryFramesOnHit = BasicTimedBombHit1.StartupFrames+BasicTimedBombHit1.CooldownFrames,
+            MpDelta = 220,
+            InvocationType = SkillInvocation.RisingEdge,
+            BoundChState = CharacterState.Atk1,
+        }
+        .AddHit(BasicTimedBombHit1) 
+        .AddHit(BasicTimedBombHit2); 
+
         public static MapField<uint, Skill> underlying = new MapField<uint, Skill>() { };
 
         static PbSkills() {
@@ -600,6 +707,10 @@ namespace JoltCSharp {
 
             underlying.Add(BlackSaber1GroundSlash1Id, BlackSaber1GroundSlash1);
             underlying.Add(BlackSaber1AirSlash1Id, BlackSaber1AirSlash1);
+
+            underlying.Add(BlackShooter1RapidFireId, BlackShooter1RapidFire);
+
+            underlying.Add(BlackThrower1TimedBombId, BlackThrower1TimedBomb);
         }
     }
 }

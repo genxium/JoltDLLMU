@@ -134,6 +134,7 @@ protected:
        */
         PhysicsSettings clonedPhySettings = phySys->GetPhysicsSettings();
         clonedPhySettings.mUseManifoldReduction = true;
+        clonedPhySettings.mMinVelocityForRestitution = globalPrimitiveConsts->default_min_speed_for_restitution();
 
         if (onlineArenaMode) {
             clonedPhySettings.mConstraintWarmStart = false; // [WARNING] A practical test case to verify that this setting matters is "FrontendTest/runTestCase11".

@@ -48,6 +48,7 @@ const uint32_t cMaxContactConstraints = 1024;
 const float  cDefaultWallDotThreshold = 0.10f;
 const float  cDefaultChDensity = 0.5f;
 const float  cDefaultChFriction = 0.01f; 
+const float  cDefaultChRestituion = 0.0f;
 const float  cGroundDashingChFriction = 0.001f; 
 const float  cAntiPushChFriction = 0.1f; 
 const float  cWalkstoppingChFriction = 125.0f; 
@@ -55,7 +56,8 @@ const float  cFallstoppingChFriction = 90.0f;
 const float  cDefaultThickness = 0.02f; // An impossibly small value
 const float  cDefaultHalfThickness = cDefaultThickness * 0.5f;
 const float  cDefaultBarrierFriction = 0.1f; 
-const float  cDefaultBarrierThickness = cDefaultThickness * 100.0f;
+const float  cDefaultBarrierRestituion = 0.1f;
+const float  cDefaultBarrierThickness = 65536.0f;
 const float  cDefaultBarrierHalfThickness = cDefaultBarrierThickness * 0.5f;
 const float  cDefaultBlHalfLength = cDefaultHalfThickness;
 const float  cDefaultBlDensity = 0.1f;
@@ -68,6 +70,8 @@ const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;
 const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
 const float  cDefaultAimingRayLength = 2048.0;
+const float  cDefaultBulletFriction = 0.2f; 
+const float  cDefaultBulletRestitution = 0.1f; 
 
 const std::vector<std::vector<int>> DIRECTION_DECODER = {
     { 0, 0 }, // 0

@@ -169,6 +169,8 @@ enum CharacterState {
 
     TransformingIntoFromDeath = 20; // When at this state, the character has already completed transform, i.e. in new species_id
 
+    FallStopping = 21; // [REMINDER] Only used in rendering when "0 < CharacterDownsync.fallstopping_rdf_countdown".
+
     Parried = 23;
     Awaking = 24;
     GroundDodged = 25;
@@ -286,6 +288,8 @@ message CharacterConfig {
     float min_falling_vel_y = 21;
     float max_ascending_vel_y = 22;
 
+    optional float collider_density = 23;
+
     bool atk1_uses_magazine = 25;
     InventorySlotConfig atk1_magazine = 26; 
     InventorySlotConfig super_atk_gauge = 27; 
@@ -293,7 +297,6 @@ message CharacterConfig {
     int32 ground_dodged_frames_to_recover = 28;
     int32 ground_dodged_frames_invinsible = 29;
     float ground_dodged_speed = 30; // TODO: For better flexibility, should allow "configurable list of speed keyframes", like that of "Hurtboxes"  
-
     bool  has_vision_reaction = 31;
 
     int32 walkstopping_inertia_rdf_count = 32;
@@ -646,8 +649,9 @@ enum BulletType {
     Undetermined = 0;
     Melee = 1;
     MechanicalCartridge = 2;
-    MagicalFireball = 3;
-    GroundWave = 4;
+    MechanicalBouncerSpherical = 3;
+    MagicalFireball = 4;
+    GroundWave = 5;
 }
 
 enum MultiHitType {
@@ -737,7 +741,7 @@ message BulletConfig {
     bool omit_soft_pushback = 40; // Only used for melee bullets
 
     bool remains_upon_hit = 41; 
-    bool rotates_along_velocity = 42;
+    bool render_rotation_along_velocity = 42;
 
     bool blow_up = 46;
     int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
@@ -769,13 +773,18 @@ message BulletConfig {
     bool mh_inherits_spin = 69;
     PbQuat init_q = 70;
 
+    optional float friction = 71;
+    optional float restitution = 72; 
+    optional float gravity_factor = 73; 
+    bool no_hit_anim = 74;
+
     IfaceCat ifc = 75;
     bool reflect_fireball_x_if_not_harder = 76;
     bool reject_reflection_from_another_bullet = 77;
 
-    bool provides_xHard_pushback = 78;
-    bool provides_yHard_pushback_top = 79;
-    bool provides_yHard_pushback_bottom = 80;
+    bool provides_x_hard_pushback = 78;
+    bool provides_y_hard_pushback_top = 79;
+    bool provides_y_hard_pushback_bottom = 80;
 
     bool ignore_slope_deceleration = 81;
     bool rotate_offender_with_spin = 82;
@@ -1399,6 +1408,8 @@ enum PickupType {
     MpBigImmediate = 6;
 
     PutIntoInventory = 512;
+    Vehicle = 513;
+    Carriable = 514;
 }
 
 message PickableConfig {
@@ -1555,6 +1566,7 @@ message ChSpeciesConsts {
     uint32 bountyhunter = 2;
     uint32 blacksaber1 = 3;
     uint32 blackshooter1 = 4;
+    uint32 blackthrower1 = 5;
 
     uint32 none_ch = 2048;
     uint32 blacksaber_test_no_vision = 2049;
@@ -1627,6 +1639,8 @@ message PrimitiveConsts {
     int32 max_reverse_pushback_frames_to_recover = 50;
 
     int32 default_slip_jump_grace_period_rdf_cnt = 51;
+
+    float default_min_speed_for_restitution = 52;
 
     int32 speed_not_hit_not_specified = 53;
     int32 default_prealloc_npc_capacity = 54; // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
@@ -1782,6 +1796,7 @@ message PrimitiveConsts {
     uint32 tpt_rotating_platform = 172; 
     uint32 tpt_conveyor_belt = 173; 
     uint32 tpt_falling_rock = 174; 
+    uint32 tpt_spring = 175; 
 
     int32 sp_atk_lookup_frames = 512;
 

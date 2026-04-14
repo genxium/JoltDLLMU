@@ -1,13 +1,20 @@
 # Does this lib actually work?
 
 Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here're some screen-recordings of battles over the internet (all having `ping` around 20ms~300ms during test).
+
+- [recording#10, 2026-04](https://pan.baidu.com/s/1tD87UWjZeJYpYqgtuJCPew?pwd=r63u), P1 Nanjing City v.s. P2 Dongguan City 
+
+- [recording#9, 2026-04](https://pan.baidu.com/s/1LanwXLryIv_GqJwjQMmy7Q?pwd=bt9h), P1 Dongguan City v.s. P2 Nanjing City 
+
+  ![demo9](./Screenshots/DLLMUJolt-desync-fixed-Internet-PVP-2026-04-14_b2_as_p1.gif)
+
+- [recording#8, 2026-04](https://pan.baidu.com/s/1L20oPXCgo6PZd2qxZxCnOg?pwd=sf4u), P1 Dongguan City v.s. P2 Nanjing City 
+
+  ![demo8](./Screenshots/DLLMUJolt-desync-fixed-Internet-PVP-2026-04-14_b1_as_p1.gif)
+
 - [recording#7, 2026-04](https://pan.baidu.com/s/12FXwRwI1CE9pM_0vFSAVyQ?pwd=ht2n), P1 Nanjing City v.s. P2 Dongguan City 
 
-  ![demo7](./Screenshots/DLLMUJolt-Internet-PVP-2026-04-04_b1_as_p2.gif)
-
 - [recording#6, 2026-04](https://pan.baidu.com/s/1CJt4sfWMszS0roR1Aqv2Hg?pwd=4xyu), same hardware setup as the previous recording
-
-  ![demo6](./Screenshots/DLLMUJolt_milestone_6.gif)
 
 - [recording#5, 2026-03](https://pan.baidu.com/s/1wM5Xvq5wjFF7_7MC9ctJyg?pwd=fhyj), kindly note that **BladeGirl side was a laptop in low-battery state and connected to a Wi-Fi hotspot located 1 floor downstairs with a closed wooden door whilst the HunterGirl side was connected to both power and another Wi-Fi hotspot within 50cm on the same desk**
 

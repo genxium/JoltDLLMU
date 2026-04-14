@@ -18,6 +18,11 @@ class JPH_EXPORT CharacterSettings : public CharacterBaseSettings
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
+	/// Constructor
+										CharacterSettings() = default;
+										CharacterSettings(const CharacterSettings &) = default;
+	CharacterSettings &					operator = (const CharacterSettings &) = default;
+
 	/// Layer that this character will be added to
 	ObjectLayer							mLayer = 0;
 
@@ -134,9 +139,23 @@ public:
 	/// @param inLockBodies If the collision query should use the locking body interface (true) or the non locking body interface (false)
 	void								CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies = true) const;
 
-	// Ground properties setters
-	inline const Plane* GetSupportingVolume() const { return &mSupportingVolume; }
+	/// Get the character settings that can recreate this character
+	CharacterSettings					GetCharacterSettings(bool inLockBodies = true) const;
 
+private:
+	/// Check collisions between inShape and the world using the center of mass transform
+	void								CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const;
+
+	/// Check collisions between inShape and the world using the current position / rotation of the character
+	void								CheckCollision(const Shape *inShape, float inMaxSeparationDistance, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const;
+
+	/// The body of this character
+	BodyID								mBodyID;
+
+	/// The layer the body is in
+	ObjectLayer							mLayer;
+
+public:
 	inline void								SetGroundState(const EGroundState val) {
 		mGroundState = val;
 	}
@@ -153,19 +172,6 @@ public:
 		mGroundVelocity = val2;
 		mGroundUserData = val3;
 	}
-
-private:
-	/// Check collisions between inShape and the world using the center of mass transform
-	void								CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const;
-
-	/// Check collisions between inShape and the world using the current position / rotation of the character
-	void								CheckCollision(const Shape *inShape, float inMaxSeparationDistance, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const;
-
-	/// The body of this character
-	BodyID								mBodyID;
-
-	/// The layer the body is in
-	ObjectLayer							mLayer;
 };
 
 JPH_NAMESPACE_END
