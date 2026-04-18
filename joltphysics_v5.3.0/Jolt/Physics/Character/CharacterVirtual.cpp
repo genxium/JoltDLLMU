@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
 #include <Jolt/Core/QuickSort.h>
 #include <Jolt/Core/ScopeExit.h>
@@ -138,7 +139,6 @@ CharacterVirtual::CharacterVirtual(const CharacterVirtualSettings *inSettings, R
 		BodyCreationSettings settings(inSettings->mInnerBodyShape, GetInnerBodyPosition(), mRotation, EMotionType::Kinematic, inSettings->mInnerBodyLayer);
 		settings.mAllowSleeping = false; // Disable sleeping so that we will receive sensor callbacks
 		settings.mUserData = inUserData;
-        settings.mCollideKinematicVsNonDynamic = inSettings->mInnerBodyCollideKinematicVsNonDynamic;
 
 		const Body *inner_body;
 		BodyInterface &bi = inSystem->GetBodyInterface();
@@ -542,6 +542,14 @@ inline static bool sCorrectFractionForCharacterPadding(const Shape *inShape, Mat
 	{
 		const ScaledShape *scaled_shape = static_cast<const ScaledShape *>(inShape);
 		return sCorrectFractionForCharacterPadding(scaled_shape->GetInnerShape(), inStart, inDisplacement, inScale * scaled_shape->GetScale(), inPolygon, ioFraction);
+	}
+	else if (inShape->GetType() == EShapeType::Compound)
+	{
+		const CompoundShape *compound = static_cast<const CompoundShape *>(inShape);
+		bool return_value = false;
+		for (const CompoundShape::SubShape &sub_shape : compound->GetSubShapes())
+			return_value |= sCorrectFractionForCharacterPadding(sub_shape.mShape, inStart * sub_shape.GetLocalTransformNoScale(inScale), inDisplacement, sub_shape.TransformScale(inScale), inPolygon, ioFraction);
+		return return_value;
 	}
 	else
 	{
@@ -1793,89 +1801,6 @@ void CharacterVirtual::ExtendedUpdate(float inDeltaTime, Vec3Arg inGravity, cons
 	}
 }
 
-void CharacterVirtual::PostSimulation(float inDeltaTime, Vec3Arg old_position, Vec3Arg old_vel, bool onGroundBeforeUpdate, Vec3Arg inGravity, const ExtendedUpdateSettings &inSettings, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator)
-{
-	if (inDeltaTime <= 0.0f) {
-		return;
-	}
-
-	// Determine the object that we're standing on
-	UpdateSupportingContact(false, inAllocator);
-
-	// Ensure that the rigid body ends up at the new position
-	UpdateInnerBodyTransform();
-
-	// If we're on the ground
-	if (!mGroundBodyID.IsInvalid() && mMass > 0.0f)
-	{
-		// Add the impulse to the ground due to gravity: P = F dt = M g dt
-		float normal_dot_gravity = mGroundNormal.Dot(inGravity);
-		if (normal_dot_gravity < 0.0f)
-		{
-			Vec3 world_impulse = -(mMass * normal_dot_gravity / inGravity.Length() * inDeltaTime) * inGravity;
-			mSystem->GetBodyInterface().AddImpulse(mGroundBodyID, world_impulse, mGroundPosition);
-		}
-	}
-
-	// If stick to floor enabled and we're going from supported to not supported
-	if (onGroundBeforeUpdate && !IsSupported() && !inSettings.mStickToFloorStepDown.IsNearZero())
-	{
-		// If we're not moving up, stick to the floor
-		float velocity = Vec3(mPosition - old_position).Dot(mUp) / inDeltaTime;
-		if (velocity <= 1.0e-6f)
-			StickToFloor(inSettings.mStickToFloorStepDown, inBroadPhaseLayerFilter, inObjectLayerFilter, inBodyFilter, inShapeFilter, inAllocator);
-	}
-
-	// If walk stairs enabled
-	if (!inSettings.mWalkStairsStepUp.IsNearZero())
-	{
-		// Calculate how much we wanted to move horizontally
-		Vec3 desired_horizontal_step = old_vel * inDeltaTime;
-		desired_horizontal_step -= desired_horizontal_step.Dot(mUp) * mUp;
-		float desired_horizontal_step_len = desired_horizontal_step.Length();
-		if (desired_horizontal_step_len > 0.0f)
-		{
-			// Calculate how much we moved horizontally
-			Vec3 achieved_horizontal_step = Vec3(mPosition - old_position);
-			achieved_horizontal_step -= achieved_horizontal_step.Dot(mUp) * mUp;
-
-			// Only count movement in the direction of the desired movement
-			// (otherwise we find it ok if we're sliding downhill while we're trying to climb uphill)
-			Vec3 step_forward_normalized = desired_horizontal_step / desired_horizontal_step_len;
-			achieved_horizontal_step = max(0.0f, achieved_horizontal_step.Dot(step_forward_normalized)) * step_forward_normalized;
-			float achieved_horizontal_step_len = achieved_horizontal_step.Length();
-
-			// If we didn't move as far as we wanted and we're against a slope that's too steep
-			if (achieved_horizontal_step_len + 1.0e-4f < desired_horizontal_step_len
-				&& CanWalkStairs(old_vel))
-			{
-				// Calculate how much we should step forward
-				// Note that we clamp the step forward to a minimum distance. This is done because at very high frame rates the delta time
-				// may be very small, causing a very small step forward. If the step becomes small enough, we may not move far enough
-				// horizontally to actually end up at the top of the step.
-				Vec3 step_forward = step_forward_normalized * max(inSettings.mWalkStairsMinStepForward, desired_horizontal_step_len - achieved_horizontal_step_len);
-
-				// Calculate how far to scan ahead for a floor. This is only used in case the floor normal at step_forward is too steep.
-				// In that case an additional check will be performed at this distance to check if that normal is not too steep.
-				// Start with the ground normal in the horizontal plane and normalizing it
-				Vec3 step_forward_test = -mGroundNormal;
-				step_forward_test -= step_forward_test.Dot(mUp) * mUp;
-				step_forward_test = step_forward_test.NormalizedOr(step_forward_normalized);
-
-				// If this normalized vector and the character forward vector is bigger than a preset angle, we use the character forward vector instead of the ground normal
-				// to do our forward test
-				if (step_forward_test.Dot(step_forward_normalized) < inSettings.mWalkStairsCosAngleForwardContact)
-					step_forward_test = step_forward_normalized;
-
-				// Calculate the correct magnitude for the test vector
-				step_forward_test *= inSettings.mWalkStairsStepForwardTest;
-
-				WalkStairs(inDeltaTime, inSettings.mWalkStairsStepUp, step_forward, step_forward_test, inSettings.mWalkStairsStepDownExtra, inBroadPhaseLayerFilter, inObjectLayerFilter, inBodyFilter, inShapeFilter, inAllocator);
-			}
-		}
-	}
-}
-
 void CharacterVirtual::ContactKey::SaveState(StateRecorder &inStream) const
 {
 	inStream.Write(mBodyB);
@@ -1970,6 +1895,39 @@ void CharacterVirtual::RestoreState(StateRecorder &inStream)
 	mActiveContacts.resize(num_contacts);
 	for (Contact &c : mActiveContacts)
 		c.RestoreState(inStream);
+}
+
+CharacterVirtualSettings CharacterVirtual::GetCharacterVirtualSettings() const
+{
+	CharacterVirtualSettings settings;
+	settings.mUp = mUp;
+	settings.mSupportingVolume = mSupportingVolume;
+	settings.mMaxSlopeAngle = ACos(mCosMaxSlopeAngle);
+	settings.mEnhancedInternalEdgeRemoval = mEnhancedInternalEdgeRemoval;
+	settings.mShape = mShape;
+	settings.mID = mID;
+	settings.mMass = mMass;
+	settings.mMaxStrength = mMaxStrength;
+	settings.mShapeOffset = mShapeOffset;
+	settings.mBackFaceMode = mBackFaceMode;
+	settings.mPredictiveContactDistance = mPredictiveContactDistance;
+	settings.mMaxCollisionIterations = mMaxCollisionIterations;
+	settings.mMaxConstraintIterations = mMaxConstraintIterations;
+	settings.mMinTimeRemaining = mMinTimeRemaining;
+	settings.mCollisionTolerance = mCollisionTolerance;
+	settings.mCharacterPadding = mCharacterPadding;
+	settings.mMaxNumHits = mMaxNumHits;
+	settings.mHitReductionCosMaxAngle = mHitReductionCosMaxAngle;
+	settings.mPenetrationRecoverySpeed = mPenetrationRecoverySpeed;
+	BodyLockRead lock(mSystem->GetBodyLockInterface(), mInnerBodyID);
+	if (lock.Succeeded())
+	{
+		const Body &body = lock.GetBody();
+		settings.mInnerBodyShape = body.GetShape();
+		settings.mInnerBodyIDOverride = body.GetID();
+		settings.mInnerBodyLayer = body.GetObjectLayer();
+	}
+	return settings;
 }
 
 JPH_NAMESPACE_END

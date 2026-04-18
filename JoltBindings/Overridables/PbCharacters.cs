@@ -1,6 +1,7 @@
 using Google.Protobuf.Collections;
 using jtshared;
 using static JoltCSharp.PbPrimitives;
+using static jtshared.PbBuilders;
 
 namespace JoltCSharp {
     public class PbCharacters {
@@ -229,86 +230,180 @@ namespace JoltCSharp {
             TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
         };
 
+        public static CharacterConfig BLACKSHOOTER1 = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKSHOOTER1,
+            SpeciesName = "BlackShooter1",
+            Hp = 40,
+            Mp = 300,
+            MpRegenPerInterval = 60,
+            MpRegenInterval = 80,
+            LayDownFramesToRecover = 12,
+            GetUpInvinsibleFrames = 19,
+            GetUpFramesToRecover = 14,
+            Speed = 0.6f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
+            JumpStartupFrames = 2,
+            AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+            VisionOffsetX = (32.0f),
+            VisionOffsetY = (10.0f),
+            VisionHalfHeight = (96.0f),
+            VisionTopRadius = (32.0f),
+            VisionBottomRadius = (48.0f),
+            HasVisionReaction = true,
+            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
+            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
+            CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (8.0f),
+            ShrinkedCapsuleRadius = (6.0f),
+            ShrinkedCapsuleHalfHeight = (8.0f),
+            LayDownCapsuleRadius = (8.0f),
+            LayDownCapsuleHalfHeight = (4.0f),
+            DyingCapsuleRadius = (8.0f),
+            DyingCapsuleHalfHeight = (4.0f),
+            HasTurnAroundAnim = false,
+            Hardness = 6,
+            HasDimmedAnim = false,
+            ColliderDensity = 10.0f,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+            GaugeIncWhenExhausted = 50,
+            Ifc = IfaceCat.Metal,
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+        };
+
+        public static CharacterConfig BLACKTHROWER1 = new CharacterConfig {
+            SpeciesId = SPECIES_BLACKTHROWER1,
+            SpeciesName = "BlackThrower1",
+            Hp = 40,
+            Mp = 300,
+            MpRegenPerInterval = 60,
+            MpRegenInterval = 80,
+            LayDownFramesToRecover = 12,
+            GetUpInvinsibleFrames = 19,
+            GetUpFramesToRecover = 14,
+            Speed = 0.6f * BATTLE_DYNAMICS_FPS,
+            JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
+            JumpStartupFrames = 2,
+            AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+            AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+            VisionOffsetX = (32.0f),
+            VisionOffsetY = (10.0f),
+            VisionHalfHeight = (96.0f),
+            VisionTopRadius = (32.0f),
+            VisionBottomRadius = (48.0f),
+            HasVisionReaction = true,
+            VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U-1,
+            VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE-1,
+            CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+            CapsuleHalfHeight = (8.0f),
+            ShrinkedCapsuleRadius = (6.0f),
+            ShrinkedCapsuleHalfHeight = (8.0f),
+            LayDownCapsuleRadius = (8.0f),
+            LayDownCapsuleHalfHeight = (4.0f),
+            DyingCapsuleRadius = (8.0f),
+            DyingCapsuleHalfHeight = (4.0f),
+            HasTurnAroundAnim = false,
+            Hardness = 6,
+            ColliderDensity = 15.0f,
+            HasDimmedAnim = false,
+            MinFallingVelY =  DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+            GaugeIncWhenExhausted = 50,
+            Ifc = IfaceCat.Metal,
+            TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+        };
+
         public static MapField<uint, CharacterConfig> underlying = new MapField<uint, CharacterConfig>() { };
 
         static PbCharacters() {
             // BLADEGIRL
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
 
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BladeGirlAirSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BladeGirlAirSlash1Id);
 
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), BladeGirlCrouchSlashId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), BladeGirlCrouchSlashId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
 
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, true, false, false, false), BladeGirlSlidingId);
 
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, false, false, false, false), BladeGirlSlidingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, true, false, false, false), BladeGirlSlidingId);
 
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
-            BLADEGIRL.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
 
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 
             // BOUNTY_HUNTER
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), HunterPistolId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), HunterPistolWalkingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), HunterPistolId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), HunterPistolWalkingId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), HunterPistolAirId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, true, false, false, false, false, false), HunterPistolWallId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), HunterPistolAirId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, true, false, false, false, false, false), HunterPistolWallId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, false, false, false, false, false, false, false), HunterPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownB, false, true, false, false, false, false, false, false), HunterPistolCrouchId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, false, false, false, false), HunterChargedPistolId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, true, false, false, false), HunterChargedPistolWalkingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, false, false, false, false), HunterChargedPistolId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, false, false, false, true, false, false, false), HunterChargedPistolWalkingId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, false, false, false, false, false, false), HunterChargedPistolAirId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, true, false, false, false, false, false), HunterChargedPistolWallId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, false, false, false, false, false, false), HunterChargedPistolAirId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, true, false, true, false, false, false, false, false), HunterChargedPistolWallId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, true, false, false, false, false, false, false), HunterChargedPistolCrouchId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternReleasedB, false, true, false, false, false, false, false, false), HunterChargedPistolCrouchId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
 
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, true, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, true, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
-            BOUNTY_HUNTER.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternE, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontE, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternFrontEHoldB, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownE, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternDownEHoldB, false, true, false, false, true, false, false, false), HunterSlidingId);
             underlying.Add(BOUNTY_HUNTER.SpeciesId, BOUNTY_HUNTER);
 
             // BLACKSABER1
-            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BlackSaber1GroundSlash1Id);
-            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BlackSaber1GroundSlash1Id);
+            BLACKSABER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BlackSaber1GroundSlash1Id);
+            BLACKSABER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BlackSaber1GroundSlash1Id);
 
-            BLACKSABER1.InitSkillTransit.Add(PbSkills.EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BlackSaber1AirSlash1Id);
+            BLACKSABER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BlackSaber1AirSlash1Id);
             underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
+
+            // BLACKSHOOTER1
+            BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BlackShooter1RapidFireId);
+            BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BlackShooter1RapidFireId);
+            BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BlackShooter1RapidFireId);
+            underlying.Add(BLACKSHOOTER1.SpeciesId, BLACKSHOOTER1);
+
+            // BLACKTHROWER1
+            BLACKTHROWER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
+            BLACKTHROWER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, false, false, false, false, true, false, false, false), BlackThrower1TimedBombId);
+            BLACKTHROWER1.InitSkillTransit.Add(EncodePatternForInitSkill(PbPrimitives.underlying.PatternB, true, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
+            underlying.Add(BLACKTHROWER1.SpeciesId, BLACKTHROWER1);
 
             // BLACKSABER_TEST
             underlying.Add(BLACKSABER_TEST_NO_VISION.SpeciesId, BLACKSABER_TEST_NO_VISION);

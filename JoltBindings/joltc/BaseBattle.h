@@ -202,7 +202,8 @@ public:
     /////////////////////////////////////////////////////Bullet Collider Cache/////////////////////////////////////////////////////
     BL_COLLIDER_Q  activeBlColliders;
     BL_COLLIDER_Q* blStockCache;
-    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, VectorFloatHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+    BL_COLLIDER_Q* blSphericalStockCache;
+    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, BlCacheKeyHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
     /////////////////////////////////////////////////////Character Collider Cache/////////////////////////////////////////////////////
     /*
@@ -328,44 +329,6 @@ public:
 
     virtual bool initTriggerMainAndSubCycles(RenderFrame* startRdf);
 
-    inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
-        /*
-        For simplicity,
-        - "currSliding" = "currCrouching" + "currDashing"
-        */
-        int encodedPatternId = patternId;
-        if (currEffInAir) {
-            encodedPatternId += (1 << 16);
-        }
-        if (currCrouching) {
-            encodedPatternId += (1 << 17);
-        }
-        if (currOnWall) {
-            encodedPatternId += (1 << 18);
-        }
-        if (currDashing) {
-            encodedPatternId += (1 << 19);
-        }
-        if (currWalking) {
-            encodedPatternId += (1 << 20);
-        }
-        return encodedPatternId;
-    }
-
-    inline static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
-        int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
-        if (currInBlockStun) {
-            encodedPatternId += (1 << 21);
-        }
-        if (currAtked) {
-            encodedPatternId += (1 << 22);
-        }
-        if (currParalyzed) {
-            encodedPatternId += (1 << 23);
-        }
-        return encodedPatternId;
-    }
-
     inline static void AssertNearlySame(const RenderFrame* lhs, const RenderFrame* rhs) {
         JPH_ASSERT(lhs->players_size() == rhs->players_size());
         for (int i = 0; i < lhs->players_size(); i++) {
@@ -478,7 +441,7 @@ public:
     
 protected:
     CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
-    BL_CACHE_KEY_T blCacheKeyHolder = { 0, 0 };
+    BL_CACHE_KEY_T blCacheKeyHolder = BL_CACHE_KEY_T(BulletType::Undetermined, 0, 0);
     TP_CACHE_KEY_T tpCacheKeyHolder = TP_CACHE_KEY_T(cDefaultTpHalfLength, cDefaultTpHalfLength, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
     TR_CACHE_KEY_T trCacheKeyHolder = { 0, 0 };
 
@@ -507,7 +470,7 @@ protected:
     CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, const float newRadius, const float newHalfHeight, const Vec3Arg& newPos, const QuatArg& newRot);
 
-    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType, const Vec3Arg& newPos, const QuatArg& newRot);
+    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
     TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody, const Vec3Arg& newPos, const QuatArg& newRot);
     TR_COLLIDER_T* getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
 
@@ -583,9 +546,10 @@ protected:
         ioCacheKey[1] = cc->capsule_half_height();
     }
 
-    inline void calcBlCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, BL_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey[0] = immediateBoxHalfSizeX;
-        ioCacheKey[1] = immediateBoxHalfSizeY;
+    inline void calcBlCacheKey(const BulletType immediateBType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, BL_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.bType = immediateBType;
+        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
+        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
     }
 
     inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, TP_CACHE_KEY_T& ioCacheKey) {
@@ -681,7 +645,7 @@ protected:
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
 
     bool addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed);
-    bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
+    bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
     bool addNewNpcToNextFrame(int currRdfId, float x, float y, float qx, float qy, float qz, float qw, uint32_t chSpeciesId, int teamId, NpcGoal initGoal, RenderFrame* nextRdf, uint32_t publishingToTriggerIdUponExhausted, uint64_t waveNpcKilledMaskCounter, uint32_t subscribesToTriggerId);
     
@@ -846,6 +810,7 @@ protected:
             case BulletType::MagicalFireball:
             case BulletType::Melee:
                 return EMotionType::Kinematic;
+            case BulletType::MechanicalBouncerSpherical:
             case BulletType::MechanicalCartridge:
             case BulletType::GroundWave:
                 return EMotionType::Dynamic;
@@ -857,17 +822,18 @@ protected:
     inline bool               calcBlIsSensor(const BulletType blType) {
         switch (blType) {
             case BulletType::MechanicalCartridge:
+            case BulletType::MechanicalBouncerSpherical:
                 return false;
             default:
                 return true;
         }
     }
 
-    BL_COLLIDER_T*             createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
+    BL_COLLIDER_T* createDefaultBulletCollider(const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const EMotionType motionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
-    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer, BodyInterface* inBodyInterface);
+    TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, const float newConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer, BodyInterface* inBodyInterface);
 
-    TR_COLLIDER_T*             createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
+    TR_COLLIDER_T* createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 

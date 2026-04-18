@@ -285,7 +285,12 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         if (NpcGoal::NIdle == currNpcGoal) {
             toMoveDirX = 0;
         } else if (0 != toHandleOppoChUd) {
-            toMoveDirX = 0 < selfNpcPositionDiffForOppoChUd.GetX() ? +2 : -2;
+            // [TODO] For flying NPCs.
+            if (TARGET_CH_REACTION_FLEE_OPPO == newVisionReaction) {
+                toMoveDirX = 0 < selfNpcPositionDiffForOppoChUd.GetX() ? -2 : +2;
+            } else {
+                toMoveDirX = 0 < selfNpcPositionDiffForOppoChUd.GetX() ? +2 : -2;
+            }
         } else if (0 != toHandleAllyUd) {
             toMoveDirX = 0 < selfNpcPositionDiffForAllyUd.GetX() ? +2 : -2;
         } else {
@@ -573,11 +578,7 @@ int BaseNpcReaction::deriveNpcVisionReactionAgainstOppoChUd(int currRdfId, std::
             Vec3 oppoFacing; 
             BaseBattleCollisionFilter::calcChdFacing(*rhsCurrChd, oppoChdQ, oppoFacing);
             outOpponentIsFacingMe = (0 > selfNpcPositionDiffForOppoChUd.GetX() * oppoFacing.GetX());
-            if ((outOpponentIsAttacking && outOpponentIsFacingMe)) {
-                ret = TARGET_CH_REACTION_FOLLOW;
-            } else {
-                ret = TARGET_CH_REACTION_FLEE_OPPO;
-            }
+            ret = TARGET_CH_REACTION_FOLLOW;
         }
     }
 

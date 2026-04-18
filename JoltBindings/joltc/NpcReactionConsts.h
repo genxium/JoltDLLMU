@@ -2,6 +2,8 @@
 #define NPC_REACTION_CONSTS__H_ 1
 
 #include "BlackSaber1NpcReaction.h"
+#include "BlackShooter1NpcReaction.h"
+#include "BlackThrower1NpcReaction.h"
 #include "BlackSaberTestWithVisionNpcReaction.h"
 #include <map>
 

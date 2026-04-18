@@ -1,4 +1,51 @@
 namespace jtshared {
+    public class PbBuilders {
+        public static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
+            /*
+            For simplicity,
+            - "currSliding" = "currCrouching" + "currDashing"
+            */
+            int encodedPatternId = patternId;
+            if (currEffInAir) {
+                encodedPatternId += (1 << 16);
+            }
+            if (currCrouching) {
+                encodedPatternId += (1 << 17);
+            }
+            if (currOnWall) {
+                encodedPatternId += (1 << 18);
+            }
+            if (currDashing) {
+                encodedPatternId += (1 << 19);
+            }
+            if (currWalking) {
+                encodedPatternId += (1 << 20);
+            }
+            return encodedPatternId;
+        }
+
+        public static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
+            int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
+            if (currInBlockStun) {
+                encodedPatternId += (1 << 21);
+            }
+            if (currAtked) {
+                encodedPatternId += (1 << 22);
+            }
+            if (currParalyzed) {
+                encodedPatternId += (1 << 23);
+            }
+            return encodedPatternId;
+        }
+    }
+
+    public sealed partial class CharacterConfig {
+        public CharacterConfig SetColliderDensity(float val) {
+            this.ColliderDensity = val;
+            return this;
+        }
+    }
+    
     public sealed partial class BulletConfig {
 
         public BulletConfig UpsertCancelTransit(int patternId, uint skillId) {
@@ -110,8 +157,8 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetRotateAlongVelocity(bool yesOrNo) {
-            RotatesAlongVelocity = yesOrNo;
+        public BulletConfig SetRenderRotationAlongVelocity(bool yesOrNo) {
+            RenderRotationAlongVelocity = yesOrNo;
             return this;
         }
 

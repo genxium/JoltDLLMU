@@ -8,6 +8,7 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Constraints/Constraint.h>
@@ -18,7 +19,27 @@
 using namespace JPH;
 
 #define BL_COLLIDER_T JPH::Body
-#define BL_CACHE_KEY_T std::vector<float>
+typedef struct BlCacheKey {
+    BulletType bType;
+    float boxHalfExtentX;
+    float boxHalfExtentY;
+
+    BlCacheKey(const BulletType inBType, const float inBoxHalfExtentX, const float inBoxHalfExtentY) : bType(inBType), boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
+
+    bool operator==(const BlCacheKey& other) const {
+        return bType == other.bType && boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
+    }
+} BL_CACHE_KEY_T;
+
+typedef struct BlCacheKeyHasher {
+    std::size_t operator()(const BlCacheKey& v) const {
+        std::size_t seed = 3;
+        seed ^= std::hash<BulletType>()(v.bType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} BlCacheKeyHasher;
 #define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
 
 #define CH_CACHE_KEY_T std::vector<float>
@@ -381,9 +402,17 @@ public:
         outQ = Quat(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
         Vec3 outFacingRaw = outQ.RotateAxisX();
         float outFacingRawProjX = outFacingRaw.Dot(Vec3::sAxisX()); 
-        JPH_ASSERT(0 != outFacingRawProjX); // Guaranteed by "lampChdQ"
+        JPH_ASSERT(0 != outFacingRawProjX); // Guaranteed by "clampChdQ"
         float outFacingX = 0 < outFacingRawProjX ? +1 : -1; 
         outFacing.Set(outFacingX, 0, 0); 
+    }
+
+    inline static void calcQFacing(const Bullet& currBl, const Quat& inQ, Vec3& outFacing) {
+        Vec3 facingRaw = inQ.RotateAxisX();
+        float facingRawProjX = facingRaw.Dot(Vec3::sAxisX());
+        JPH_ASSERT(0 != facingRawProjX); // Guaranteed by "clampChdQ"
+        float outFacingX = 0 < facingRawProjX ? +1 : -1;
+        outFacing.Set(outFacingX, 0, 0);
     }
 
     inline static void clampChdQ(Quat& ioChdQ, const int effDx) {
@@ -433,6 +462,43 @@ public:
         }
     }
 
+    inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
+        /*
+        For simplicity,
+        - "currSliding" = "currCrouching" + "currDashing"
+        */
+        int encodedPatternId = patternId;
+        if (currEffInAir) {
+            encodedPatternId += (1 << 16);
+        }
+        if (currCrouching) {
+            encodedPatternId += (1 << 17);
+        }
+        if (currOnWall) {
+            encodedPatternId += (1 << 18);
+        }
+        if (currDashing) {
+            encodedPatternId += (1 << 19);
+        }
+        if (currWalking) {
+            encodedPatternId += (1 << 20);
+        }
+        return encodedPatternId;
+    }
+
+    inline static int EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
+        int encodedPatternId = EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
+        if (currInBlockStun) {
+            encodedPatternId += (1 << 21);
+        }
+        if (currAtked) {
+            encodedPatternId += (1 << 22);
+        }
+        if (currParalyzed) {
+            encodedPatternId += (1 << 23);
+        }
+        return encodedPatternId;
+    }
 }; 
 
 #endif

@@ -13,11 +13,20 @@ namespace JoltCSharp {
 
         public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
 
+        public static uint BlackShooter1RapidFireId = 1026;
+        public static float BlackShooter1RapidFireOffsetY = 20f;
+
+        public static uint BlackThrower1TimedBombId = 1027;
+        public static float BlackThrower1TimedBombOffsetY = 20f;
+
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
         public const uint SPECIES_BOUNTYHUNTER = 7;
 
         public const uint SPECIES_BLACKSABER1 = 12;
+        public const uint SPECIES_BLACKSHOOTER1 = 13;
+        public const uint SPECIES_BLACKTHROWER1 = 14;
+
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
 
@@ -154,6 +163,7 @@ namespace JoltCSharp {
             MaxBtnHoldingRdfCnt = 999999999,
             MaxFlyingRdfCnt = 999999999,
             DefaultSlipJumpGracePeriodRdfCnt = 15,
+            DefaultMinSpeedForRestitution = 1.0f * BATTLE_DYNAMICS_FPS, // i.e. "1 pixel per RenderFrame" 
             MaxReversePushbackFramesToRecover = 30,
             SpeedNotHitNotSpecified = 0,
             DefaultPreallocNpcCapacity = 24, // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
@@ -318,6 +328,9 @@ namespace JoltCSharp {
                 Bountyhunter = SPECIES_BOUNTYHUNTER,
 
                 Blacksaber1 = SPECIES_BLACKSABER1,
+                Blackshooter1 = SPECIES_BLACKSHOOTER1,
+                Blackthrower1 = SPECIES_BLACKTHROWER1,
+
                 BlacksaberTestNoVision = SPECIES_BLACKSABER_TEST_NO_VISION,
                 BlacksaberTestWithVision = SPECIES_BLACKSABER_TEST_WITH_VISION,
 

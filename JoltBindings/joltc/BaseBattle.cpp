@@ -4,6 +4,7 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 
@@ -73,6 +74,7 @@ BaseBattle::BaseBattle(int renderBufferSize, int inputBufferSize, TempAllocator*
     biNoLock = nullptr;
     jobSys = nullptr;
     blStockCache = nullptr;
+    blSphericalStockCache = nullptr;
     tpDynamicStockCache = nullptr;
     tpKinematicStockCache = nullptr;
     tpObsIfaceStockCache = nullptr;
@@ -167,7 +169,13 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
     const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(chCollider->GetShape());
     const CapsuleShape* innerShape = static_cast<const CapsuleShape*>(shape->GetInnerShape());
     JPH_ASSERT(nullptr != innerShape);
-    if (innerShape->GetRadius() != newRadius || innerShape->GetHalfHeightOfCylinder() != newHalfHeight) {
+
+    float newDensity = cDefaultChDensity;
+    if (cc->has_collider_density()) {
+        newDensity = (cc->collider_density());
+    }
+
+    if (innerShape->GetRadius() != newRadius || innerShape->GetHalfHeightOfCylinder() != newHalfHeight || innerShape->GetDensity() != newDensity) {
         /*
         [WARNING]
 
@@ -183,7 +191,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
 
         void* newInnerShapeBuffer = (void*)innerShape;
         CapsuleShape* newInnerShape = new (newInnerShapeBuffer) CapsuleShape(newHalfHeight, newRadius);
-        newInnerShape->SetDensity(cDefaultChDensity);
+        newInnerShape->SetDensity(newDensity);
 
         void* newShapeBuffer = (void*)shape;
         RotatedTranslatedShape* newShape = new (newShapeBuffer) RotatedTranslatedShape(Vec3(0, newHalfHeight + newRadius, 0), Quat::sIdentity(), newInnerShape);
@@ -202,7 +210,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
         while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
         int newShapeRefCnt = newShape->GetRefCount();
         JPH_ASSERT(oldShapeRefCnt == newShapeRefCnt);
-    } 
+    }
 
     biNoLock->SetPositionAndRotation(chBodyID, newPos, newRot, EActivation::DontActivate); // See comments in "getOrCreateCachedBulletCollider_NotThreadSafe".
 
@@ -214,21 +222,37 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
     return chCollider;
 }
 
-BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const BulletType blType, const Vec3Arg& newPos, const QuatArg& newRot) {
-    calcBlCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, blCacheKeyHolder);
+BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+    calcBlCacheKey(blType, immediateBoxHalfSizeX, immediateBoxHalfSizeY, blCacheKeyHolder);
     EMotionType immediateMotionType = calcBlMotionType(blType);
     bool immediateIsSensor = calcBlIsSensor(blType);
     Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
     float newConvexRadius = 0;
     BL_COLLIDER_T* blCollider = nullptr;
     auto it = cachedBlColliders.find(blCacheKeyHolder);
+    BL_COLLIDER_Q* theStockCache = nullptr;
+    switch (blType) {
+        case MechanicalBouncerSpherical: {
+            theStockCache = blSphericalStockCache;
+            newConvexRadius = immediateBoxHalfSizeX;
+            break;
+        }
+        default: {
+            theStockCache = blStockCache;
+            newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
+            if (cDefaultHalfThickness < newConvexRadius) {
+                newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+            }
+            break;
+        }
+    }
     if (it == cachedBlColliders.end() || it->second.empty()) {
-        if (blStockCache->empty()) {
-            blCollider = createDefaultBulletCollider(immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType, immediateIsSensor, newPos, newRot, biNoLock);
+        if (theStockCache->empty()) {
+            blCollider = createDefaultBulletCollider(blType, immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, immediateMotionType, immediateIsSensor, newPos, newRot, biNoLock);
             JPH_ASSERT(nullptr != blCollider);
         } else {
-            blCollider = blStockCache->back();
-            blStockCache->pop_back();
+            blCollider = theStockCache->back();
+            theStockCache->pop_back();
             JPH_ASSERT(nullptr != blCollider);
         }
     } else {
@@ -240,35 +264,65 @@ BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const u
     }
 
     const BodyID& bodyID = blCollider->GetID();
-    const BoxShape* shape = static_cast<const BoxShape*>(blCollider->GetShape());
-    auto existingHalfExtent = shape->GetHalfExtent();
-    auto existingConvexRadius = shape->GetConvexRadius();
+    const Shape *existingShape = nullptr, *newShape = nullptr;
     auto existingIsSensor = blCollider->IsSensor();
     auto existingMotionType = blCollider->GetMotionType();
-    if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType || existingIsSensor != immediateIsSensor) {
-        const Vec3Arg previousShapeCom = shape->GetCenterOfMass();
-        int oldShapeRefCnt = shape->GetRefCount();
-        
-        void* newShapeBuffer = (void*)shape;
-        BoxShape* newShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
-        newShape->SetDensity(cDefaultBlDensity);
+    bool shapeChanged = false;
+    int oldShapeRefCnt = 0;
+    Vec3 previousShapeCom;
 
-        blCollider->SetIsSensor(immediateIsSensor);
-        blCollider->SetMotionType(immediateMotionType);
+    switch (blType) {
+        case MechanicalBouncerSpherical: {
+            const SphereShape* castedExistingShape = static_cast<const SphereShape*>(blCollider->GetShape());
+            previousShapeCom = castedExistingShape->GetCenterOfMass();
+            existingShape = castedExistingShape;
+            oldShapeRefCnt = castedExistingShape->GetRefCount();
+            float existingConvexRadius = castedExistingShape->GetRadius();
+            if (existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType || existingIsSensor != immediateIsSensor) {
+                void* newShapeBuffer = (void*)castedExistingShape;
+                SphereShape* castedNewShape = new (newShapeBuffer) SphereShape(newConvexRadius);
+                newShape = castedNewShape;
+                castedNewShape->SetDensity(cDefaultBlDensity);
+                blCollider->SetIsSensor(immediateIsSensor);
+                blCollider->SetMotionType(immediateMotionType);
+                shapeChanged = true;
+            }
+            break;
+        }
+        default: {
+            const BoxShape* castedExistingShape = static_cast<const BoxShape*>(blCollider->GetShape());
+            previousShapeCom = castedExistingShape->GetCenterOfMass();
+            existingShape = castedExistingShape;
+            oldShapeRefCnt = castedExistingShape->GetRefCount();
+            Vec3 existingHalfExtent = castedExistingShape->GetHalfExtent();
+            float existingConvexRadius = castedExistingShape->GetConvexRadius();
+            if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius || existingMotionType != immediateMotionType || existingIsSensor != immediateIsSensor) {
+                void* newShapeBuffer = (void*)castedExistingShape;
+                BoxShape* castedNewShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
+                newShape = castedNewShape;
+                castedNewShape->SetDensity(cDefaultBlDensity);
+                blCollider->SetIsSensor(immediateIsSensor);
+                blCollider->SetMotionType(immediateMotionType);
+                shapeChanged = true;
+            }
+            break;
+        }
+    }
 
+    if (shapeChanged) {
         /*
-        [WARNING] 
-        After the placement-new of "newShape" above, "Body::mShape" is effectively updated, now we just have to call 
-        - "UpdateCenterOfMassInternal", and 
-        - "CalculateWorldSpaceBoundsInternal", and 
-        - "BroadPhase::NotifyBodiesAABBChanged" (this is necessary because we're only deactivating/activating cached bodies in "CalcSingleStep", i.e. NOT removing/adding), and   
+        [WARNING]
+        After the placement-new of "newShape" above, "Body::mShape" is effectively updated, now we just have to call
+        - "UpdateCenterOfMassInternal", and
+        - "CalculateWorldSpaceBoundsInternal", and
+        - "BroadPhase::NotifyBodiesAABBChanged" (this is necessary because we're only deactivating/activating cached bodies in "CalcSingleStep", i.e. NOT removing/adding), and
         - "BodyManager::InvalidateContactCache", with a slight loss of performance in "BodyManager::InvalidateContactCache" because of the use of unnecessary "BodyManager.mBodiesCacheInvalidMutex" in my case.
 
         Moreover, [the only spot "Body::IsCollisionCacheInvalid()" being used in Jolt Physics engine is together with "PhysicsSettings.mUseBodyPairContactCache"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L1016).
         */
         biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
         /*
-        [REMINDER] 
+        [REMINDER]
 
         The following calls are intentionally avoided.
         - "BodyInterface::SetShape(...)"/"Body::SetShapeInternal(...)" because the placement-new of "newShape" has already updated "blCollider->mShape", and "BodyInterface::NotifyShapeChanged" has taken care of the rest.
@@ -318,8 +372,11 @@ TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t 
 
     bool immediateIsSensor = forConstraintHelperBody;
     calcTpCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, immediateMotionType, immediateIsSensor, immediateObjectLayer, tpCacheKeyHolder);
-    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
-    float newConvexRadius = cDefaultHalfThickness;
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultBarrierHalfThickness);
+    float newConvexRadius = (newHalfExtent.GetX() + newHalfExtent.GetY()) * 0.5;
+    if (cDefaultBarrierHalfThickness < newConvexRadius) {
+        newConvexRadius = cDefaultBarrierHalfThickness; // Required by the underlying body creation 
+    }
     TP_COLLIDER_T* tpCollider = nullptr;
     auto it = cachedTpColliders.find(tpCacheKeyHolder);
     if (it == cachedTpColliders.end() || it->second.empty()) {
@@ -383,7 +440,10 @@ TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t 
 TR_COLLIDER_T* BaseBattle::getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
     calcTrCacheKey(immediateBoxHalfSizeX, immediateBoxHalfSizeY, trCacheKeyHolder);
     Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
-    float newConvexRadius = 0;
+    float newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
+    if (cDefaultHalfThickness < newConvexRadius) {
+        newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+    }
     TR_COLLIDER_T* trCollider = nullptr;
     auto it = cachedTrColliders.find(trCacheKeyHolder);
     if (it == cachedTrColliders.end() || it->second.empty()) {
@@ -771,6 +831,30 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 bi->SetMotionQuality(bodyID, EMotionQuality::LinearCast);
                 break;
             }
+
+            if (blConfig->takes_gravity()) {
+                if (blConfig->has_gravity_factor()) {
+                    bi->SetGravityFactor(bodyID, blConfig->gravity_factor());
+                } else {
+                    bi->SetGravityFactor(bodyID, 1);
+                }
+            } else {
+                bi->SetGravityFactor(bodyID, 0);
+            }
+
+            if (blConfig->has_friction()) {
+                bi->SetFriction(bodyID, blConfig->friction());
+            } else {
+                bi->SetFriction(bodyID, cDefaultBulletFriction);
+            }
+
+            if (BulletType::GroundWave == blConfig->b_type()) {
+                bi->SetRestitution(bodyID, 0);
+            } else if (blConfig->has_restitution()) {
+                bi->SetRestitution(bodyID, blConfig->restitution());
+            } else {
+                bi->SetRestitution(bodyID, cDefaultBulletRestitution);
+            }
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -943,7 +1027,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
-    for (int i = 0; i < currRdf->bullet_count(); i++) {
+    for (int i = 0; i < currRdf->bullet_count(); i++) { 
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
         auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const Bullet& currBl = currRdf->bullets(i);
@@ -959,6 +1043,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             Vec3 vanishingPosAdds(0, 0, 0);
             int vanishingPosAddsCnt = 0;
 
+            bool hitOnCharacter = false;
             if (transientUdToCollisionUdHolder.count(ud)) {
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
                 int cntNow = holder->GetCnt_Realtime();
@@ -977,9 +1062,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     case UDT_TRAP:
                     case UDT_OBSTACLE:
                     case UDT_TRIGGER:
+                        hitOnCharacter = (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs);
                         switch (lhsBlConfig->b_type()) {
                         case BulletType::Melee:
-                            if (!lhsBlConfig->remains_upon_hit() && (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs)) {
+                            if (!lhsBlConfig->remains_upon_hit() && hitOnCharacter) {
                                 shouldVanish = true;
                                 if (0 < lhsBlConfig->melee_hit_self_stun_frames()) {
                                     uint64_t offenderUd = currBl.offender_ud(); 
@@ -991,6 +1077,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                                         offenderNextChd->set_frames_to_recover(1);
                                     }
                                 }
+                            }
+                            break;
+                        case BulletType::MechanicalBouncerSpherical:
+                            if (UDT_OBSTACLE == udtRhs || UDT_TRAP == udtRhs) {
+                                shouldVanish = false;
+                            } else if (!lhsBlConfig->remains_upon_hit()) {
+                                shouldVanish = true;
                             }
                             break;
                         case BulletType::MechanicalCartridge: 
@@ -1005,9 +1098,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                             break;
                         case BulletType::GroundWave:
                             if (!lhsBlConfig->remains_upon_hit()) {
-                                if (UDT_PLAYER == udtRhs || UDT_NPC == udRhs) {
+                                if (hitOnCharacter) {
                                     shouldVanish = true;
-                                } else if (UDT_TRIGGER == udtRhs || UDT_OBSTACLE == udtRhs) {
+                                } else if (UDT_TRIGGER == udtRhs || UDT_OBSTACLE == udtRhs || UDT_TRAP == udtRhs) {
                                     if (0 >= worldSpaceNormIntoPeer.GetY()) {
                                         shouldVanish = true;
                                     }
@@ -1046,8 +1139,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             if (transientUdToBodyID.count(ud)) {
                 const BodyID bodyID = *(transientUdToBodyID.at(ud));
                 RVec3 newPos;
-                Quat newRot;
-                biNoLock->GetPositionAndRotation(bodyID, newPos, newRot);
+                Quat newRotFromPhySys;
+                biNoLock->GetPositionAndRotation(bodyID, newPos, newRotFromPhySys);
                 Vec3 newVel(currBl.vel_x(), currBl.vel_y(), currBl.vel_z());
                 Vec3 newVelFromPhySys = biNoLock->GetLinearVelocity(bodyID);
                 if (lhsBlConfig->takes_gravity()) {
@@ -1058,13 +1151,23 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 nextBl->set_x(newPos.GetX());
                 nextBl->set_y(newPos.GetY());
                 nextBl->set_z(0);
-                nextBl->set_q_x(newRot.GetX());
-                nextBl->set_q_y(newRot.GetY());
-                nextBl->set_q_z(newRot.GetZ());
-                nextBl->set_q_w(newRot.GetW());
+
+                nextBl->set_q_x(newRotFromPhySys.GetX());
+                nextBl->set_q_y(newRotFromPhySys.GetY());
+                nextBl->set_q_z(newRotFromPhySys.GetZ());
+                nextBl->set_q_w(newRotFromPhySys.GetW());
                 nextBl->set_vel_x(IsLengthNearZero(newVel.GetX() * dt) ? 0 : newVel.GetX());
                 nextBl->set_vel_y(IsLengthNearZero(newVel.GetY() * dt) ? 0 : newVel.GetY());
                 nextBl->set_vel_z(0);
+            }
+            
+            if (MultiHitType::FromPrevHitActualOrActiveTimeUp == lhsBlConfig->mh_type()) {
+                bool shouldEmitCombo1 = (BulletState::Vanishing == nextBl->bl_state() && 0 == nextBl->frames_in_bl_state());
+                bool shouldEmitCombo2 = (hitOnCharacter);
+                if (shouldEmitCombo1 || shouldEmitCombo2) {
+                    shouldVanish = true;
+                    addNewBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
+                }
             }
 
             if (shouldVanish) {
@@ -1080,6 +1183,18 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 nextBl->set_vel_x(0);
                 nextBl->set_vel_y(0);
                 nextBl->set_vel_z(0);
+
+                if (BulletType::MechanicalBouncerSpherical == lhsBlConfig->b_type()) {
+                    JPH::Quat refQ(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
+                    BaseBattleCollisionFilter::clampChdQ(refQ, currBl.vel_x());
+                    Vec3 blFacing;
+                    BaseBattleCollisionFilter::calcQFacing(currBl, refQ, blFacing);
+                    JPH::Quat blEffQ = 0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                    nextBl->set_q_x(blEffQ.GetX());
+                    nextBl->set_q_y(blEffQ.GetY());
+                    nextBl->set_q_z(blEffQ.GetZ());
+                    nextBl->set_q_w(blEffQ.GetW());
+                }
             }
         }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
@@ -1096,12 +1211,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 const TrapConfigFromTiled* tpConfigFromTile = nullptr;
                 FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
 
-                const BodyID effBodyID = (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) ? *(transientUdToConstraintObsIfaceBodyID.at(ud)) : *(transientUdToBodyID.at(ud));
+                const BodyID effBodyID = isTrapUsingObsIface(tpConfig, tpConfigFromTile) ? *(transientUdToConstraintObsIfaceBodyID.at(ud)) : *(transientUdToBodyID.at(ud));
 
                 if (!effBodyID.IsInvalid()) {
                     RVec3 newPos;
-                    Quat newRot;
-                    biNoLock->GetPositionAndRotation(effBodyID, newPos, newRot);
+                    Quat newRotFromPhySys;
+                    biNoLock->GetPositionAndRotation(effBodyID, newPos, newRotFromPhySys);
                     Vec3 newVel, newAngVel;
                     biNoLock->GetLinearAndAngularVelocity(effBodyID, newVel, newAngVel);
 
@@ -1111,10 +1226,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextTp->set_x(newPos.GetX());
                     nextTp->set_y(newPos.GetY());
                     nextTp->set_z(0);
-                    nextTp->set_q_x(newRot.GetX());
-                    nextTp->set_q_y(newRot.GetY());
-                    nextTp->set_q_z(newRot.GetZ());
-                    nextTp->set_q_w(newRot.GetW());
+                    if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+                        nextTp->set_q_x(newRotFromPhySys.GetX());
+                        nextTp->set_q_y(newRotFromPhySys.GetY());
+                        nextTp->set_q_z(newRotFromPhySys.GetZ());
+                        nextTp->set_q_w(newRotFromPhySys.GetW());
+                    }
+                    
                     nextTp->set_vel_x(IsLengthNearZero(newVel.GetX()* dt) ? 0 : newVel.GetX());
                     nextTp->set_vel_y(IsLengthNearZero(newVel.GetY()* dt) ? 0 : newVel.GetY());
                     nextTp->set_vel_z(0);
@@ -1259,7 +1377,7 @@ void BaseBattle::Clear() {
     }
 
     while (!cachedBlColliders.empty()) {
-        // [REMINDER] "blStockCache" will be collected into "bodyIDsToClear" here.
+        // [REMINDER] "blStockCache" and "blSphericalStockCache" will be collected into "bodyIDsToClear" here.
         for (auto it = cachedBlColliders.begin(); it != cachedBlColliders.end(); ) {
             auto& q = it->second;
             while (!q.empty()) {
@@ -1321,6 +1439,7 @@ void BaseBattle::Clear() {
     }
 
     blStockCache = nullptr;
+    blSphericalStockCache = nullptr;
     tpDynamicStockCache = nullptr;  
     tpKinematicStockCache = nullptr;
     tpObsIfaceStockCache = nullptr; 
@@ -1494,6 +1613,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         auto ud = calcUserData(*mutablePlayer);
         auto* mutableChd = mutablePlayer->mutable_chd(); 
         auto* chConfig = getCc(mutableChd->species_id()); 
+        mutableChd->set_mp(chConfig->mp());
         auto* ccOverride = getChOverride(ud);
         FillInventoryFromConfig(chConfig, mutableChd, ccOverride);
     }
@@ -1504,6 +1624,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         auto ud = calcUserData(*mutableNpc);
         auto* mutableChd = mutableNpc->mutable_chd(); 
         auto* chConfig = getCc(mutableChd->species_id());
+        mutableChd->set_mp(chConfig->mp());
         auto* ccOverride = getChOverride(ud);
         FillInventoryFromConfig(chConfig, mutableChd, ccOverride);
     }
@@ -1645,10 +1766,10 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             const double anchorY = (recalcAnchorY / pointsCnt);
             float xHalfExtent = 0.5f * xExtent, yHalfExtent = 0.5f * yExtent;
             float convexRadius = (xHalfExtent + yHalfExtent) * 0.5;
-            if (cDefaultHalfThickness < convexRadius) {
-                convexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+            if (cDefaultBarrierHalfThickness < convexRadius) {
+                convexRadius = cDefaultBarrierHalfThickness; // Required by the underlying body creation 
             }
-            Vec3 halfExtent(xHalfExtent, yHalfExtent, cDefaultHalfThickness);
+            Vec3 halfExtent(xHalfExtent, yHalfExtent, cDefaultBarrierHalfThickness);
             BoxShapeSettings bodyShapeSettings(halfExtent, convexRadius); // transient, to be discarded after creating "body"
             BoxShapeSettings::ShapeResult shapeResult;
             /*
@@ -1733,6 +1854,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
             bodyCreationSettings.mFriction = cDefaultBarrierFriction;
+            bodyCreationSettings.mRestitution = cDefaultBarrierRestituion;
             Body* body = biNoLock->CreateBody(bodyCreationSettings);
             newBodyID = &(body->GetID());
             staticColliderBodyIDs.push_back(*newBodyID);
@@ -2285,7 +2407,8 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
 }
 
 
-bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync& currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
+bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
+    JPH_ASSERT(nullptr != currChd || nullptr != referenceBullet);
     if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
     uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
     if (oldNextRdfBulletCount >= globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
@@ -2312,43 +2435,57 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
         }
     }
 
-    JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
-    if (OnWallAtk1 == skillConfig->bound_ch_state()) {
-        offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
-    }
-    JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
-
     Vec3 blInitOffset(bulletConfig.hitbox_offset_x(), bulletConfig.hitbox_offset_y(), 0);
-    Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
-    float newOriginatedX = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd.x() + blEffOffset.GetX()) : referenceBullet->originated_x();
-    float newOriginatedY = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd.y() + blEffOffset.GetY()) : referenceBullet->originated_y();
-    float newX = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd.x() + blEffOffset.GetX() : referenceBullet->x() + blEffOffset.GetX();
-    float newY = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd.y() + blEffOffset.GetY() : referenceBullet->y() + blEffOffset.GetY();
+    Vec3 blEffOffset = Vec3::sZero();
+    JPH::Quat blEffQ = JPH::Quat::sIdentity();
+    if (nullptr != referenceBullet) {
+        if (bulletConfig.mh_inherits_spin()) {
+            blEffQ.Set(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
+            blEffOffset = blEffQ*blInitOffset; 
+        } else {
+            JPH::Quat refQ(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
+            BaseBattleCollisionFilter::clampChdQ(refQ, referenceBullet->vel_x());
+            Vec3 blFacing;
+            BaseBattleCollisionFilter::calcQFacing(*referenceBullet, refQ, blFacing);
+            blEffQ = 0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+            blEffOffset = blEffQ*blInitOffset; 
+        }
+        if (bulletConfig.has_init_q()) {
+            auto& init_q = bulletConfig.init_q();
+            blEffQ = JPH::Quat(init_q.x(), init_q.y(), init_q.z(), init_q.w()) * blEffQ;
+        }
+    } else {
+        JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+        if (OnWallAtk1 == skillConfig->bound_ch_state()) {
+            offenderEffQ = cTurnbackAroundYAxis * offenderEffQ;
+        }
+        JPH::Quat offenderEffAimingQ = JPH::Quat(currChd->aiming_q_x(), currChd->aiming_q_y(), currChd->aiming_q_z(), currChd->aiming_q_w()) * offenderEffQ;
+        blEffOffset = offenderEffAimingQ*blInitOffset; 
+        if (bulletConfig.has_init_q()) {
+            auto& init_q = bulletConfig.init_q();
+            blEffQ = JPH::Quat(init_q.x(), init_q.y(), init_q.z(), init_q.w()) * offenderEffAimingQ;
+        } else {
+            blEffQ = offenderEffAimingQ;
+        }
+    }
+
+    float newOriginatedX = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd->x() + blEffOffset.GetX()) : referenceBullet->originated_x();
+    float newOriginatedY = (nullptr == referenceBullet || bulletConfig.use_ch_offset_regardless_of_emission_mh()) ? (currChd->y() + blEffOffset.GetY()) : referenceBullet->originated_y();
+    float newX = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd->x() + blEffOffset.GetX() : referenceBullet->x() + blEffOffset.GetX();
+    float newY = (nullptr == referenceBullet || (BulletType::Melee == bulletConfig.b_type() && MultiHitType::FromVisionSeekOrDefault != bulletConfig.mh_type())) ? currChd->y() + blEffOffset.GetY() : referenceBullet->y() + blEffOffset.GetY();
 
     if (nullptr != prevBulletConfig && prevBulletConfig->ground_impact_melee_collision()) {
-        newY = currChd.y() + blEffOffset.GetY();
+        newY = currChd->y() + blEffOffset.GetY();
     } else if (BulletType::GroundWave == bulletConfig.b_type()) {
         // TODO: Lower "newY" if on slope and facing down?
     }
 
     // To favor startup vfx display which is based on bullet originatedVx&originatedVy.
     if (nullptr != referenceBulletConfig && MultiHitType::FromVisionSeekOrDefault == referenceBulletConfig->mh_type()) {
-        newX = currChd.x() + blEffOffset.GetX();
-        newY = currChd.y() + blEffOffset.GetY();
+        newX = currChd->x() + blEffOffset.GetX();
+        newY = currChd->y() + blEffOffset.GetY();
         newOriginatedX = newX;
         newOriginatedY = newY;
-    }
-
-    JPH::Quat blEffQ = JPH::Quat::sIdentity();
-    if (bulletConfig.mh_inherits_spin() && nullptr != referenceBullet) {
-        blEffQ.Set(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
-    } else {
-        if (bulletConfig.has_init_q()) {
-            auto& init_q = bulletConfig.init_q();
-            blEffQ = JPH::Quat(init_q.x(), init_q.y(), init_q.z(), init_q.w())*offenderEffAimingQ; 
-        } else {
-            blEffQ = offenderEffAimingQ; 
-        }
     }
 
     auto initBlState = BulletState::StartUp;
@@ -2383,7 +2520,7 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
     nextBl->set_q_y(blEffQ.GetY());
     nextBl->set_q_z(blEffQ.GetZ());
     nextBl->set_q_w(blEffQ.GetW());
-    nextBl->set_team_id(currChd.bullet_team_id());
+    nextBl->set_team_id(bulletTeamId);
 
     Vec3Arg blInitVelocity(bulletConfig.speed(), 0, 0);
     auto blEffVelocity = blEffQ*blInitVelocity;
@@ -2499,6 +2636,7 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
 
     FillInventoryFromConfig(chConfig, nextChd, nullptr); // [TODO] There's currently no way to apply overrides to spawned NPCs. 
     
+    
     return true;
 }
 
@@ -2578,13 +2716,14 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, Charac
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
     cd->set_mp_regen_rdf_countdown(0 < cd->mp_regen_rdf_countdown() ? cd->mp_regen_rdf_countdown() - 1 : 0);
     auto mp = cd->mp();
-    if (0 >= cd->mp_regen_rdf_countdown()) {
+    if (0 >= cd->mp_regen_rdf_countdown() && 0 < cc->mp_regen_per_interval()) {
         mp += cc->mp_regen_per_interval();
         if (mp >= cc->mp()) {
             mp = cc->mp();
         }
         cd->set_mp_regen_rdf_countdown(cc->mp_regen_interval());
     }
+    cd->set_mp(mp);
     cd->set_new_birth_rdf_countdown((0 < cd->new_birth_rdf_countdown() ? cd->new_birth_rdf_countdown() - 1 : 0));
     cd->set_damaged_hint_rdf_countdown((0 < cd->damaged_hint_rdf_countdown() ? cd->damaged_hint_rdf_countdown() - 1 : 0));
     if (0 >= cd->damaged_hint_rdf_countdown()) {
@@ -2910,7 +3049,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 newPos.SetY(currChd.y() + blEffOffset.GetY());
             }
             Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
-            auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), bulletConfig->b_type(), newPos, newRot);
+            auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->b_type(), bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), newPos, newRot);
             transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
             auto bodyID = blCollider->GetID();
             if (!blCollider->IsInBroadPhase()) {
@@ -3259,7 +3398,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         const BulletConfig* bc = nullptr;
         FindBulletConfig(bl.skill_id(), bl.active_skill_hit(), skill, bc);
 
-        calcBlCacheKey(bc->hitbox_half_size_x(), bc->hitbox_half_size_y(), blCacheKeyHolder);
+        calcBlCacheKey(bc->b_type(), bc->hitbox_half_size_x(), bc->hitbox_half_size_y(), blCacheKeyHolder);
         auto it = cachedBlColliders.find(blCacheKeyHolder);
 
         if (it == cachedBlColliders.end()) {
@@ -4985,7 +5124,7 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
         Debug::Log(oss1.str(), DColor::Orange);
 #endif // !NDEBUG
 */
-        auto initSkillDict = &(cc->init_skill_transit());
+        auto* initSkillDict = &(cc->init_skill_transit());
         if (chOverride && 0 < chOverride->init_skill_transit_size()) {
             initSkillDict = &(chOverride->init_skill_transit());
         }
@@ -5100,12 +5239,8 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
 
     const Bullet* referenceBullet = nullptr;
     const BulletConfig* referenceBulletConfig = nullptr;
-    for (int i = 0; i < pivotBulletConfig.simultaneous_multi_hit_cnt() + 1; i++) {
-        if (!addNewBulletToNextFrame(currRdfId, currChd, currChdFacing, cc, currParalyzed, currEffInAir, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
-            break;
-        }
-        nextChd->set_active_skill_hit(nextActiveSkillHit);
-        nextActiveSkillHit++;
+    if (addNewBulletToNextFrame(currRdfId, &currChd, currChdFacing, cc, currParalyzed, currEffInAir, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
+        nextChd->set_active_skill_hit(1 + pivotBulletConfig.simultaneous_multi_hit_cnt());
     }
 
     nextChd->set_ch_state(skillBoundChState);
@@ -5228,7 +5363,11 @@ void BaseBattle::useInventorySlot(const int currRdfId, int slotArrIdx, const Cha
 
 CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig* cc, const Vec3Arg& newPos, const QuatArg& newRot, const uint64_t newUd, BodyInterface* inBodyInterface) {
     CapsuleShape* chShapeCenterAnchor = new CapsuleShape(cc->capsule_half_height(), cc->capsule_radius()); // lifecycle to be held by "RefConst<Shape> RotatedTranslatedShape::mInnerShape", will be destructed upon "~RotatedTranslatedShape()"
-    chShapeCenterAnchor->SetDensity(cDefaultChDensity);
+    if (cc->has_collider_density()) {
+        chShapeCenterAnchor->SetDensity(cc->collider_density());
+    } else {
+        chShapeCenterAnchor->SetDensity(cDefaultChDensity);
+    }
     RotatedTranslatedShape* chShape = new RotatedTranslatedShape(Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0), Quat::sIdentity(), chShapeCenterAnchor); // lifecycle to be held by "RefConst<Shape> CharacterBase::mShape", will be destructed upon "~CharacterBase()"
 
     Ref<CharacterSettings> settings = new CharacterSettings();
@@ -5248,22 +5387,31 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     auto ret = new Character(settings, newPos, newRot, newUd, phySys);
 	ret->AddToPhysicsSystem(EActivation::DontActivate, false);
     inBodyInterface->SetMotionQuality(ret->GetBodyID(), EMotionQuality::LinearCast);
-    
+    inBodyInterface->SetRestitution(ret->GetBodyID(), cDefaultChRestituion);
     return ret;
 }
 
-BL_COLLIDER_T* BaseBattle::createDefaultBulletCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const EMotionType immediateMotionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
-    outConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
-    if (cDefaultHalfThickness < outConvexRadius) {
-        outConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+BL_COLLIDER_T* BaseBattle::createDefaultBulletCollider(const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const EMotionType immediateMotionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
+    ShapeSettings* settings = nullptr; 
+    switch (blType) {
+        case BulletType::MechanicalBouncerSpherical: {
+            SphereShapeSettings* castedSettings = new SphereShapeSettings(newConvexRadius); // transient, to be discarded after creating "body"
+            castedSettings->mDensity = cDefaultBlDensity;
+            settings = castedSettings;
+            break;
+        }
+        default: {
+            Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+            BoxShapeSettings* castedSettings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
+            castedSettings->mDensity = cDefaultBlDensity;
+            settings = castedSettings;
+            break;
+        }
     }
-    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
-    BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, outConvexRadius); // transient, to be discarded after creating "body"
-    settings->mDensity = cDefaultBlDensity;
+
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mLinearDamping = 0; // [TODO] The default is "0.05".
-    bodyCreationSettings.mGravityFactor = 0; // [TODO]
     bodyCreationSettings.mIsSensor = isSensor;
     bodyCreationSettings.mPosition = newPos;
     bodyCreationSettings.mRotation = newRot;
@@ -5275,12 +5423,9 @@ BL_COLLIDER_T* BaseBattle::createDefaultBulletCollider(const float immediateBoxH
     return body;
 }
 
-TP_COLLIDER_T* BaseBattle::createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, float& outConvexRadius, const EMotionType immediateMotionType, const bool isSensor, const ObjectLayer immediateObjectLayer, BodyInterface* inBodyInterface) {
-    outConvexRadius = (newHalfExtent.GetX() + newHalfExtent.GetY()) * 0.5;
-    if (cDefaultHalfThickness < outConvexRadius) {
-        outConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
-    }
-    BoxShapeSettings* settings = new BoxShapeSettings(newHalfExtent, outConvexRadius); // transient, to be discarded after creating "body"
+TP_COLLIDER_T* BaseBattle::createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, const float newConvexRadius, const EMotionType immediateMotionType, const bool isSensor, const ObjectLayer immediateObjectLayer, BodyInterface* inBodyInterface) {
+    
+    BoxShapeSettings* settings = new BoxShapeSettings(newHalfExtent, newConvexRadius); // transient, to be discarded after creating "body"
     settings->mDensity = (EMotionType::Static == immediateMotionType ? 0 : cDefaultTpDensity);
     BodyCreationSettings bodyCreationSettings(settings, newPos, newRot, immediateMotionType, immediateObjectLayer);
     bodyCreationSettings.mAllowDynamicOrKinematic = EMotionType::Static == immediateMotionType ? false : true;
@@ -5297,13 +5442,9 @@ TP_COLLIDER_T* BaseBattle::createDefaultTrapCollider(const Vec3Arg& newHalfExten
     return body;
 }
 
-TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, float& outConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
-    outConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
-    if (cDefaultHalfThickness < outConvexRadius) {
-        outConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
-    }
+TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
     Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
-    BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, outConvexRadius); // transient, to be discarded after creating "body"
+    BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
     settings->mDensity = FLT_MIN;
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
@@ -5406,7 +5547,7 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const google::pro
 
     bodyIDsToAdd.clear();
     // Bullet starts
-    calcBlCacheKey(cDefaultBlHalfLength, cDefaultBlHalfLength, blCacheKeyHolder);
+    calcBlCacheKey(BulletType::Undetermined, cDefaultBlHalfLength, cDefaultBlHalfLength, blCacheKeyHolder);
     if (!cachedBlColliders.count(blCacheKeyHolder)) {
         BL_COLLIDER_Q q = { };
         cachedBlColliders.emplace(blCacheKeyHolder, q);
@@ -5414,9 +5555,17 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const google::pro
     blStockCache = &cachedBlColliders[blCacheKeyHolder];
     JPH_ASSERT(nullptr != blStockCache);
     for (int i = 0; i < 8; i++) {
-        float dummyNewConvexRadius = 0;
-        auto preallocatedBlCollider = createDefaultBulletCollider(cDefaultBlHalfLength, cDefaultBlHalfLength, dummyNewConvexRadius, EMotionType::Kinematic, true, safeDeactiviatedPosition, newRot, biNoLock);
+        auto preallocatedBlCollider = createDefaultBulletCollider(BulletType::Undetermined, cDefaultBlHalfLength, cDefaultBlHalfLength, cDefaultHalfThickness, EMotionType::Kinematic, true, safeDeactiviatedPosition, newRot, biNoLock);
         blStockCache->push_back(preallocatedBlCollider);
+        bodyIDsToAdd.push_back(preallocatedBlCollider->GetID());
+    }
+
+    calcBlCacheKey(BulletType::MechanicalBouncerSpherical, cDefaultBlHalfLength, cDefaultBlHalfLength, blCacheKeyHolder);
+    blSphericalStockCache = &cachedBlColliders[blCacheKeyHolder];
+    JPH_ASSERT(nullptr != blSphericalStockCache);
+    for (int i = 0; i < 4; i++) {
+        auto preallocatedBlCollider = createDefaultBulletCollider(BulletType::MechanicalBouncerSpherical, cDefaultBlHalfLength, cDefaultBlHalfLength, cDefaultHalfThickness, EMotionType::Dynamic, true, safeDeactiviatedPosition, newRot, biNoLock);
+        blSphericalStockCache->push_back(preallocatedBlCollider);
         bodyIDsToAdd.push_back(preallocatedBlCollider->GetID());
     }
     // Bullet ends
@@ -5462,10 +5611,9 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const google::pro
         cachedTrColliders.emplace(trCacheKeyHolder, q);
     }
     trStockCache = &cachedTrColliders[trCacheKeyHolder];
-    JPH_ASSERT(nullptr != blStockCache);
+    JPH_ASSERT(nullptr != trStockCache);
     for (int i = 0; i < 8; i++) {
-        float dummyNewConvexRadius = 0;
-        auto preallocatedTrCollider = createDefaultTriggerCollider(cDefaultBlHalfLength, cDefaultBlHalfLength, dummyNewConvexRadius, safeDeactiviatedPosition, newRot, biNoLock);
+        auto preallocatedTrCollider = createDefaultTriggerCollider(cDefaultBlHalfLength, cDefaultBlHalfLength, cDefaultHalfThickness, safeDeactiviatedPosition, newRot, biNoLock);
         trStockCache->push_back(preallocatedTrCollider);
         bodyIDsToAdd.push_back(preallocatedTrCollider->GetID());
     }
@@ -5545,7 +5693,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
-    int                     newEffFramesToRecover = 0;
+    int                     newEffFramesToRecover = nextChd->frames_to_recover();
     int                     newEffDef1QuotaReduction = 0;
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
@@ -5694,7 +5842,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         if (BlownUp1 == currChd.ch_state()) {
             nextChd->set_ch_state(LayDown1);
             nextChd->set_frames_in_ch_state(0);
-            nextChd->set_frames_to_recover(cc->lay_down_frames_to_recover());
+            newEffFramesToRecover = cc->lay_down_frames_to_recover();
             nextChd->set_vel_x(newGroundVel.GetX());
             nextChd->set_vel_y(newGroundVel.GetY());
             nextChd->set_vel_z(0);
@@ -5702,7 +5850,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             if (0 >= currChd.frames_to_recover()) {
                 nextChd->set_ch_state(GetUp1);
                 nextChd->set_frames_in_ch_state(0);
-                nextChd->set_frames_to_recover(cc->get_up_frames_to_recover());
+                newEffFramesToRecover = cc->get_up_frames_to_recover();
             }
         } else if (GetUp1 == currChd.ch_state()) {
             if (0 >= currChd.frames_to_recover()) {
@@ -5743,18 +5891,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
         nextChd->set_hp(nextChd->hp() - newEffDamage);
         nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
-    }  
-
-    if (0 < newEffFramesToRecover) {
-        if (atkedSet.count(currChd.ch_state())) {
-            // If transiting from an "atked ch_state", we'd only extend the existing "frames_to_recover"
-            if (nextChd->frames_to_recover() < newEffFramesToRecover) {
-                nextChd->set_frames_to_recover(newEffFramesToRecover);
-            }
-        } else {
-            nextChd->set_frames_to_recover(newEffFramesToRecover);
-        }
     }
+
+    nextChd->set_frames_to_recover(newEffFramesToRecover);
 
     if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelX) {
         nextChd->set_vel_x(newEffPushbackVelX);
@@ -6046,11 +6185,11 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const BulletConfig* rhsBlConfig = nullptr;
     FindBulletConfig(rhsCurrBl->skill_id(), rhsCurrBl->active_skill_hit(), rhsSkill, rhsBlConfig);
 
-    if (rhsBlConfig->provides_yhard_pushback_top()) {
+    if (rhsBlConfig->provides_y_hard_pushback_top()) {
         outShouldSkipGroundServing = false;
     }
 
-    if (rhsBlConfig->provides_xhard_pushback()) {
+    if (rhsBlConfig->provides_x_hard_pushback()) {
         outShouldSkipWallServing = false;
     }
 
@@ -6172,7 +6311,9 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         if (0 < hitPosAddsCnt) {
             hitPos += (hitPosAdds/hitPosAddsCnt); 
         }
-        addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effDamage);
+        if (!rhsBlConfig->no_hit_anim()) {
+            addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effDamage);
+        }
     }
 
     JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
