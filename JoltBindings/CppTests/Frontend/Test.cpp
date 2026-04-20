@@ -1881,6 +1881,86 @@ RenderFrame* mockDeadBulletLeftShiftTestStartRdf(google::protobuf::Arena* theAll
     return startRdf;
 }
 
+RenderFrame* mockNpcSpawnerRdf2(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    int triggerCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    uint32_t movementTriggerId = 42;
+
+    auto tr1 = startRdf->add_triggers();
+    tr1->set_id(movementTriggerId);
+    tr1->set_trt(globalPrimitiveConsts->trt_by_movement());
+    tr1->set_x(+0);
+    tr1->set_y(116);
+    ++triggerCount;
+
+    uint32_t npcSpawnerTriggerId = 43;
+
+    auto tr2 = startRdf->add_triggers();
+    tr2->set_id(npcSpawnerTriggerId);
+    tr2->set_trt(globalPrimitiveConsts->trt_indi_wave_npc_spawner());
+    tr2->set_x(+90);
+    tr2->set_y(116);
+    tr2->set_z(0);
+    tr2->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    uint32_t victoryTriggerId = 44;
+    auto tr3 = startRdf->add_triggers();
+    tr3->set_id(victoryTriggerId);
+    tr3->set_trt(globalPrimitiveConsts->trt_victory());
+    ++triggerCount;
+    
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_trigger_count(triggerCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -2534,6 +2614,36 @@ std::map<int, uint64_t> testCmds30 = {
     {920, 0},
     {921, 0},
     {2048, 0},
+};
+
+std::map<int, uint64_t> testCmds31 = {
+    {0, 0},
+    {67, 0},
+    {68, 32},
+    {69, 0},
+    {70, 0},
+    {71, 0},
+    {100, 0},
+    {111, 0},
+    {110, 0},
+    {119, 0},
+    {120, 32},
+    {122, 0},
+    {179, 0},
+    {180, 32},
+    {181, 0},
+    {299, 0},
+    {300, 32},
+    {302, 0},
+    {399, 0},
+    {400, 32},
+    {479, 0},
+    {480, 32},
+    {481, 0},
+    {599, 0},
+    {600, 32},
+    {601, 0},
+    {1024, 0}
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -4598,6 +4708,58 @@ void initTest30Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto startRdf = mockDeadBulletLeftShiftTestStartRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+}
+
+void initTest31Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    auto npcSpawnerStartRdf = mockNpcSpawnerRdf2(theAllocator);
+    TestHelper::AddHullsToWsReq(npcSpawnerInitializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+
+    npcSpawnerInitializerMapData->set_allocated_self_parsed_rdf(npcSpawnerStartRdf);
+    auto triggerConfigFromTiled1 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(npcSpawnerStartRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(npcSpawnerStartRdf->triggers(0).trt());
+    triggerConfigFromTiled1->set_box_half_size_x(200.f);
+    triggerConfigFromTiled1->set_box_half_size_y(50.f);
+    triggerConfigFromTiled1->set_quota(3);
+    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(2).id());
+    triggerConfigFromTiled1->set_recovery_frames(1);
+
+    auto triggerConfigFromTiled2 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(npcSpawnerStartRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(npcSpawnerStartRdf->triggers(1).trt());
+    triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
+    triggerConfigFromTiled2->set_recovery_frames(5*globalPrimitiveConsts->battle_dynamics_fps()); 
+    triggerConfigFromTiled2->set_bullet_team_id(3);
+    triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
+    triggerConfigFromTiled2->set_init_q_x(0);
+    triggerConfigFromTiled2->set_init_q_y(1);
+    triggerConfigFromTiled2->set_init_q_z(0);
+    triggerConfigFromTiled2->set_init_q_w(0);
+    triggerConfigFromTiled2->set_new_revival_x(npcSpawnerStartRdf->triggers(1).x());
+    triggerConfigFromTiled2->set_new_revival_y(npcSpawnerStartRdf->triggers(1).y());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(0).id());
+
+    // Its own quota is 3 and it subscribes to a "trt_by_movement" whose "quota" is also 3, this "indi_wave_npc_spawner" will use all its "characterSpawnerTimeSeq"
+    auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+
+    auto* mutableChSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+
+    auto* mutableChSpanwerTimeSeq2_3 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
+    mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
+    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+
+    auto triggerConfigFromTiled3 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(npcSpawnerStartRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(npcSpawnerStartRdf->triggers(2).trt());
 }
 
 std::string outStr;
@@ -7041,6 +7203,97 @@ bool runTestCase30(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest31Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    bool victoryTriggered = false;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds31, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase31/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+
+        auto& tr1 = outerTimerRdf->triggers(0);
+        auto& tr2 = outerTimerRdf->triggers(1);
+        auto& tr3 = outerTimerRdf->triggers(2);
+
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
+
+        auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        if (180 > outerTimerRdfId) {
+            // shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase31/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")" << ", stepResult fulfilled_triggers_size=" << stepResult->fulfilled_triggers_size() << std::endl;
+        }
+
+        if (1 == outerTimerRdfId) {
+            JPH_ASSERT(2 == tr1.topo_lv());
+            JPH_ASSERT(3 == tr1.quota());
+
+            JPH_ASSERT(3 == tr2.topo_lv());
+            JPH_ASSERT(1 == tr3.topo_lv());
+        } else if (18 == outerTimerRdfId) {
+            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
+        } else if (19 == outerTimerRdfId) {
+            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(43 == stepResult->fulfilled_triggers(0).id());
+        } else if (50 == outerTimerRdfId) {
+            JPH_ASSERT(1 == outerTimerRdf->npc_count());
+        } else if (108 == outerTimerRdfId) {
+            JPH_ASSERT(2 == outerTimerRdf->npc_count());
+        } else if (249 == outerTimerRdfId) {
+            JPH_ASSERT(0 == outerTimerRdf->npc_count());
+            if (TriggerState::TrReady == tr2.state() || TriggerState::TrExhaustedYetListening == tr2.state()) {
+                JPH_ASSERT(1 == tr2.main_cycle_mask_to_fulfill());
+            } else {
+                JPH_ASSERT(0 == tr2.main_cycle_mask_to_fulfill());
+            }
+        } else if (251 == outerTimerRdfId) {
+            if (1 == stepResult->fulfilled_triggers_size()) {
+                victoryTriggered = true;
+                JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
+                JPH_ASSERT(1 == tr1.quota());
+            }
+        } else if (252 == outerTimerRdfId) {
+            if (1 == stepResult->fulfilled_triggers_size()) {
+                victoryTriggered = true;
+                JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
+                JPH_ASSERT(1 == tr1.quota());
+            }
+        }
+        
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase31: IndiWave NPC spawner multiple waves\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -7320,7 +7573,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
-   
+    /* 
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -7367,7 +7620,9 @@ int main(int argc, char** argv)
     runTestCase29(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase30(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    
+    */ 
+    runTestCase31(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);

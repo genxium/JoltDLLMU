@@ -1937,19 +1937,6 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
 
         triggerConfigFromTile->set_publishing_mask_upon_exhausted(collectedPublishingMaskUponExhausted[targetTriggerId]);
         collectedDemandedMask[targetTriggerId] |= collectedPublishingMaskUponExhausted[targetTriggerId];
-
-        // [WARNING] Extra quota correction to "triggerConfigFromTile". 
-        if (triggerConfigFromTileDict.count(targetTriggerId)) {
-            auto* targetTriggerConfigFromTiled = triggerConfigFromTileDict.at(targetTriggerId);
-            if (targetTriggerConfigFromTiled->quota() < triggerConfigFromTile->quota()) {
-#ifndef NDEBUG
-                std::ostringstream oss;
-                oss << "Correcting trigger id=" << triggerId << " oldQuota=" << triggerConfigFromTile->quota() << " to newQuota=" << targetTriggerConfigFromTiled->quota() << ", from its publishing_to_trigger_id_upon_exhausted=" << targetTriggerId << std::endl;
-                Debug::Log(oss.str(), DColor::Orange);
-#endif
-                triggerConfigFromTile->set_quota(targetTriggerConfigFromTiled->quota());
-            }
-        }
     }
     
     for (int i = 0; i < startRdf->triggers_size(); ++i) {
@@ -1967,10 +1954,11 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
             } else {
                 tr->set_sub_cycle_mask_to_fulfill(collectedDemandedMask[tr->id()]);
             }
+            triggerConfigFromTile->set_cached_sub_cycle_mask_to_fulfill(tr->sub_cycle_mask_to_fulfill());
 
             if (directNpcSpawnerTrtSet.count(tr->trt())) {
                 JPH_ASSERT(globalPrimitiveConsts->terminating_trigger_id() != triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted()); // [WARNING] Must have, otherwise wouldn't fire
-                tr->set_main_cycle_mask_to_fulfill(1); // [WARNING] There should be no other trigger that publishes to a "directNpcSpawnerTrt", regardless of any malformated config.
+                tr->set_main_cycle_mask_to_fulfill(1); // [WARNING] There should be no other trigger that publishes to a "directNpcSpawnerTrt", regardless of any malformatted config.
             }
 
             tr->set_topo_lv(triggerConfigFromTile->topo_lv());
@@ -2860,12 +2848,18 @@ void BaseBattle::elapse1RdfForTrigger(Trigger* tr) {
     int newFramesToFire = tr->frames_to_fire() - 1; 
     if (newFramesToFire < 0) {
         newFramesToFire = 0;
+        if (TriggerState::TrSubCycleCoolingDown == tr->state()) {
+            tr->set_state(TriggerState::TrSubCycleCooledDown);
+        }
     }
     tr->set_frames_to_fire(newFramesToFire);
 
     int newFramesToRecover = tr->frames_to_recover() - 1; 
     if (newFramesToRecover < 0) {
         newFramesToRecover = 0;
+        if (TriggerState::TrCoolingDown == tr->state()) {
+            tr->set_state(TriggerState::TrCooledDown);
+        }
     }
     tr->set_frames_to_recover(newFramesToRecover);
 
@@ -6000,9 +5994,20 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 }
 
 void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult) {
+    uint32_t steppingTriggerId = currTrigger.id();
     bool mainCycleFulfilled = (trActiveMainCycleStates.count(currTrigger.state()) && 0 == currTrigger.main_cycle_mask_to_fulfill());
     bool subCycleFulfilled = (TriggerState::TrSubCycleReady == currTrigger.state() && 0 == currTrigger.sub_cycle_mask_to_fulfill() && 0 >= currTrigger.frames_to_recover());
     bool mainCycleExhausted = false;
+
+    TriggerConfigFromTiled* triggerConfigFromTiled = nullptr;
+    if (triggerConfigFromTileDict.count(steppingTriggerId)) {
+        triggerConfigFromTiled = triggerConfigFromTileDict.at(steppingTriggerId);
+    }
+
+    int newFramesToRecover = globalPrimitiveConsts->default_tr_recovery_frames();
+    if (nullptr != triggerConfigFromTiled) {
+        newFramesToRecover = triggerConfigFromTiled->recovery_frames();
+    }
 
     if (mainCycleFulfilled) {
         int newQuota = currTrigger.quota() - 1;
@@ -6010,17 +6015,10 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
             newQuota = 0;
         }
 
-        int newFramesToRecover = globalPrimitiveConsts->default_tr_recovery_frames();
-        if (triggerConfigFromTileDict.count(currTrigger.id())) {
-            auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(currTrigger.id());
-            newFramesToRecover = triggerConfigFromTiled->recovery_frames();
-        }
-
         nextTrigger->set_quota(newQuota);
         if (0 < currTrigger.sub_cycle_mask_to_fulfill() && !mixedMainAndSubCycleTrtSet.count(currTrigger.trt())) {
             // [WARNING] In this case, "mainCycleExhausted" should be triggered by "subCycleFulfilled" instead
             nextTrigger->set_state(TriggerState::TrSubCycleReady);
-            nextTrigger->set_frames_to_recover(newFramesToRecover);
         } else {
             if (0 >= newQuota) {
                 mainCycleExhausted = true;
@@ -6036,11 +6034,11 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
         auto* fulfilledTrigger = stepResult->add_fulfilled_triggers();
         CopyTrigger(&currTrigger, fulfilledTrigger);
         auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
-        mutableFulfilledTriggerIds->insert({currTrigger.id(), true});
+        mutableFulfilledTriggerIds->insert({ steppingTriggerId, true});
 
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " added to fulfilled set of this rdf by main-cycle mask matching" << std::endl;
+        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " added to fulfilled set of this rdf by main-cycle mask matching" << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
     } else if (subCycleFulfilled) {
@@ -6048,14 +6046,17 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
             mainCycleExhausted = true;
             nextTrigger->set_state(TriggerState::TrExhausted);
         } else {
-            nextTrigger->set_state(TriggerState::TrReady);
+            nextTrigger->set_state(TriggerState::TrCoolingDown);
+            nextTrigger->set_frames_to_recover(newFramesToRecover);
+            if (nullptr != triggerConfigFromTiled) {
+                nextTrigger->set_sub_cycle_mask_to_fulfill(triggerConfigFromTiled->cached_sub_cycle_mask_to_fulfill());
+            }
         }
         nextTrigger->set_frames_in_state(0);
     }
 
     if (mainCycleExhausted) {
-        if (triggerConfigFromTileDict.count(currTrigger.id())) {
-            auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(currTrigger.id());
+        if (nullptr != triggerConfigFromTiled) {
             if (globalPrimitiveConsts->terminating_trigger_id() != triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted()) {
                 uint64_t nextReceivingTriggerUd = calcTriggerUserData(triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted());
                 Trigger* nextReceivingTrigger = transientUdToNextTrigger.at(nextReceivingTriggerUd);
@@ -6063,7 +6064,7 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
 
 #ifndef NDEBUG
                 std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " main-cycle exhausted, publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted();
+                oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle exhausted, publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted();
                 Debug::Log(oss.str(), DColor::Orange);
 #endif
             }
@@ -6072,14 +6073,15 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
 }
 
 void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult) {
-    JPH_ASSERT(triggerConfigFromTileDict.count(currTrigger.id())); 
-    auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(currTrigger.id());
+    uint32_t steppingTriggerId = currTrigger.id();
+    JPH_ASSERT(triggerConfigFromTileDict.count(steppingTriggerId));
+    auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(steppingTriggerId);
     
     bool mainCycleFulfilled = (TriggerState::TrReady == currTrigger.state()  && 0 == currTrigger.main_cycle_mask_to_fulfill());
     bool mainCycleExhaustedYetFulfilled = (TriggerState::TrExhaustedYetListening == currTrigger.state() && 0 == currTrigger.main_cycle_mask_to_fulfill());
     bool subCycleFulfilled = (trSubCycleStates.count(currTrigger.state()) && 0 == currTrigger.sub_cycle_mask_to_fulfill());
 
-    bool subCycleCooledDown = (TriggerState::TrSubCycleCoolingDown == currTrigger.state() && 1 >= currTrigger.frames_to_recover());
+    bool subCycleCooledDown = (TriggerState::TrSubCycleCooledDown == currTrigger.state());
 
     int oldQuota = currTrigger.quota();
 
@@ -6105,13 +6107,13 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted() << ", next trigger-state=" << nextTrigger->state() << std::endl;
+            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted() << ", next trigger-state=" << nextTrigger->state() << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
         } else {
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", no target to publish, next trigger-state=" << nextTrigger->state() << std::endl;
+            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", no target to publish, next trigger-state=" << nextTrigger->state() << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
         }
@@ -6120,7 +6122,7 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
     } else if (subCycleTicked) {
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
+        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
         int newSubCycleIdx = oldSubCycleIdx + 1;
@@ -6162,20 +6164,20 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
 #ifndef NDEBUG
         std::ostringstream oss2;
-        oss2 << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " sub-cycle ticked to add new npc oldSubCycleIdx=" << oldSubCycleIdx << ", chSpeciesId=" << chSpeciesId << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfNpcCount=" << mNextRdfNpcCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << chSpawnerConfig->species_id_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
+        oss2 << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked to add new npc oldSubCycleIdx=" << oldSubCycleIdx << ", chSpeciesId=" << chSpeciesId << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfNpcCount=" << mNextRdfNpcCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << chSpawnerConfig->species_id_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
         Debug::Log(oss2.str(), DColor::Orange);
 #endif
     } else if (mainCycleExhaustedYetFulfilled) {
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " main-cycle exhausted yet fulfilled, oldQuota=" << oldQuota;
+        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle exhausted yet fulfilled, oldQuota=" << oldQuota;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
 
         Trigger* fulfilledTrigger = stepResult->add_fulfilled_triggers();
         CopyTrigger(&currTrigger, fulfilledTrigger); 
         auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
-        mutableFulfilledTriggerIds->insert({currTrigger.id(), true});
+        mutableFulfilledTriggerIds->insert({steppingTriggerId, true});
     } else if (mainCycleFulfilled) {
         int newQuota = oldQuota - 1;
         if (0 > newQuota) {
@@ -6192,14 +6194,14 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", trigger id=" << currTrigger.id() << " main-cycle fulfilled chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", frames_to_fire=" << triggerConfigFromTiled->delayed_frames() << ", nextWaveNpcCnt=" << chSpawnerConfig->species_id_list_size() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
+        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle fulfilled chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", frames_to_fire=" << triggerConfigFromTiled->delayed_frames() << ", nextWaveNpcCnt=" << chSpawnerConfig->species_id_list_size() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
 
         Trigger* fulfilledTrigger = stepResult->add_fulfilled_triggers();
         CopyTrigger(&currTrigger, fulfilledTrigger); 
         auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
-        mutableFulfilledTriggerIds->insert({currTrigger.id(), true});
+        mutableFulfilledTriggerIds->insert({steppingTriggerId, true});
     } else if (subCycleCooledDown) {
         nextTrigger->set_state(TriggerState::TrSubCycleReady);
         nextTrigger->set_frames_in_state(0);
