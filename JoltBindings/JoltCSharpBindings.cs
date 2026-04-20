@@ -111,6 +111,10 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool FRONTEND_UpsertSelfCmd_With_Ifd_Output(UIntPtr inBattle, ulong inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool FRONTEND_Step(UIntPtr inBattle);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

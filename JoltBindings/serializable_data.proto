@@ -246,11 +246,13 @@ enum TriggerState {
     TrReady = 0;
     TrSubCycleReady = 1;
     TrSubCycleCoolingDown = 2;
-    TrSubCycleExhausted = 3;
-    TrCoolingDown = 4;
-    TrExhausted = 5; // Wouldn't be left-shifted 
-    TrDead = 6;
-    TrExhaustedYetListening = 7; // Special state for "trt_indi_wave_npc_spawner" 
+    TrSubCycleCooledDown = 3;
+    TrSubCycleExhausted = 4;
+    TrCoolingDown = 5;
+    TrCooledDown = 6;
+    TrExhausted = 7; // Wouldn't be left-shifted 
+    TrDead = 8;
+    TrExhaustedYetListening = 9; // Special state for "trt_indi_wave_npc_spawner" 
 }
 
 enum PickableState {
@@ -1498,6 +1500,8 @@ message TriggerConfigFromTiled {
     uint64 force_ctrl_cmd = 20;
 
     uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
+
+    uint64 cached_sub_cycle_mask_to_fulfill = 22;
 
     int32 story_point_id = 512;
     int32 bgm_id = 513;

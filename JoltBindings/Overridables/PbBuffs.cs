@@ -3,7 +3,7 @@ using jtshared;
 using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
-    public class PbBuffs {
+    public partial class PbBuffs {
 
         public static BuffConfig ShortFreezer = new BuffConfig {
             SpeciesId = 1,

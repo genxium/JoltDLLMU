@@ -2,7 +2,7 @@ using System;
 using jtshared;
 
 namespace JoltCSharp {
-    public class PbPrimitives {
+    public partial class PbPrimitives {
         
         public static float StdYAxisAngularSpeedPerRdf = (float)Math.PI/4; // rads/rdf
         public static float OnWallYAxisAngularSpeedPerRdf = (float)Math.PI/24; // rads/rdf, this is a bit slower than "StdYAxisAngularSpeedPerRdf" to allow players to tap a "direction" at least 1 InputFrameDownsync before tapping "jump" -- instead of requiring to tap them altogether at the exact same InputFrameDownsync, kindly note that when on wall a character only needs to turn 90 degrees before detaching 

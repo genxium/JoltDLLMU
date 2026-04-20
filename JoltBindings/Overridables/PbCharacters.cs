@@ -4,7 +4,7 @@ using static JoltCSharp.PbPrimitives;
 using static jtshared.PbBuilders;
 
 namespace JoltCSharp {
-    public class PbCharacters {
+    public partial class PbCharacters {
 
         /**
          [WARNING] 

@@ -84,6 +84,7 @@ JPH_CAPI int BACKEND_GetDynamicsRdfId(void* inBattle);
 JPH_CAPI void* FRONTEND_CreateBattle(int rdfBufferSize, bool isOnlineArenaMode);
 JPH_CAPI bool FRONTEND_ResetStartRdf(void* inBattle, char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);
 JPH_CAPI bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput, int* outChaserRdfId);
+JPH_CAPI bool FRONTEND_UpsertSelfCmd_With_Ifd_Output(void* inBattle, uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI bool FRONTEND_ProduceUpsyncSnapshotRequest(void* inBattle, int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI bool FRONTEND_OnUpsyncSnapshotReqReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
 JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId);
