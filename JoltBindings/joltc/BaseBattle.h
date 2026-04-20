@@ -15,6 +15,10 @@
 #include <set>
 #include <deque>
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 /*
 [REMINDER] 
 
@@ -907,7 +911,15 @@ protected:
                 return false; // The bullet should be no longer active
             }
         }
-        return (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+        bool res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+#ifndef  NDEBUG
+    if (false == res && BulletType::MechanicalBouncerSpherical == bc->b_type()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", bulletId=" << bullet->id() << " is no longer alive with bl_state=" << bullet->bl_state() << ", frames_in_bl_state=" << bullet->frames_in_bl_state() << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+        return res;
     }
 
     inline bool isTrapAlive(const Trap* trap, int currRdfId) const {

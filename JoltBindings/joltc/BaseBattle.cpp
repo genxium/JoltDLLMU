@@ -1044,6 +1044,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             int vanishingPosAddsCnt = 0;
 
             bool hitOnCharacter = false;
+            bool hitOnHarderBullet = false;
             if (transientUdToCollisionUdHolder.count(ud)) {
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
                 int cntNow = holder->GetCnt_Realtime();
@@ -1120,6 +1121,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         const BulletConfig* rhsBlConfig = nullptr;
                         FindBulletConfig(rhsCurrBl->skill_id(), rhsCurrBl->active_skill_hit(), rhsSkill, rhsBlConfig);
                         if (rhsBlConfig->hardness() >= lhsBlConfig->hardness()) {
+                            hitOnHarderBullet = true;
                             shouldVanish = true;
                         }
                         break;
@@ -1143,10 +1145,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 biNoLock->GetPositionAndRotation(bodyID, newPos, newRotFromPhySys);
                 Vec3 newVel(currBl.vel_x(), currBl.vel_y(), currBl.vel_z());
                 Vec3 newVelFromPhySys = biNoLock->GetLinearVelocity(bodyID);
+                if (MultiHitType::FromPrevHitActualOrActiveTimeUp == lhsBlConfig->mh_type()) {
+                    newVel.SetX(newVelFromPhySys.GetX());
+                }
                 if (lhsBlConfig->takes_gravity()) {
                     newVel.SetY(newVelFromPhySys.GetY());
                 }
-                // [TODO] Takes "newVelFromPhySys.GetX()" too if "lhsBlConfig" accepts bouncing
 
                 nextBl->set_x(newPos.GetX());
                 nextBl->set_y(newPos.GetY());
@@ -1163,10 +1167,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             
             if (MultiHitType::FromPrevHitActualOrActiveTimeUp == lhsBlConfig->mh_type()) {
                 bool shouldEmitCombo1 = (BulletState::Vanishing == nextBl->bl_state() && 0 == nextBl->frames_in_bl_state());
-                bool shouldEmitCombo2 = (hitOnCharacter);
+                bool shouldEmitCombo2 = (hitOnCharacter || hitOnHarderBullet);
                 if (shouldEmitCombo1 || shouldEmitCombo2) {
                     shouldVanish = true;
-                    addNewBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
                 }
             }
 
@@ -1194,6 +1197,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextBl->set_q_y(blEffQ.GetY());
                     nextBl->set_q_z(blEffQ.GetZ());
                     nextBl->set_q_w(blEffQ.GetW());
+
+                    addNewBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
                 }
             }
         }, 0);
@@ -2374,7 +2379,7 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     if (oldNextRdfBulletCount >= nextRdf->bullets_size()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", bulletId=" << referenceBullet->id() << ": bullet overwhelming when adding vanishing#1";
+        oss << "@currRdfId=" << currRdfId << ", bulletId=" << referenceBullet->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming when adding vanishing#1";
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         --mNextRdfBulletCount;
@@ -2391,7 +2396,14 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     int initFramesInBlState = 0;
 
     int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
-    auto nextBl = nextRdf->mutable_bullets(oldNextRdfBulletCount);
+    Bullet* nextBl = nextRdf->mutable_bullets(oldNextRdfBulletCount);
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", a hit with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
     CopyBullet(referenceBullet, nextBl);
     nextBl->set_id(oldNextRdfBulletIdCounter);
     nextBl->set_originated_render_frame_id(currRdfId);
@@ -2502,6 +2514,13 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
 
     int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
     Bullet* nextBl = oldNextRdfBulletCount < nextRdf->bullets_size() ? nextRdf->mutable_bullets(oldNextRdfBulletCount) : nextRdf->add_bullets();
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", a new startup bullet with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
     nextBl->Clear(); // [REMINDER] There's no embedded pb-message field in "Bullet", feel free to clear.
     nextBl->set_id(oldNextRdfBulletIdCounter);
     nextBl->set_originated_render_frame_id(currRdfId);
@@ -2534,9 +2553,15 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
 
 /*
 #ifndef  NDEBUG
-    std::ostringstream oss;
-    oss << "@currRdfId=" << currRdfId << ", added new bullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << ")";
-    Debug::Log(oss.str(), DColor::Orange);
+    if (BulletType::MechanicalBouncerSpherical == bulletConfig.b_type()) {
+        std::ostringstream oss;
+        if (nullptr != referenceBullet) {
+            oss << "@currRdfId=" << currRdfId << ", added new bullet from referenceBullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
+        } else {
+            oss << "@currRdfId=" << currRdfId << ", added new bullet from offenderUd=" << offenderUd << " with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
+        }
+        Debug::Log(oss.str(), DColor::Orange);
+    }
 #endif // ! NDEBUG
 */
     if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
@@ -2647,14 +2672,14 @@ void BaseBattle::elapse1RdfForRdf(const int currRdfId, RenderFrame* nextRdf) {
         elapse1RdfForPlayerChd(currRdfId, player, cc);
     }
 
-    for (int i = 0; i < nextRdf->npcs_size(); i++) {
+    for (int i = 0; i < nextRdf->npc_count(); i++) {
         auto npc = nextRdf->mutable_npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == npc->id()) break;
         const CharacterConfig* cc = getCc(npc->chd().species_id());
         elapse1RdfForNpcChd(currRdfId, npc, cc);
     }
 
-    for (int i = 0; i < nextRdf->bullets_size(); i++) {
+    for (int i = 0; i < nextRdf->bullet_count(); i++) {
         auto bl = nextRdf->mutable_bullets(i);
         if (globalPrimitiveConsts->terminating_bullet_id() == bl->id()) break;
         const Skill* skill = nullptr;
@@ -2666,19 +2691,19 @@ void BaseBattle::elapse1RdfForRdf(const int currRdfId, RenderFrame* nextRdf) {
         elapse1RdfForBl(currRdfId, bl, skill, bulletConfig);
     }
 
-    for (int i = 0; i < nextRdf->dynamic_traps_size(); i++) {
+    for (int i = 0; i < nextRdf->dynamic_trap_count(); i++) {
         auto tp = nextRdf->mutable_dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == tp->id()) break;
         elapse1RdfForTrap(tp);
     }
 
-    for (int i = 0; i < nextRdf->triggers_size(); i++) {
+    for (int i = 0; i < nextRdf->trigger_count(); i++) {
         auto tr = nextRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
         elapse1RdfForTrigger(tr);
     }
 
-    for (int i = 0; i < nextRdf->pickables_size(); i++) {
+    for (int i = 0; i < nextRdf->pickable_count(); i++) {
         auto pk = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == pk->id()) break;
         elapse1RdfForPickable(pk);
@@ -2788,9 +2813,17 @@ void BaseBattle::elapse1RdfForBl(const int currRdfId, Bullet* bl, const Skill* s
             newFramesInBlState = 0;
 /*
 #ifndef  NDEBUG
-            std::ostringstream oss;
-            oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became active at currRdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
-            Debug::Log(oss.str(), DColor::Orange);
+            if (BulletType::MechanicalBouncerSpherical == bulletConfig->b_type()) {
+                std::ostringstream oss;
+                oss << "bulletId=" << bl->id() << ", b_type=" << (int) bulletConfig->b_type() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became active at currRdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+            }
+        } else {
+            if (BulletType::MechanicalBouncerSpherical == bulletConfig->b_type()) {
+                std::ostringstream oss;
+                oss << "bulletId=" << bl->id() << ", b_type=" << (int)bulletConfig->b_type() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " stays at StartUp at currRdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << "), newFramesInBlState=" << newFramesInBlState;
+                Debug::Log(oss.str(), DColor::Orange);
+            }
 #endif // ! NDEBUG
 */
         }
@@ -2800,9 +2833,11 @@ void BaseBattle::elapse1RdfForBl(const int currRdfId, Bullet* bl, const Skill* s
             bl->set_bl_state(BulletState::Vanishing);
 /*
 #ifndef  NDEBUG
+            if (BulletType::MechanicalBouncerSpherical == bulletConfig->b_type()) {     
                 std::ostringstream oss;
                 oss << "bulletId=" << bl->id() << ", originatedRenderFrameId=" << bl->originated_render_frame_id() << " just became vanishing at currRdfId=" << currRdfId+1 << ", pos=(" << bl->x() << ", " << bl->y() << ", " << bl->z() << "), vel=(" << bl->vel_x() << ", " << bl->vel_y() << ", " << bl->vel_z() << ")";
                 Debug::Log(oss.str(), DColor::Orange);
+            }
 #endif // ! NDEBUG
 */
             newFramesInBlState = 0;
@@ -4282,9 +4317,21 @@ void BaseBattle::leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf)
         FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
 
         while (candI < mNextRdfBulletCountVal && globalPrimitiveConsts->terminating_bullet_id() != candidate->id() && !isBulletAlive(candidate, bulletConfig, currRdfId)) {
+/*
+#ifndef NDEBUG
+            if (BulletType::MechanicalBouncerSpherical == bulletConfig->b_type()) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", bullet with bulletId=" << candidate->id() << ", pos=(" << candidate->x() << ", " << candidate->y() << ", " << candidate->z() << "), vel=(" << candidate->vel_x() << ", " << candidate->vel_y() << ", " << candidate->vel_z() << ") is dead at bl_state=" << (int) candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
+                Debug::Log(oss.str(), DColor::Orange);
+            }
+#endif
+*/
             candI++;
             if (candI >= mNextRdfBulletCountVal) break;
             candidate = &(nextRdf->bullets(candI));
+            skillId = candidate->skill_id();
+            skillHit = candidate->active_skill_hit();
+            FindBulletConfig(skillId, skillHit, skillConfig, bulletConfig);
         }
 
         if (candI >= mNextRdfBulletCountVal || globalPrimitiveConsts->terminating_bullet_id() == nextRdf->bullets(candI).id()) {
@@ -5252,13 +5299,13 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
     if (nextChd->frames_invinsible() < pivotBulletConfig.startup_invinsible_frames()) {
         nextChd->set_frames_invinsible(pivotBulletConfig.startup_invinsible_frames());
     }
-    /*
+/*
 #ifndef NDEBUG
     std::ostringstream oss3;
-    oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by [currVel=(" << currChd.vel_x() << "," << currChd.vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << "], [nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextPos=(" << nextChd->x() << ", " << nextChd->y() << ")], patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy;
+    oss3 << "@currRdfId=" << currRdfId << ", ud=" << ud << " used targetSkillId=" << targetSkillId << " by [currVel=(" << currChd.vel_x() << "," << currChd.vel_y() << "), currMp=" << currChd.mp() << ", currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", currEffInAir=" << currEffInAir << "], [nextVel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), nextChState=" << nextChd->ch_state() << ", nextFramesInChState=" << nextChd->frames_in_ch_state() << ", nextPos=(" << nextChd->x() << ", " << nextChd->y() << ")], patternId=" << patternId << ", effDx=" << effDx << ", effDy=" << effDy;
     Debug::Log(oss3.str(), DColor::Orange);
 #endif // !NDEBUG
-    */
+*/
     return true;
 }
 
