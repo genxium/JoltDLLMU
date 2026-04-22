@@ -169,24 +169,26 @@ const std::unordered_set<NpcGoal> temptingToMoveNpcGoalSet = {
 const std::unordered_set<TriggerState> trSubCycleStates = {
     TriggerState::TrSubCycleReady,
     TriggerState::TrSubCycleCoolingDown,
+    TriggerState::TrSubCycleCooledDown,
     TriggerState::TrSubCycleExhausted,
 };
 
 const std::unordered_set<TriggerState> trActiveSubCycleStates = {
     TriggerState::TrSubCycleReady,
-    TriggerState::TrSubCycleCoolingDown,
+    TriggerState::TrSubCycleCooledDown,
 };
 
 const std::unordered_set<TriggerState> trMainCycleStates = {
     TriggerState::TrReady,
     TriggerState::TrCoolingDown,
+    TriggerState::TrCooledDown,
     TriggerState::TrExhausted,
     TriggerState::TrExhaustedYetListening,
 };
 
 const std::unordered_set<TriggerState> trActiveMainCycleStates = {
     TriggerState::TrReady,
-    TriggerState::TrCoolingDown,
+    TriggerState::TrCooledDown,
     TriggerState::TrExhaustedYetListening,
 };
 

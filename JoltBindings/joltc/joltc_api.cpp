@@ -335,6 +335,12 @@ bool FRONTEND_UpsertSelfCmd(void* inBattle, uint64_t inSingleInput, int* outChas
     return frontendBattle->UpsertSelfCmd(inSingleInput, outChaserRdfId);
 }
 
+bool FRONTEND_UpsertSelfCmd_With_Ifd_Output(void* inBattle, uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    if (nullptr == frontendBattle) return false;
+    return frontendBattle->UpsertSelfCmd(inSingleInput, outChaserRdfId, outBytesPreallocatedStart, outBytesCntLimit);
+}
+
 bool FRONTEND_ProduceUpsyncSnapshotRequest(void* inBattle, int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;

@@ -4,6 +4,10 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 
 bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) {
+    return UpsertSelfCmd(inSingleInput, outChaserRdfId, nullptr, nullptr);
+}
+
+bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
     int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
     int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId+1);
     bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
@@ -21,6 +25,9 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
 
     *outChaserRdfId = chaserRdfId;
     if (!result) {
+        if (nullptr != outBytesCntLimit) {
+            *outBytesCntLimit = 0;
+        } 
         return false;
     }
 /*
@@ -32,6 +39,14 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
     }
 #endif
 */
+    if (nullptr != outBytesPreallocatedStart && nullptr != outBytesCntLimit) {
+        long byteSize = result->ByteSizeLong();
+        if (byteSize > *outBytesCntLimit) {
+            return false;
+        }
+        *outBytesCntLimit = byteSize;
+        result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    }
     return true;
 }
 
@@ -60,6 +75,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
     *outPostTimerRdfDelayedIfdEvictedCnt = 0;
     int refRdfId = downsyncSnapshot->ref_rdf_id();
     int oldChaserRdfIdLowerBound = chaserRdfIdLowerBound;
+    uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
 /*
 #ifndef NDEBUG
     std::ostringstream oss1;
@@ -185,7 +201,7 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                     holder->set_input_count(playersCnt);
                     for (int k = 0; k < playersCnt; ++k) {
                         uint64_t predictedCmd = 0;
-                        if (0 == (inactiveJoinMask & CalcJoinIndexMask(k + 1))) {
+                        if (0 == (inactiveJoinMaskVal & CalcJoinIndexMask(k + 1))) {
                             predictedCmd = playerInputFronts[k];
                         }
                         if (k < holder->input_list_size()) {
@@ -204,18 +220,16 @@ bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsync
                 std::ostringstream oss223;
                 oss223 << "OnDownsyncSnapshotReceived#2.2.2 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", willEvictIfdSt=" << (int)willEvictIfdSt;
                 Debug::Log(oss223.str(), DColor::Orange);
-#endif
-*/
             }
-/*
-#ifndef NDEBUG
+
             if ((0 < (targetHolder->udp_confirmed_list() & selfJoinIndexMask) || 0 != targetHolder->input_list(selfJoinIndexArrIdx)) && targetHolder->input_list(selfJoinIndexArrIdx) != refIfd.input_list(selfJoinIndexArrIdx)) {
                 std::ostringstream oss;
                 oss << "@timerRdfId=" << timerRdfId << ", @refRdfId=" << refRdfId << ", @lcacIfdId=" << lcacIfdId << ", @chaserRdfId=" << chaserRdfId << ", @chaserRdfIdLowerBound=" << chaserRdfIdLowerBound << " overriding localSelfInput=" <<  targetHolder->input_list(selfJoinIndexArrIdx) << " by backend generated " << refIfd.input_list(selfJoinIndexArrIdx) << " of refIfdId=" << ifdId;
                 Debug::Log(oss.str(), DColor::Orange);
-            }
 #endif
 */
+            }
+
             CopyIfd(&refIfd, targetHolder);
             targetHolder->set_confirmed_list(allConfirmedMask);
             
@@ -347,16 +361,12 @@ bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, cons
 /*
 #ifndef NDEBUG
         Debug::Log("OnUpsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+    }
+    else {
+        Debug::Log("OnUpsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
 #endif
 */
     }
-/*
-#ifndef NDEBUG
-    else {
-        Debug::Log("OnUpsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
-     }
-#endif
-*/
     uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
     int oldUdpLcacIfdId = moveForwardUdpLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
     if (lcacIfdId > udpLcacIfdId) {

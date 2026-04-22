@@ -62,6 +62,7 @@ public:
     int selfCmdAuthKey = 0;
 
     bool UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId);
+    bool UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 
     bool ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 

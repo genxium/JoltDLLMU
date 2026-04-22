@@ -4,12 +4,12 @@ using static JoltCSharp.PbPrimitives;
 using static jtshared.PbBuilders;
 
 namespace JoltCSharp {
-    public class PbSkills {
+    public partial class PbSkills {
         
         public static System.Numerics.Quaternion cTurn45DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, 0.7853981625f);
         public static System.Numerics.Quaternion cTurn60DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, 1.0472f);
 
-        private static BulletConfig BasicPistolBulletAir = new BulletConfig {
+        public static BulletConfig BasicPistolBulletAir = new BulletConfig {
             StartupFrames = 6,
             ActiveFrames = 360,
             HitStunFrames = 8,
@@ -40,21 +40,21 @@ namespace JoltCSharp {
             CollisionTypeMask = 0 // TODO
         };
 
-        private static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
+        public static BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetHitboxOffsets(16f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
-        private static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
+        public static BulletConfig BasicPistolBulletCrouch = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetSelfLockVel(0, 0, 0)
                                                                 .SetHitboxOffsets(11f, HunterPistolOffsetYCrouch);
 
-        private static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
+        public static BulletConfig BasicPistolBulletWalking = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetHitboxOffsets(22f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
-        private static BulletConfig BasicPistolBulletOnWall = new BulletConfig(BasicPistolBulletAir)
+        public static BulletConfig BasicPistolBulletOnWall = new BulletConfig(BasicPistolBulletAir)
                                                                 .SetHitboxOffsets(BasicPistolBulletAir.HitboxOffsetX, HunterPistolOffsetYOnWall);
 
         public static Skill HunterPistolWall = new Skill {
@@ -128,7 +128,7 @@ namespace JoltCSharp {
         );
 
 /////////////////////////////////////////////////////////////////////////////////////////
-        private static BulletConfig BasicChargedPistolBulletAir = new BulletConfig {
+        public static BulletConfig BasicChargedPistolBulletAir = new BulletConfig {
             StartupFrames = 6,
             ActiveFrames = 360,
             HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
@@ -160,21 +160,21 @@ namespace JoltCSharp {
             CollisionTypeMask = 0, // TODO
         };
 
-        private static BulletConfig BasicChargedPistolBulletGround = new BulletConfig(BasicChargedPistolBulletAir)
+        public static BulletConfig BasicChargedPistolBulletGround = new BulletConfig(BasicChargedPistolBulletAir)
                                                                 .SetHitboxOffsets(16f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
-        private static BulletConfig BasicChargedPistolBulletCrouch = new BulletConfig(BasicChargedPistolBulletAir)
+        public static BulletConfig BasicChargedPistolBulletCrouch = new BulletConfig(BasicChargedPistolBulletAir)
                                                                 .SetSelfLockVel(0, 0, 0)
                                                                 .SetHitboxOffsets(11f, HunterPistolOffsetYCrouch);
 
-        private static BulletConfig BasicChargedPistolBulletWalking = new BulletConfig(BasicChargedPistolBulletAir)
+        public static BulletConfig BasicChargedPistolBulletWalking = new BulletConfig(BasicChargedPistolBulletAir)
                                                                 .SetHitboxOffsets(22f, HunterPistolOffsetY)
                                                                 .SetAllowsWalking(true)
                                                                 .SetAllowsCrouching(true);
 
-        private static BulletConfig BasicChargedPistolBulletOnWall = new BulletConfig(BasicChargedPistolBulletAir)
+        public static BulletConfig BasicChargedPistolBulletOnWall = new BulletConfig(BasicChargedPistolBulletAir)
                                                                 .SetHitboxOffsets(BasicChargedPistolBulletAir.HitboxOffsetX, HunterPistolOffsetYOnWall);
 
         public static Skill HunterChargedPistolWall = new Skill {
@@ -540,7 +540,7 @@ namespace JoltCSharp {
             BoundChState = CharacterState.Atk1
         }.AddHit(SlowBladeHit1);
 
-        private static BulletConfig BasicRapidFireHit1 = new BulletConfig {
+        public static BulletConfig BasicRapidFireHit1 = new BulletConfig {
             StartupFrames = 45,
             ActiveFrames = 60,
             HitStunFrames = 8,
@@ -573,17 +573,17 @@ namespace JoltCSharp {
             CollisionTypeMask = 0 // TODO
         };
 
-        private static BulletConfig BasicRapidFireHit2 = new BulletConfig(BasicRapidFireHit1)
+        public static BulletConfig BasicRapidFireHit2 = new BulletConfig(BasicRapidFireHit1)
                                                                 .SetStartupFrames(BasicRapidFireHit1.StartupFrames + 9)
                                                                 .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY + 4f)
                                                                 .SetSimultaneousMultiHitCnt(2);
 
-        private static BulletConfig BasicRapidFireHit3 = new BulletConfig(BasicRapidFireHit2)
+        public static BulletConfig BasicRapidFireHit3 = new BulletConfig(BasicRapidFireHit2)
                                                                 .SetStartupFrames(BasicRapidFireHit2.StartupFrames + 9)
                                                                 .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY - 4f)
                                                                 .SetSimultaneousMultiHitCnt(1);
 
-        private static BulletConfig BasicRapidFireHit4 = new BulletConfig(BasicRapidFireHit3)
+        public static BulletConfig BasicRapidFireHit4 = new BulletConfig(BasicRapidFireHit3)
                                                                 .SetStartupFrames(BasicRapidFireHit3.StartupFrames + 9)
                                                                 .SetHitboxOffsets(16f, BlackShooter1RapidFireOffsetY - 2f)
                                                                 .SetMhType(MultiHitType.None)
@@ -603,7 +603,7 @@ namespace JoltCSharp {
         .AddHit(BasicRapidFireHit3) 
         .AddHit(BasicRapidFireHit4); 
 
-        private static BulletConfig BasicTimedBombHit1 = new BulletConfig {
+        public static BulletConfig BasicTimedBombHit1 = new BulletConfig {
             StartupFrames = 80,
             ActiveFrames = 180,
             HitStunFrames = 4,
@@ -641,7 +641,8 @@ namespace JoltCSharp {
             GravityFactor = 0.55f,
             CollisionTypeMask = 0 // TODO
         };
-        private static BulletConfig BasicTimedBombHit2 = new BulletConfig {
+
+        public static BulletConfig BasicTimedBombHit2 = new BulletConfig {
             StartupFrames = 4,
             ActiveFrames = 8,
             HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,

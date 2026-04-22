@@ -2,6 +2,16 @@
 
 Yes, there's a closed-source project dedicated for the account system, backend session management and frontend rendering, here're some screen-recordings of battles over the internet (all having `ping` around 20ms~300ms during test).
 
+- [recording#14, 2026-04](https://pan.baidu.com/s/1vR1vIsAY5IsrvRVv0n325A?pwd=529b), P1 Nanjing City v.s. P2 Dongguan City 
+
+- [recording#13, 2026-04](https://pan.baidu.com/s/1jkE_Yje6gaDj8mnEwa16cg?pwd=9381), P1 Nanjing City v.s. P2 Dongguan City 
+
+  ![demo13](./Screenshots/demo13.gif)
+
+- [recording#12, 2026-04](https://pan.baidu.com/s/1NZFRMpcPVtbdvMZeBCXjTw?pwd=x75a), P1 Dongguan City v.s. P2 Nanjing City 
+
+- [recording#11, 2026-04](https://pan.baidu.com/s/1tua_LuKCwMyK5idK9m0uvg?pwd=fuj5), P1 Nanjing City v.s. P2 Dongguan City 
+
 - [recording#10, 2026-04](https://pan.baidu.com/s/1tD87UWjZeJYpYqgtuJCPew?pwd=r63u), P1 Nanjing City v.s. P2 Dongguan City 
 
 - [recording#9, 2026-04](https://pan.baidu.com/s/1LanwXLryIv_GqJwjQMmy7Q?pwd=bt9h), P1 Dongguan City v.s. P2 Nanjing City 

@@ -3,13 +3,13 @@ using jtshared;
 using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
-    public class PbTriggers {
+    public partial class PbTriggers {
 
-        private static TriggerConfig VictoryTrigger = new TriggerConfig {
+        public static TriggerConfig VictoryTrigger = new TriggerConfig {
             Trt = PbPrimitives.underlying.TrtVictory
         };
 
-        private static TriggerConfig IndiWaveNpcSpawner = new TriggerConfig {
+        public static TriggerConfig IndiWaveNpcSpawner = new TriggerConfig {
             Trt = PbPrimitives.underlying.TrtIndiWaveNpcSpawner,
             Name = "IndiWaveDoor1"
         };

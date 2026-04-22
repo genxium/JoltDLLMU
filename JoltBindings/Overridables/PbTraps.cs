@@ -3,9 +3,9 @@ using jtshared;
 using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
-    public class PbTraps {
+    public partial class PbTraps {
 
-        private static TrapConfig SlidingPlatformTrap = new TrapConfig {
+        public static TrapConfig SlidingPlatformTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptSlidingPlatform,
             Name = "SlidingPlatform",
             NoXFlipRendering = true,
@@ -17,7 +17,7 @@ namespace JoltCSharp {
             DefaultCooldownRdfCount = 60
         };
 
-        private static TrapConfig RotatingPlatformTrap = new TrapConfig {
+        public static TrapConfig RotatingPlatformTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptRotatingPlatform,
             Name = "RotatingPlatform",
             NoXFlipRendering = true,
@@ -29,7 +29,7 @@ namespace JoltCSharp {
             DefaultCooldownRdfCount = 60
         };
 
-        private static TrapConfig ConveyorBeltTrap = new TrapConfig {
+        public static TrapConfig ConveyorBeltTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptConveyorBelt,
             Name = "ConveyorBelt",
             NoXFlipRendering = false,
@@ -41,7 +41,7 @@ namespace JoltCSharp {
             DefaultCooldownRdfCount = 60
         };
 
-        private static TrapConfig FallingRockTrap = new TrapConfig {
+        public static TrapConfig FallingRockTrap = new TrapConfig {
             Tpt = PbPrimitives.underlying.TptFallingRock,
             Name = "FallingRock",
             NoXFlipRendering = false,

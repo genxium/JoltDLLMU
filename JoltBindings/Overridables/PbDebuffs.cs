@@ -3,7 +3,7 @@ using jtshared;
 using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
-    public class PbDebuffs {
+    public partial class PbDebuffs {
 
         public static DebuffConfig ShortFrozen = new DebuffConfig {
             SpeciesId = 1,
