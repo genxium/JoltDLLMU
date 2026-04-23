@@ -209,6 +209,7 @@ namespace JoltCSharp {
             NoSkillHit = 0,
 
             NoLockVel = -65535f,
+            CrouchForcingCeilingDotThreshold = 0.0087f, // the cosine of 89.5 degress
             SpeciesNoneCh = 0,
             UpsyncStIfdIdTolerance = 8,
 

@@ -273,7 +273,7 @@ public:
                 }
             } else if (!shouldSkipGroundServing) {
                 float ceilingDot = -dot;
-                if (ceilingDot > 0.85f) {
+                if (ceilingDot > globalPrimitiveConsts->crouch_forcing_ceiling_dot_threshold()) {
                     mCrouchForced = true;
                 }
             }
