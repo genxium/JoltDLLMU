@@ -1961,6 +1961,64 @@ RenderFrame* mockNpcSpawnerRdf2(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockRotatingPlatformForceCrouchingTestStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-100);
+    playerCh1->set_y(120);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpt_rotating_platform());
+    ++dynamicTrapCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -2643,6 +2701,15 @@ std::map<int, uint64_t> testCmds31 = {
     {599, 0},
     {600, 32},
     {601, 0},
+    {1024, 0}
+};
+
+std::map<int, uint64_t> testCmds32 = {
+    {0, 0},
+    {67, 0},
+    {68, 3},   
+    {299, 3},
+    {300, 0},
     {1024, 0}
 };
 
@@ -4760,6 +4827,31 @@ void initTest31Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     auto triggerConfigFromTiled3 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
     triggerConfigFromTiled3->set_id(npcSpawnerStartRdf->triggers(2).id());
     triggerConfigFromTiled3->set_trt(npcSpawnerStartRdf->triggers(2).trt());
+}
+
+void initTest32Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockRotatingPlatformForceCrouchingTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
+    Vec3 initAngVel1(0, 0, -0.370796325);
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_box_half_size_x(64.f);
+    trapConfigFromTiled1->set_box_half_size_y(8.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+
+    trapConfigFromTiled1->set_init_ang_vel_x(initAngVel1.GetX());
+    trapConfigFromTiled1->set_init_ang_vel_y(initAngVel1.GetY());
+    trapConfigFromTiled1->set_init_ang_vel_z(initAngVel1.GetZ());
+
+    trapConfigFromTiled1->set_init_x(0);
+    trapConfigFromTiled1->set_init_y(186);
+    trapConfigFromTiled1->set_init_z(0);
 }
 
 std::string outStr;
@@ -7309,6 +7401,67 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase32(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest32Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    bool victoryTriggered = false;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds32, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase32/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+
+        auto& tp1 = outerTimerRdf->dynamic_traps(0);
+
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
+
+        auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        if (120 < outerTimerRdfId && 200 > outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            JPH::Quat tp1Q(tp1.q_x(), tp1.q_y(), tp1.q_z(), tp1.q_w());
+            Vec3 tp1QAxis;
+            float tp1QAngle;
+            tp1Q.GetAxisAngle(tp1QAxis, tp1QAngle);
+            float tp1QAngleDegrees = tp1QAngle * 180.0f / JPH_PI;
+            std::cout << "TestCase32/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")" << ", tpQ1Axis=(" << tp1QAxis.GetX() << "," << tp1QAxis.GetY() << "," << tp1QAxis.GetZ() << "), tp1QAngleDegrees=" << tp1QAngleDegrees << std::endl;
+        }
+
+        if (130 <= outerTimerRdfId && outerTimerRdfId <= 140) {
+            JPH_ASSERT(CharacterState::CrouchIdle1 == p1Chd.ch_state());
+        }
+        
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase32: Rotating platform force crouching\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -7588,7 +7741,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
-    
+     
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -7638,6 +7791,8 @@ int main(int argc, char** argv)
     runTestCase30(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase31(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
+    runTestCase32(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"

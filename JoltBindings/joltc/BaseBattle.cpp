@@ -5956,10 +5956,13 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
         const CapsuleShape nonCrouchingInnerShape(cc->capsule_half_height(), cc->capsule_radius());
         nonCrouchingInnerShape.SetEmbedded();
-        const RotatedTranslatedShape nonCrouchingShape(currShape->GetPosition(), currShape->GetRotation(), &nonCrouchingInnerShape);
+        const Vec3 nonCrouchingInnerShapeOffset = Vec3(0, cc->capsule_half_height() + cc->capsule_radius(), 0);
+        const RotatedTranslatedShape nonCrouchingShape(nonCrouchingInnerShapeOffset, currShape->GetRotation(), &nonCrouchingInnerShape);
         nonCrouchingShape.SetEmbedded();
 
-        auto chCOMTransform = biNoLock->GetCenterOfMassTransform(bodyID);
+        Vec3 newPosIfNonCrouching = newPos + nonCrouchingInnerShapeOffset; // [REMINDER] The y-coordinate of "newPos" is the bottom of both "currInnerShape" and "nonCrouchingInnerShape", due to my choice of anchor in "getOrCreateCachedCharacterCollider_NotThreadSafe/createDefaultCharacterCollider".
+        Mat44 chCOMTransformIfNonCrouching = Mat44::sRotationTranslation(newRot, newPosIfNonCrouching);
+
         CollideShapeSettings chNarrowPhaseCollideShapeSettings;
         chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
@@ -5967,7 +5970,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
         ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, this);
 
-        narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransform, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
+        narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransformIfNonCrouching, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
 
         if (crouchCollector.mCrouchForced) {
             inputInducedMotion->crouchForcedWhileSupported = true;

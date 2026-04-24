@@ -1697,8 +1697,7 @@ message PrimitiveConsts {
     uint32 species_none_ch = 92;
     uint32 upsync_st_ifd_id_tolerance = 93;
     float no_lock_vel = 94;
-    int32 debuff_array_idx_elemental = 95;
-
+    float crouch_forcing_ceiling_dot_threshold = 95; 
     int32 terminating_render_frame_id = 96;
     int32 terminating_input_frame_id = 97;
 
@@ -1803,6 +1802,7 @@ message PrimitiveConsts {
     uint32 tpt_spring = 175; 
 
     int32 sp_atk_lookup_frames = 512;
+    int32 debuff_array_idx_elemental = 513;
 
     ChSpeciesConsts ch_species = 1024;
 }
