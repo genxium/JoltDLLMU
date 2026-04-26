@@ -2554,11 +2554,21 @@ std::map<int, uint64_t> testCmds19 = {
     {63, 0},
     {64, 16},
     {65, 0},
+    {83, 0},
     {84, 16},
     {85, 0},
     {143, 0},
     {144, 18},
-    {360, 0}
+    {359, 0},
+    {360, 16},
+    {361, 0},
+    {379, 0},
+    {380, 16},
+    {381, 0},
+    {439, 0},
+    {440, 3},
+    {1023, 3},
+    {1024, 0},
 };
 
 std::map<int, uint64_t> testCmds20 = {
@@ -4397,6 +4407,7 @@ void initTest19Data(WsReq* testInitializerMapData, std::vector<std::vector<float
     auto testStartRdf = mockSlipJumpStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
     slipJumpOptions[1] = true;
+    slipJumpOptions[3] = true;
     TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, std::vector<bool>(hulls.size(), true), slipJumpOptions);
     testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
 }
@@ -6492,7 +6503,7 @@ bool runTestCase19(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     initTest19Data(initializerMapData, hulls, theAllocator);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 2048;
+    int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 2);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
@@ -6515,12 +6526,12 @@ bool runTestCase19(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
 
         bool shouldPrint = false;
         
-        if (180 > outerTimerRdfId && 64 <= outerTimerRdfId) {
+        if (400 < outerTimerRdfId && loopRdfCnt >= outerTimerRdfId) {
             //shouldPrint = true;
         }
         
         if (shouldPrint) {
-            std::cout << "TestCase19/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")" << std::endl;
+            std::cout << "TestCase19/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << std::endl;
         }
         
         if (140 == outerTimerRdfId) {
@@ -6529,6 +6540,13 @@ bool runTestCase19(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         } else if (200 == outerTimerRdfId) {
             JPH_ASSERT(100 > p1Chd.y() && 99 < p1Chd.y());
             JPH_ASSERT(1 == p1Chd.ground_ud());
+        } else if (440 == outerTimerRdfId) {
+            JPH_ASSERT(166 > p1Chd.y() && 165 < p1Chd.y());
+            JPH_ASSERT(2 == p1Chd.ground_ud());
+        }
+
+        if (430 <= outerTimerRdfId && outerTimerRdfId <= 510) {
+            JPH_ASSERT(0 != p1Chd.ground_ud());
         }
 
         outerTimerRdfId++;
@@ -7773,10 +7791,10 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> slipJumpHull1 = {
-        -100, 0,
-        -100, 100,
-        100, 100,
-        100, 0
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
     };
 
     std::vector<float> slipJumpHull2 = {
@@ -7784,6 +7802,20 @@ int main(int argc, char** argv)
         -80, 166,
         -20, 166,
         -20, 150
+    };
+
+    std::vector<float> slipJumpHull3 = {
+        -20, 150,
+        -20, 166,
+        +40, 166,
+        +40, 150
+    };
+
+    std::vector<float> slipJumpHull4 = {
+        +20, 150,
+        +20, 166,
+        +80, 166,
+        +80, 150
     };
 
     std::vector<float> trapMapHull1 = {
@@ -7870,7 +7902,7 @@ int main(int argc, char** argv)
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
     std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
     std::vector<std::vector<float>> wideMapHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4};
-    std::vector<std::vector<float>> slipJumpMapHulls = {slipJumpHull1, slipJumpHull2};
+    std::vector<std::vector<float>> slipJumpMapHulls = {slipJumpHull1, slipJumpHull2, slipJumpHull3, slipJumpHull4};
     std::vector<std::vector<float>> trapMapHulls = {trapMapHull1, trapMapHull2, trapMapHull3, trapMapHull4, trapMapHull5};
     std::vector<std::vector<float>> crouchMapHulls = {
         crouchMapHull1
@@ -7925,6 +7957,7 @@ int main(int argc, char** argv)
     runTestCase17(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase18(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     runTestCase19(battle, slipJumpMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase20(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -7950,7 +7983,7 @@ int main(int argc, char** argv)
     
     runTestCase32(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase33(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
-
+    
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);

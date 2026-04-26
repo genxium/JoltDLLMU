@@ -182,6 +182,8 @@ namespace JoltCSharp {
             DefaultPatrolCueWaivingFrames = 150, // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
             NoPatrolCueId = 0,
 
+            StickToGroundCorrectionLength = 1.0f, 
+
             DefaultPickableHurtboxHalfSizeX = 10f,
             DefaultPickableHurtboxHalfSizeY = 12f,
             DefaultPickableDisappearingAnimFrames = 10,

@@ -433,6 +433,7 @@ protected:
     const google::protobuf::Map<uint64_t, CharacterBattleSpecificConfig>* characterOverrides = nullptr;
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
+    std::unordered_set<uint64_t> transientWallGrabProhibitingUds;
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
@@ -1236,7 +1237,7 @@ public:
     
     - by calling of "PhysicsSystem::JobSolvePositionConstraints" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsSystem.cpp#L503, kindly note that "inCollisionSteps" of each "PhysicsSystem::Update" is always 1 in my current implementation of rollback-chasing), it only fetches "next island", making use of counter "PhysicsUpdateContext.mSolvePositionConstraintsNextIsland"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/PhysicsUpdateContext.h#L93) to guarantee thread-safety of the island collection "IslandBuilder::mIslandsSorted"(https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/IslandBuilder.cpp#L408).
 
-    However, there's a "determinism caveat" associated with the aforementioned "PhysicsSystem::JobFindCollisions" and "PhysicsSystem::JobSolvePositionConstraints" -- as the appending and consuming of "ContactConstraintManager.mConstraints" and "IslandBuilder::mIslandsSorted" are randomized by multi-threading, you will execute "[AxisConstraintPart::SolvePositionConstraintWithMassOverride](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintPart/AxisConstraintPart.h#L605) -> [Body::Add/SubPositionStep](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h#L342)" in a random order (i.e. whether "IslandBuilder::mIslandsSorted" is sorted or not doesn't matter, the randomness comes from multi-threading intrinsically) -- hence the solved positions & velocities would NOT be perfectly determinisitc due to the lack of associativity in floating number calculations.     
+    However, there's a "determinism caveat" associated with the aforementioned "PhysicsSystem::JobFindCollisions" and "PhysicsSystem::JobSolvePositionConstraints" -- as the appending and consuming of "ContactConstraintManager.mConstraints" and "IslandBuilder::mIslandsSorted" are randomized by multi-threading, you will execute "[AxisConstraintPart::SolvePositionConstraintWithMassOverride](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintPart/AxisConstraintPart.h#L605) -> [Body::Add/SubPositionStep](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h#L342)" in a random order (i.e. whether "IslandBuilder::mIslandsSorted" is sorted or not doesn't matter, the randomness comes from multi-threading intrinsically) -- hence the solved positions & velocities would NOT be perfectly deterministic due to the lack of associativity in floating number calculations.     
     */
 
     /*

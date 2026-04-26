@@ -1662,6 +1662,8 @@ message PrimitiveConsts {
     int32 default_patrol_cue_waiving_frames = 65; // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
     int32 no_patrol_cue_id = 66;
 
+    float stick_to_ground_correction_length = 67;
+
     float default_pickable_hurtbox_half_size_x = 68;
     float default_pickable_hurtbox_half_size_y = 69;
     int32 default_pickable_disappearing_anim_frames = 70;
