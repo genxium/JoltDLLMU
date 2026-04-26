@@ -7,6 +7,7 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/CollisionDispatch.h>
 
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
@@ -1457,6 +1458,8 @@ void BaseBattle::Clear() {
 
     trapConfigFromTileDict.clear();
     triggerConfigFromTileDict.clear();
+    transientSlipJumpableUds.clear();
+    transientWallGrabProhibitingUds.clear();
 
     lcacIfdId = -1;
     rdfBuffer.Clear();
@@ -1745,6 +1748,9 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         const uint64_t staticColliderUd = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
         if (barrierAttr.provides_slip_jump()) {
             transientSlipJumpableUds.insert(staticColliderUd);
+        }
+        if (barrierAttr.prohibits_wall_grabbing()) {
+            transientWallGrabProhibitingUds.insert(staticColliderUd);
         }
         const BodyID* newBodyID = nullptr;
         int pointsCnt = convexPolygon->points_size();
@@ -3454,6 +3460,9 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         JPH_ASSERT(0 < transientUdToCurrTrap.count(ud));
         if (transientSlipJumpableUds.count(ud)) {
             transientSlipJumpableUds.erase(ud);
+        }
+        if (transientWallGrabProhibitingUds.count(ud)) {
+            transientWallGrabProhibitingUds.erase(ud);
         }
         const Trap& tp = *(transientUdToCurrTrap.at(ud));
         JPH_ASSERT(globalPrimitiveConsts->terminating_trap_id() != tp.id());
@@ -5828,7 +5837,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     JPH::Quat nextChdQ;
     Vec3 nextChdFacing;
     calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
-    if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd)) {
+    if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && !transientWallGrabProhibitingUds.count(collector.mWallUd)) {
         // Possibly on wall
         float wallNormalAlignment = nextChdFacing.Dot(collector.mWallNormal);
         if (groundBodyIsChCollider) {
@@ -5993,6 +6002,57 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 #endif
 */
             inputInducedMotion->crouchForcedWhileSupported = true;
+        }
+    }
+
+    if (cvSupported) {
+        /* 
+        [WARNING] A character might've already been pushed away from its "groundUd" by [ghost-collisions](https://jrouwe.github.io/JoltPhysics/index.html#ghost-collisions) due to multiple-same-direction-impulses from position-&velocity-constraint-solving in the same RenderFrame. 
+        */
+        const TransformedShape& chdTs = single->GetTransformedShape(false);
+        const TransformedShape& groundTs = biNoLock->GetTransformedShape(newGroundBodyID);
+
+        const AABox& chdAABB = chdTs.GetWorldSpaceBounds();
+        const AABox& groundAABB = groundTs.GetWorldSpaceBounds();
+
+        AnyHitCollisionCollector<CollideShapeCollector> chdGroundCollector;
+
+        CollideShapeSettings chGroundCollideShapeSettings;
+        chGroundCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
+        chGroundCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
+        chGroundCollideShapeSettings.mActiveEdgeMovementDirection = Vec3::sZero();
+        chGroundCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
+        
+        // 4. Perform the test
+        CollisionDispatch::sCollideShapeVsShape(
+            chdTs.mShape, groundTs.mShape,
+            chdTs.GetShapeScale(), groundTs.GetShapeScale(),
+            chdTs.GetCenterOfMassTransform(),
+            groundTs.GetCenterOfMassTransform(),
+            SubShapeIDCreator(), SubShapeIDCreator(),
+            chGroundCollideShapeSettings,
+            chdGroundCollector
+        );
+
+        if (!chdGroundCollector.HadHit()) {
+            Vec3 correctionAlongGroundNormal = globalPrimitiveConsts->stick_to_ground_correction_length() * collector.mGroundNormal;
+            newPos = newPos - correctionAlongGroundNormal;
+            nextChd->set_x(newPos.GetX());
+            nextChd->set_y(newPos.GetY());
+            nextChd->set_z(0);
+        }
+        
+        if (!atkedSet.count(nextChd->ch_state()) && !noOpSet.count(nextChd->ch_state()) && !proactiveJumpingSet.count(nextChd->ch_state()) && !nextChd->omit_gravity() && !cc->omit_gravity()) {
+            float intendedVelGroundNormDot = inputInducedMotion->velCOM.IsNearZero() ? 0 : inputInducedMotion->velCOM.Normalized().Dot(collector.mGroundNormal);
+            Vec3 actualVel(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z());
+            float actualVelGroundNormDot = actualVel.IsNearZero() ? 0 : actualVel.Normalized().Dot(collector.mGroundNormal);
+            if (IsLengthNearZero(intendedVelGroundNormDot) && !IsLengthNearZero(actualVelGroundNormDot)) {
+                float toReduceComp = actualVel.Dot(collector.mGroundNormal);
+                Vec3 reducedVel = actualVel - toReduceComp * collector.mGroundNormal;
+                nextChd->set_vel_x(reducedVel.GetX());
+                nextChd->set_vel_y(reducedVel.GetY());
+                nextChd->set_vel_z(reducedVel.GetZ());
+            }
         }
     }
 }
