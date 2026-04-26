@@ -621,12 +621,11 @@ bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync&
     return res;
 }
 
-void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty) {
+void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const CharacterConfig* cc, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty) {
         /*
         From the source codes of [JPH::Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) and [MotionPropertis](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/MotionProperties.h#L148) it seems like "accelerations" are only calculated during stepping, not cached.
         */
         auto bodyID = chCollider->GetBodyID();
-        const CharacterConfig* cc = getCc(currChd.species_id());
         if (!inGravityDirty) {
             if (onWallSet.count(currChd.ch_state())) {
                 bi->SetGravityFactor(bodyID, 0);
@@ -640,7 +639,9 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
                 }
             }
         }
-        bi->AddForceAndTorque(bodyID, inInputInducedMotion->forceCOM, inInputInducedMotion->torqueCOM, EActivation::DontActivate);
+        bool currChdCrouching = isCrouching(currChd.ch_state(), cc);
+        Vec3 effForceCOM = (currChdCrouching ? Vec3::sZero() : inInputInducedMotion->forceCOM);
+        bi->AddForceAndTorque(bodyID, effForceCOM, inInputInducedMotion->torqueCOM, EActivation::DontActivate);
         bi->SetLinearAndAngularVelocity(bodyID, inInputInducedMotion->velCOM, Vec3::sZero());
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
 }
@@ -710,8 +711,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterDownsync* nextChd = nextPlayer->mutable_chd();
             inputInducedMotion->velCOM.Set(currChd.vel_x(), currChd.vel_y(), currChd.vel_z());
             bool gravityDirty = false, frictionDirty = false;
+            const CharacterConfig* cc = getCc(currChd.species_id());
             if (!noOpSet.count(currChd.ch_state())) {
-                const CharacterConfig* cc = getCc(currChd.species_id());
                 const CharacterBattleSpecificConfig* chOverride = getChOverride(ud);
                 if (onWallSet.count(currChd.ch_state())) {
                     inputInducedMotion->velCOM.SetY(cc->wall_slide_vel_y());
@@ -744,7 +745,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, massProps, currChdFacing, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, chOverride, nextChd, nextRdf, usedSkill, chCollider, inputInducedMotion, gravityDirty, frictionDirty);
             }
 
-            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, inputInducedMotion, gravityDirty, frictionDirty); 
+            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, cc, inputInducedMotion, gravityDirty, frictionDirty); 
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -763,8 +764,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterDownsync* nextChd = nextNpc->mutable_chd();
             inputInducedMotion->velCOM.Set(currChd.vel_x(), currChd.vel_y(), currChd.vel_z());
             bool gravityDirty = false, frictionDirty = false;
+            const CharacterConfig* cc = getCc(currChd.species_id());
             if (!noOpSet.count(currChd.ch_state())) {
-                const CharacterConfig* cc = getCc(currChd.species_id());
                 const CharacterBattleSpecificConfig* chOverride = getChOverride(ud);
                 auto currChState = currChd.ch_state();
                 bool currNotDashing = BaseBattleCollisionFilter::chIsNotDashing(currChd);
@@ -802,7 +803,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 }
             }
 
-            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, inputInducedMotion, gravityDirty, frictionDirty);
+            updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, cc, inputInducedMotion, gravityDirty, frictionDirty);
 
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
@@ -2300,7 +2301,7 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
                     ioInputInducedMotion->forceCOM.SetX(xfac * (wallJumpingFreeOpAccX * massProps.mMass));
                 }
             } else if (isCrouching(currChd.ch_state(), cc)) {
-                ioInputInducedMotion->forceCOM.SetX(0);
+                ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass)); // [WARNING] Yet wouldn't be used by "BodyInterface::AddForceAndTorque" in "updateChColliderBeforePhysicsUpdate_ThreadSafe" -- this is only used for smooth "CrouchIdle1 -> Walking" transition.
                 biNoLock->SetFriction(chCollider->GetBodyID(), cWalkstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
                 ioFrictionDirty = true;
             } else {
@@ -5726,7 +5727,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     [TODO] For NPCs with more complicated shapes, use an extra collector with a compound shape and specified hurt-box to pick up damage.
     */
     
-    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
     
     bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
     bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
@@ -5949,7 +5950,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     CharacterState oldNextChState = nextChd->ch_state();
 
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
-        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, nextChd, single->GetUp(), newPos, this);
+        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion);
 
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());

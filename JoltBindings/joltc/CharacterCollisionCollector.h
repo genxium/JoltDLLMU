@@ -213,15 +213,18 @@ private:
     const uint64_t                mUd;
     const uint64_t                mUdt;
     const CharacterDownsync* mCurrChd;
+    const CharacterConfig* mCc;
     CharacterDownsync* mNextChd;
+
     Vec3				          mUp;
     Vec3                          mBaseOffset;
     BaseBattleCollisionFilter*    mBaseBattleFilter;
+    const InputInducedMotion*     mChdInputInducedMotion;
     float				          mGroundBestDot = 0;
     float				          mWallBestDot = FLT_MAX;
 
 public:
-    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter) {}
+    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter, const InputInducedMotion* chdInputInducedMotion) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mCc(cc), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter), mChdInputInducedMotion(chdInputInducedMotion) {}
 
     int                     mCurrRdfId;
     RenderFrame*            mNextRdf;
@@ -274,7 +277,34 @@ public:
             } else if (!shouldSkipGroundServing) {
                 float ceilingDot = -dot;
                 if (ceilingDot > globalPrimitiveConsts->crouch_forcing_ceiling_dot_threshold()) {
-                    mCrouchForced = true;
+                    const Vec3& lhsIntendedVel = mChdInputInducedMotion->velCOM;
+                    Vec3 rhsCOMPosition;
+                    Quat rhsQ;
+                    mBi->GetPositionAndRotation(rhsBodyID, rhsCOMPosition, rhsQ);
+                    Vec3 rhsLinearVelocity, rhsAngularVel;
+                    Vec3 contactPointOn2 = (worldContactPosition - rhsCOMPosition);
+                    mBi->GetLinearAndAngularVelocity(rhsBodyID, rhsLinearVelocity, rhsAngularVel);
+                    Vec3 rhsPointVel = rhsLinearVelocity + rhsAngularVel.Cross(contactPointOn2);
+                    
+                    if (rhsPointVel.IsNearZero()) {
+                        // The regular case
+                        mCrouchForced = true;
+                    } else {
+                        // float rhsPointVelDotPenetrationIntoSelf = rhsPointVel.Dot(worldSpaceNormalIntoBarrier);
+                        bool rhsProactivelySqueezingDown1 = (0 > rhsPointVel.GetY() && 0 < worldSpaceNormalIntoBarrier.GetY());
+                        if (rhsProactivelySqueezingDown1) {
+                            float rhsPointVelNormDot = rhsPointVel.Normalized().Dot(-mUp);
+                            bool rhsProactivelySqueezingDown2 = rhsPointVelNormDot > 0.5;
+                            if (rhsProactivelySqueezingDown2) {
+                                mCrouchForced = true;
+                            }
+                        } else {
+                            // bool chdRunningIntoBarrier = (0 < worldSpaceNormalIntoBarrier.Dot(lhsIntendedVel));
+                            /*
+                            [REMINDER] Otherwise even if "true == chdRunningIntoBarrier" we shouldn't force crouching, because it might cause intermittent "CrouchIdle1 (forced) -> Walking -> ... -> CrouchIdle1 (forced) -> Walking -> ..." transitions if the character keeps running in the same direction.
+                            */
+                        }
+                    }
                 }
             }
         }

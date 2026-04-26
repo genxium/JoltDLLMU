@@ -41,63 +41,6 @@ typedef struct VectorFloatHasher {
     }
 } VectorFloatHasher;
 
-typedef struct InputInducedMotion {
-    // "COM" refers to "Center Of Mass"
-    Vec3 forceCOM;  
-    Vec3 torqueCOM;
-    Vec3 velCOM; // Only inherited vel of CharacterDownsync, use of skills or impact from opponent bullets will write into "velCOM"
-    Vec3 angVelCOM; // Only proactive input (including NPC AI) will write into "angVelCOM" 
-    bool jumpTriggered;
-    bool slipJumpTriggered;
-    bool crouchForcedWhileSupported;
-
-    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), crouchForcedWhileSupported(false) {
-    }
-} InputInducedMotion;
-
-class InputInducedMotionStockCache {
-private:
-    std::vector<InputInducedMotion> holders; 
-    atomic<int> cnt;
-    int size;
-
-public:
-    InputInducedMotionStockCache(const int inSize) {
-        size = inSize;
-        holders.reserve(inSize);
-        for (int i = 0; i < inSize; ++i) {
-            holders.push_back(InputInducedMotion());
-        }
-        cnt = 0;
-    }
-
-    InputInducedMotion* Take_ThreadSafe() {
-        int idx = cnt.fetch_add(1);
-        if (idx >= size) {
-            --cnt;
-            return nullptr;
-        }
-        InputInducedMotion* holder = &holders[idx];   
-        holder->forceCOM.Set(0, 0, 0);
-        holder->torqueCOM.Set(0, 0, 0);
-        holder->velCOM.Set(0, 0, 0);
-        holder->angVelCOM.Set(0, 0, 0);
-        holder->jumpTriggered = false;
-        holder->slipJumpTriggered = false;
-        holder->crouchForcedWhileSupported = false;
-        return holder; 
-    }
-
-    void Clear_ThreadSafe() {
-        cnt = 0;
-    }
-
-    ~InputInducedMotionStockCache() {
-        cnt = 0;
-        holders.clear();
-    }
-};
-
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
 using namespace jtshared;
@@ -322,7 +265,7 @@ public:
         return &(characterSpawnerTimeSeq[l]);
     }
 
-    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty);
+    void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const CharacterConfig* cc, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty);
 
     virtual RenderFrame* CalcSingleStep(const int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
     
