@@ -460,9 +460,7 @@ message CharacterDownsync {
     float ground_vel_y = 12;
     float ground_vel_z = 13;
 
-    /*
-    The unit-quaternion that rotates the character's aiming direction LOCALLY after "q_*". 
-    */
+    // The unit-quaternion that rotates the character's aiming direction LOCALLY after "q_*". 
     float aiming_q_x = 14;
     float aiming_q_y = 15;
     float aiming_q_z = 16;
@@ -478,12 +476,15 @@ message CharacterDownsync {
     uint32 species_id = 22; // For evolution during battle
 
     uint64 ground_ud = 24;
+    uint64 wall_ud = 25;
 
     int32 frames_to_recover = 26;
 
     int32 new_birth_rdf_countdown = 27;
 
     int32 frames_invinsible = 28;
+
+    int32 parry_prep_rdf_cnt_down = 29;
 
     // Kindly note that "collision_type_mask" is NOT GRANULAR ENOUGH for inter-character collision configuration, e.g. same team omission, thus we'd still need the fields "bullet_team_id" and "ch_collision_team_id" here
     int32 bullet_team_id = 31;
@@ -509,7 +510,7 @@ message CharacterDownsync {
     int32 btn_c_holding_rdf_cnt = 45;
     int32 btn_d_holding_rdf_cnt = 46;
     int32 btn_e_holding_rdf_cnt = 47;
-    int32 parry_prep_rdf_cnt_down = 48;
+    int32 btn_f_holding_rdf_cnt = 48;
     int32 mp_regen_rdf_countdown = 49;
 
     int32 flying_rdf_countdown = 50;
@@ -581,8 +582,7 @@ message NpcCharacterDownsync {
 
     int32 activated_rdf_id = 3;
     uint64 cached_cue_cmd = 4;
-
-    int32 waiving_patrol_cue_id = 5;
+    int32 last_fled_rdf_id = 5;
     NpcGoal goal_as_npc = 6;
 
     uint64 publishing_mask_upon_exhausted = 7; // [WARNING] NOT to be configured from UI/Story Editor.
@@ -594,11 +594,11 @@ message NpcCharacterDownsync {
     bool captured_by_patrol_cue = 11;
     int32 frames_in_patrol_cue = 12;
 
-    uint32 exhausted_to_drop_consumable_species_id = 13;
-    uint32 exhausted_to_drop_buff_species_id = 14;
-    uint32 exhausted_to_drop_pickup_skill_id = 15;
+    uint32 exhausted_to_drop_pkt = 13;
 
     bool is_main_tower_of_team = 16;
+    
+    int32 waiving_patrol_cue_id = 17;
 }
 
 message InputFrameDecoded {
@@ -609,6 +609,7 @@ message InputFrameDecoded {
     uint64 btn_c_level = 5;
     uint64 btn_d_level = 6;
     uint64 btn_e_level = 7;
+    uint64 btn_f_level = 8;
 }
 
 message UpsyncSnapshot {
@@ -628,8 +629,9 @@ message WsReq {
     map<uint32, uint32> preallocate_npc_species_dict = 11;
     repeated TrapConfigFromTiled trap_config_from_tile_list = 12;
     repeated TriggerConfigFromTiled trigger_config_from_tile_list = 13;
-    float fallen_death_height = 14;
-    BattleSpecificConfig battle_specific_config = 15;
+    repeated PickableConfigFromTiled pickable_config_from_tile_list = 14;
+    float fallen_death_height = 15;
+    BattleSpecificConfig battle_specific_config = 16;
 }
 
 message PatrolCue {
@@ -1024,6 +1026,8 @@ message StepResult {
     repeated Trigger fulfilled_triggers = 3;
     map<uint32, bool> fulfilled_trigger_ids = 4;
     map<uint32, bool> fulfilled_trigger_group_ids = 5;
+
+    repeated uint64 prepared_trigger_uds = 6;
 }
 
 message RenderFrame {
@@ -1242,23 +1246,6 @@ message BulletImmuneRecord {
     int32 remaining_lifetime_rdf_count = 2;
 }
 
-enum ConsumableType {
-    NoneCsmb = 0;
-    Refill = 1;
-    DbfRcv = 2; // Debuff recovery
-}
-
-message ConsumableConfig {
-    uint32 species_id = 1; 
-    int32 refill_delta = 2;
-    string vfx_anim_name_on_picker = 3;
-};
-
-message PickableSkillConfig {
-    uint32 skill_id = 1; 
-    string vfx_anim_name_on_picker = 2;
-};
-
 enum InventorySlotStockType {
     NoneIv = 0;
     DummyIv = 1; // For "slot D", just skip everything for this type
@@ -1398,39 +1385,27 @@ message SerializedBarrierCollider {
     SerializableConvexPolygon polygon = 2;
 }
 
-enum PickupType {
-    PkNone = 0;
-
-    HpSmallImmediate = 1;
-    HpMediumImmediate = 2;
-    HpBigImmediate = 3;
-
-    MpSmallImmediate = 4;
-    MpMediumImmediate = 5;
-    MpBigImmediate = 6;
-
-    PutIntoInventory = 512;
-    Vehicle = 513;
-    Carriable = 514;
-}
-
 message PickableConfig {
-    PickupType pickup_type = 1;
+    uint32 pickup_type = 1;
     bool takes_gravity = 2; 
     string active_anim_name = 3;
+    int32 amount_1 = 4;
+    int32 amount_2 = 5;
 }
 
 message PickableConfigFromTiled {
-    PickupType pickup_type = 1;
+    uint32 pickup_type = 1;
     int32 recur_quota = 2;
     uint32 lifetime_rdf_count_per_occurrence = 3;
     uint32 stock_quota_per_occurrence = 4;
+    float box_half_size_x = 5;
+    float box_half_size_y = 6;
 }
 
 message Pickable {
     uint32 id = 1;
 
-    PickupType pickup_type = 2;
+    uint32 pickup_type = 2;
     PickableState pk_state = 3;    
     int32 frames_in_pk_state = 4;    
 
@@ -1461,9 +1436,8 @@ message CharacterSpawnerConfig {
 
 message PickableSpawnerConfig {
     int32 cutoff_rdf_id = 1;
-    repeated uint32 species_id_list = 2; // the k-th subcycle tick corresponds to species_id_list[k]   
+    repeated uint32 pickup_type_list = 2; // the k-th subcycle tick corresponds to pickup_type_list[k]   
     repeated uint64 init_op_list = 3;    
-    repeated PickupType pickup_type_list = 4;    
 }
 
 message TriggerConfig {
@@ -1669,9 +1643,8 @@ message PrimitiveConsts {
     int32 default_pickable_disappearing_anim_frames = 70;
     int32 default_pickable_consumed_anim_frames = 71;
     float default_pickable_rising_vel_y = 72;
-    int32 default_pickable_nonpickable_startup_frames = 73;
-    int32 default_frames_to_show_damaged = 74;
-    int32 default_frames_to_continue_combo = 75;
+    int32 default_pickable_startup_frames = 73;
+    int32 default_pickable_lifetime_rdf_cnt = 74;
 
     int32 default_block_stun_frames = 76;
     int32 default_blownup_frames_for_flying = 77;
@@ -1764,49 +1737,62 @@ message PrimitiveConsts {
     int32 pattern_hold_inventory_slot_c = 144;
     int32 pattern_hold_inventory_slot_d = 145;
 
-    uint32 ele_none = 146;
-    uint32 ele_fire = 147;
-    uint32 ele_water = 148;
-    uint32 ele_thunder = 149;
-    uint32 ele_rock = 150;
-    uint32 ele_wind = 151;
-    uint32 ele_ice = 152;
+    int32 pattern_f = 146;
 
-    float ele_weakness_default_yield = 153;
-    float ele_resistance_default_yield = 154;
+    uint32 ele_none = 147;
+    uint32 ele_fire = 148;
+    uint32 ele_water = 149;
+    uint32 ele_thunder = 150;
+    uint32 ele_rock = 151;
+    uint32 ele_wind = 152;
+    uint32 ele_ice = 153;
 
-    int32 starting_render_frame_id = 155;
-    int32 starting_input_frame_id = 156;
+    float ele_weakness_default_yield = 154;
+    float ele_resistance_default_yield = 155;
 
-    uint32 trt_none = 157; 
-    uint32 trt_victory = 158; 
+    int32 starting_render_frame_id = 156;
+    int32 starting_input_frame_id = 157;
 
-    uint32 trt_by_init_delay = 159;
-    uint32 trt_by_movement = 160;
-    uint32 trt_by_attack = 161;
+    uint32 trt_none = 158; 
+    uint32 trt_victory = 159; 
 
-    uint32 trt_indi_wave_npc_spawner = 162;
+    uint32 trt_by_init_delay = 160;
+    uint32 trt_by_movement = 161;
+    uint32 trt_by_attack = 162;
+    uint32 trt_by_pattern_f = 163;
 
-    uint32 trt_sync_wave_group = 163;
+    uint32 trt_indi_wave_npc_spawner = 164;
+    uint32 trt_indi_wave_pickable_spawner = 165;
 
-    uint32 trt_save_point_only = 165;
-    uint32 trt_story_point_only = 166;
-    uint32 trt_save_and_story_point = 167;
+    uint32 trt_sync_wave_group = 166;
 
-    int32 terminating_lower_part_rdf_cnt = 168;
-    int32 default_tr_recovery_frames = 169;
+    uint32 trt_save_point_only = 167;
+    uint32 trt_story_point_only = 168;
+    uint32 trt_save_and_story_point = 169;
 
-    uint32 tpt_none = 170; 
-    uint32 tpt_sliding_platform = 171; 
-    uint32 tpt_rotating_platform = 172; 
-    uint32 tpt_conveyor_belt = 173; 
-    uint32 tpt_falling_rock = 174; 
-    uint32 tpt_spring = 175; 
+    uint32 tpt_none = 256; 
+    uint32 tpt_sliding_platform = 257; 
+    uint32 tpt_rotating_platform = 258; 
+    uint32 tpt_conveyor_belt = 259; 
+    uint32 tpt_falling_rock = 260; 
+    uint32 tpt_spring = 261; 
 
-    int32 sp_atk_lookup_frames = 512;
-    int32 debuff_array_idx_elemental = 513;
+    uint32 pkt_none = 512;
+    uint32 pkt_hp_small = 513;
+    uint32 pkt_mp_small = 514;
+    uint32 pkt_inv_c_refill_small = 515;
+    uint32 pkt_inv_d_refill_small = 516;
+    uint32 pkt_vehicle_sedan_1 = 517;
 
-    ChSpeciesConsts ch_species = 1024;
+    int32 sp_atk_lookup_frames = 1024;
+    int32 debuff_array_idx_elemental = 1025;
+    int32 terminating_lower_part_rdf_cnt = 1026;
+    int32 default_tr_recovery_frames = 1027;
+    int32 default_fleeing_grace_period_rdf_cnt = 1028;
+    int32 default_frames_to_show_damaged = 1029;
+    int32 default_frames_to_continue_combo = 1030;
+
+    ChSpeciesConsts ch_species = 2048;
 }
 
 message AimingRay {
@@ -1829,4 +1815,5 @@ message ConfigConsts {
     map<uint32, DebuffConfig> debuff_configs = 4;
     map<uint32, TrapConfig> trap_configs = 5;
     map<uint32, TriggerConfig> trigger_configs = 6;
+    map<uint32, PickableConfig> pickable_configs = 7;
 }

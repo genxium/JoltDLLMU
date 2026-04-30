@@ -36,10 +36,12 @@ const uint64_t UDT_BL = (U64_1 << 33) + (U64_1 << 32);
 const uint64_t UDT_TRIGGER = (U64_1 << 34);
 const uint64_t UDT_TRAP = (U64_1 << 34) + (U64_1 << 32);
 const uint64_t UDT_PICKABLE = (U64_1 << 34) + (U64_1 << 33); 
+
 const uint64_t UDT_PLAYER_HURTBOX = (U64_1 << 34) + (U64_1 << 33) + (U64_1 << 32);
 const uint64_t UDT_NPC_HURTBOX = (U64_1 << 35);
 const uint64_t UDT_PLAYER_SHIELDBOX = (U64_1 << 35) + (U64_1 << 32);
 const uint64_t UDT_NPC_SHIELDBOX = (U64_1 << 35) + (U64_1 << 33);
+const uint32_t UD_PAYLOAD_HB_SB_IDX_SHIFT = 16;
 
 const uint32_t cMaxBodies = 1024;
 const uint32_t cNumBodyMutexes = 0;
@@ -125,14 +127,31 @@ const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transi
 
     {UDT_PLAYER, UDT_NPC_SHIELDBOX},
     {UDT_NPC,    UDT_NPC_SHIELDBOX},
+    {UDT_BL,     UDT_NPC_SHIELDBOX},
+    {UDT_TRAP,   UDT_NPC_SHIELDBOX},
     {UDT_NPC_SHIELDBOX, UDT_PLAYER},
     {UDT_NPC_SHIELDBOX, UDT_NPC},
+    {UDT_NPC_SHIELDBOX, UDT_BL},
+    {UDT_NPC_SHIELDBOX, UDT_TRAP},
+
+    {UDT_PLAYER, UDT_PLAYER_SHIELDBOX},
+    {UDT_NPC,    UDT_PLAYER_SHIELDBOX},
+    {UDT_BL,     UDT_PLAYER_SHIELDBOX},
+    {UDT_TRAP,   UDT_PLAYER_SHIELDBOX},
+    {UDT_PLAYER_SHIELDBOX, UDT_PLAYER},
+    {UDT_PLAYER_SHIELDBOX, UDT_NPC},
+    {UDT_PLAYER_SHIELDBOX, UDT_BL},
+    {UDT_PLAYER_SHIELDBOX, UDT_TRAP},
 
     {UDT_PLAYER, UDT_BL},
     {UDT_NPC,    UDT_BL},
+    {UDT_PLAYER_HURTBOX,    UDT_BL},
+    {UDT_NPC_HURTBOX,       UDT_BL},
 
     {UDT_BL, UDT_PLAYER},
     {UDT_BL, UDT_NPC},
+    {UDT_BL, UDT_PLAYER_HURTBOX},
+    {UDT_BL, UDT_NPC_HURTBOX},
     {UDT_BL, UDT_TRAP},
     {UDT_BL, UDT_TRIGGER},
     {UDT_BL, UDT_OBSTACLE},

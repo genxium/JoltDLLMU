@@ -34,12 +34,14 @@ namespace JoltCSharp {
         public const uint TRT_BY_INIT_DELAY = 1;
         public const uint TRT_BY_MOVEMENT = 2;
         public const uint TRT_BY_ATTACK = 3;
-        public const uint TRT_INDI_WAVE_NPC_SPAWNER = 4;
-        public const uint TRT_SYNC_WAVE_GROUP = 5;
-        public const uint TRT_SAVE_POINT_ONLY = 6;
-        public const uint TRT_STORY_POINT_ONLY = 7;
-        public const uint TRT_SAVE_AND_STORY_POINT = 8;
-        public const uint TRT_VICTORY = 9;
+        public const uint TRT_BY_PATTERN_F = 4;
+        public const uint TRT_INDI_WAVE_NPC_SPAWNER = 5;
+        public const uint TRT_INDI_WAVE_PICKABLE_SPAWNER = 6;
+        public const uint TRT_SYNC_WAVE_GROUP = 7;
+        public const uint TRT_SAVE_POINT_ONLY = 8;
+        public const uint TRT_STORY_POINT_ONLY = 9;
+        public const uint TRT_SAVE_AND_STORY_POINT = 10;
+        public const uint TRT_VICTORY = 11;
 
         public const uint TPT_NONE = 0;
         public const uint TPT_SLIDING_PLATFORM = 1;
@@ -189,7 +191,8 @@ namespace JoltCSharp {
             DefaultPickableDisappearingAnimFrames = 10,
             DefaultPickableConsumedAnimFrames = 30,
             DefaultPickableRisingVelY = 8f,
-            DefaultPickableNonpickableStartupFrames = 45,
+            DefaultPickableStartupFrames = 45,
+            DefaultPickableLifetimeRdfCnt = 60*BATTLE_DYNAMICS_FPS,
 
             DefaultBlockStunFrames = 10,
             DefaultBlownupFramesForFlying = 30,
@@ -266,6 +269,8 @@ namespace JoltCSharp {
             PatternHoldInventorySlotC = 1027,
             PatternHoldInventorySlotD = 1028,
 
+            PatternF = 1029,
+
             EleNone = 0,
             EleFire = 1,
             EleWater = 2,
@@ -286,6 +291,7 @@ namespace JoltCSharp {
             DefaultFramesToShowDamaged = (int)(1.2 * BATTLE_DYNAMICS_FPS),
             DefaultFramesToContinueCombo = (int)(0.8f * BATTLE_DYNAMICS_FPS),
             DefaultTrRecoveryFrames = (int)(3.0 * BATTLE_DYNAMICS_FPS),
+            DefaultFleeingGracePeriodRdfCnt = 2*BATTLE_DYNAMICS_FPS,
 
             BackendWsRecvBytelength = (FRONTEND_WS_RECV_BYTE_LENGTH + (FRONTEND_WS_RECV_BYTE_LENGTH >> 1)), // Slightly larger than FrontendWsRecvBytelength because it has to receive some initial collider information
 
@@ -309,8 +315,10 @@ namespace JoltCSharp {
             TrtByInitDelay = TRT_BY_INIT_DELAY,
             TrtByMovement = TRT_BY_MOVEMENT,
             TrtByAttack = TRT_BY_ATTACK,
+            TrtByPatternF = TRT_BY_PATTERN_F,
 
             TrtIndiWaveNpcSpawner = TRT_INDI_WAVE_NPC_SPAWNER,
+            TrtIndiWavePickableSpawner = TRT_INDI_WAVE_PICKABLE_SPAWNER,
             TrtSyncWaveGroup = TRT_SYNC_WAVE_GROUP,
 
             TrtSavePointOnly = TRT_SAVE_POINT_ONLY,
@@ -325,6 +333,12 @@ namespace JoltCSharp {
             TptRotatingPlatform = TPT_ROTATING_PLATFORM,
             TptConveyorBelt = TPT_CONVEYOR_BELT,
             TptFallingRock = TPT_FALLING_ROCK,
+
+            PktNone = 0,
+            PktHpSmall = 1,
+            PktMpSmall = 2,
+            PktInvCRefillSmall = 3,
+            PktInvDRefillSmall = 4, 
 
             ChSpecies = new ChSpeciesConsts {
                 Bladegirl = SPECIES_BLADEGIRL,

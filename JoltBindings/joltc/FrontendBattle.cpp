@@ -722,7 +722,7 @@ void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, c
                 const Skill& potentialSkillConfig = globalConfigConsts->skill_configs().at(potentialSkillId);
                 const BulletConfig& potentialBulletConfig = potentialSkillConfig.hits(0);
                 BodyID bodyID = chCollider->GetBodyID();
-                AimingRayBodyFilter aimingRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, bodyID, ud, this);
+                AimingRayBodyFilter aimingRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, bodyID, ud, udt, this);
                 
                 JPH::Quat nextChdQ;
                 Vec3 nextChdFacing;

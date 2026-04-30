@@ -106,9 +106,10 @@ void ClipPolyVsEdge(const VERTEX_ARRAY &inPolygonToClip, Vec3Arg inEdgeVertex1, 
 
 	// Project vertices of edge on inPolygonToClip
 	Vec3 polygon_normal = (inPolygonToClip[2] - inPolygonToClip[0]).Cross(inPolygonToClip[1] - inPolygonToClip[0]);
+    bool polygon_normal_is_near_zero = polygon_normal.IsNearZero();
 	float polygon_normal_len_sq = polygon_normal.LengthSq();
-	Vec3 v1 = inEdgeVertex1 + polygon_normal.Dot(inPolygonToClip[0] - inEdgeVertex1) * polygon_normal / polygon_normal_len_sq;
-	Vec3 v2 = inEdgeVertex2 + polygon_normal.Dot(inPolygonToClip[0] - inEdgeVertex2) * polygon_normal / polygon_normal_len_sq;
+	Vec3 v1 = inEdgeVertex1 + (polygon_normal_is_near_zero ? Vec3::sZero() : polygon_normal.Dot(inPolygonToClip[0] - inEdgeVertex1) * polygon_normal / polygon_normal_len_sq);
+	Vec3 v2 = inEdgeVertex2 + (polygon_normal_is_near_zero ? Vec3::sZero() : polygon_normal.Dot(inPolygonToClip[0] - inEdgeVertex2) * polygon_normal / polygon_normal_len_sq);
 	Vec3 v12 = v2 - v1;
 	float v12_len_sq = v12.LengthSq();
 

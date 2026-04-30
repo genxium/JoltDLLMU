@@ -147,7 +147,7 @@ namespace JoltCSharp {
             HitboxHalfSizeY = 2,
             AnimName = "PistolBullet2",
             Speed = 8.5f * BATTLE_DYNAMICS_FPS,
-            Hardness = 7,
+            Hardness = 10,
             HitAnimRdfCnt = 45,
             VanishingAnimRdfCnt = 25,
             // [WARNING] For "MechanicalCartridge", don't set "PushbackVelX" or "PushbackVelY", instead set density of the bullet and rely on the Physics engine to calculate impulse.
@@ -257,10 +257,10 @@ namespace JoltCSharp {
             SelfLockVelX = 0,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 10f,
+            HitboxOffsetX = 11f,
             HitboxOffsetY = 17f,
-            HitboxHalfSizeX = 18f,
-            HitboxHalfSizeY = 18f,
+            HitboxHalfSizeX = 12f,
+            HitboxHalfSizeY = 17f,
             CancellableStFrame = 10,
             CancellableEdFrame = 21,
             AnimName = "MeleeSlash2",
@@ -291,7 +291,7 @@ namespace JoltCSharp {
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
             HitboxOffsetX = 12f,
             HitboxOffsetY = 17f,
-            HitboxHalfSizeX = 18f,
+            HitboxHalfSizeX = 13f,
             HitboxHalfSizeY = 18f,
             CancellableStFrame = 11,
             CancellableEdFrame = 24,
@@ -321,9 +321,9 @@ namespace JoltCSharp {
             SelfLockVelX = 0.2f * BATTLE_DYNAMICS_FPS,
             SelfLockVelY = PbPrimitives.underlying.NoLockVel,
             SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
-            HitboxOffsetX = 24f,
+            HitboxOffsetX = 23f,
             HitboxOffsetY = 17f,
-            HitboxHalfSizeX = 22f,
+            HitboxHalfSizeX = 23f,
             HitboxHalfSizeY = 18f,
             AnimName = "MeleeSlash2",
             HitAnimRdfCnt = 45,
@@ -375,7 +375,7 @@ namespace JoltCSharp {
                                                        .SetActiveFrames(16)
                                                        .SetCancellableFrames(0, 0)
                                                        .SetHitboxOffsets(12f, 16f)
-                                                       .SetHitboxHalfSizes(20f, 18f)
+                                                       .SetHitboxHalfSizes(13f, 16f)
                                                        .SetRemainsUponHit(false)
                                                        .SetMeleeHitSelfStunFrames(PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES)
                                                        .SetSelfLockVel(PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel, PbPrimitives.underlying.NoLockVel);
@@ -594,7 +594,7 @@ namespace JoltCSharp {
             RecoveryFrames = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
             RecoveryFramesOnBlock = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
             RecoveryFramesOnHit = BasicRapidFireHit1.StartupFrames+BasicRapidFireHit1.CooldownFrames,
-            MpDelta = 220,
+            MpDelta = 260,
             InvocationType = SkillInvocation.RisingEdge,
             BoundChState = CharacterState.Atk1,
         }

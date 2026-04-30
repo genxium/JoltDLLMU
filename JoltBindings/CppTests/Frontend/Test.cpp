@@ -949,7 +949,7 @@ RenderFrame* mockBountyHunterSkillRdf(google::protobuf::Arena* theAllocator) {
     auto npcCh1 = npc1->mutable_chd();
     auto npcCh1Species = chSpecies.bladegirl();
     auto npcCc1 = characterConfigs[npcCh1Species];
-    npcCh1->set_x(+5);
+    npcCh1->set_x(+100);
     npcCh1->set_y(200);
     npcCh1->set_speed(npcCc1.speed());
     npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -1546,6 +1546,36 @@ RenderFrame* mockCrouchTestStartRdf(google::protobuf::Arena* theAllocator) {
     player1->set_revival_q_z(0);
     player1->set_revival_q_w(1);
 
+    auto npc1 = startRdf->mutable_npcs(0);
+    npc1->set_id(npcIdCounter++);
+    npc1->set_goal_as_npc(NpcGoal::NPatrol);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+900);
+    npcCh1->set_y(320);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(0);
+    npcCh1->set_q_y(1);
+    npcCh1->set_q_z(0);
+    npcCh1->set_q_w(0);
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpt_sliding_platform());
+    ++dynamicTrapCount;
+
     startRdf->set_npc_id_counter(npcIdCounter);
     startRdf->set_npc_count(npcIdCounter - 1);
 
@@ -1647,7 +1677,7 @@ RenderFrame* mockBlackShooterTestStartRdf(google::protobuf::Arena* theAllocator)
     auto playerCh1 = player1->mutable_chd();
     auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
-    playerCh1->set_x(-50);
+    playerCh1->set_x(320);
     playerCh1->set_y(100);
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -1679,7 +1709,7 @@ RenderFrame* mockBlackShooterTestStartRdf(google::protobuf::Arena* theAllocator)
     auto npcCh1 = npc1->mutable_chd();
     auto npcCh1Species = chSpecies.blackshooter1();
     auto npcCc1 = characterConfigs[npcCh1Species];
-    npcCh1->set_x(+60);
+    npcCh1->set_x(430);
     npcCh1->set_y(100);
     npcCh1->set_speed(npcCc1.speed());
     npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -2077,6 +2107,110 @@ RenderFrame* mockRotatingPlatformForceCrouchingTestStartRdf2(google::protobuf::A
     return startRdf;
 }
 
+RenderFrame* mockBtnFTestStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    int pickableCount = 0;
+    int triggerCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto npc1 = startRdf->mutable_npcs(0);
+    npc1->set_id(npcIdCounter++);
+    npc1->set_goal_as_npc(NpcGoal::NIdleIfGoHuntingThenPatrol);
+    npc1->set_exhausted_to_drop_pkt(globalPrimitiveConsts->pkt_hp_small());
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+200);
+    npcCh1->set_y(200);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(0);
+    npcCh1->set_q_y(1);
+    npcCh1->set_q_z(0);
+    npcCh1->set_q_w(0);
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+
+    uint32_t btnFTriggerId = 42;
+
+    auto tr1 = startRdf->add_triggers();
+    tr1->set_id(btnFTriggerId);
+    tr1->set_trt(globalPrimitiveConsts->trt_by_pattern_f());
+    tr1->set_x(+20);
+    tr1->set_y(116);
+    tr1->set_z(0);
+    tr1->set_state(TriggerState::TrReady);
+    ++triggerCount;
+    
+    uint32_t pickupSpawnerTriggerId = 43;
+
+    auto tr2 = startRdf->add_triggers();
+    tr2->set_id(pickupSpawnerTriggerId);
+    tr2->set_trt(globalPrimitiveConsts->trt_indi_wave_pickable_spawner());
+    tr2->set_x(tr1->x());
+    tr2->set_y(tr1->y());
+    tr2->set_z(tr1->z());
+    tr2->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+    startRdf->set_pickable_count(pickableIdCounter-1);
+
+    startRdf->set_trigger_count(triggerCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -2448,8 +2582,8 @@ std::map<int, uint64_t> testCmds14 = {
     {644, 35},
     {800, 35},
     {804, 291},
-    {808, 3},
-    {820, 3},
+    {808, 0},
+    {820, 0},
     {824, 32},
     {944, 32},
     {948, 0},
@@ -2701,8 +2835,8 @@ std::map<int, uint64_t> testCmds28 = {
     {0, 0},
     {199, 0},
     {200, 3}, // Follow the fled npc1
-    {500, 3},
-    {501, 0},
+    {360, 3},
+    {361, 0},
     {2048, 0},
 };
 
@@ -2787,6 +2921,24 @@ std::map<int, uint64_t> testCmds33 = {
     {400, 3},   
     {799, 3},
     {800, 0},
+    {1024, 0}
+};
+
+std::map<int, uint64_t> testCmds34 = {
+    {0, 0},
+    {32, 3},
+    {50, 3},   
+    {51, 0},
+    {127, 0},
+    {128, 512},
+    {129, 0},
+    {327, 0},
+    {328, 512},
+    {379, 0},
+    {380, 0},
+    {399, 0},
+    {400, 32},
+    {401, 0},
     {1024, 0}
 };
 
@@ -3467,14 +3619,14 @@ void initTest8Data(WsReq* initializerMapData, std::vector<std::vector<float>>& h
 }
 
 void initTest9Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf1(theAllocator);
+    auto startRdf = mockSliderTrapTestStartRdf1(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(sliderTrapTestStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
     auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel(3.f * globalPrimitiveConsts->battle_dynamics_fps(), 4.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled1->set_id(sliderTrapTestStartRdf->dynamic_traps(0).id());
-    trapConfigFromTiled1->set_tpt(sliderTrapTestStartRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
     trapConfigFromTiled1->set_linear_speed(initVel.Length());
     trapConfigFromTiled1->set_box_half_size_x(50.f);
     trapConfigFromTiled1->set_box_half_size_y(50.f);
@@ -3648,9 +3800,9 @@ void initTest10Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest11Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto rollbackChasingAlignTestStartRdf = mockRollbackChasingAlignTestStartRdf(theAllocator);
+    auto startRdf = mockRollbackChasingAlignTestStartRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(rollbackChasingAlignTestStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
     {
         int receivedEdIfdId = 2;
@@ -3972,7 +4124,7 @@ void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 10;
+        int receivedEdIfdId = 5;
         int receivedStIfdId = 2;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
@@ -3985,8 +4137,34 @@ void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
     }
     {
+        int receivedEdIfdId = 6;
+        int receivedStIfdId = 5;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(20);
+        }
+        incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 11;
+        int receivedStIfdId = 6;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(4);
+        }
+        incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
+    }
+    {
         int receivedEdIfdId = 16;
-        int receivedStIfdId = 10;
+        int receivedStIfdId = 11;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
         req->set_join_index(2);
@@ -4011,7 +4189,7 @@ void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 60;
+        int receivedEdIfdId = 70;
         int receivedStIfdId = 57;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
@@ -4024,8 +4202,21 @@ void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 66;
-        int receivedStIfdId = 60;
+        int receivedEdIfdId = 73;
+        int receivedStIfdId = 70;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(20);
+        }
+        incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
+    }
+    {
+        int receivedEdIfdId = 74;
+        int receivedStIfdId = 73;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
         req->set_join_index(2);
@@ -4033,6 +4224,20 @@ void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
         for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
             peerUpsyncSnapshot->add_cmd_list(0);
+        }
+        incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
+    }
+    {
+        // BladeGirl tries to use BladeHit1 to counter charged pistol bullet, but would fail
+        int receivedEdIfdId = 239;
+        int receivedStIfdId = 237;
+        int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
+        WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
+        req->set_join_index(2);
+        auto peerUpsyncSnapshot = req->mutable_upsync_snapshot();
+        peerUpsyncSnapshot->set_st_ifd_id(receivedStIfdId);
+        for (int ifdId = receivedStIfdId; ifdId < receivedEdIfdId; ifdId++) {
+            peerUpsyncSnapshot->add_cmd_list(32);
         }
         incomingUpsyncSnapshotReqs14Intime[receivedTimerRdfId] = req;
     }
@@ -4049,14 +4254,14 @@ void initTest15Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest16Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf2(theAllocator);
+    auto startRdf = mockSliderTrapTestStartRdf2(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(sliderTrapTestStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
     auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel(-0.4f * globalPrimitiveConsts->battle_dynamics_fps(), -0.3f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled2->set_id(sliderTrapTestStartRdf->dynamic_traps(0).id());
-    trapConfigFromTiled2->set_tpt(sliderTrapTestStartRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(0).tpt());
     trapConfigFromTiled2->set_linear_speed(initVel.Length());
     trapConfigFromTiled2->set_box_half_size_x(100.f);
     trapConfigFromTiled2->set_box_half_size_y(20.f);
@@ -4083,14 +4288,14 @@ void initTest16Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest17Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto sliderTrapTestStartRdf = mockSliderTrapTestStartRdf3(theAllocator);
+    auto startRdf = mockSliderTrapTestStartRdf3(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(sliderTrapTestStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
     auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel1(-2.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled1->set_id(sliderTrapTestStartRdf->dynamic_traps(0).id());
-    trapConfigFromTiled1->set_tpt(sliderTrapTestStartRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
     trapConfigFromTiled1->set_linear_speed(initVel1.Length());
     trapConfigFromTiled1->set_box_half_size_x(50.f);
     trapConfigFromTiled1->set_box_half_size_y(3.f);
@@ -4117,8 +4322,8 @@ void initTest17Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 
     auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel2(+1.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled2->set_id(sliderTrapTestStartRdf->dynamic_traps(1).id());
-    trapConfigFromTiled2->set_tpt(sliderTrapTestStartRdf->dynamic_traps(1).tpt());
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(1).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(1).tpt());
     trapConfigFromTiled2->set_linear_speed(initVel2.Length());
     trapConfigFromTiled2->set_box_half_size_x(50.f);
     trapConfigFromTiled2->set_box_half_size_y(20.f);
@@ -4145,13 +4350,13 @@ void initTest17Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto rollbackChasingAlignTestStartRdf = mockRollbackChasingAlignTestStartRdf2(theAllocator);
+    auto startRdf = mockRollbackChasingAlignTestStartRdf2(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
 
     auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel1(-2.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled1->set_id(rollbackChasingAlignTestStartRdf->dynamic_traps(0).id());
-    trapConfigFromTiled1->set_tpt(rollbackChasingAlignTestStartRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
     trapConfigFromTiled1->set_linear_speed(initVel1.Length());
     trapConfigFromTiled1->set_box_half_size_x(50.f);
     trapConfigFromTiled1->set_box_half_size_y(20.f);
@@ -4178,8 +4383,8 @@ void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 
     auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel2(+2.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
-    trapConfigFromTiled2->set_id(rollbackChasingAlignTestStartRdf->dynamic_traps(1).id());
-    trapConfigFromTiled2->set_tpt(rollbackChasingAlignTestStartRdf->dynamic_traps(1).tpt());
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(1).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(1).tpt());
     trapConfigFromTiled2->set_linear_speed(initVel2.Length());
     trapConfigFromTiled2->set_box_half_size_x(75.f);
     trapConfigFromTiled2->set_box_half_size_y(20.f);
@@ -4204,7 +4409,7 @@ void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled2->set_limit_1(-20.0f);
     trapConfigFromTiled2->set_limit_2(+20.0f);
 
-    initializerMapData->set_allocated_self_parsed_rdf(rollbackChasingAlignTestStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
     {
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
@@ -4412,22 +4617,22 @@ void initTest19Data(WsReq* testInitializerMapData, std::vector<std::vector<float
     testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
 }
 
-void initTest20Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+void initTest20Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
-    auto npcSpawnerStartRdf = mockNpcSpawnerRdf(theAllocator);
-    TestHelper::AddHullsToWsReq(npcSpawnerInitializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    auto startRdf = mockNpcSpawnerRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
 
-    npcSpawnerInitializerMapData->set_allocated_self_parsed_rdf(npcSpawnerStartRdf);
-    auto triggerConfigFromTiled1 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled1->set_id(npcSpawnerStartRdf->triggers(0).id());
-    triggerConfigFromTiled1->set_trt(npcSpawnerStartRdf->triggers(0).trt());
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+    auto triggerConfigFromTiled1 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(startRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(startRdf->triggers(0).trt());
     triggerConfigFromTiled1->set_box_half_size_x(200.f);
     triggerConfigFromTiled1->set_box_half_size_y(50.f);
-    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(2).id());
+    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(2).id());
 
-    auto triggerConfigFromTiled2 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled2->set_id(npcSpawnerStartRdf->triggers(1).id());
-    triggerConfigFromTiled2->set_trt(npcSpawnerStartRdf->triggers(1).trt());
+    auto triggerConfigFromTiled2 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(startRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
     triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
     triggerConfigFromTiled2->set_recovery_frames(5*globalPrimitiveConsts->battle_dynamics_fps()); 
     triggerConfigFromTiled2->set_bullet_team_id(3);
@@ -4436,9 +4641,9 @@ void initTest20Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     triggerConfigFromTiled2->set_init_q_y(1);
     triggerConfigFromTiled2->set_init_q_z(0);
     triggerConfigFromTiled2->set_init_q_w(0);
-    triggerConfigFromTiled2->set_new_revival_x(npcSpawnerStartRdf->triggers(1).x());
-    triggerConfigFromTiled2->set_new_revival_y(npcSpawnerStartRdf->triggers(1).y());
-    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(0).id());
+    triggerConfigFromTiled2->set_new_revival_x(startRdf->triggers(1).x());
+    triggerConfigFromTiled2->set_new_revival_y(startRdf->triggers(1).y());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
     // Its own quota is 3, however as it subscribes to a "trt_by_movement" whose "quota" is only 1, this "indi_wave_npc_spawner" will only use the first "characterSpawnerTimeSeq"
     auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
@@ -4456,9 +4661,9 @@ void initTest20Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
     mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
 
-    auto triggerConfigFromTiled3 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled3->set_id(npcSpawnerStartRdf->triggers(2).id());
-    triggerConfigFromTiled3->set_trt(npcSpawnerStartRdf->triggers(2).trt());
+    auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(startRdf->triggers(2).trt());
 }
 
 void initTest21Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
@@ -4829,6 +5034,34 @@ void initTest26Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto startRdf = mockCrouchTestStartRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
+    Vec3 initVel(3.f * globalPrimitiveConsts->battle_dynamics_fps(), 0, 0);
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_linear_speed(initVel.Length());
+    trapConfigFromTiled1->set_box_half_size_x(30.f);
+    trapConfigFromTiled1->set_box_half_size_y(12.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+
+    trapConfigFromTiled1->set_init_vel_x(initVel.GetX());
+    trapConfigFromTiled1->set_init_vel_y(initVel.GetY());
+    trapConfigFromTiled1->set_init_vel_z(initVel.GetZ());
+
+    trapConfigFromTiled1->set_slider_axis_x(1);
+    trapConfigFromTiled1->set_slider_axis_y(0);
+    trapConfigFromTiled1->set_slider_axis_z(0);
+
+    trapConfigFromTiled1->set_init_x(700);
+    trapConfigFromTiled1->set_init_y(188);
+    trapConfigFromTiled1->set_init_z(0);
+
+    trapConfigFromTiled1->set_cooldown_rdf_count(120);
+    trapConfigFromTiled1->set_limit_1(-100.0f);
+    trapConfigFromTiled1->set_limit_2(+100.0f);
 }
 
 void initTest27Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
@@ -4855,24 +5088,24 @@ void initTest30Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
-void initTest31Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+void initTest31Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
-    auto npcSpawnerStartRdf = mockNpcSpawnerRdf2(theAllocator);
-    TestHelper::AddHullsToWsReq(npcSpawnerInitializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    auto startRdf = mockNpcSpawnerRdf2(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
 
-    npcSpawnerInitializerMapData->set_allocated_self_parsed_rdf(npcSpawnerStartRdf);
-    auto triggerConfigFromTiled1 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled1->set_id(npcSpawnerStartRdf->triggers(0).id());
-    triggerConfigFromTiled1->set_trt(npcSpawnerStartRdf->triggers(0).trt());
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+    auto triggerConfigFromTiled1 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(startRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(startRdf->triggers(0).trt());
     triggerConfigFromTiled1->set_box_half_size_x(200.f);
     triggerConfigFromTiled1->set_box_half_size_y(50.f);
     triggerConfigFromTiled1->set_quota(3);
-    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(2).id());
+    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(2).id());
     triggerConfigFromTiled1->set_recovery_frames(1);
 
-    auto triggerConfigFromTiled2 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled2->set_id(npcSpawnerStartRdf->triggers(1).id());
-    triggerConfigFromTiled2->set_trt(npcSpawnerStartRdf->triggers(1).trt());
+    auto triggerConfigFromTiled2 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(startRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
     triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
     triggerConfigFromTiled2->set_recovery_frames(5*globalPrimitiveConsts->battle_dynamics_fps()); 
     triggerConfigFromTiled2->set_bullet_team_id(3);
@@ -4881,9 +5114,9 @@ void initTest31Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     triggerConfigFromTiled2->set_init_q_y(1);
     triggerConfigFromTiled2->set_init_q_z(0);
     triggerConfigFromTiled2->set_init_q_w(0);
-    triggerConfigFromTiled2->set_new_revival_x(npcSpawnerStartRdf->triggers(1).x());
-    triggerConfigFromTiled2->set_new_revival_y(npcSpawnerStartRdf->triggers(1).y());
-    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(npcSpawnerStartRdf->triggers(0).id());
+    triggerConfigFromTiled2->set_new_revival_x(startRdf->triggers(1).x());
+    triggerConfigFromTiled2->set_new_revival_y(startRdf->triggers(1).y());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
 
     // Its own quota is 3 and it subscribes to a "trt_by_movement" whose "quota" is also 3, this "indi_wave_npc_spawner" will use all its "characterSpawnerTimeSeq"
     auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
@@ -4902,9 +5135,9 @@ void initTest31Data(WsReq* npcSpawnerInitializerMapData, std::vector<std::vector
     mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
     mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
 
-    auto triggerConfigFromTiled3 = npcSpawnerInitializerMapData->add_trigger_config_from_tile_list();
-    triggerConfigFromTiled3->set_id(npcSpawnerStartRdf->triggers(2).id());
-    triggerConfigFromTiled3->set_trt(npcSpawnerStartRdf->triggers(2).trt());
+    auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(startRdf->triggers(2).trt());
 }
 
 void initTest32Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
@@ -4955,6 +5188,46 @@ void initTest33Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled1->set_init_x(0);
     trapConfigFromTiled1->set_init_y(154);
     trapConfigFromTiled1->set_init_z(0);
+}
+
+void initTest34Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockBtnFTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto triggerConfigFromTiled1 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(startRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(startRdf->triggers(0).trt());
+    triggerConfigFromTiled1->set_box_half_size_x(30.f);
+    triggerConfigFromTiled1->set_box_half_size_y(50.f);
+    triggerConfigFromTiled1->set_quota(2);
+    triggerConfigFromTiled1->set_recovery_frames(3 * globalPrimitiveConsts->battle_dynamics_fps());
+
+    auto triggerConfigFromTiled2 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(startRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
+    triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
+    triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
+    triggerConfigFromTiled2->set_quota(2);
+    triggerConfigFromTiled2->set_init_q_x(0);
+    triggerConfigFromTiled2->set_init_q_y(1);
+    triggerConfigFromTiled2->set_init_q_z(0);
+    triggerConfigFromTiled2->set_init_q_w(0);
+    triggerConfigFromTiled2->set_new_revival_x(startRdf->triggers(1).x());
+    triggerConfigFromTiled2->set_new_revival_y(startRdf->triggers(1).y());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
+
+    auto* mutablePkSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
+    mutablePkSpanwerTimeSeq2_1->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq2_1->add_init_op_list(3);
+
+    auto* mutablePkSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
+    mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(3);
+    mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_mp_small());
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(4);
 }
 
 std::string outStr;
@@ -6083,7 +6356,7 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1600;
+    int loopRdfCnt = 1096;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -6118,45 +6391,50 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& npc1 = outerTimerRdf->npcs(0);
         auto& npc1Chd = npc1.chd();
 
+        int bulletCount = outerTimerRdf->bullet_count();
+
         if (550 <= outerTimerRdfId && outerTimerRdfId < 650) {
             //shouldPrint = true;
         }
 
-        if (954 <= outerTimerRdfId && outerTimerRdfId < 1024) {
+        if (900 <= outerTimerRdfId && outerTimerRdfId < 1024) {
             //shouldPrint = true;
         }
         
         if (shouldPrint) {
-            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ", " << npc1Chd.vel_z() << ")" << std::endl;
-        }
-
-        if (71 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+            std::cout << "TestCase14/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), btn_b_holding_rdf_cnt=" << p1Chd.btn_b_holding_rdf_cnt() << "\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ")" << std::endl;
         }
 
         if (70 <= outerTimerRdfId && outerTimerRdfId <= 90) {
-            JPH_ASSERT(150 == p2Chd.hp());
-        }
-
-        if (183 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
-            JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
-        }
-
-        if (110 < outerTimerRdfId && outerTimerRdfId <= 190) {
-            JPH_ASSERT(140 == npc1Chd.hp());
-        }
-
-        if (800 == outerTimerRdfId) {
+            if (71 == outerTimerRdfId) {
+                JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+                JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+            } else if (90 == outerTimerRdfId) {
+                JPH_ASSERT(140 == p2Chd.hp());
+            }
+        } else if (110 < outerTimerRdfId && outerTimerRdfId <= 190) {
+            JPH_ASSERT(150 == npc1Chd.hp());
+            if (183 == outerTimerRdfId) {
+                JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
+                JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
+            }
+        } else if (800 == outerTimerRdfId) {
             JPH_ASSERT(globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() <= p1Chd.btn_b_holding_rdf_cnt());
             JPH_ASSERT(0 < outStepResult->aiming_ray_count());
         } else if (803 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
+        } else if (947 == outerTimerRdfId) {
+            JPH_ASSERT(137 == p1Chd.active_skill_id());
+            JPH_ASSERT(1 == p1Chd.active_skill_hit());
+            JPH_ASSERT(1 == bulletCount);
+            auto& bl1 = outerTimerRdf->bullets(0);
+            JPH_ASSERT(BulletState::StartUp == bl1.bl_state());
         } else if (960 == outerTimerRdfId) {
+            auto& bl1 = outerTimerRdf->bullets(0);
+            JPH_ASSERT(BulletState::Vanishing == bl1.bl_state());
             JPH_ASSERT(CharacterState::BlownUp1 == p2Chd.ch_state());
             JPH_ASSERT(0 < p2Chd.vel_y());
-        } else if (985 == outerTimerRdfId) {
+        } else if (990 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::LayDown1 == p2Chd.ch_state());
         } else if (1000 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::GetUp1 == p2Chd.ch_state());
@@ -7088,16 +7366,31 @@ bool runTestCase26(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         const PlayerCharacterDownsync& p1 = outerTimerRdf->players(0);
         const CharacterDownsync& p1Chd = p1.chd();
 
-        if (240 <= outerTimerRdfId && outerTimerRdfId < 300) {
-            //shouldPrint = true;
+        const NpcCharacterDownsync& npc1 = outerTimerRdf->npcs(0);
+        const CharacterDownsync& npc1Chd = npc1.chd();
+
+        const Trap& tp1 = outerTimerRdf->dynamic_traps(0);
+        const uint64_t tp1Ud = APP_CalcTrapUserData(tp1.id());
+
+        if (0 <= outerTimerRdfId && outerTimerRdfId < 300) {
+            //shouldPrint=true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase26/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")" << std::endl;
+            std::cout << "TestCase26/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << "), ground_ud=" << p1Chd.ground_ud() << "\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ground_vel=(" << npc1Chd.ground_vel_x() << ", " << npc1Chd.ground_vel_y() << "), ground_ud=" << npc1Chd.ground_ud() << "\n\ttrap1, pos=(" << tp1.x() << ", " << tp1.y() << "), q=(" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << "), trapState=" << (int)tp1.trap_state() << ", framesInTrapState=" << tp1.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp1.id()) << std::endl;
         }
 
-        if (250 == outerTimerRdfId) {
+         if (105 == outerTimerRdfId) {
+            JPH_ASSERT(0 == npc1Chd.ground_ud());
+            JPH_ASSERT(0 < npc1Chd.vel_y());
+            JPH_ASSERT(0 > npc1Chd.vel_x());
+            JPH_ASSERT(CharacterState::InAirIdle1ByJump == npc1Chd.ch_state()); // Jumping onto sliding platform
+        } else if (250 == outerTimerRdfId) {
             JPH_ASSERT(Sliding == p1Chd.ch_state());
+            JPH_ASSERT(tp1Ud == npc1Chd.ground_ud()); 
+            JPH_ASSERT(BaseBattleCollisionFilter::IsLengthNearZero(tp1.vel_x() - npc1Chd.ground_vel_x())); 
+        } else if (280 == outerTimerRdfId) {
+            JPH_ASSERT(tp1Ud == npc1Chd.ground_ud()); // Jumped onto sliding platform
         } else if (300 == outerTimerRdfId) {
             JPH_ASSERT(CrouchIdle1 == p1Chd.ch_state());
         }
@@ -7215,7 +7508,7 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (188 <= outerTimerRdfId && outerTimerRdfId < 400) {
+        if (367 <= outerTimerRdfId && outerTimerRdfId < 480) {
             //shouldPrint = true;
         }
 
@@ -7236,14 +7529,27 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             // Fled due to not enough MP.
             JPH_ASSERT(3 == npc1.cached_cue_cmd());
             JPH_ASSERT(0 < npc1Chd.vel_x());
-        } else if (490 == outerTimerRdfId) {
-            int p1Hp = p1Chd.hp();
-            JPH_ASSERT(142 == p1Hp);
+            JPH_ASSERT(0 == npc1Chd.locking_on_ud());
+            JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
+        } else if (310 == outerTimerRdfId) {
+            // Stopped by MvBlocker due to fleeing grace period.
+            JPH_ASSERT(0 == npc1.cached_cue_cmd());
+            JPH_ASSERT(0 < npc1.last_fled_rdf_id());
+            JPH_ASSERT(300 > npc1Chd.mp());
+            JPH_ASSERT(BaseBattle::IsLengthNearZero(npc1Chd.vel_x()*globalPrimitiveConsts->estimated_seconds_per_rdf()));
+            JPH_ASSERT(0 == npc1Chd.locking_on_ud());
+            JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
+        } else if (380 == outerTimerRdfId) {
             JPH::Quat npc1ChdQ(npc1Chd.q_x(), npc1Chd.q_y(), npc1Chd.q_z(), npc1Chd.q_w());
             JPH_ASSERT(cTurnbackAroundYAxis.IsClose(npc1ChdQ)); // Got enough MP and thus turnaround to attack again
-            JPH_ASSERT(0 < npc1Chd.vel_x());
             JPH_ASSERT(globalPrimitiveConsts->no_skill() != npc1Chd.active_skill_id());
             JPH_ASSERT(globalPrimitiveConsts->no_skill_hit() != npc1Chd.active_skill_hit());
+
+            int p1Hp = p1Chd.hp();
+            JPH_ASSERT(142 == p1Hp);
+        } else if (480 == outerTimerRdfId) {
+            int p1Hp = p1Chd.hp();
+            JPH_ASSERT(134 == p1Hp);
         }
         
         outerTimerRdfId++;
@@ -7440,13 +7746,15 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
 
         auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+        int fulfilledTriggersSize = stepResult->fulfilled_triggers_size();
+        int npcCount = outerTimerRdf->npc_count();
 
         if (180 > outerTimerRdfId) {
             // shouldPrint = true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase31/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")" << ", stepResult fulfilled_triggers_size=" << stepResult->fulfilled_triggers_size() << std::endl;
+            std::cout << "TestCase31/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")" << ", stepResult fulfilledTriggersSize=" << fulfilledTriggersSize << ", npcCount=" << npcCount << std::endl;
         }
 
         if (1 == outerTimerRdfId) {
@@ -7456,30 +7764,30 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(3 == tr2.topo_lv());
             JPH_ASSERT(1 == tr3.topo_lv());
         } else if (18 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(1 == fulfilledTriggersSize);
             JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
         } else if (19 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+            JPH_ASSERT(1 == fulfilledTriggersSize);
             JPH_ASSERT(43 == stepResult->fulfilled_triggers(0).id());
         } else if (50 == outerTimerRdfId) {
-            JPH_ASSERT(1 == outerTimerRdf->npc_count());
+            JPH_ASSERT(1 == npcCount);
         } else if (108 == outerTimerRdfId) {
-            JPH_ASSERT(2 == outerTimerRdf->npc_count());
+            JPH_ASSERT(2 == npcCount);
         } else if (249 == outerTimerRdfId) {
-            JPH_ASSERT(0 == outerTimerRdf->npc_count());
+            JPH_ASSERT(0 == npcCount);
             if (TriggerState::TrReady == tr2.state() || TriggerState::TrExhaustedYetListening == tr2.state()) {
                 JPH_ASSERT(1 == tr2.main_cycle_mask_to_fulfill());
             } else {
                 JPH_ASSERT(0 == tr2.main_cycle_mask_to_fulfill());
             }
-        } else if (253 == outerTimerRdfId) {
-            JPH_ASSERT(1 == stepResult->fulfilled_triggers_size());
+        } else if (255 == outerTimerRdfId) {
+            JPH_ASSERT(1 == fulfilledTriggersSize);
             JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
             JPH_ASSERT(1 == tr1.quota());
-        } else if (330 == outerTimerRdfId) {
-            JPH_ASSERT(3 == outerTimerRdf->npc_count());
-        } else if (351 == outerTimerRdfId) {
-            JPH_ASSERT(4 == outerTimerRdf->npc_count());
+        } else if (331 == outerTimerRdfId) {
+            JPH_ASSERT(3 == npcCount);
+        } else if (353 == outerTimerRdfId) {
+            JPH_ASSERT(4 == npcCount);
             auto& npc1 = outerTimerRdf->npcs(0);
             auto& npc1Chd = npc1.chd();
             JPH_ASSERT(0 >= npc1Chd.hp());
@@ -7491,11 +7799,11 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             auto& npc3 = outerTimerRdf->npcs(2);
             auto& npc3Chd = npc3.chd();
             JPH_ASSERT(0 < npc3Chd.hp());
-
+            
             auto& npc4 = outerTimerRdf->npcs(3);
             auto& npc4Chd = npc4.chd();
             JPH_ASSERT(0 < npc4Chd.hp());
-
+            
             JPH_ASSERT(1 == tr2.quota());
         } else if (750 == outerTimerRdfId) {
             JPH_ASSERT(0 >= tr2.quota());
@@ -7630,6 +7938,109 @@ bool runTestCase33(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     }
 
     std::cout << "Passed TestCase33: Rotating platform force crouching positive z-ang-vel\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+
+    return true;
+}
+
+bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest34Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    bool victoryTriggered = false;
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds34, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase34/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+
+        auto& tr1 = outerTimerRdf->triggers(0);
+        auto tr1Ud = APP_CalcTriggerUserData(tr1.id());
+
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
+
+        auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
+
+        int pickableCnt = outerTimerRdf->pickable_count();
+
+        if (130 < outerTimerRdfId && 222 >= outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (420 < outerTimerRdfId && 600 >= outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase34/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), pickableCnt=" << pickableCnt << std::endl;
+        }
+
+        if (50 == outerTimerRdfId) {
+            JPH_ASSERT(1 == stepResult->prepared_trigger_uds_size());
+            JPH_ASSERT(1 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(2 == tr1.quota());
+        } else if (132 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrCoolingDown == tr1.state());
+            JPH_ASSERT(0 == stepResult->prepared_trigger_uds_size());
+            JPH_ASSERT(1 == stepResult->fulfilled_trigger_ids_size());
+            JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(1 == tr1.quota());
+        } else if (190 == outerTimerRdfId) {
+            JPH_ASSERT(1 == pickableCnt);
+        } else if (313 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrCooledDown == tr1.state());
+            JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(1 == tr1.quota());
+            JPH_ASSERT(0 == pickableCnt); // picked up
+        } else if (320 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrReady == tr1.state());
+            JPH_ASSERT(1 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(1 == tr1.quota());
+            JPH_ASSERT(1 == stepResult->prepared_trigger_uds_size());
+        } else if (360 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
+            JPH_ASSERT(0 == stepResult->prepared_trigger_uds_size());
+            JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(0 == tr1.quota());
+            JPH_ASSERT(0 == pickableCnt);
+        } else if (390 == outerTimerRdfId) {
+            JPH_ASSERT(2 == pickableCnt);
+            auto& pk1 = outerTimerRdf->pickables(0);
+            JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
+            auto& pk2 = outerTimerRdf->pickables(1);
+            JPH_ASSERT(PickableState::PIdle == pk2.pk_state());
+        } else if (420 == outerTimerRdfId) {
+            JPH_ASSERT(2 == pickableCnt); // All picked up by far
+        } else if (421 == outerTimerRdfId) {
+            JPH_ASSERT(1 == pickableCnt); // 1 left shifted
+        } else if (437 == outerTimerRdfId) {
+            JPH_ASSERT(2 == pickableCnt); // 1 dropped from exhausted NPC
+        } else if (443 == outerTimerRdfId) {
+            JPH_ASSERT(1 == pickableCnt); // 1 left shifted
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase34: Pattern-f trigger\n" << std::endl;
     theAllocator->Reset();
     reusedBattle->Clear();
 
@@ -7884,8 +8295,8 @@ int main(int argc, char** argv)
 
     std::vector<float> crouchMapHull4 = {
         // Crouch forcer
-        832, 136,
-        1088, 136,
+        832, 200,
+        1088, 200,
         1088, 120,
         832, 120
     };
@@ -7948,7 +8359,7 @@ int main(int argc, char** argv)
     
     runTestCase13(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
-    runTestCase14(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase14(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase15(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     
@@ -7969,12 +8380,13 @@ int main(int argc, char** argv)
     runTestCase24(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase25(battle, trapMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    runTestCase26(battle, crouchMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
+    runTestCase26(battle, crouchMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+
     runTestCase27(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase28(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    
+     
     runTestCase29(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase30(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -7983,7 +8395,9 @@ int main(int argc, char** argv)
     
     runTestCase32(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase33(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
-    
+
+    runTestCase34(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);

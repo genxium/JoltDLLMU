@@ -236,7 +236,7 @@ namespace JoltCSharp {
             Hp = 40,
             Mp = 300,
             MpRegenPerInterval = 60,
-            MpRegenInterval = 80,
+            MpRegenInterval = 70,
             LayDownFramesToRecover = 12,
             GetUpInvinsibleFrames = 19,
             GetUpFramesToRecover = 14,
