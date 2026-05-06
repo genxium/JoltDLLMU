@@ -30,7 +30,7 @@ const ConfigConsts* globalConfigConsts = nullptr;
 std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;
 std::unordered_set<uint32_t> trivialTrtSet;
 std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
-std::unordered_set<uint32_t> directNpcSpawnerTrtSet;
+std::unordered_set<uint32_t> directSpawnerTrtSet;
 std::unordered_set<uint32_t> collidableTrtSet;
 
 bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
@@ -58,15 +58,18 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
         globalPrimitiveConsts->trt_save_point_only(),
         globalPrimitiveConsts->trt_story_point_only(),
         globalPrimitiveConsts->trt_save_and_story_point(),
+        globalPrimitiveConsts->trt_by_pattern_f(),
     };
 
-    directNpcSpawnerTrtSet = {
+    directSpawnerTrtSet = {
         globalPrimitiveConsts->trt_indi_wave_npc_spawner(),
+        globalPrimitiveConsts->trt_indi_wave_pickable_spawner(),
     };
 
     collidableTrtSet = {
         globalPrimitiveConsts->trt_by_movement(),
         globalPrimitiveConsts->trt_by_attack(),
+        globalPrimitiveConsts->trt_by_pattern_f(),
     };
 
     return true;
@@ -140,6 +143,9 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, lo
     BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
     if (nullptr == battle) return false;
     RenderFrame* rdf = battle->rdfBuffer.GetByFrameId(inRdfId);
+    if (nullptr == rdf) {
+        return false;
+    }
     long byteSize = rdf->ByteSizeLong();
     if (byteSize > *outBytesCntLimit) {
         return false;

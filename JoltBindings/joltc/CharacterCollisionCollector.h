@@ -15,9 +15,10 @@ public:
     const CharacterDownsync* mSelfNextChd;
     BodyID   mSelfBodyID;
     uint64_t mSelfUd;
+    uint64_t mSelfUdt;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    AimingRayBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mBaseBattleFilter(baseBattleFilter) {
+    AimingRayBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -31,7 +32,7 @@ public:
         }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterAimingRayContact(mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
+        auto res = mBaseBattleFilter->validateLhsCharacterAimingRayContact(mSelfUdt, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -41,13 +42,15 @@ public:
 
 class VisionBodyFilter : public BodyFilter {
 public:
+    int mCurrRdfId;
     const CharacterDownsync* mSelfChd;
     const CharacterDownsync* mSelfNextChd;
     BodyID   mSelfBodyID;
     uint64_t mSelfUd;
+    uint64_t mSelfUdt;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    VisionBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mBaseBattleFilter(baseBattleFilter) {
+    VisionBodyFilter(const int currRdfId, const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mCurrRdfId(currRdfId), mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -61,7 +64,15 @@ public:
         }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
+        
+        if (udtRhs == UDT_TRAP) {
+            /*
+            [REMINDER] The set of "Trap types" collidable by "UDT_PLAYER/UDT_NPC" might be different from the set of "Trap types" collidable by an NPC vision cone.
+            */
+            return mBaseBattleFilter->shouldCharacterSeeTrap(mSelfUd, mSelfUdt, mSelfChd, udRhs, inBody);
+        }
+
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUdt, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -75,9 +86,10 @@ public:
     const CharacterDownsync* mSelfNextChd;
     BodyID   mSelfBodyID;
     uint64_t mSelfUd;
+    uint64_t mSelfUdt;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    ChdPostPhysicsNarrowPhaseBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mBaseBattleFilter(baseBattleFilter) {
+    ChdPostPhysicsNarrowPhaseBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -91,7 +103,7 @@ public:
         }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUdt, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -202,6 +214,10 @@ public:
         while (!holders.empty()) {
             CollisionUdHolder_ThreadSafe* holder = holders.back();
             holders.pop_back();
+            if (nullptr == holder) {
+                continue;
+            }
+            holder->Clear_ThreadSafe();
             delete holder;
         }
     }

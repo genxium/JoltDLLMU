@@ -131,6 +131,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedPlayerCollider_NotThreadSafe(const u
     if (nullptr != nextPlayer) {
         transientUdToNextPlayer[ud] = nextPlayer;
     }
+    
     return res;
 }
 
@@ -146,6 +147,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedNpcCollider_NotThreadSafe(const uint
     if (nullptr != nextNpc) {
         transientUdToNextNpc[ud] = nextNpc;
     }
+
     return res;
 }
 
@@ -220,6 +222,9 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
     activeChColliders.push_back(chCollider);
     biNoLock->SetUserData(chBodyID, ud);
 
+    /*
+    [TODO] Handle "getOrCreateCachedHurtboxCollider_NotThreadSafe" and "getOrCreateCachedShieldboxCollider_NotThreadSafe" if "cc" is configured correspondingly.
+    */
     return chCollider;
 }
 
@@ -496,6 +501,58 @@ TR_COLLIDER_T* BaseBattle::getOrCreateCachedTriggerCollider_NotThreadSafe(const 
     return trCollider;
 }
 
+PK_COLLIDER_T* BaseBattle::getOrCreateCachedPickableCollider_NotThreadSafe(const uint64_t ud, const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+    calcPkCacheKey(pType, immediateBoxHalfSizeX, immediateBoxHalfSizeY, pkCacheKeyHolder);
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    float newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
+    if (cDefaultHalfThickness < newConvexRadius) {
+        newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+    }
+    PK_COLLIDER_T* pkCollider = nullptr;
+    auto it = cachedPickableColliders.find(pkCacheKeyHolder);
+    if (it == cachedPickableColliders.end() || it->second.empty()) {
+        pkCollider = createDefaultPickableCollider(pType, immediateBoxHalfSizeX, immediateBoxHalfSizeY, newConvexRadius, newPos, newRot, biNoLock);
+        JPH_ASSERT(nullptr != pkCollider);
+    } else {
+        auto& q = it->second;
+        JPH_ASSERT(!q.empty());
+        pkCollider = q.back();
+        q.pop_back();
+        JPH_ASSERT(nullptr != pkCollider);
+    }
+
+    const BodyID& bodyID = pkCollider->GetID();
+    const BoxShape* shape = static_cast<const BoxShape*>(pkCollider->GetShape());
+    auto existingHalfExtent = shape->GetHalfExtent();
+    auto existingConvexRadius = shape->GetConvexRadius();
+    auto existingIsSensor = pkCollider->IsSensor();
+    auto existingMotionType = pkCollider->GetMotionType();
+    if (existingHalfExtent != newHalfExtent || existingConvexRadius != newConvexRadius) {
+        const Vec3Arg previousShapeCom = shape->GetCenterOfMass();
+        int oldShapeRefCnt = shape->GetRefCount();
+        
+        void* newShapeBuffer = (void*)shape;
+        BoxShape* newShape = new (newShapeBuffer) BoxShape(newHalfExtent, newConvexRadius);
+
+        biNoLock->NotifyShapeChanged(bodyID, previousShapeCom, true, EActivation::DontActivate);
+
+        while (newShape->GetRefCount() < oldShapeRefCnt) newShape->AddRef();
+        while (newShape->GetRefCount() > oldShapeRefCnt) newShape->Release();
+        int newShapeRefCnt = newShape->GetRefCount();
+        JPH_ASSERT(oldShapeRefCnt == newShapeRefCnt);
+    }
+
+    biNoLock->SetPositionAndRotation(bodyID, newPos, newRot, EActivation::DontActivate); // Will call "BroadPhase::NotifyBodiesAABBChanged"
+
+    transientUdToBodyID[ud] = &bodyID;
+    pkCollider->SetUserData(ud);
+
+    // must be active when called by "getOrCreateCachedPickableCollider_NotThreadSafe"
+    activePickableColliders.push_back(pkCollider);
+
+    return pkCollider;
+}
+
 NON_CONTACT_CONSTRAINT_T* BaseBattle::getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings) {
     JPH_ASSERT(nullptr != body1);
     uint64_t ud1 = body1->GetUserData();
@@ -690,7 +747,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
         Trigger* nextTrigger = nextRdf->mutable_triggers(i);
         auto ud = calcUserData(currTrigger);
-        if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == trt) {
+        if (globalPrimitiveConsts->trt_indi_wave_pickable_spawner() == trt) {
+            stepSingleIndiWavePickableSpawner(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
+        } else if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == trt) {
             stepSingleIndiWaveNpcSpawner(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
         } else {
             stepOtherSingleTriggerState(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
@@ -1003,6 +1062,18 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
                     transitToDying(currRdfId, currNpc, cvInAir, nextNpc);
+                    if (globalPrimitiveConsts->pkt_none() != currNpc.exhausted_to_drop_pkt()) { 
+                        Vec3 newPos(currChd.x(), currChd.y() + cc->capsule_half_height(), currChd.z());
+                        Vec3 newVel(0, globalPrimitiveConsts->default_pickable_rising_vel_y(), 0); // TODO
+                        int newQuota = 1; // TODO
+                        int newLifetimeRdfCount = globalPrimitiveConsts->default_pickable_lifetime_rdf_cnt(); // TODO
+                        addNewPickableToNextFrame(currRdfId, nextRdf, currNpc.exhausted_to_drop_pkt(), newPos, newVel, newQuota, newLifetimeRdfCount);
+#ifndef  NDEBUG
+                        std::ostringstream oss;
+                        oss << "addNewPickableToNextFrame/@currRdfId=" << currRdfId << ", added new pickable by dead NPC id=" << currNpc.id() << ", now mNextRdfPickableCount=" << mNextRdfPickableCount << ".";
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+                    }
                 }
             } else if (!noOpSet.count(nextChd->ch_state())) {
                 bool notTurningAround = (currChd.q_x() == nextChd->q_x() && currChd.q_y() == nextChd->q_y() && currChd.q_z() == nextChd->q_z() && currChd.q_w() == nextChd->q_w());
@@ -1019,9 +1090,11 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         uint64_t toRevengeOppoUd = closestOffenderUd;
                         uint64_t toRevengeOppoUdt = getUDT(closestOffenderUd);
                         
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd);
+                        int newLastFledRdfId = nextNpc->last_fled_rdf_id();
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd, newLastFledRdfId);
                         nextNpc->set_goal_as_npc(newGoal);
                         nextNpc->set_cached_cue_cmd(newCmd);
+                        nextNpc->set_last_fled_rdf_id(newLastFledRdfId);
                     }   
                 }
             }
@@ -1257,6 +1330,64 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         
     }
 
+    for (int i = 0; i < currRdf->pickable_count(); i++) {
+        if (globalPrimitiveConsts->terminating_pickable_id() == currRdf->pickables(i).id()) break;
+        auto handle = jobSys->CreateJob("pickable-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+            const Pickable& currPk = currRdf->pickables(i);
+            Pickable* nextPk = nextRdf->mutable_pickables(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadPickables", hence the indices of "currRdf->pickables" and "nextRdf->pickables" are FULLY ALIGNED.
+
+            auto ud = calcUserData(currPk);
+            Vec3 vanishingPos(nextPk->x(), nextPk->y(), nextPk->z());
+            int nextRemainingRecurQuota = nextPk->remaining_recur_quota();
+            int oldNextRemainingRecurrQuota = nextRemainingRecurQuota;
+            if (transientUdToCollisionUdHolder.count(ud)) {
+                CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
+                int cntNow = holder->GetCnt_Realtime();
+                uint64_t udRhs;
+                ContactPoints contactPointsLhs;
+                Vec3 worldSpaceNormIntoPeer;
+                BodyID peerBodyID; 
+                SubShapeID peerSubShapeID;
+                for (int j = 0; j < holder->GetCnt_Realtime(); ++j) {
+                    bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
+                    if (!fetched) continue;
+                    uint64_t udtRhs = getUDT(udRhs);
+                    switch (udtRhs) {
+                    case UDT_PLAYER: {
+                        --nextRemainingRecurQuota;
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
+
+            if (PickableState::PDisappearing != nextPk->pk_state() && 0 < oldNextRemainingRecurrQuota && 0 >= nextRemainingRecurQuota) {
+                nextPk->set_pk_state(PickableState::PDisappearing);
+                nextPk->set_frames_in_pk_state(globalPrimitiveConsts->default_pickable_disappearing_anim_frames()); 
+                nextPk->set_remaining_lifetime_rdf_count(0); // Picked up, no need to show explicit disappearing anim, because there'd be dedicated "PConsumed" anim nodes.
+                nextPk->set_remaining_recur_quota(0); // Picked up, no need to show explicit disappearing anim, because there'd be dedicated "PConsumed" anim nodes.
+                nextPk->set_x(vanishingPos.GetX());
+                nextPk->set_y(vanishingPos.GetY());
+                nextPk->set_z(0);
+
+                nextPk->set_vel_x(0);
+                nextPk->set_vel_y(0);
+                nextPk->set_vel_z(0);
+
+#ifndef  NDEBUG
+                if (globalPrimitiveConsts->terminating_pickable_id() != nextPk->id()) {
+                    std::ostringstream oss;
+                    oss << "pickable-post-physics-update/@currRdfId=" << currRdfId << ", a consumed record with pickable id=" << nextPk->id() << " will disappear soon, now mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
+                    Debug::Log(oss.str(), DColor::Orange);
+                }
+#endif // ! NDEBUG
+            }
+        }, 0);
+        postPhysicsUpdateMTBarrier->AddJob(handle);
+    }
+
     jobSys->WaitForJobs(postPhysicsUpdateMTBarrier);
     jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier);
     
@@ -1264,7 +1395,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
-        if (!directNpcSpawnerTrtSet.count(currTrigger.trt())) {
+        if (!directSpawnerTrtSet.count(currTrigger.trt())) {
             continue;
         }
         if (0 >= currTrigger.quota()) {
@@ -1304,6 +1435,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
     leftShiftDeadPickables(currRdfId, nextRdf);
     nextRdf->set_pickable_count(mNextRdfPickableCount.load());
+    nextRdf->set_pickable_id_counter(mNextRdfPickableIdCounter.load());
 
     leftShiftDeadDynamicTraps(currRdfId, nextRdf);
     nextRdf->set_dynamic_trap_count(mNextRdfDynamicTrapCount.load());
@@ -1312,6 +1444,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     nextRdf->set_trigger_count(mNextRdfTriggerCount.load());
 
     stepResult->set_aiming_ray_count(mNextRdfAimingRayCount.load());
+    for (auto preparedTriggerUd : transientPreparedTriggerUds) {
+        stepResult->add_prepared_trigger_uds(preparedTriggerUd);
+    }
 
     batchRemoveFromPhySysAndCache(currRdfId, currRdf);
 
@@ -1439,6 +1574,46 @@ void BaseBattle::Clear() {
         }
     }
 
+    while (!activePickableColliders.empty()) {
+        PK_COLLIDER_T* single = activePickableColliders.back();
+        activePickableColliders.pop_back();
+        auto bodyID = single->GetID();
+        bodyIDsToClear.push_back(bodyID);
+    }
+
+    while (!cachedPickableColliders.empty()) {
+        for (auto it = cachedPickableColliders.begin(); it != cachedPickableColliders.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                PK_COLLIDER_T* single = q.back();
+                q.pop_back();
+                auto bodyID = single->GetID();
+                bodyIDsToClear.push_back(bodyID);
+            }
+            it = cachedPickableColliders.erase(it);
+        }
+    }
+
+    while (!activeHbSbColliders.empty()) {
+        HB_SB_COLLIDER_T* single = activeHbSbColliders.back();
+        activeHbSbColliders.pop_back();
+        auto bodyID = single->GetID();
+        bodyIDsToClear.push_back(bodyID);
+    }
+
+    while (!cachedHbSbColliders.empty()) {
+        for (auto it = cachedHbSbColliders.begin(); it != cachedHbSbColliders.end(); ) {
+            auto& q = it->second;
+            while (!q.empty()) {
+                HB_SB_COLLIDER_T* single = q.back();
+                q.pop_back();
+                auto bodyID = single->GetID();
+                bodyIDsToClear.push_back(bodyID);
+            }
+            it = cachedHbSbColliders.erase(it);
+        }
+    }
+
     if (!bodyIDsToClear.empty()) {
         biNoLock->RemoveBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
         biNoLock->DestroyBodies(bodyIDsToClear.data(), bodyIDsToClear.size());
@@ -1460,6 +1635,7 @@ void BaseBattle::Clear() {
     triggerConfigFromTileDict.clear();
     transientSlipJumpableUds.clear();
     transientWallGrabProhibitingUds.clear();
+    transientPreparedTriggerUds.clear();
 
     lcacIfdId = -1;
     rdfBuffer.Clear();
@@ -1949,7 +2125,7 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
     for (int i = 0; i < startRdf->triggers_size(); ++i) {
         Trigger* tr = startRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
-        if (directNpcSpawnerTrtSet.count(tr->trt())) {
+        if (directSpawnerTrtSet.count(tr->trt())) {
             JPH_ASSERT(triggerConfigFromTileDict.count(tr->id()));
         }
         tr->set_state(TriggerState::TrReady);
@@ -1963,7 +2139,7 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
             }
             triggerConfigFromTile->set_cached_sub_cycle_mask_to_fulfill(tr->sub_cycle_mask_to_fulfill());
 
-            if (directNpcSpawnerTrtSet.count(tr->trt())) {
+            if (directSpawnerTrtSet.count(tr->trt())) {
                 JPH_ASSERT(globalPrimitiveConsts->terminating_trigger_id() != triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted()); // [WARNING] Must have, otherwise wouldn't fire
                 tr->set_main_cycle_mask_to_fulfill(1); // [WARNING] There should be no other trigger that publishes to a "directNpcSpawnerTrt", regardless of any malformatted config.
             }
@@ -2065,6 +2241,9 @@ void BaseBattle::jamBtnHolding(CharacterDownsync* nextChd) {
     if (0 < nextChd->btn_e_holding_rdf_cnt()) {
         nextChd->set_btn_e_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
     }
+    if (0 < nextChd->btn_f_holding_rdf_cnt()) {
+        nextChd->set_btn_f_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
+    }
 }
 
 void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd) {
@@ -2110,6 +2289,15 @@ void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const
         nextChd->set_btn_e_holding_rdf_cnt(currChd.btn_e_holding_rdf_cnt() + 1);
         if (nextChd->btn_e_holding_rdf_cnt() > globalPrimitiveConsts->max_btn_holding_rdf_cnt()) {
             nextChd->set_btn_e_holding_rdf_cnt(globalPrimitiveConsts->max_btn_holding_rdf_cnt());
+        }
+    }
+
+    if (0 == decodedInputHolder.btn_f_level()) {
+        nextChd->set_btn_f_holding_rdf_cnt(0);
+    } else if (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() != currChd.btn_f_holding_rdf_cnt() && 0 < decodedInputHolder.btn_f_level()) {
+        nextChd->set_btn_f_holding_rdf_cnt(currChd.btn_f_holding_rdf_cnt() + 1);
+        if (nextChd->btn_f_holding_rdf_cnt() > globalPrimitiveConsts->max_btn_holding_rdf_cnt()) {
+            nextChd->set_btn_f_holding_rdf_cnt(globalPrimitiveConsts->max_btn_holding_rdf_cnt());
         }
     }
 }
@@ -2371,7 +2559,7 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
 
 bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed) {
     uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
-    if (oldNextRdfBulletCount >= nextRdf->bullets_size()) {
+    if (oldNextRdfBulletCount >= globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", bulletId=" << referenceBullet->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming when adding vanishing#1";
@@ -2391,7 +2579,7 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     int initFramesInBlState = 0;
 
     int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
-    Bullet* nextBl = nextRdf->mutable_bullets(oldNextRdfBulletCount);
+    Bullet* nextBl = oldNextRdfBulletCount < nextRdf->bullets_size() ? nextRdf->mutable_bullets(oldNextRdfBulletCount) : nextRdf->add_bullets();
 #ifndef  NDEBUG
     if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
         std::ostringstream oss;
@@ -2408,6 +2596,10 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     nextBl->set_originated_y(newOriginatedY);
     nextBl->set_x(newX);
     nextBl->set_y(newY);
+    nextBl->set_z(0);
+    nextBl->set_vel_x(0);
+    nextBl->set_vel_y(0);
+    nextBl->set_vel_z(0);
     nextBl->set_damage_dealed(damageDealed);
 
     return true;
@@ -2568,7 +2760,12 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
 
 bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx, float qy, float qz, float qw, uint32_t chSpeciesId, int teamId, NpcGoal initGoal, RenderFrame* nextRdf, uint32_t publishingToTriggerIdUponExhausted, uint64_t waveNpcKilledMaskCounter, uint32_t subscribesToTriggerId) {
     uint32_t oldNextRdfNpcCount = mNextRdfNpcCount.fetch_add(1, std::memory_order_relaxed);
-    if (oldNextRdfNpcCount >= nextRdf->npcs_size()) {
+    if (oldNextRdfNpcCount >= globalPrimitiveConsts->default_prealloc_npc_capacity()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", oldNextRdfNpcCount=" << oldNextRdfNpcCount << ": npc overwhelming#1";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
         --mNextRdfNpcCount;
         return false;
     }
@@ -2657,6 +2854,86 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     FillInventoryFromConfig(chConfig, nextChd, nullptr); // [TODO] There's currently no way to apply overrides to spawned NPCs. 
     
     
+    return true;
+}
+
+bool BaseBattle::addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd) {
+    uint32_t oldNextRdfPickableCount = mNextRdfPickableCount.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfPickableCount >= globalPrimitiveConsts->default_prealloc_pickable_capacity()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "addPkConsumedToNextFrame/@currRdfId=" << currRdfId << ", pickableId=" << referencePk->id() << ", oldNextRdfPickableCount=" << oldNextRdfPickableCount << ": pickable overwhelming when adding consumed#1";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+        --mNextRdfPickableCount;
+        return false;
+    }
+
+    auto initPkState = PickableState::PConsumed;
+    int initFramesInPkState = 0;
+
+    int oldNextRdfPickableIdCounter = mNextRdfPickableIdCounter.fetch_add(1, std::memory_order_relaxed);
+    Pickable* nextPk = oldNextRdfPickableCount < nextRdf->pickables_size() ? nextRdf->mutable_pickables(oldNextRdfPickableCount) : nextRdf->add_pickables();
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_pickable_id() != nextPk->id()) {
+        std::ostringstream oss;
+        oss << "addPkConsumedToNextFrame/@currRdfId=" << currRdfId << ", a consumed record with newPickableId=" << oldNextRdfPickableIdCounter << " will override oldPickableId=" << nextPk->id() << ", oldNextRdfPickableCount=" << oldNextRdfPickableCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+    CopyPickable(referencePk, nextPk);
+    nextPk->set_id(oldNextRdfPickableIdCounter);
+    nextPk->set_pk_state(initPkState);
+    nextPk->set_frames_in_pk_state(initFramesInPkState);
+    nextPk->set_vel_x(0);
+    nextPk->set_vel_y(0);
+    nextPk->set_vel_z(0);
+    nextPk->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
+    nextPk->set_remaining_recur_quota(0);
+    nextPk->set_picker_ud(pickerUd);
+
+    return true;
+}
+
+bool BaseBattle::addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount) {
+    uint32_t oldNextRdfPickableCount = mNextRdfPickableCount.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfPickableCount >= globalPrimitiveConsts->default_prealloc_pickable_capacity()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "addNewPickableToNextFrame/@currRdfId=" << currRdfId << ", oldNextRdfPickableCount=" << oldNextRdfPickableCount << ": pickable overwhelming#1";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+        --mNextRdfPickableCount;
+        return false;
+    }
+
+    auto initPkState = PickableState::PIdle;
+    int initFramesInPkState = 0;
+
+    int oldNextRdfPickableIdCounter = mNextRdfPickableIdCounter.fetch_add(1, std::memory_order_relaxed);
+    Pickable* nextPk = oldNextRdfPickableCount < nextRdf->pickables_size() ? nextRdf->mutable_pickables(oldNextRdfPickableCount) : nextRdf->add_pickables();
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_pickable_id() != nextPk->id()) {
+        std::ostringstream oss;
+        oss << "addNewPickableToNextFrame/@currRdfId=" << currRdfId << ", a new record with newPickableId=" << oldNextRdfPickableIdCounter << " will override oldPickableId=" << nextPk->id() << ", oldNextRdfPickableCount=" << oldNextRdfPickableCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+    ClearPickable(nextPk);
+    nextPk->set_id(oldNextRdfPickableIdCounter);
+    nextPk->set_pickup_type(pType);
+    nextPk->set_pk_state(initPkState);
+    nextPk->set_frames_in_pk_state(initFramesInPkState);
+    nextPk->set_x(newPos.GetX());
+    nextPk->set_y(newPos.GetY());
+    nextPk->set_z(newPos.GetZ());
+    nextPk->set_vel_x(newVel.GetX());
+    nextPk->set_vel_y(newVel.GetY());
+    nextPk->set_vel_z(newVel.GetZ());
+    nextPk->set_remaining_lifetime_rdf_count(lifetimeRdfCount); 
+    nextPk->set_remaining_recur_quota(quota);
+    nextPk->set_picker_ud(0);
+
     return true;
 }
 
@@ -3201,6 +3478,41 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         bodyIDsToActivate.push_back(bodyID);
     }
 
+    for (int i = 0; i < currRdf->pickable_count(); i++) {
+        const Pickable& currPk = currRdf->pickables(i);
+        if (globalPrimitiveConsts->terminating_pickable_id() == currPk.id()) break;
+        if (PickableState::PIdle != currPk.pk_state()) {
+            continue;
+        }
+        if (globalPrimitiveConsts->default_pickable_startup_frames() >= currPk.frames_in_pk_state()) {
+            continue;
+        }
+        if (0 >= currPk.remaining_recur_quota()) {
+            continue;
+        }
+        Pickable* nextPk = nextRdf->mutable_pickables(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadPickables", hence the indices of "currRdf->pickables" and "nextRdf->pickables" are FULLY ALIGNED.
+        JPH_ASSERT(nullptr != nextPk);
+
+        auto ud = calcUserData(currPk);
+        transientUdToCurrPickable[ud] = &currPk;
+        transientUdToNextPickable[ud] = nextPk;
+
+        if (PickableState::PIdle != currPk.pk_state()) continue; 
+        
+        Vec3 newPos(currPk.x(), currPk.y(), currPk.z());
+        Quat newRot(0, 0, 0, 1); // No need to vary
+
+        // [TODO] Support size variation from "pickableConfigFromTileDict".
+        auto pkCollider = getOrCreateCachedPickableCollider_NotThreadSafe(ud, currPk.pickup_type(), globalPrimitiveConsts->default_pickable_hurtbox_half_size_x(), globalPrimitiveConsts->default_pickable_hurtbox_half_size_y(), newPos, newRot);
+        transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
+        auto bodyID = pkCollider->GetID();
+        if (!pkCollider->IsInBroadPhase()) {
+            bodyIDsToAdd.push_back(bodyID);
+        }
+
+        bodyIDsToActivate.push_back(bodyID);
+    }
+
     if (!bodyIDsToAdd.empty()) {
         auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
         biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
@@ -3522,6 +3834,62 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         bodyIDsToClear.push_back(single->GetID());
     }
 
+    while (!activePickableColliders.empty()) {
+        PK_COLLIDER_T* single = activePickableColliders.back();
+        activePickableColliders.pop_back();
+        auto ud = single->GetUserData();
+        JPH_ASSERT(0 < transientUdToCurrPickable.count(ud));
+        const Pickable& pk = *(transientUdToCurrPickable.at(ud));
+        JPH_ASSERT(globalPrimitiveConsts->terminating_pickable_id() != pk.id());
+
+        const BoxShape* shape = static_cast<const BoxShape*>(single->GetShape());
+        auto existingHalfExtent = shape->GetHalfExtent();
+        calcPkCacheKey(pk.pickup_type(), existingHalfExtent.GetX(), existingHalfExtent.GetY(), pkCacheKeyHolder);
+        auto it = cachedPickableColliders.find(pkCacheKeyHolder);
+
+        if (it == cachedPickableColliders.end()) {
+            PK_COLLIDER_Q q = { single };
+            cachedPickableColliders.emplace(pkCacheKeyHolder, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
+
+        biNoLock->SetPositionAndRotation(single->GetID()
+            , safeDeactiviatedPosition // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
+            , Quat::sIdentity()
+            , EActivation::DontActivate);
+        biNoLock->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
+        bodyIDsToClear.push_back(single->GetID());
+    }
+
+    while (!activeHbSbColliders.empty()) {
+        HB_SB_COLLIDER_T* single = activeHbSbColliders.back();
+        activeHbSbColliders.pop_back();
+        auto ud = single->GetUserData();
+
+        const BoxShape* shape = static_cast<const BoxShape*>(single->GetShape());
+        auto existingHalfExtent = shape->GetHalfExtent();
+
+        calcHbSbCacheKey(existingHalfExtent.GetX(), existingHalfExtent.GetY(), hbSbCacheKeyHolder);
+        auto it = cachedHbSbColliders.find(hbSbCacheKeyHolder);
+
+        if (it == cachedHbSbColliders.end()) {
+            HB_SB_COLLIDER_Q q = { single };
+            cachedHbSbColliders.emplace(hbSbCacheKeyHolder, q);
+        } else {
+            auto& cacheQue = it->second;
+            cacheQue.push_back(single);
+        }
+
+        biNoLock->SetPositionAndRotation(single->GetID()
+            , safeDeactiviatedPosition // [WARNING] To avoid spurious awakening. See "RuleOfThumb.md" for details.
+            , Quat::sIdentity()
+            , EActivation::DontActivate);
+        biNoLock->SetLinearAndAngularVelocity(single->GetID(), Vec3::sZero(), Vec3::sZero());
+        bodyIDsToClear.push_back(single->GetID());
+    }
+
     /*
     [WARNING]
 
@@ -3567,7 +3935,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     transientUdToNextTrigger.clear();
 
     transientUdToCurrPickable.clear();
-    transientUdToNextPickable.clear();
+    transientUdToNextPickable.clear(); 
     
     mNextRdfBulletIdCounter = 1;
     mNextRdfBulletCount = 0;
@@ -3578,6 +3946,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     mNextRdfPickableIdCounter = 0;
     mNextRdfPickableCount = 0;
 
+    transientPreparedTriggerUds.clear();
     mNextRdfTriggerCount = 0;
 
     mNextRdfDynamicTrapCount = 0;
@@ -3678,18 +4047,22 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
                 outPatternId = globalPrimitiveConsts->pattern_inventory_slot_c();
                 if (0 < ifDecoded.btn_b_level()) {
                     outPatternId = globalPrimitiveConsts->pattern_inventory_slot_bc();
-                } else {
-                    outPatternId = globalPrimitiveConsts->pattern_hold_inventory_slot_c();
-                    if (0 < ifDecoded.btn_b_level() && 0 == currChd.btn_b_holding_rdf_cnt()) {
-                        outPatternId = globalPrimitiveConsts->pattern_inventory_slot_bc();
-                    }
+                } 
+            } else {
+                outPatternId = globalPrimitiveConsts->pattern_hold_inventory_slot_c();
+                if (0 < ifDecoded.btn_b_level() && 0 == currChd.btn_b_holding_rdf_cnt()) {
+                    outPatternId = globalPrimitiveConsts->pattern_inventory_slot_bc();
                 }
-            } else if (0 < ifDecoded.btn_d_level()) {
-                if (0 == currChd.btn_d_holding_rdf_cnt()) {
-                    outPatternId = globalPrimitiveConsts->pattern_inventory_slot_d();
-                } else {
-                    outPatternId = globalPrimitiveConsts->pattern_hold_inventory_slot_d();
-                }
+            }
+        } else if (0 < ifDecoded.btn_d_level()) {
+            if (0 == currChd.btn_d_holding_rdf_cnt()) {
+                outPatternId = globalPrimitiveConsts->pattern_inventory_slot_d();
+            } else {
+                outPatternId = globalPrimitiveConsts->pattern_hold_inventory_slot_d();
+            }
+        } else if (0 < ifDecoded.btn_f_level()) {
+            if (0 == currChd.btn_f_holding_rdf_cnt()) {
+                outPatternId = globalPrimitiveConsts->pattern_f();
             }
         }
     }
@@ -3838,6 +4211,10 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
                 bi->SetFriction(chBodyID, cGroundDashingChFriction);
                 ioFrictionDirty = true;
             }
+        }
+
+        if (globalPrimitiveConsts->pattern_f() == patternId) {
+            ioInputInducedMotion->patternFTriggered = true;
         }
     }
 
@@ -4188,9 +4565,19 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             effInertiaRdfCountdown = 8;
         }
         nextChd->set_fallstopping_rdf_countdown(effInertiaRdfCountdown);
+
+        /* 
+           [TODO] If "activeSkill & activeBulletConfig" implies a "GroundImpact", transit to cooldown phase animation.
+        */
     } else if (onWallSet.count(nextChd->ch_state()) && !onWallSet.count(currChd.ch_state())) {
         nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
         nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
+    }
+
+    if (0 != nextChd->wall_ud() && 0 == currChd.wall_ud()) {
+        /* 
+           [TODO] If "activeSkill & activeBulletConfig" implies a "GroundImpact", transit to cooldown phase animation.
+        */
     }
 
 #ifndef NDEBUG
@@ -4222,10 +4609,6 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
         const CharacterDownsync* chd = &(candidate->chd());
         const CharacterConfig& candidateConfig = characterConfigs.at(chd->species_id());
 
-        /*
-        // TODO: Drop pickable
-        */
-        
         while (candI < mNextRdfNpcCountVal && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(chd)) {
             if (globalPrimitiveConsts->terminating_trigger_id() != candidate->publishing_to_trigger_id_upon_exhausted()) {
                 auto triggerUd = calcPublishingToTriggerUd(*candidate);
@@ -4282,7 +4665,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         }
     }
 
-    for (int i = 0; i < nextRdf->npcs_size(); i++) {
+    for (int i = 0; i < nextRdf->npc_count(); i++) {
         const NpcCharacterDownsync& currNpc = currRdf->npcs(i);
         if (globalPrimitiveConsts->terminating_character_id() == currNpc.id()) break;
         auto nextNpc = nextRdf->mutable_npcs(i);
@@ -4294,7 +4677,7 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
         }
     }
 
-    for (int i = 0; i < nextRdf->pickables_size(); i++) {
+    for (int i = 0; i < nextRdf->pickable_count(); i++) {
         auto nextPickable = nextRdf->mutable_pickables(i);
         if (globalPrimitiveConsts->terminating_pickable_id() == nextPickable->id()) break;
         auto pickableTop = nextPickable->y() + globalPrimitiveConsts->default_pickable_hurtbox_half_size_y();
@@ -4389,6 +4772,13 @@ void BaseBattle::leftShiftDeadPickables(const int currRdfId, RenderFrame* nextRd
         auto* terminatingCand = nextRdf->mutable_pickables(aliveI);
         ClearPickable(terminatingCand);
     }
+#ifndef NDEBUG
+    if (mNextRdfPickableCountVal != aliveI) {
+        std::ostringstream oss;
+        oss << "leftShiftDeadPickables/@currRdfId=" << currRdfId << ", changing mNextRdfPickableCount from " << mNextRdfPickableCountVal << " to " << aliveI << std::endl;
+        Debug::Log(oss.str(), DColor::Yellow);
+    }
+#endif // !NDEBUG
     mNextRdfPickableCount = aliveI;
 }
 
@@ -4644,6 +5034,8 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
 
     chd->set_ground_ud(0);
 
+    chd->set_wall_ud(0);
+
     chd->set_frames_to_recover(0);
 
     chd->set_new_birth_rdf_countdown(0);
@@ -4694,11 +5086,11 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
 void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
     npc->set_id(globalPrimitiveConsts->terminating_character_id());
 
-    npc->set_activated_rdf_id(0);
+    npc->set_activated_rdf_id(globalPrimitiveConsts->terminating_render_frame_id());
     npc->set_cached_cue_cmd(0);
 
-    npc->set_waiving_patrol_cue_id(0);
     npc->set_goal_as_npc(NpcGoal::NIdle);
+    npc->set_last_fled_rdf_id(globalPrimitiveConsts->terminating_render_frame_id());
 
     npc->set_publishing_mask_upon_exhausted(0); 
     npc->set_publishing_to_trigger_id_upon_exhausted(globalPrimitiveConsts->terminating_trigger_id());
@@ -4709,11 +5101,10 @@ void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
     npc->set_captured_by_patrol_cue(0);
     npc->set_frames_in_patrol_cue(0);
 
-    npc->set_exhausted_to_drop_consumable_species_id(globalPrimitiveConsts->terminating_consumable_species_id());
-    npc->set_exhausted_to_drop_buff_species_id(globalPrimitiveConsts->terminating_buff_species_id());
-    npc->set_exhausted_to_drop_pickup_skill_id(globalPrimitiveConsts->no_skill());
+    npc->set_exhausted_to_drop_pkt(globalPrimitiveConsts->pkt_none());
 
     npc->set_is_main_tower_of_team(false);
+    npc->set_waiving_patrol_cue_id(0);
 
     ClearChd(npc->mutable_chd());
 }
@@ -4834,8 +5225,8 @@ void BaseBattle::CopyNpcChd(const NpcCharacterDownsync* from, NpcCharacterDownsy
     to->set_activated_rdf_id(from->activated_rdf_id());
     to->set_cached_cue_cmd(from->cached_cue_cmd());
 
-    to->set_waiving_patrol_cue_id(from->waiving_patrol_cue_id());
     to->set_goal_as_npc(from->goal_as_npc());
+    to->set_last_fled_rdf_id(from->last_fled_rdf_id());
 
     to->set_publishing_mask_upon_exhausted(from->publishing_mask_upon_exhausted()); 
     to->set_publishing_to_trigger_id_upon_exhausted(from->publishing_to_trigger_id_upon_exhausted());
@@ -4846,11 +5237,10 @@ void BaseBattle::CopyNpcChd(const NpcCharacterDownsync* from, NpcCharacterDownsy
     to->set_captured_by_patrol_cue(from->captured_by_patrol_cue());
     to->set_frames_in_patrol_cue(from->frames_in_patrol_cue());
 
-    to->set_exhausted_to_drop_consumable_species_id(from->exhausted_to_drop_consumable_species_id());
-    to->set_exhausted_to_drop_buff_species_id(from->exhausted_to_drop_buff_species_id());
-    to->set_exhausted_to_drop_pickup_skill_id(from->exhausted_to_drop_pickup_skill_id());
+    to->set_exhausted_to_drop_pkt(from->exhausted_to_drop_pkt());
 
     to->set_is_main_tower_of_team(from->is_main_tower_of_team());
+    to->set_waiving_patrol_cue_id(from->waiving_patrol_cue_id());
 
     CopyChd(&(from->chd()), to->mutable_chd());
 }
@@ -4964,6 +5354,8 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     to->set_species_id(from->species_id());
 
     to->set_ground_ud(from->ground_ud());
+
+    to->set_wall_ud(from->wall_ud());
 
     to->set_frames_to_recover(from->frames_to_recover());
 
@@ -5498,9 +5890,25 @@ TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBox
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
     settings->mDensity = FLT_MIN;
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-    bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mLinearDamping = 0;
     bodyCreationSettings.mGravityFactor = 0; 
+    bodyCreationSettings.mIsSensor = true;
+    bodyCreationSettings.mPosition = newPos;
+    bodyCreationSettings.mRotation = newRot;
+    Body* body = biNoLock->CreateBody(bodyCreationSettings);
+    JPH_ASSERT(nullptr != body);
+
+    inBodyInterface->SetMotionQuality(body->GetID(), EMotionQuality::Discrete);
+
+    return body;
+}
+
+TR_COLLIDER_T* BaseBattle::createDefaultPickableCollider(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
+    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
+    settings->mDensity = cDefaultBlDensity;
+    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Dynamic, MyObjectLayers::MOVING);
+    bodyCreationSettings.mLinearDamping = 0;
     bodyCreationSettings.mIsSensor = true;
     bodyCreationSettings.mPosition = newPos;
     bodyCreationSettings.mRotation = newRot;
@@ -5670,6 +6078,14 @@ void BaseBattle::preallocateBodies(const RenderFrame* currRdf, const google::pro
     }
     // Trigger ends
 
+    // Pickable starts
+    // [TODO] Preallocation
+    // Pickable ends
+
+    // HbSb starts
+    // [TODO] Preallocation
+    // HbSb ends
+
     auto layerState = biNoLock->AddBodiesPrepare(bodyIDsToAdd.data(), bodyIDsToAdd.size());
     biNoLock->AddBodiesFinalize(bodyIDsToAdd.data(), bodyIDsToAdd.size(), layerState, EActivation::DontActivate);
 
@@ -5733,7 +6149,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     auto newOverallVel = single->GetLinearVelocity(false);
     
     /*
-    [TODO] For NPCs with more complicated shapes, use an extra collector with a compound shape and specified hurt-box to pick up damage.
+    [TODO] For damage taking, calculate all "hurtboxUds (by BaseBattleCollisionFilter::calcXxxHurtboxUserData)" and "sheldboxUds (by BaseBattleCollisionFilter::calcXxxShieldboxUserData)", then traverse and aggregate over "transientUdToCollisionUdHolder[each hurtboxUd/shieldboxUd]".
     */
     
     CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
@@ -5789,6 +6205,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             } else if (UDT_TRIGGER == udtRhs) {
                 const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
                 Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
+                // [WARNING] Decrement of "quota" will be done in "stepSingleIndiWaveNpcSpawner/stepOtherSingleTriggerState" for thread-safety
                 if (globalPrimitiveConsts->trt_by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
                     // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
                     nextTrigger->set_main_cycle_mask_to_fulfill(0);
@@ -5797,6 +6214,48 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                     oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled trigger id=" << currTrigger->id() << std::endl;
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+                } else if (globalPrimitiveConsts->trt_by_pattern_f() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
+                    if (inputInducedMotion->patternFTriggered) {
+                        nextTrigger->set_main_cycle_mask_to_fulfill(0);
+                        // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled pattern_f trigger id=" << currTrigger->id() << std::endl;
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                    } else {
+                        transientPreparedTriggerUds.insert(udRhs);
+                    }
+
+                }
+            } else if (UDT_PICKABLE == udtRhs) {
+                const Pickable* currPk = transientUdToCurrPickable.at(udRhs);
+                // [WARNING] Decrement of "quota" will be done in "pickable-post-physics-update" for thread-safety
+                addPkConsumedToNextFrame(currRdfId, nextRdf, currPk, ud);
+
+#ifndef  NDEBUG
+                std::ostringstream oss;
+                oss << "addPkConsumedToNextFrame/@currRdfId=" << currRdfId << ", added new consumed pickable anim, now mNextRdfPickableIdCounter=" << mNextRdfPickableIdCounter.load() << ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+
+                // [TODO] handle actual pickable effects on character
+                if (globalPrimitiveConsts->pkt_hp_small() == currPk->pickup_type()) {
+                    const PickableConfig& pkConfig = globalConfigConsts->pickable_configs().at(currPk->pickup_type());
+                    int newHp = nextChd->hp() + pkConfig.amount_1();
+                    if (newHp > cc->hp()) {
+                        newHp = cc->hp();
+                    }
+                    nextChd->set_hp(newHp);
+                } else if (globalPrimitiveConsts->pkt_mp_small() == currPk->pickup_type()) {
+                    const PickableConfig& pkConfig = globalConfigConsts->pickable_configs().at(currPk->pickup_type());
+                    int newMp = nextChd->mp() + pkConfig.amount_1();
+                    if (newMp > cc->mp()) {
+                        newMp = cc->mp();
+                    }
+                    nextChd->set_mp(newMp);
+                } else {
+
                 }
             } else {
                 Vec3 peerPos(newPos);
@@ -5852,6 +6311,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     } else {
         cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
     }
+
+    nextChd->set_wall_ud(collector.mWallUd); // For "WallImpact" transition regardless of "cvOnWall" being true or false.
     
     /* [WARNING]
     When a "CapsuleShape" is colliding with a "MeshShape", some unexpected z-offset might be caused by triangular pieces. We have to compensate for such unexpected z-offsets by setting the z-components to 0.
@@ -5978,7 +6439,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
         chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-        ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, this);
+        ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, udt, this);
 
         narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransformIfNonCrouching, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
 
@@ -6073,7 +6534,19 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
         newFramesToRecover = triggerConfigFromTiled->recovery_frames();
     }
 
-    if (mainCycleFulfilled) {
+    bool mainCycleCooledDown = (TriggerState::TrCooledDown == currTrigger.state());
+    int oldQuota = currTrigger.quota();
+
+    if (mainCycleCooledDown) {
+        if (0 >= currTrigger.quota()) {
+            mainCycleExhausted = true;
+            nextTrigger->set_state(TriggerState::TrExhausted);
+        } else {
+            nextTrigger->set_state(TriggerState::TrReady);
+            nextTrigger->set_main_cycle_mask_to_fulfill(1); // [TODO] Set some other values determined by level design?
+        }
+        nextTrigger->set_frames_in_state(0);
+    } else if (mainCycleFulfilled) {
         int newQuota = currTrigger.quota() - 1;
         if (0 > newQuota) {
             newQuota = 0;
@@ -6115,6 +6588,11 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
             if (nullptr != triggerConfigFromTiled) {
                 nextTrigger->set_sub_cycle_mask_to_fulfill(triggerConfigFromTiled->cached_sub_cycle_mask_to_fulfill());
             }
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << ", subCycleFulfilled, sub_cycle_mask_to_fulfill is reset to " << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
         }
         nextTrigger->set_frames_in_state(0);
     }
@@ -6136,6 +6614,113 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
     }
 }
 
+void BaseBattle::stepSingleIndiWavePickableSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult) {
+    uint32_t steppingTriggerId = currTrigger.id();
+    JPH_ASSERT(triggerConfigFromTileDict.count(steppingTriggerId));
+    auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(steppingTriggerId);
+    
+    bool mainCycleFulfilled = (TriggerState::TrReady == currTrigger.state()  && 0 == currTrigger.main_cycle_mask_to_fulfill());
+    bool mainCycleExhaustedYetFulfilled = (TriggerState::TrExhaustedYetListening == currTrigger.state() && 0 == currTrigger.main_cycle_mask_to_fulfill());
+
+    bool subCycleCooledDown = (TriggerState::TrSubCycleCooledDown == currTrigger.state());
+
+    int oldQuota = currTrigger.quota();
+
+    bool subCycleTicked = (trActiveSubCycleStates.count(currTrigger.state()) && 0 >= currTrigger.frames_to_fire());
+    int spawnerConfigIdx = triggerConfigFromTiled->quota() - oldQuota;
+    int oldSubCycleIdx = currTrigger.sub_cycle_index();
+    
+    if (subCycleTicked) {
+/*
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", spawnerConfigIdx=" << spawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+        int newSubCycleIdx = oldSubCycleIdx + 1;
+        nextTrigger->set_sub_cycle_index(newSubCycleIdx);
+        nextTrigger->set_frames_in_state(0);
+        auto spawnerConfig = lowerBoundForSpawnerConfig(spawnerConfigIdx, triggerConfigFromTiled->pickable_spawner_time_seq());
+
+        uint32_t pkType = spawnerConfig->pickup_type_list(oldSubCycleIdx);
+        uint64_t initOp = (oldSubCycleIdx < spawnerConfig->init_op_list_size() ? spawnerConfig->init_op_list(oldSubCycleIdx) : 0);
+
+        Vec3 newPos(currTrigger.x(), currTrigger.y(), currTrigger.z());
+        Vec3 newVel(0, globalPrimitiveConsts->default_pickable_rising_vel_y(), 0); // TODO
+        int newQuota = 1; // TODO
+        int newLifetimeRdfCount = globalPrimitiveConsts->default_pickable_lifetime_rdf_cnt(); // TODO
+        if (0 != initOp) {
+            InputFrameDecoded ifDecodedHolder;
+            decodeInput(initOp, &ifDecodedHolder);
+            if (0 > ifDecodedHolder.dx()) {
+                newVel.SetX(-0.3f * newVel.GetY());
+            } else if (0 < ifDecodedHolder.dx()) {
+                newVel.SetX(+0.3f * newVel.GetY());
+            }
+        }
+
+        addNewPickableToNextFrame(currRdfId, nextRdf, pkType, newPos, newVel, newQuota, newLifetimeRdfCount);
+
+        if (newSubCycleIdx < spawnerConfig->pickup_type_list_size()) {
+            nextTrigger->set_state(TriggerState::TrSubCycleCoolingDown);
+            nextTrigger->set_frames_to_fire(triggerConfigFromTiled->sub_cycle_trigger_frames());
+            nextTrigger->set_sub_cycle_gen_mask_counter((currTrigger.sub_cycle_gen_mask_counter() << 1));
+        } else {
+            nextTrigger->set_state(TriggerState::TrReady); // Such that it belongs to "trActiveMainCycleStates" immediately 
+            nextTrigger->set_frames_to_fire(0);
+            nextTrigger->set_sub_cycle_gen_mask_counter(0);
+            nextTrigger->set_main_cycle_mask_to_fulfill(1);
+        }
+
+#ifndef NDEBUG
+        std::ostringstream oss2;
+        //oss2 << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked and added new pickable oldSubCycleIdx=" << oldSubCycleIdx << ", pkType=" << pkType << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << spawnerConfig->pickup_type_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
+
+        oss2 << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked and added new pickable, mNextRdfPickableCount=" << mNextRdfPickableCount.load() << std::endl;
+        Debug::Log(oss2.str(), DColor::Orange);
+#endif
+    } else if (mainCycleExhaustedYetFulfilled) {
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle exhausted yet fulfilled, oldQuota=" << oldQuota;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+
+        Trigger* fulfilledTrigger = stepResult->add_fulfilled_triggers();
+        CopyTrigger(&currTrigger, fulfilledTrigger); 
+        auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
+        mutableFulfilledTriggerIds->insert({steppingTriggerId, true});
+    } else if (mainCycleFulfilled) {
+        int newQuota = oldQuota - 1;
+        if (0 > newQuota) {
+            newQuota = 0;
+        }
+        spawnerConfigIdx += 1;
+        nextTrigger->set_quota(newQuota);
+        nextTrigger->set_state(TriggerState::TrSubCycleReady);
+        nextTrigger->set_frames_in_state(0);
+        nextTrigger->set_frames_to_fire(triggerConfigFromTiled->delayed_frames());
+        auto spawnerConfig = lowerBoundForSpawnerConfig(spawnerConfigIdx, triggerConfigFromTiled->pickable_spawner_time_seq());
+        nextTrigger->set_sub_cycle_index(0);
+        nextTrigger->set_sub_cycle_gen_mask_counter(1); // important initializer
+
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle fulfilled spawnerConfigIdx=" << spawnerConfigIdx << ", frames_to_fire=" << triggerConfigFromTiled->delayed_frames() << ", nextWavePickableCount=" << spawnerConfig->pickup_type_list_size() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << std::endl;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+
+        Trigger* fulfilledTrigger = stepResult->add_fulfilled_triggers();
+        CopyTrigger(&currTrigger, fulfilledTrigger); 
+        auto mutableFulfilledTriggerIds = stepResult->mutable_fulfilled_trigger_ids();
+        mutableFulfilledTriggerIds->insert({steppingTriggerId, true});
+    } else if (subCycleCooledDown) {
+        nextTrigger->set_state(TriggerState::TrSubCycleReady);
+        nextTrigger->set_frames_in_state(0);
+    }
+}
+
 void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult) {
     uint32_t steppingTriggerId = currTrigger.id();
     JPH_ASSERT(triggerConfigFromTileDict.count(steppingTriggerId));
@@ -6150,7 +6735,7 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
     int oldQuota = currTrigger.quota();
 
     bool subCycleTicked = (trActiveSubCycleStates.count(currTrigger.state()) && 0 >= currTrigger.frames_to_fire());
-    int chSpawnerConfigIdx = triggerConfigFromTiled->quota() - oldQuota;
+    int spawnerConfigIdx = triggerConfigFromTiled->quota() - oldQuota;
     int oldSubCycleIdx = currTrigger.sub_cycle_index();
     
     if (subCycleFulfilled) {
@@ -6171,13 +6756,13 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted() << ", next trigger-state=" << nextTrigger->state() << std::endl;
+            oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted() << ", next trigger-state=" << nextTrigger->state() << ", nextReceivingTrigger->main_cycle_mask_to_fulfill=" << nextReceivingTrigger->main_cycle_mask_to_fulfill() << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
         } else {
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", no target to publish, next trigger-state=" << nextTrigger->state() << std::endl;
+            oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle fulfilled with oldQuota=" << oldQuota << ", oldSubCycleIdx=" << oldSubCycleIdx << ", no target to publish, next trigger-state=" << nextTrigger->state() << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
         }
@@ -6186,16 +6771,16 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
     } else if (subCycleTicked) {
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
+        oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", spawnerConfigIdx=" << spawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
         int newSubCycleIdx = oldSubCycleIdx + 1;
         nextTrigger->set_sub_cycle_index(newSubCycleIdx);
         nextTrigger->set_frames_in_state(0);
-        auto chSpawnerConfig = lowerBoundForSpawnerConfig(chSpawnerConfigIdx, triggerConfigFromTiled->character_spawner_time_seq());
+        auto spawnerConfig = lowerBoundForSpawnerConfig(spawnerConfigIdx, triggerConfigFromTiled->character_spawner_time_seq());
 
-        uint32_t chSpeciesId = chSpawnerConfig->species_id_list(oldSubCycleIdx);
-        uint64_t initOp = (oldSubCycleIdx < chSpawnerConfig->init_op_list_size() ? chSpawnerConfig->init_op_list(oldSubCycleIdx) : 0);
+        uint32_t chSpeciesId = spawnerConfig->species_id_list(oldSubCycleIdx);
+        uint64_t initOp = (oldSubCycleIdx < spawnerConfig->init_op_list_size() ? spawnerConfig->init_op_list(oldSubCycleIdx) : 0);
         float qx = 0, qy = 0, qz = 0, qw = 1;
         if (0 != initOp) {
             InputFrameDecoded ifDecodedHolder;
@@ -6215,7 +6800,7 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
        
         addNewNpcToNextFrame(currRdfId, currTrigger.x(), currTrigger.y(), qx, qy, qz, qw, chSpeciesId, currTrigger.bullet_team_id(), NpcGoal::NPatrol /* TODO */, nextRdf, currTrigger.id(), currTrigger.sub_cycle_gen_mask_counter(), globalPrimitiveConsts->terminating_trigger_id());
 
-        if (newSubCycleIdx < chSpawnerConfig->species_id_list_size()) {
+        if (newSubCycleIdx < spawnerConfig->species_id_list_size()) {
             nextTrigger->set_state(TriggerState::TrSubCycleCoolingDown);
             nextTrigger->set_frames_to_fire(triggerConfigFromTiled->sub_cycle_trigger_frames());
             nextTrigger->set_sub_cycle_gen_mask_counter((currTrigger.sub_cycle_gen_mask_counter() << 1));
@@ -6227,13 +6812,13 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
 #ifndef NDEBUG
         std::ostringstream oss2;
-        oss2 << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked to add new npc oldSubCycleIdx=" << oldSubCycleIdx << ", chSpeciesId=" << chSpeciesId << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfNpcCount=" << mNextRdfNpcCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << chSpawnerConfig->species_id_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
+        oss2 << "@stepSingleIndiWaveNpcSpawner/currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked to add new npc oldSubCycleIdx=" << oldSubCycleIdx << ", chSpeciesId=" << chSpeciesId << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfNpcCount=" << mNextRdfNpcCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << spawnerConfig->species_id_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
         Debug::Log(oss2.str(), DColor::Orange);
 #endif
     } else if (mainCycleExhaustedYetFulfilled) {
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle exhausted yet fulfilled, oldQuota=" << oldQuota;
+        oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle exhausted yet fulfilled, oldQuota=" << oldQuota;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
 
@@ -6246,19 +6831,19 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
         if (0 > newQuota) {
             newQuota = 0;
         }
-        chSpawnerConfigIdx += 1;
+        spawnerConfigIdx += 1;
         nextTrigger->set_quota(newQuota);
         nextTrigger->set_state(TriggerState::TrSubCycleReady);
         nextTrigger->set_frames_in_state(0);
         nextTrigger->set_frames_to_fire(triggerConfigFromTiled->delayed_frames());
-        auto chSpawnerConfig = lowerBoundForSpawnerConfig(chSpawnerConfigIdx, triggerConfigFromTiled->character_spawner_time_seq());
+        auto spawnerConfig = lowerBoundForSpawnerConfig(spawnerConfigIdx, triggerConfigFromTiled->character_spawner_time_seq());
         nextTrigger->set_sub_cycle_index(0);
         nextTrigger->set_sub_cycle_gen_mask_counter(1); // important initializer
-        nextTrigger->set_sub_cycle_mask_to_fulfill((1UL << chSpawnerConfig->species_id_list_size()) - 1);
+        nextTrigger->set_sub_cycle_mask_to_fulfill((1UL << spawnerConfig->species_id_list_size()) - 1);
 
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle fulfilled chSpawnerConfigIdx=" << chSpawnerConfigIdx << ", frames_to_fire=" << triggerConfigFromTiled->delayed_frames() << ", nextWaveNpcCnt=" << chSpawnerConfig->species_id_list_size() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
+        oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " main-cycle fulfilled spawnerConfigIdx=" << spawnerConfigIdx << ", frames_to_fire=" << triggerConfigFromTiled->delayed_frames() << ", nextWaveNpcCount=" << spawnerConfig->species_id_list_size() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
 

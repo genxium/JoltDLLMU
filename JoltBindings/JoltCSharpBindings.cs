@@ -210,8 +210,7 @@ namespace JoltCSharp {
         public static NpcCharacterDownsync NewPreallocatedNpcCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity, PrimitiveConsts primitives) {
             var single = new NpcCharacterDownsync();
             single.Id = primitives.TerminatingCharacterId;
-            single.ExhaustedToDropBuffSpeciesId = primitives.TerminatingBuffSpeciesId;
-            single.ExhaustedToDropConsumableSpeciesId = primitives.TerminatingConsumableSpeciesId;
+            single.ExhaustedToDropPkt = primitives.PktNone;
             single.Chd = NewPreallocatedCharacterDownsync(buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity, primitives);
             return single;
         }

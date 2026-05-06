@@ -108,6 +108,8 @@ public:
         stepResult->clear_fulfilled_triggers();
         stepResult->clear_fulfilled_trigger_ids();
         stepResult->clear_fulfilled_trigger_group_ids();
+
+        stepResult->clear_prepared_trigger_uds();
     }
 
     std::vector<uint64_t> prefabbedInputList;
@@ -181,14 +183,15 @@ public:
     /////////////////////////////////////////////////////Trigger Collider Cache/////////////////////////////////////////////////////
     TR_COLLIDER_Q  activeTrColliders;
     TR_COLLIDER_Q* trStockCache;
-    std::unordered_map< TR_CACHE_KEY_T, TR_COLLIDER_Q, VectorFloatHasher > cachedTrColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+    std::unordered_map< TR_CACHE_KEY_T, TR_COLLIDER_Q, TriggerCacheKeyHasher > cachedTrColliders; 
 
     /////////////////////////////////////////////////////Pickable Collider Cache/////////////////////////////////////////////////////
-    /*
-    [WARNING] By the time of writing, it's by design that there's no "activeTrColliders/cachedTrColliders" or "activePkColliders/cachedPkColliders" with reasons.
-    - Not all triggers have geometric shapes, and for those who do, we use "multithreaded-NarrowPhaseQuery + custom collector for min/max recognition" to handle their collisions (just like "vision handling"), because "who best hits the trigger" is a critical information that must be deterministic in rollback netcode.  
-    - Similarly "who best picks the pickable" is a critical information that must be deterministic in rollback netcode too.  
-    */
+    PK_COLLIDER_Q  activePickableColliders;
+    std::unordered_map< PK_CACHE_KEY_T, PK_COLLIDER_Q, PkCacheKeyHasher > cachedPickableColliders; 
+
+    /////////////////////////////////////////////////////HurtboxShieldbox Collider Cache/////////////////////////////////////////////////////
+    HB_SB_COLLIDER_Q  activeHbSbColliders;
+    std::unordered_map< HB_SB_CACHE_KEY_T, HB_SB_COLLIDER_Q, HbSbCacheKeyHasher > cachedHbSbColliders; 
 
     /////////////////////////////////////////////////////NonContactConstraint Cache/////////////////////////////////////////////////////
     NON_CONTACT_CONSTRAINT_Q activeNonContactConstraints;
@@ -265,6 +268,24 @@ public:
         return &(characterSpawnerTimeSeq[l]);
     }
 
+    inline const PickableSpawnerConfig* lowerBoundForSpawnerConfig(int rdfId, const google::protobuf::RepeatedPtrField< ::jtshared::PickableSpawnerConfig >& pickableSpawnerTimeSeq) {
+        int sz = pickableSpawnerTimeSeq.size();
+        int l = 0, r = sz;
+        while (l < r) {
+            int m = ((l + r) >> 1);
+            auto& cand = pickableSpawnerTimeSeq[m];
+            if (cand.cutoff_rdf_id() == rdfId) {
+                return &cand;
+            } else if (cand.cutoff_rdf_id() < rdfId) {
+                l = m + 1;
+            } else {
+                r = m;
+            }
+        }
+        if (l >= sz) l = sz - 1;
+        return &(pickableSpawnerTimeSeq[l]);
+    }
+
     void updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const CharacterConfig* cc, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty);
 
     virtual RenderFrame* CalcSingleStep(const int currRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd);
@@ -287,6 +308,9 @@ public:
         JPH_ASSERT(lhs->npc_id_counter() == rhs->npc_id_counter());
         JPH_ASSERT(lhs->bullet_id_counter() == rhs->bullet_id_counter());
         JPH_ASSERT(lhs->bullet_count() == rhs->bullet_count());
+        JPH_ASSERT(lhs->pickable_id_counter() == rhs->pickable_id_counter());
+        JPH_ASSERT(lhs->pickable_count() == rhs->pickable_count());
+        JPH_ASSERT(lhs->trigger_count() == rhs->trigger_count());
         
         for (int i = 0; i < lhs->npcs_size(); i++) {
             auto lhsCh = lhs->npcs(i);
@@ -320,6 +344,22 @@ public:
 
     inline static void AssertNearlySame(const NpcCharacterDownsync& lhs, const NpcCharacterDownsync& rhs) {
         // [WARNING] "id"s can be different due to local thread scheduling differences, so not included in comparison.
+        JPH_ASSERT(lhs.activated_rdf_id() == rhs.activated_rdf_id());
+        JPH_ASSERT(lhs.cached_cue_cmd() == rhs.cached_cue_cmd());
+        JPH_ASSERT(lhs.last_fled_rdf_id() == rhs.last_fled_rdf_id());
+        JPH_ASSERT(lhs.goal_as_npc() == rhs.goal_as_npc());
+
+        JPH_ASSERT(lhs.publishing_mask_upon_exhausted() == rhs.publishing_mask_upon_exhausted());
+        JPH_ASSERT(lhs.publishing_to_trigger_id_upon_exhausted() == rhs.publishing_to_trigger_id_upon_exhausted());
+
+        JPH_ASSERT(lhs.subscribes_to_trigger_id() == rhs.subscribes_to_trigger_id()); 
+        JPH_ASSERT(lhs.subscribes_to_trigger_group_id() == rhs.subscribes_to_trigger_group_id()); 
+
+        JPH_ASSERT(lhs.captured_by_patrol_cue() == rhs.captured_by_patrol_cue());
+        JPH_ASSERT(lhs.frames_in_patrol_cue() == rhs.frames_in_patrol_cue());
+
+        JPH_ASSERT(lhs.exhausted_to_drop_pkt() == rhs.exhausted_to_drop_pkt());
+
         auto lhsChd = lhs.chd();
         auto rhsChd = rhs.chd();
         AssertNearlySame(lhsChd, rhsChd);
@@ -329,14 +369,19 @@ public:
         JPH_ASSERT(lhs.ch_state() == rhs.ch_state());
         JPH_ASSERT(lhs.frames_in_ch_state() == rhs.frames_in_ch_state());
         JPH_ASSERT(lhs.ground_ud() == rhs.ground_ud());
+        JPH_ASSERT(lhs.wall_ud() == rhs.wall_ud());
         JPH_ASSERT(lhs.btn_a_holding_rdf_cnt() == rhs.btn_a_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_b_holding_rdf_cnt() == rhs.btn_b_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_c_holding_rdf_cnt() == rhs.btn_c_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_d_holding_rdf_cnt() == rhs.btn_d_holding_rdf_cnt());
         JPH_ASSERT(lhs.btn_e_holding_rdf_cnt() == rhs.btn_e_holding_rdf_cnt());
+        JPH_ASSERT(lhs.btn_f_holding_rdf_cnt() == rhs.btn_f_holding_rdf_cnt());
         JPH_ASSERT(lhs.frames_invinsible() == rhs.frames_invinsible());
         JPH_ASSERT(lhs.frames_to_recover() == rhs.frames_to_recover());
         JPH_ASSERT(lhs.hit_self_stun_frames() == rhs.hit_self_stun_frames());
+        JPH_ASSERT(lhs.locking_on_ud() == rhs.locking_on_ud());
+        JPH_ASSERT(lhs.mp_regen_rdf_countdown() == rhs.mp_regen_rdf_countdown());
+        JPH_ASSERT(lhs.flying_rdf_countdown() == rhs.flying_rdf_countdown());
 
         JPH_ASSERT(lhs.lower_part_rdf_cnt() == rhs.lower_part_rdf_cnt());
         JPH_ASSERT(lhs.walkstopping_rdf_countdown() == rhs.walkstopping_rdf_countdown());
@@ -391,6 +436,8 @@ protected:
     BL_CACHE_KEY_T blCacheKeyHolder = BL_CACHE_KEY_T(BulletType::Undetermined, 0, 0);
     TP_CACHE_KEY_T tpCacheKeyHolder = TP_CACHE_KEY_T(cDefaultTpHalfLength, cDefaultTpHalfLength, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
     TR_CACHE_KEY_T trCacheKeyHolder = { 0, 0 };
+    PK_CACHE_KEY_T pkCacheKeyHolder = { 0, 0, 0 };
+    HB_SB_CACHE_KEY_T hbSbCacheKeyHolder = { 0, 0 };
 
     float fallenDeathHeight = 0;
 
@@ -417,9 +464,19 @@ protected:
     CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, const float newRadius, const float newHalfHeight, const Vec3Arg& newPos, const QuatArg& newRot);
 
+    HB_SB_COLLIDER_T* getOrCreateCachedHurtboxCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+        // TODO
+        return nullptr;
+    }
+    HB_SB_COLLIDER_T* getOrCreateCachedShieldboxCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+        // TODO
+        return nullptr;
+    }
+
     BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
     TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody, const Vec3Arg& newPos, const QuatArg& newRot);
     TR_COLLIDER_T* getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
+    PK_COLLIDER_T* getOrCreateCachedPickableCollider_NotThreadSafe(const uint64_t ud, const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
 
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
 
@@ -434,6 +491,8 @@ protected:
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
     std::unordered_set<uint64_t> transientWallGrabProhibitingUds;
+    std::unordered_set<uint64_t> transientPreparedTriggerUds;
+
     std::unordered_map<uint64_t, CH_COLLIDER_T*> transientUdToChCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToBodyID;
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
@@ -509,8 +568,19 @@ protected:
     }
 
     inline void calcTrCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, TR_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey[0] = immediateBoxHalfSizeX;
-        ioCacheKey[1] = immediateBoxHalfSizeY;
+        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
+        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+    }
+
+    inline void calcPkCacheKey(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, PK_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.pType = pType;
+        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
+        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+    }
+
+    inline void calcHbSbCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, HB_SB_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
+        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
     }
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
@@ -596,6 +666,9 @@ protected:
     bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
 
     bool addNewNpcToNextFrame(int currRdfId, float x, float y, float qx, float qy, float qz, float qw, uint32_t chSpeciesId, int teamId, NpcGoal initGoal, RenderFrame* nextRdf, uint32_t publishingToTriggerIdUponExhausted, uint64_t waveNpcKilledMaskCounter, uint32_t subscribesToTriggerId);
+
+    bool addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd);
+    bool addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount);
     
     void processWallGrabbingPostPhysicsUpdate(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 
@@ -612,6 +685,7 @@ protected:
     virtual void topoSortTriggerConfigFromTiledList(WsReq* initializerMapData);
     virtual void stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
     virtual void stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
+    virtual void stepSingleIndiWavePickableSpawner(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
 
     void leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf);
     void leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf);
@@ -783,6 +857,8 @@ protected:
 
     TR_COLLIDER_T* createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
+    TR_COLLIDER_T* createDefaultPickableCollider(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
+
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 
     void preallocateBodies(const RenderFrame* startRdf, const google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict);
@@ -875,7 +951,7 @@ protected:
     }
 
     inline bool isPickableAlive(const Pickable* pickable, int currRdfId) const {
-        return 0 < pickable->remaining_lifetime_rdf_count();
+        return (PickableState::PIdle == pickable->pk_state() || 0 < pickable->remaining_lifetime_rdf_count());
     }
 
     inline bool isNpcJustDead(const CharacterDownsync* chd) const {
@@ -937,6 +1013,24 @@ private:
 
 public:
     // BaseBattleCollisionFilter
+    virtual bool shouldCharacterSeeTrap(const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const Body& rhs) const {
+        if (!transientUdToCurrTrap.count(udRhs)) return false;
+        // [TODO] Check "CharacterConfig", trap visibility could be character-dependent.
+        const Trap* currTp = transientUdToCurrTrap.at(udRhs);
+        auto tpt = currTp->tpt();
+        if (globalPrimitiveConsts->tpt_sliding_platform() == tpt) {
+            return true;
+        } else if (globalPrimitiveConsts->tpt_rotating_platform() == tpt) {
+            return true;
+        } else if (globalPrimitiveConsts->tpt_conveyor_belt() == tpt) {
+            return true;
+        } else if (globalPrimitiveConsts->tpt_spring() == tpt) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const {
         if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
             return JPH::ValidateResult::RejectContact;
@@ -967,23 +1061,24 @@ public:
     }
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trap* rhsCurrTrap) const {
+        const uint32_t tpt = rhsCurrTrap->tpt();
         return JPH::ValidateResult::AcceptContact;
     }
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const {
         const uint32_t trt = rhsCurrTrigger->trt();
         
-        if (globalPrimitiveConsts->trt_by_movement() == trt && TriggerState::TrReady == rhsCurrTrigger->state() && 0 < rhsCurrTrigger->quota()) {
+        if (
+            (globalPrimitiveConsts->trt_by_movement() == trt || globalPrimitiveConsts->trt_by_pattern_f() == trt) 
+            && 
+            (TriggerState::TrReady == rhsCurrTrigger->state() && 0 < rhsCurrTrigger->quota())   
+        ) {
             return JPH::ValidateResult::AcceptContact;
         }
         return JPH::ValidateResult::RejectContact;
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Pickable* rhsCurrPickable) const {
-        return JPH::ValidateResult::AcceptContact;
-    }
-
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         if (transientSlipJumpableUds.count(udRhs)) {
             // Check early returns
             if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state() && lhsCurrChd->frames_in_ch_state() < globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
@@ -1062,6 +1157,25 @@ public:
             } 
             return validateLhsCharacterContact(lhsCurrChd, rhsCurrTr);
         }
+        case UDT_PICKABLE: {
+            if (UDT_PLAYER != udtLhs) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            if (!transientUdToCurrPickable.count(udRhs)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+            auto rhsCurrPk = transientUdToCurrPickable.at(udRhs);
+            if (globalPrimitiveConsts->terminating_pickable_id() == rhsCurrPk->id()) {
+                // obsolete
+                return JPH::ValidateResult::RejectContact;
+            }
+
+            if (PickableState::PIdle == rhsCurrPk->pk_state() && globalPrimitiveConsts->default_pickable_startup_frames() < rhsCurrPk->frames_in_pk_state() && 0 < rhsCurrPk->remaining_recur_quota()) {
+                return JPH::ValidateResult::AcceptContact;
+            }
+
+            return JPH::ValidateResult::RejectContact;
+        }
         default:
             return JPH::ValidateResult::AcceptContact;
         }
@@ -1076,7 +1190,7 @@ public:
                 auto& lhsCurrChd = lhsCurrPlayer->chd();
                 auto lhsNextPlayer = transientUdToNextPlayer.at(udLhs);
                 auto& lhsNextChd = lhsNextPlayer->chd();
-                return validateLhsCharacterContact(&lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
+                return validateLhsCharacterContact(udtLhs, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
                 break;
             }
             case UDT_NPC: {
@@ -1084,7 +1198,7 @@ public:
                 auto& lhsCurrChd = lhsCurrNpc->chd();
                 auto lhsNextNpc = transientUdToNextNpc.at(udLhs);
                 auto& lhsNextChd = lhsNextNpc->chd();
-                return validateLhsCharacterContact(&lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
+                return validateLhsCharacterContact(udtLhs, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
                 break;
             }
             default:
@@ -1092,7 +1206,7 @@ public:
         }
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterAimingRayContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+    virtual JPH::ValidateResult validateLhsCharacterAimingRayContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         if (transientSlipJumpableUds.count(udRhs)) {
             return JPH::ValidateResult::RejectContact;
         }
@@ -1154,6 +1268,8 @@ public:
             }
             return JPH::ValidateResult::RejectContact;
         }
+        case UDT_PICKABLE:
+            return JPH::ValidateResult::RejectContact;
         default:
             return JPH::ValidateResult::AcceptContact;
         }
@@ -1210,6 +1326,9 @@ public:
             if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
                 return JPH::ValidateResult::AcceptContact;
             }
+            return JPH::ValidateResult::RejectContact;
+        }
+        case UDT_PICKABLE: {
             return JPH::ValidateResult::RejectContact;
         }
         default:

@@ -18,7 +18,6 @@
 
 using namespace JPH;
 
-#define BL_COLLIDER_T JPH::Body
 typedef struct InputInducedMotion {
     // "COM" refers to "Center Of Mass"
     Vec3 forceCOM;
@@ -27,9 +26,10 @@ typedef struct InputInducedMotion {
     Vec3 angVelCOM; // Only proactive input (including NPC AI) will write into "angVelCOM" 
     bool jumpTriggered;
     bool slipJumpTriggered;
+    bool patternFTriggered;
     bool crouchForcedWhileSupported;
 
-    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), crouchForcedWhileSupported(false) {
+    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), patternFTriggered(false), crouchForcedWhileSupported(false) {
     }
 } InputInducedMotion;
 
@@ -62,6 +62,7 @@ public:
         holder->angVelCOM.Set(0, 0, 0);
         holder->jumpTriggered = false;
         holder->slipJumpTriggered = false;
+        holder->patternFTriggered = false;
         holder->crouchForcedWhileSupported = false;
         return holder;
     }
@@ -76,6 +77,7 @@ public:
     }
 };
 
+#define BL_COLLIDER_T JPH::Body
 typedef struct BlCacheKey {
     BulletType bType;
     float boxHalfExtentX;
@@ -98,6 +100,52 @@ typedef struct BlCacheKeyHasher {
     }
 } BlCacheKeyHasher;
 #define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
+
+#define HB_SB_COLLIDER_T JPH::Body
+typedef struct HurtboxShieldboxCacheKey {
+    float boxHalfExtentX;
+    float boxHalfExtentY;
+
+    HurtboxShieldboxCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
+
+    bool operator==(const HurtboxShieldboxCacheKey& other) const {
+        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
+    }
+} HB_SB_CACHE_KEY_T;
+
+typedef struct HbSbCacheKeyHasher {
+    std::size_t operator()(const HurtboxShieldboxCacheKey& v) const {
+        std::size_t seed = 3;
+        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} HbSbCacheKeyHasher;
+#define HB_SB_COLLIDER_Q std::vector<HB_SB_COLLIDER_T*>
+
+#define PK_COLLIDER_T JPH::Body
+typedef struct PkCacheKey {
+    uint32_t pType;
+    float boxHalfExtentX;
+    float boxHalfExtentY;
+
+    PkCacheKey(const uint32_t inPType, const float inBoxHalfExtentX, const float inBoxHalfExtentY) : pType(inPType), boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
+
+    bool operator==(const PkCacheKey& other) const {
+        return pType == other.pType && boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
+    }
+} PK_CACHE_KEY_T;
+
+typedef struct PkCacheKeyHasher {
+    std::size_t operator()(const PkCacheKey& v) const {
+        std::size_t seed = 3;
+        seed ^= std::hash<uint32_t>()(v.pType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} PkCacheKeyHasher;
+#define PK_COLLIDER_Q std::vector<PK_COLLIDER_T*>
 
 #define CH_CACHE_KEY_T std::vector<float>
 #define CH_COLLIDER_T JPH::Character
@@ -196,7 +244,25 @@ typedef struct NonContactConstraintCacheKeyHasher {
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
 #define TR_COLLIDER_T JPH::Body
-#define TR_CACHE_KEY_T std::vector<float>
+typedef struct TriggerCacheKey {
+    float boxHalfExtentX;
+    float boxHalfExtentY;
+
+    TriggerCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
+
+    bool operator==(const TriggerCacheKey& other) const {
+        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
+    }
+} TR_CACHE_KEY_T;
+
+typedef struct TriggerCacheKeyHasher {
+    std::size_t operator()(const TriggerCacheKey& v) const {
+        std::size_t seed = 3;
+        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} TriggerCacheKeyHasher;
 #define TR_COLLIDER_Q std::vector<TR_COLLIDER_T*>
 
 static const float      cHalfPI = 0.5*JPH_PI;
@@ -229,23 +295,23 @@ public:
 
     std::atomic<uint32_t>       mNextRdfAimingRayCount = 0;
 
+    virtual bool shouldCharacterSeeTrap(const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const Body& rhs) const = 0;
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const = 0;
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trap* rhsCurrTrap) const = 0;
-
-    virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Pickable* rhsCurrPickable) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const = 0;
 
-    virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+    virtual ValidateResult validateLhsCharacterContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
-    virtual ValidateResult validateLhsCharacterAimingRayContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+    virtual ValidateResult validateLhsCharacterAimingRayContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsBulletContact(const Bullet* lhsCurrBl, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
@@ -310,6 +376,45 @@ public:
         return UDT_NPC + npcId;
     }
 
+    inline static const uint64_t calcPlayerHurtboxUserData(const uint32_t joinIndex, const uint32_t hbIdx) {
+        return UDT_PLAYER_HURTBOX + (joinIndex << UD_PAYLOAD_HB_SB_IDX_SHIFT) + hbIdx;
+    }
+
+    inline static const uint64_t calcPlayerShieldboxUserData(const uint32_t joinIndex, const uint32_t sbIdx) {
+        return UDT_PLAYER_SHIELDBOX + (joinIndex << UD_PAYLOAD_HB_SB_IDX_SHIFT) + sbIdx;
+    }
+
+    inline static const uint64_t calcNpcHurtboxUserData(const uint32_t npcId, const uint32_t hbIdx) {
+        return UDT_NPC_HURTBOX + (npcId << UD_PAYLOAD_HB_SB_IDX_SHIFT) + hbIdx;
+    }
+
+    inline static const uint64_t calcNpcShieldboxUserData(const uint32_t npcId, const uint32_t sbIdx) {
+        return UDT_NPC_SHIELDBOX + (npcId << UD_PAYLOAD_HB_SB_IDX_SHIFT) + sbIdx;
+    }
+
+    inline static const bool calcCharacterUserDataFromHbSbUd(const uint64_t hbSbUd, uint64_t& outUdt, uint64_t& outUd) {
+        uint64_t origUdt = getUDT(hbSbUd);
+        uint64_t origUdPayload = getUDPayload(hbSbUd);
+
+        outUdt = 0;
+        outUd = 0;
+
+        switch (origUdt) {
+        case UDT_PLAYER_HURTBOX:
+        case UDT_PLAYER_SHIELDBOX:
+            outUdt = UDT_PLAYER;
+            outUd = calcPlayerUserData(origUdPayload >> UD_PAYLOAD_HB_SB_IDX_SHIFT); 
+            return true;
+        case UDT_NPC_HURTBOX:
+        case UDT_NPC_SHIELDBOX:
+            outUdt = UDT_NPC;
+            outUd = calcNpcUserData(origUdPayload >> UD_PAYLOAD_HB_SB_IDX_SHIFT); 
+            return true;
+        default:
+            return false;
+        }
+    }
+
     inline static const uint64_t calcBulletUserData(const uint32_t bulletId) {
         return UDT_BL + bulletId;
     }
@@ -365,6 +470,7 @@ public:
         uint64_t btnCLevel = ((encodedInput >> 6) & 1);
         uint64_t btnDLevel = ((encodedInput >> 7) & 1);
         uint64_t btnELevel = ((encodedInput >> 8) & 1);
+        uint64_t btnFLevel = ((encodedInput >> 9) & 1);
 
         holder->set_dx(DIRECTION_DECODER[encodedDirection][0]);
         holder->set_dy(DIRECTION_DECODER[encodedDirection][1]);
@@ -373,6 +479,7 @@ public:
         holder->set_btn_c_level(btnCLevel);
         holder->set_btn_d_level(btnDLevel);
         holder->set_btn_e_level(btnELevel);
+        holder->set_btn_f_level(btnFLevel);
         return true;
     }
 
