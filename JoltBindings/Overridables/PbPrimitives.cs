@@ -26,6 +26,10 @@ namespace JoltCSharp {
         public const uint SPECIES_BLACKSABER1 = 12;
         public const uint SPECIES_BLACKSHOOTER1 = 13;
         public const uint SPECIES_BLACKTHROWER1 = 14;
+        public const uint SPECIES_MAINTOWER1 = 15;
+
+        public const uint SPECIES_BLACKSABER2 = 16;
+        public const uint SPECIES_BLACKSHOOTER2 = 17;
 
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
@@ -154,8 +158,6 @@ namespace JoltCSharp {
             MagicJoinIndexInvalid = 0xFFFFFFFF,
             MagicJoinIndexSrvUdpTunnel = 0,
             MagicQuotaInfinite = -1,
-
-            NpcFleeGracePeriodRdfCnt = 8,
 
             MagicLastSentInputFrameIdNormalAdded = -1,
             MagicLastSentInputFrameIdReadded = -2,

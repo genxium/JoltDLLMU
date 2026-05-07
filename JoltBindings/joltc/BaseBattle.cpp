@@ -1176,8 +1176,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                             if (!lhsBlConfig->remains_upon_hit()) {
                                 if (hitOnCharacter) {
                                     shouldVanish = true;
-                                } else if (UDT_TRIGGER == udtRhs || UDT_OBSTACLE == udtRhs || UDT_TRAP == udtRhs) {
-                                    if (0 >= worldSpaceNormIntoPeer.GetY()) {
+                                } else if (UDT_OBSTACLE == udtRhs || UDT_TRAP == udtRhs) {
+                                    if (0 <= worldSpaceNormIntoPeer.GetY()) {
+                                        shouldVanish = true;
+                                    } else if (!BaseBattleCollisionFilter::IsLengthNearZero(worldSpaceNormIntoPeer.GetX())) {
                                         shouldVanish = true;
                                     }
                                 }
@@ -1185,6 +1187,24 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                             break;
                         default:
                             break;
+                        }
+                        if (UDT_TRIGGER == udtRhs) {
+                            // [REMINDER] "BaseBattle::validateLhsBulletContact" has helped filter out unnecessary collisions.
+                            if (!transientUdToCurrTrigger.count(udRhs)) {
+                                break;
+                            }
+                            const Trigger* rhsCurrTr = transientUdToCurrTrigger.at(udRhs);
+                            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt()) {
+                                if (!transientUdToNextTrigger.count(udRhs)) {
+                                    Trigger* rhsNextTr = transientUdToNextTrigger.at(udRhs);
+                                    rhsNextTr->set_main_cycle_mask_to_fulfill(0);
+#ifndef NDEBUG
+                                    std::ostringstream oss;
+                                    oss << "@currRdfId=" << currRdfId << ", bullet ud=" << ud << ", offenderUd=" << currBl.offender_ud() << " pre-fulfilled by_attack trigger id=" << rhsCurrTr->id() << std::endl;
+                                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+                                }
+                            }  
                         }
                         break;
                     case UDT_BL: {
