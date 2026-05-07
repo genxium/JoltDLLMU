@@ -1545,6 +1545,10 @@ message ChSpeciesConsts {
     uint32 blacksaber1 = 3;
     uint32 blackshooter1 = 4;
     uint32 blackthrower1 = 5;
+    uint32 maintower1 = 6;
+
+    uint32 blacksaber2 = 7;
+    uint32 blackshooter2 = 8;
 
     uint32 none_ch = 2048;
     uint32 blacksaber_test_no_vision = 2049;
@@ -1602,7 +1606,6 @@ message PrimitiveConsts {
     uint32 magic_join_index_srv_udp_tunnel = 40;
     int32 magic_quota_infinite = 41;
 
-    int32 npc_flee_grace_period_rdf_cnt = 42;
 
     int32 magic_last_sent_input_frame_id_normal_added = 43;
     int32 magic_last_sent_input_frame_id_readded = 44;
