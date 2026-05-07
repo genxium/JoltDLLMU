@@ -63,7 +63,7 @@ JPH_CAPI uint64_t APP_CalcBulletUserData(uint32_t bulletId);
 JPH_CAPI uint64_t APP_CalcTriggerUserData(uint32_t triggerId);
 JPH_CAPI uint64_t APP_CalcTrapUserData(uint32_t trapId);
 JPH_CAPI uint64_t APP_CalcPickableUserData(uint32_t pickableId);
-JPH_CAPI uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel);
+JPH_CAPI uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel);
 
 /*
 [WARNING] 
