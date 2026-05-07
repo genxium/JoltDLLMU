@@ -278,8 +278,8 @@ uint64_t APP_CalcPickableUserData(uint32_t pickableId) {
     return BaseBattleCollisionFilter::calcPickableUserData(pickableId);
 }
 
-uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel) {
-    return BaseBattleCollisionFilter::encodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel);
+uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel) {
+    return BaseBattleCollisionFilter::encodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel, btnFLevel);
 }
 
 void* BACKEND_CreateBattle(int rdfBufferSize) {

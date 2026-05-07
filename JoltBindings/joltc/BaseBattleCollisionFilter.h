@@ -449,17 +449,18 @@ public:
     }
 
     inline static uint64_t encodeInput(const InputFrameDecoded& ifDecoded) {
-        return encodeInput(ifDecoded.dx(), ifDecoded.dy(), ifDecoded.btn_a_level(), ifDecoded.btn_b_level(), ifDecoded.btn_c_level(), ifDecoded.btn_d_level(), ifDecoded.btn_e_level());
+        return encodeInput(ifDecoded.dx(), ifDecoded.dy(), ifDecoded.btn_a_level(), ifDecoded.btn_b_level(), ifDecoded.btn_c_level(), ifDecoded.btn_d_level(), ifDecoded.btn_e_level(), ifDecoded.btn_f_level());
     }
 
-    inline static uint64_t encodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel) {
+    inline static uint64_t encodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel) {
         uint64_t encodedBtnALevel = (btnALevel << 4);
         uint64_t encodedBtnBLevel = (btnBLevel << 5);
         uint64_t encodedBtnCLevel = (btnCLevel << 6);
         uint64_t encodedBtnDLevel = (btnDLevel << 7);
         uint64_t encodedBtnELevel = (btnELevel << 8);
+        uint64_t encodedBtnFLevel = (btnELevel << 9);
         uint64_t discretizedDir = encodeDir(dx, dy);
-        return (discretizedDir + encodedBtnALevel + encodedBtnBLevel + encodedBtnCLevel + encodedBtnDLevel + encodedBtnELevel);
+        return (discretizedDir + encodedBtnALevel + encodedBtnBLevel + encodedBtnCLevel + encodedBtnDLevel + encodedBtnELevel + encodedBtnFLevel);
     }
 
     inline static bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder) {
