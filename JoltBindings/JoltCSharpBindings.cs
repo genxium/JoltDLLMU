@@ -415,12 +415,14 @@ namespace JoltCSharp {
             rdf.Pickables.Clear();
 
             rdf.BulletCount = 0;
-            rdf.NpcCount = 0;
-            rdf.DynamicTrapCount = 0;
-            rdf.PickableCount = 0;
-
             rdf.BulletIdCounter = primitives.TerminatingBulletId;
+
+            rdf.NpcCount = 0;
             rdf.NpcIdCounter = primitives.TerminatingCharacterId;
+
+            rdf.DynamicTrapCount = 0;
+
+            rdf.PickableCount = 0;
             rdf.PickableIdCounter = primitives.TerminatingPickableId;
 
             rdf.CountdownNanos = 0;

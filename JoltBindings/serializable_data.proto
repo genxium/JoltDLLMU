@@ -1481,6 +1481,7 @@ message TriggerConfigFromTiled {
     int32 bgm_id = 513;
     bool is_boss_savepoint = 514; 
     map<uint32, bool> boss_species_set = 515;   
+    bool is_story_ready_go = 516; 
 
     repeated CharacterSpawnerConfig character_spawner_time_seq = 1024; // MUST Be configured by increasing "cutoff_rdf_id"!
     repeated PickableSpawnerConfig pickable_spawner_time_seq = 1025; // MUST Be configured by increasing "cutoff_rdf_id"!

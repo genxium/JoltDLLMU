@@ -2847,13 +2847,9 @@ std::map<int, uint64_t> testCmds29 = {
     {239, 0},
     {240, 32},
     {241, 0},
-    {299, 0},
-    {399, 0},
-    {400, 3},
-    {520, 3},
-    {521, 0},
-    {919, 0},
-    {920, 0},
+    {248, 3}, // Move over to trigger NPC reaction
+    {750, 3}, // Around the time NPC1 got "NOT_ENOUGH_MP" reaction
+    {920, 3},
     {921, 0},
     {2048, 0},
 };
@@ -2928,6 +2924,24 @@ std::map<int, uint64_t> testCmds34 = {
     {0, 0},
     {32, 3},
     {50, 3},   
+    {51, 0},
+    {127, 0},
+    {128, 512},
+    {129, 0},
+    {327, 0},
+    {328, 512},
+    {379, 0},
+    {380, 0},
+    {399, 0},
+    {400, 32},
+    {401, 0},
+    {1024, 0}
+};
+
+std::map<int, uint64_t> testCmds35 = {
+    {0, 0},
+    {32, 3},
+    {50, 3},
     {51, 0},
     {127, 0},
     {128, 512},
@@ -5191,6 +5205,46 @@ void initTest33Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest34Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockBtnFTestStartRdf(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto triggerConfigFromTiled1 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(startRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(startRdf->triggers(0).trt());
+    triggerConfigFromTiled1->set_box_half_size_x(30.f);
+    triggerConfigFromTiled1->set_box_half_size_y(50.f);
+    triggerConfigFromTiled1->set_quota(2);
+    triggerConfigFromTiled1->set_recovery_frames(3 * globalPrimitiveConsts->battle_dynamics_fps());
+
+    auto triggerConfigFromTiled2 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(startRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
+    triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
+    triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
+    triggerConfigFromTiled2->set_quota(2);
+    triggerConfigFromTiled2->set_init_q_x(0);
+    triggerConfigFromTiled2->set_init_q_y(1);
+    triggerConfigFromTiled2->set_init_q_z(0);
+    triggerConfigFromTiled2->set_init_q_w(0);
+    triggerConfigFromTiled2->set_new_revival_x(startRdf->triggers(1).x());
+    triggerConfigFromTiled2->set_new_revival_y(startRdf->triggers(1).y());
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
+
+    auto* mutablePkSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
+    mutablePkSpanwerTimeSeq2_1->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq2_1->add_init_op_list(3);
+
+    auto* mutablePkSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
+    mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(3);
+    mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_mp_small());
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(4);
+}
+
+void initTest35Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     auto startRdf = mockBtnFTestStartRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
@@ -7568,7 +7622,7 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
+    int loopRdfCnt = 1200;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -7577,6 +7631,7 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int newChaserRdfId = 0;
 
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    float npc1NotEnoughMpX = 0;
     while (loopRdfCnt > outerTimerRdfId) {
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds29, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
@@ -7603,9 +7658,14 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
+        if (955 <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+            //shouldPrint = true;
+        }
+
         if (shouldPrint) {
             std::cout << "TestCase29/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", mp=" << npc1Chd.mp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << std::endl;
         }
+
 
         if (325 == outerTimerRdfId) {
             JPH_ASSERT(1 == outerTimerRdf->bullet_count());
@@ -7638,6 +7698,26 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(Active == bl1.bl_state());
             JPH_ASSERT(1 == bl1.team_id());
             JPH_ASSERT(1 == bl1.active_skill_hit());
+        } else if (730 == outerTimerRdfId) {
+            JPH_ASSERT(0 == npc1.cached_cue_cmd());
+            JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
+        } else if (800 == outerTimerRdfId) {
+            npc1NotEnoughMpX = npc1Chd.x();
+            JPH_ASSERT(0 == npc1.cached_cue_cmd());
+            JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
+            JPH_ASSERT(0 == npc1Chd.vel_x());
+        } else if (960 == outerTimerRdfId) {
+            JPH_ASSERT(npc1NotEnoughMpX == npc1Chd.x());
+            JPH_ASSERT(0 == npc1.cached_cue_cmd());
+            JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
+            JPH_ASSERT(0 == npc1Chd.vel_x());
+        } else if (966 == outerTimerRdfId) {
+            JPH_ASSERT(4 == npc1.cached_cue_cmd());
+            JPH_ASSERT(NpcGoal::NHuntThenPatrol == npc1.goal_as_npc());
+            JPH_ASSERT(0 > npc1Chd.vel_x());
+        } else if (1038 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Atk1 == npc1Chd.ch_state());
+            JPH_ASSERT(40 == npc1Chd.mp());
         }
 
         outerTimerRdfId++;
@@ -8047,6 +8127,81 @@ bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase35(std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    FrontendBattle* offlineBattle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, false));
+    std::cout << "TestCase35/Created Offline battle = " << offlineBattle << std::endl;
+
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest35Data(initializerMapData, hulls, theAllocator);
+    offlineBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int jumpedTimerRdfId = INT_MAX - 16;
+
+    {
+        offlineBattle->timerRdfId = jumpedTimerRdfId; 
+        int toUseNewIfdId = BaseBattle::ConvertToDelayedInputFrameId(jumpedTimerRdfId);
+        offlineBattle->ifdBuffer.StFrameId = toUseNewIfdId;
+        offlineBattle->ifdBuffer.EdFrameId = toUseNewIfdId;
+        offlineBattle->ifdBuffer.Cnt = 0;
+        offlineBattle->ifdBuffer.St = 0;
+        offlineBattle->ifdBuffer.Ed = 0;
+
+        RenderFrame* toReuseRdf = offlineBattle->rdfBuffer.GetFirst();
+        toReuseRdf->set_id(jumpedTimerRdfId);
+        offlineBattle->rdfBuffer.StFrameId = jumpedTimerRdfId;
+        offlineBattle->rdfBuffer.EdFrameId = jumpedTimerRdfId+1;
+        offlineBattle->rdfBuffer.Cnt = 1;
+        offlineBattle->rdfBuffer.St = 0;
+        offlineBattle->rdfBuffer.Ed = 1;
+    }
+
+    int outerTimerRdfId = jumpedTimerRdfId;
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+    bool victoryTriggered = false;
+    while (jumpedTimerRdfId <= outerTimerRdfId || loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds35, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(offlineBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase35/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(offlineBattle);
+
+        RenderFrame* outerTimerRdf = offlineBattle->rdfBuffer.GetLast();
+
+        auto& tr1 = outerTimerRdf->triggers(0);
+        auto tr1Ud = APP_CalcTriggerUserData(tr1.id());
+
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
+
+        auto* stepResult = offlineBattle->stepResultBuffer.GetLast();
+
+        int pickableCnt = outerTimerRdf->pickable_count();
+
+        if (shouldPrint) {
+            std::cout << "TestCase35/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), pickableCnt=" << pickableCnt << std::endl;
+        }
+
+        outerTimerRdfId = offlineBattle->timerRdfId;
+    }
+
+    JPH_ASSERT(outerTimerRdfId == loopRdfCnt);
+
+    theAllocator->Reset();
+    APP_DestroyBattle(offlineBattle);
+    std::cout << "Passed TestCase35: TimerRdfId recycling\n" << std::endl;
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -8340,7 +8495,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
-    
+
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -8386,7 +8541,7 @@ int main(int argc, char** argv)
     runTestCase27(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase28(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-     
+    
     runTestCase29(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase30(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -8397,7 +8552,9 @@ int main(int argc, char** argv)
     runTestCase33(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     runTestCase34(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-
+    
+    runTestCase35(wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    
     // clean up
     // [REMINDER] "startRdf" and "fallenDeathStartRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);
