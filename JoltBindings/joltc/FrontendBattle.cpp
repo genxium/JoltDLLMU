@@ -510,6 +510,39 @@ bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf
 }
 
 bool FrontendBattle::Step() {
+    if (!onlineArenaMode && INT_MAX <= timerRdfId+1) {
+        // In Offline mode, "timerRdfId" might exceed INT_MAX and thus needs recycling.
+        RenderFrame* toRecycleRdf = rdfBuffer.GetLast(); 
+        int toUseOrigIfdId = ConvertToDelayedInputFrameId(toRecycleRdf->id());
+
+        int toReuseNewIfdId = 0;
+        timerRdfId = ConvertToFirstUsedRenderFrameId(toReuseNewIfdId) + 1;
+        toRecycleRdf->set_id(timerRdfId);
+
+        for (int ifdId = toUseOrigIfdId; ifdId < ifdBuffer.EdFrameId; ifdId++) {
+            InputFrameDownsync* toRecycleIfd = ifdBuffer.GetByFrameId(ifdId); 
+            if (nullptr == toRecycleIfd) break;
+            InputFrameDownsync* toReuseIfd = ifdBuffer.GetByOffset(toReuseNewIfdId);
+            CopyIfd(toRecycleIfd, toReuseIfd);
+            toReuseNewIfdId++;
+        }
+        ifdBuffer.StFrameId = 0;
+        ifdBuffer.EdFrameId = toReuseNewIfdId;
+        ifdBuffer.Cnt = (ifdBuffer.EdFrameId-ifdBuffer.StFrameId);
+        ifdBuffer.St = 0;
+        ifdBuffer.Ed = ifdBuffer.Cnt;
+
+        RenderFrame* toReuseRdf = rdfBuffer.GetFirst();
+        if (toReuseRdf != toRecycleRdf) {
+            CopyRdf(toRecycleRdf, toReuseRdf);
+        }
+        rdfBuffer.StFrameId = timerRdfId;
+        rdfBuffer.EdFrameId = timerRdfId+1;
+        rdfBuffer.Cnt = 1;
+        rdfBuffer.St = 0;
+        rdfBuffer.Ed = 1;
+    }
+
     int delayedIfdId = ConvertToDelayedInputFrameId(timerRdfId);
     InputFrameDownsync* delayedIfd = nullptr;
 

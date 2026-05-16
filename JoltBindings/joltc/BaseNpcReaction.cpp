@@ -97,8 +97,9 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         newVisionReaction = deriveNpcVisionReactionAgainstOppoChUd(currRdfId, currPlayersMap, currNpcsMap, selfNpcCollider, selfNpcBodyID, selfNpcUd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionDirection, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe);
 
        bool shouldHunt = true;
+       bool shouldPause = false;
 
-       if (newVisionReaction == TARGET_CH_REACTION_FOLLOW && opponentBehindMe && opponentAboveMe) {
+       if (TARGET_CH_REACTION_FOLLOW == newVisionReaction && !opponentBehindMe && opponentAboveMe) {
             // [WARNING] Update "minGapToJump" and "currGapToJump" in this case to help "selfNpcUd" decide whether or not to follow this opponent, e.g. if the opponent stands on somewhere too high to reach.
             float candVisionAlignment = std::abs(selfNpcPositionDiffForOppoChUd.GetX());
             float candAntiGravityAlignment = std::abs(selfNpcPositionDiffForOppoChUd.GetY());
@@ -117,9 +118,15 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             if (!isVirtualGapJumpable) {
                 shouldHunt = false;
             }
-        } 
-
-        if (shouldHunt) {
+        } else if (TARGET_CH_REACTION_NOT_ENOUGH_MP == newVisionReaction) {
+            shouldHunt = false;
+            shouldPause = true;
+        }
+        
+        if (shouldPause) {
+            newVisionReaction = TARGET_CH_REACTION_NOT_ENOUGH_MP;
+            outNextNpcGoal = NpcGoal::NIdleIfGoHuntingThenPatrol;
+        } else if (shouldHunt) {
             switch (currNpcGoal) {
             case NpcGoal::NIdle:
                 outNextNpcGoal = NpcGoal::NHuntThenIdle;
@@ -175,6 +182,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     }
 
     switch (newVisionReaction) {
+        case TARGET_CH_REACTION_NOT_ENOUGH_MP:
         case TARGET_CH_REACTION_DEF1:
         case TARGET_CH_REACTION_USE_DRAGONPUNCH:
         case TARGET_CH_REACTION_USE_MELEE:
@@ -286,7 +294,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         }
     } else {
         int toMoveDirX = 0;
-        if (TARGET_CH_REACTION_STOP_BY_MV_BLOCKER == newVisionReaction || NpcGoal::NIdle == currNpcGoal) {
+        if ((TARGET_CH_REACTION_STOP_BY_MV_BLOCKER == newVisionReaction || TARGET_CH_REACTION_NOT_ENOUGH_MP == newVisionReaction) || (NpcGoal::NIdle == outNextNpcGoal || NpcGoal::NIdleIfGoHuntingThenPatrol == outNextNpcGoal || NpcGoal::NIdleIfGoHuntingThenPathPatrol == outNextNpcGoal)) {
             toMoveDirX = 0;
         } else if (0 != toHandleOppoChUd) {
             // [TODO] For flying NPCs.
