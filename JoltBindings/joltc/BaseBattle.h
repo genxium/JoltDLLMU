@@ -667,8 +667,8 @@ protected:
 
     bool addNewNpcToNextFrame(int currRdfId, float x, float y, float qx, float qy, float qz, float qw, uint32_t chSpeciesId, int teamId, NpcGoal initGoal, RenderFrame* nextRdf, uint32_t publishingToTriggerIdUponExhausted, uint64_t waveNpcKilledMaskCounter, uint32_t subscribesToTriggerId);
 
-    bool addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd);
-    bool addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount);
+    int addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd);
+    int addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount);
     
     void processWallGrabbingPostPhysicsUpdate(const int currRdfId, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const CH_COLLIDER_T* cv, bool inJumpStartupOrJustEnded);
 

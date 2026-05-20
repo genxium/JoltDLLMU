@@ -191,7 +191,7 @@ namespace JoltCSharp {
             DefaultPickableHurtboxHalfSizeX = 10f,
             DefaultPickableHurtboxHalfSizeY = 12f,
             DefaultPickableDisappearingAnimFrames = 10,
-            DefaultPickableConsumedAnimFrames = 30,
+            DefaultPickableConsumedAnimFrames = 10,
             DefaultPickableRisingVelY = 8f,
             DefaultPickableStartupFrames = 45,
             DefaultPickableLifetimeRdfCnt = 60*BATTLE_DYNAMICS_FPS,
