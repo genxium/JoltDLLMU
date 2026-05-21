@@ -6712,7 +6712,7 @@ void BaseBattle::stepSingleIndiWavePickableSpawner(const int currRdfId, const Tr
 
         Vec3 newPos(currTrigger.x(), currTrigger.y(), currTrigger.z());
         Vec3 newVel(0, globalPrimitiveConsts->default_pickable_rising_vel_y(), 0); // TODO
-        int newQuota = 1; // TODO
+        int newPickableQuota = 1; // TODO
         int newLifetimeRdfCount = globalPrimitiveConsts->default_pickable_lifetime_rdf_cnt(); // TODO
         if (0 != initOp) {
             InputFrameDecoded ifDecodedHolder;
@@ -6724,14 +6724,18 @@ void BaseBattle::stepSingleIndiWavePickableSpawner(const int currRdfId, const Tr
             }
         }
 
-        int newPickableId = addNewPickableToNextFrame(currRdfId, nextRdf, pkType, newPos, newVel, newQuota, newLifetimeRdfCount);
+        int newPickableId = addNewPickableToNextFrame(currRdfId, nextRdf, pkType, newPos, newVel, newPickableQuota, newLifetimeRdfCount);
 
         if (newSubCycleIdx < spawnerConfig->pickup_type_list_size()) {
             nextTrigger->set_state(TriggerState::TrSubCycleCoolingDown);
             nextTrigger->set_frames_to_fire(triggerConfigFromTiled->sub_cycle_trigger_frames());
             nextTrigger->set_sub_cycle_gen_mask_counter((currTrigger.sub_cycle_gen_mask_counter() << 1));
         } else {
-            nextTrigger->set_state(TriggerState::TrReady); // Such that it belongs to "trActiveMainCycleStates" immediately 
+            if (0 < oldQuota) {
+                nextTrigger->set_state(TriggerState::TrReady); // Such that it belongs to "trActiveMainCycleStates" immediately 
+            } else {
+                nextTrigger->set_state(TriggerState::TrExhaustedYetListening);
+            }
             nextTrigger->set_frames_to_fire(0);
             nextTrigger->set_sub_cycle_gen_mask_counter(0);
             nextTrigger->set_main_cycle_mask_to_fulfill(1);
