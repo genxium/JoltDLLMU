@@ -499,6 +499,9 @@ namespace JoltCSharp {
             if (null != stepResult.FulfilledTriggerGroupIds) {
                 stepResult.FulfilledTriggerGroupIds.Clear();
             }
+            if (null != stepResult.PreparedTriggerUds) {
+                stepResult.PreparedTriggerUds.Clear();
+            }
         }
 
         public static (Skill?, BulletConfig?) FindBulletConfig(uint skillId, int skillHit) {

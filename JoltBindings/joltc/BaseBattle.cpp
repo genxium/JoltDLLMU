@@ -139,7 +139,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedNpcCollider_NotThreadSafe(const uint
     JPH_ASSERT(0 != ud);
     float capsuleRadius = 0, capsuleHalfHeight = 0;
     const CharacterDownsync& chd = currNpc.chd();
-    calcChdShape(currNpc.chd().ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+    calcChdShape(chd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
     Vec3 newPos(chd.x(), chd.y(), chd.z());
     Quat newRot(chd.q_x(), chd.q_y(), chd.q_z(), chd.q_w());
     auto res = getOrCreateCachedCharacterCollider_NotThreadSafe(ud, cc, capsuleRadius, capsuleHalfHeight, newPos, newRot);
@@ -933,6 +933,35 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
 
+    for (int i = 0; i < currRdf->pickable_count(); i++) {
+        const Pickable& currPk = currRdf->pickables(i);
+        if (globalPrimitiveConsts->terminating_pickable_id() == currPk.id()) break;
+        if (PickableState::PConsumed == currPk.pk_state() && 0 != currPk.picker_ud()) {
+            Pickable* nextPk = nextRdf->mutable_pickables(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadPickables", hence the indices of "currRdf->pickables" and "nextRdf->pickables" are FULLY ALIGNED.
+            const CharacterDownsync& pickerChd = immutableCurrChdFromUd(currPk.picker_ud());
+            const CharacterConfig* cc = getCc(pickerChd.species_id());
+            float capsuleRadius = 0, capsuleHalfHeight = 0;
+            calcChdShape(pickerChd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+            nextPk->set_x(pickerChd.x());
+            nextPk->set_y(pickerChd.y() + capsuleHalfHeight);
+            nextPk->set_z(pickerChd.z());
+            continue;
+        }
+        if (PickableState::PIdle != currPk.pk_state()) {
+            continue;
+        }
+        auto handle = jobSys->CreateJob("pk-pre-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+            const Pickable& currPk = currRdf->pickables(i);
+            Pickable* nextPk = nextRdf->mutable_pickables(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadPickables", hence the indices of "currRdf->pickables" and "nextRdf->pickables" are FULLY ALIGNED.
+            auto ud = calcUserData(currPk);
+            if (!transientUdToBodyID.count(ud)) return;
+            const BodyID bodyID = *(transientUdToBodyID.at(ud));
+
+            bi->SetLinearAndAngularVelocity(bodyID, Vec3(nextPk->vel_x(), nextPk->vel_y(), nextPk->vel_z()), Vec3::sZero());
+        }, 0);
+        prePhysicsUpdateMTBarrier->AddJob(handle);
+    }
+
     jobSys->WaitForJobs(prePhysicsUpdateMTBarrier);
     jobSys->DestroyBarrier(prePhysicsUpdateMTBarrier);
 
@@ -1067,10 +1096,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         Vec3 newVel(0, globalPrimitiveConsts->default_pickable_rising_vel_y(), 0); // TODO
                         int newQuota = 1; // TODO
                         int newLifetimeRdfCount = globalPrimitiveConsts->default_pickable_lifetime_rdf_cnt(); // TODO
-                        addNewPickableToNextFrame(currRdfId, nextRdf, currNpc.exhausted_to_drop_pkt(), newPos, newVel, newQuota, newLifetimeRdfCount);
+                        int newPickableId = addNewPickableToNextFrame(currRdfId, nextRdf, currNpc.exhausted_to_drop_pkt(), newPos, newVel, newQuota, newLifetimeRdfCount);
 #ifndef  NDEBUG
                         std::ostringstream oss;
-                        oss << "addNewPickableToNextFrame/@currRdfId=" << currRdfId << ", added new pickable by dead NPC id=" << currNpc.id() << ", now mNextRdfPickableCount=" << mNextRdfPickableCount << ".";
+                        oss << "addNewPickableToNextFrame/@currRdfId=" << currRdfId << ", added new pickable id=" << newPickableId << " with newVel=(" << newVel.GetX() << "," << newVel.GetY() << "), newLifetimeRdfCount=" << newLifetimeRdfCount << " by dead NPC id=" << currNpc.id() << ", now mNextRdfPickableCount=" << mNextRdfPickableCount << ".";
                         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
                     }
@@ -1351,8 +1380,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     }
 
     for (int i = 0; i < currRdf->pickable_count(); i++) {
-        if (globalPrimitiveConsts->terminating_pickable_id() == currRdf->pickables(i).id()) break;
-        auto handle = jobSys->CreateJob("pickable-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
+        const Pickable& currPk = currRdf->pickables(i);
+        if (globalPrimitiveConsts->terminating_pickable_id() == currPk.id()) break;
+        if (PickableState::PIdle != currPk.pk_state()) {
+            continue;
+        }
+        auto handle = jobSys->CreateJob("pk-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
             const Pickable& currPk = currRdf->pickables(i);
             Pickable* nextPk = nextRdf->mutable_pickables(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadPickables", hence the indices of "currRdf->pickables" and "nextRdf->pickables" are FULLY ALIGNED.
 
@@ -1383,7 +1416,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 }
             }
 
-            if (PickableState::PDisappearing != nextPk->pk_state() && 0 < oldNextRemainingRecurrQuota && 0 >= nextRemainingRecurQuota) {
+            if (PickableState::PIdle == nextPk->pk_state() && 0 < oldNextRemainingRecurrQuota && 0 >= nextRemainingRecurQuota) {
                 nextPk->set_pk_state(PickableState::PDisappearing);
                 nextPk->set_frames_in_pk_state(globalPrimitiveConsts->default_pickable_disappearing_anim_frames()); 
                 nextPk->set_remaining_lifetime_rdf_count(0); // Picked up, no need to show explicit disappearing anim, because there'd be dedicated "PConsumed" anim nodes.
@@ -1399,10 +1432,24 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 #ifndef  NDEBUG
                 if (globalPrimitiveConsts->terminating_pickable_id() != nextPk->id()) {
                     std::ostringstream oss;
-                    oss << "pickable-post-physics-update/@currRdfId=" << currRdfId << ", a consumed record with pickable id=" << nextPk->id() << " will disappear soon, now mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
+                    oss << "pickable-post-physics-update/@currRdfId=" << currRdfId << ", pickable id=" << nextPk->id() << ", orig pk_state=" << (int)currPk.pk_state() << " will disappear soon, now mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
                     Debug::Log(oss.str(), DColor::Orange);
                 }
 #endif // ! NDEBUG
+            } else {
+                if (transientUdToBodyID.count(ud)) {
+                    const BodyID bodyID = *(transientUdToBodyID.at(ud));
+                    RVec3 newPos;
+                    Quat newRotFromPhySys;
+                    biNoLock->GetPositionAndRotation(bodyID, newPos, newRotFromPhySys);
+                    Vec3 newVelFromPhySys = biNoLock->GetLinearVelocity(bodyID);
+                    nextPk->set_x(newPos.GetX());
+                    nextPk->set_y(newPos.GetY());
+                    nextPk->set_z(0);
+                    nextPk->set_vel_x(IsLengthNearZero(newVelFromPhySys.GetX() * dt) ? 0 : newVelFromPhySys.GetX());
+                    nextPk->set_vel_y(IsLengthNearZero(newVelFromPhySys.GetY() * dt) ? 0 : newVelFromPhySys.GetY());
+                    nextPk->set_vel_z(0);
+                }
             }
         }, 0);
         postPhysicsUpdateMTBarrier->AddJob(handle);
@@ -1713,8 +1760,10 @@ void BaseBattle::topoSortTriggerConfigFromTiledList(WsReq* initializerMapData) {
                 mutableTriggerConfigFromTiled->set_init_q_w(1);
             }
         }
-        if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == c.trt()) {
-            mutableTriggerConfigFromTiled->set_quota(c.character_spawner_time_seq_size()); // [REMINDER] This overwrite takes highest priority over whatever is parsed from UI/Story Editor
+        if (globalPrimitiveConsts->trt_indi_wave_pickable_spawner() == c.trt()) {
+            mutableTriggerConfigFromTiled->set_quota(c.pickable_spawner_time_seq_size()); // [REMINDER] This overwrite takes highest priority over whatever else is parsed from UI/Story Editor
+        } else if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == c.trt()) {
+            mutableTriggerConfigFromTiled->set_quota(c.character_spawner_time_seq_size()); // [REMINDER] This overwrite takes highest priority over whatever else is parsed from UI/Story Editor
         } else {
             if (0 >= c.recovery_frames()) {
                 mutableTriggerConfigFromTiled->set_recovery_frames(globalPrimitiveConsts->default_tr_recovery_frames());
@@ -2877,7 +2926,7 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     return true;
 }
 
-bool BaseBattle::addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd) {
+int BaseBattle::addPkConsumedToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Pickable* referencePk, const uint64_t pickerUd) {
     uint32_t oldNextRdfPickableCount = mNextRdfPickableCount.fetch_add(1, std::memory_order_relaxed);
     if (oldNextRdfPickableCount >= globalPrimitiveConsts->default_prealloc_pickable_capacity()) {
 #ifndef  NDEBUG
@@ -2886,7 +2935,7 @@ bool BaseBattle::addPkConsumedToNextFrame(const int currRdfId, RenderFrame* next
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         --mNextRdfPickableCount;
-        return false;
+        return globalPrimitiveConsts->terminating_pickable_id();
     }
 
     auto initPkState = PickableState::PConsumed;
@@ -2908,14 +2957,14 @@ bool BaseBattle::addPkConsumedToNextFrame(const int currRdfId, RenderFrame* next
     nextPk->set_vel_x(0);
     nextPk->set_vel_y(0);
     nextPk->set_vel_z(0);
-    nextPk->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_disappearing_anim_frames());
+    nextPk->set_remaining_lifetime_rdf_count(globalPrimitiveConsts->default_pickable_consumed_anim_frames());
     nextPk->set_remaining_recur_quota(0);
     nextPk->set_picker_ud(pickerUd);
 
-    return true;
+    return oldNextRdfPickableIdCounter;
 }
 
-bool BaseBattle::addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount) {
+int BaseBattle::addNewPickableToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t pType, const Vec3& newPos, const Vec3& newVel, const int quota, const int lifetimeRdfCount) {
     uint32_t oldNextRdfPickableCount = mNextRdfPickableCount.fetch_add(1, std::memory_order_relaxed);
     if (oldNextRdfPickableCount >= globalPrimitiveConsts->default_prealloc_pickable_capacity()) {
 #ifndef  NDEBUG
@@ -2924,7 +2973,7 @@ bool BaseBattle::addNewPickableToNextFrame(const int currRdfId, RenderFrame* nex
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         --mNextRdfPickableCount;
-        return false;
+        return globalPrimitiveConsts->terminating_pickable_id();
     }
 
     auto initPkState = PickableState::PIdle;
@@ -2954,7 +3003,7 @@ bool BaseBattle::addNewPickableToNextFrame(const int currRdfId, RenderFrame* nex
     nextPk->set_remaining_recur_quota(quota);
     nextPk->set_picker_ud(0);
 
-    return true;
+    return oldNextRdfPickableIdCounter;
 }
 
 void BaseBattle::elapse1RdfForRdf(const int currRdfId, RenderFrame* nextRdf) {
@@ -3504,9 +3553,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         if (PickableState::PIdle != currPk.pk_state()) {
             continue;
         }
-        if (globalPrimitiveConsts->default_pickable_startup_frames() >= currPk.frames_in_pk_state()) {
-            continue;
-        }
         if (0 >= currPk.remaining_recur_quota()) {
             continue;
         }
@@ -3516,8 +3562,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         auto ud = calcUserData(currPk);
         transientUdToCurrPickable[ud] = &currPk;
         transientUdToNextPickable[ud] = nextPk;
-
-        if (PickableState::PIdle != currPk.pk_state()) continue; 
         
         Vec3 newPos(currPk.x(), currPk.y(), currPk.z());
         Quat newRot(0, 0, 0, 1); // No need to vary
@@ -5929,7 +5973,8 @@ TR_COLLIDER_T* BaseBattle::createDefaultPickableCollider(const uint32_t pType, c
     settings->mDensity = cDefaultBlDensity;
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Dynamic, MyObjectLayers::MOVING);
     bodyCreationSettings.mLinearDamping = 0;
-    bodyCreationSettings.mIsSensor = true;
+    bodyCreationSettings.mGravityFactor = 1.0f; // [TODO] Make it customizable 
+    bodyCreationSettings.mIsSensor = false;
     bodyCreationSettings.mPosition = newPos;
     bodyCreationSettings.mRotation = newRot;
     Body* body = biNoLock->CreateBody(bodyCreationSettings);
@@ -6251,11 +6296,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             } else if (UDT_PICKABLE == udtRhs) {
                 const Pickable* currPk = transientUdToCurrPickable.at(udRhs);
                 // [WARNING] Decrement of "quota" will be done in "pickable-post-physics-update" for thread-safety
-                addPkConsumedToNextFrame(currRdfId, nextRdf, currPk, ud);
-
+                int newPickableId = addPkConsumedToNextFrame(currRdfId, nextRdf, currPk, ud);
 #ifndef  NDEBUG
                 std::ostringstream oss;
-                oss << "addPkConsumedToNextFrame/@currRdfId=" << currRdfId << ", added new consumed pickable anim, now mNextRdfPickableIdCounter=" << mNextRdfPickableIdCounter.load() << ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
+                oss << "addPkConsumedToNextFrame/@currRdfId=" << currRdfId << ", added new consumed pickable id=" << newPickableId << ", now mNextRdfPickableIdCounter=" << mNextRdfPickableIdCounter.load() << ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ".";
                 Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
 
@@ -6680,7 +6724,7 @@ void BaseBattle::stepSingleIndiWavePickableSpawner(const int currRdfId, const Tr
             }
         }
 
-        addNewPickableToNextFrame(currRdfId, nextRdf, pkType, newPos, newVel, newQuota, newLifetimeRdfCount);
+        int newPickableId = addNewPickableToNextFrame(currRdfId, nextRdf, pkType, newPos, newVel, newQuota, newLifetimeRdfCount);
 
         if (newSubCycleIdx < spawnerConfig->pickup_type_list_size()) {
             nextTrigger->set_state(TriggerState::TrSubCycleCoolingDown);
@@ -6697,7 +6741,7 @@ void BaseBattle::stepSingleIndiWavePickableSpawner(const int currRdfId, const Tr
         std::ostringstream oss2;
         //oss2 << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked and added new pickable oldSubCycleIdx=" << oldSubCycleIdx << ", pkType=" << pkType << ", curr gen_mask_counter=" << currTrigger.sub_cycle_gen_mask_counter() << ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << ", oldQuota=" << oldQuota << ", next main_cycle_mask_to_fulfill=" << nextTrigger->main_cycle_mask_to_fulfill() << ", next sub_cycle_mask_to_fulfill=" << nextTrigger->sub_cycle_mask_to_fulfill() << ", current sub_cycle_quota=" << spawnerConfig->pickup_type_list_size() << ", next trigger_state=" << (int)nextTrigger->state() << std::endl;
 
-        oss2 << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked and added new pickable, mNextRdfPickableCount=" << mNextRdfPickableCount.load() << std::endl;
+        oss2 << "stepSingleIndiWavePickableSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticked and added new pickable id=" << newPickableId << ", newVel=(" << newVel.GetX() << "," << newVel.GetY() << "), newLifetimeRdfCount=" << newLifetimeRdfCount<< ", mNextRdfPickableCount=" << mNextRdfPickableCount.load() << std::endl;
         Debug::Log(oss2.str(), DColor::Orange);
 #endif
     } else if (mainCycleExhaustedYetFulfilled) {

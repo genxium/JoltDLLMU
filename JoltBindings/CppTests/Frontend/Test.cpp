@@ -2188,15 +2188,26 @@ RenderFrame* mockBtnFTestStartRdf(google::protobuf::Arena* theAllocator) {
     tr1->set_state(TriggerState::TrReady);
     ++triggerCount;
     
-    uint32_t pickupSpawnerTriggerId = 43;
+    uint32_t pickupSpawnerTrigger1Id = 43;
 
     auto tr2 = startRdf->add_triggers();
-    tr2->set_id(pickupSpawnerTriggerId);
+    tr2->set_id(pickupSpawnerTrigger1Id);
     tr2->set_trt(globalPrimitiveConsts->trt_indi_wave_pickable_spawner());
     tr2->set_x(tr1->x());
     tr2->set_y(tr1->y());
     tr2->set_z(tr1->z());
     tr2->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    uint32_t pickupSpawnerTrigger2Id = 44;
+
+    auto tr3 = startRdf->add_triggers();
+    tr3->set_id(pickupSpawnerTrigger2Id);
+    tr3->set_trt(globalPrimitiveConsts->trt_indi_wave_pickable_spawner());
+    tr3->set_x(+200);
+    tr3->set_y(116);
+    tr3->set_z(0);
+    tr3->set_state(TriggerState::TrReady);
     ++triggerCount;
 
     startRdf->set_npc_id_counter(npcIdCounter);
@@ -5222,7 +5233,6 @@ void initTest34Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
     triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
     triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
-    triggerConfigFromTiled2->set_quota(2);
     triggerConfigFromTiled2->set_init_q_x(0);
     triggerConfigFromTiled2->set_init_q_y(1);
     triggerConfigFromTiled2->set_init_q_z(0);
@@ -5234,14 +5244,32 @@ void initTest34Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto* mutablePkSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
     mutablePkSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
     mutablePkSpanwerTimeSeq2_1->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
-    mutablePkSpanwerTimeSeq2_1->add_init_op_list(3);
+    mutablePkSpanwerTimeSeq2_1->add_init_op_list(0);
 
     auto* mutablePkSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
     mutablePkSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
     mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
-    mutablePkSpanwerTimeSeq2_2->add_init_op_list(3);
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(0);
     mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_mp_small());
-    mutablePkSpanwerTimeSeq2_2->add_init_op_list(4);
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(0);
+
+    auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(startRdf->triggers(2).trt());
+    triggerConfigFromTiled3->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
+    triggerConfigFromTiled3->set_sub_cycle_trigger_frames(20);
+    triggerConfigFromTiled3->set_init_q_x(0);
+    triggerConfigFromTiled3->set_init_q_y(1);
+    triggerConfigFromTiled3->set_init_q_z(0);
+    triggerConfigFromTiled3->set_init_q_w(0);
+    triggerConfigFromTiled3->set_new_revival_x(startRdf->triggers(2).x());
+    triggerConfigFromTiled3->set_new_revival_y(startRdf->triggers(2).y());
+    triggerConfigFromTiled3->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
+
+    auto* mutablePkSpanwerTimeSeq3_1 = triggerConfigFromTiled3->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq3_1->set_cutoff_rdf_id(1);
+    mutablePkSpanwerTimeSeq3_1->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq3_1->add_init_op_list(3);
 }
 
 void initTest35Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
@@ -5262,7 +5290,6 @@ void initTest35Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
     triggerConfigFromTiled2->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
     triggerConfigFromTiled2->set_sub_cycle_trigger_frames(20);
-    triggerConfigFromTiled2->set_quota(2);
     triggerConfigFromTiled2->set_init_q_x(0);
     triggerConfigFromTiled2->set_init_q_y(1);
     triggerConfigFromTiled2->set_init_q_z(0);
@@ -5279,9 +5306,27 @@ void initTest35Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto* mutablePkSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_pickable_spawner_time_seq();
     mutablePkSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
     mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
-    mutablePkSpanwerTimeSeq2_2->add_init_op_list(3);
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(0);
     mutablePkSpanwerTimeSeq2_2->add_pickup_type_list(globalPrimitiveConsts->pkt_mp_small());
-    mutablePkSpanwerTimeSeq2_2->add_init_op_list(4);
+    mutablePkSpanwerTimeSeq2_2->add_init_op_list(0);
+
+    auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(startRdf->triggers(2).trt());
+    triggerConfigFromTiled3->set_delayed_frames((globalPrimitiveConsts->battle_dynamics_fps() >> 1));
+    triggerConfigFromTiled3->set_sub_cycle_trigger_frames(20);
+    triggerConfigFromTiled3->set_init_q_x(0);
+    triggerConfigFromTiled3->set_init_q_y(1);
+    triggerConfigFromTiled3->set_init_q_z(0);
+    triggerConfigFromTiled3->set_init_q_w(0);
+    triggerConfigFromTiled3->set_new_revival_x(startRdf->triggers(2).x());
+    triggerConfigFromTiled3->set_new_revival_y(startRdf->triggers(2).y());
+    triggerConfigFromTiled3->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(0).id());
+
+    auto* mutablePkSpanwerTimeSeq3_1 = triggerConfigFromTiled3->add_pickable_spawner_time_seq();
+    mutablePkSpanwerTimeSeq3_1->set_cutoff_rdf_id(1);
+    mutablePkSpanwerTimeSeq3_1->add_pickup_type_list(globalPrimitiveConsts->pkt_hp_small());
+    mutablePkSpanwerTimeSeq3_1->add_init_op_list(4);
 }
 
 std::string outStr;
@@ -8084,12 +8129,12 @@ bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(1 == tr1.quota());
         } else if (190 == outerTimerRdfId) {
-            JPH_ASSERT(1 == pickableCnt);
+            JPH_ASSERT(2 == pickableCnt);
         } else if (313 == outerTimerRdfId) {
             JPH_ASSERT(TriggerState::TrCooledDown == tr1.state());
             JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(1 == tr1.quota());
-            JPH_ASSERT(0 == pickableCnt); // picked up
+            JPH_ASSERT(1 == pickableCnt); // the first one picked up, the second one remains
         } else if (320 == outerTimerRdfId) {
             JPH_ASSERT(TriggerState::TrReady == tr1.state());
             JPH_ASSERT(1 == tr1.main_cycle_mask_to_fulfill());
@@ -8100,21 +8145,27 @@ bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == stepResult->prepared_trigger_uds_size());
             JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(0 == tr1.quota());
-            JPH_ASSERT(0 == pickableCnt);
+            JPH_ASSERT(1 == pickableCnt); // the second one remains
+            auto& pk1 = outerTimerRdf->pickables(0);
+            JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
         } else if (390 == outerTimerRdfId) {
-            JPH_ASSERT(2 == pickableCnt);
+            JPH_ASSERT(3 == pickableCnt);
             auto& pk1 = outerTimerRdf->pickables(0);
             JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
             auto& pk2 = outerTimerRdf->pickables(1);
             JPH_ASSERT(PickableState::PIdle == pk2.pk_state());
         } else if (420 == outerTimerRdfId) {
-            JPH_ASSERT(2 == pickableCnt); // All picked up by far
+            JPH_ASSERT(3 == pickableCnt); // All spawned by "triggerId=43" picked up by far
         } else if (421 == outerTimerRdfId) {
-            JPH_ASSERT(1 == pickableCnt); // 1 left shifted
+            JPH_ASSERT(2 == pickableCnt); // 1 left shifted
         } else if (437 == outerTimerRdfId) {
-            JPH_ASSERT(2 == pickableCnt); // 1 dropped from exhausted NPC
+            JPH_ASSERT(3 == pickableCnt); // 1 dropped from exhausted NPC
         } else if (443 == outerTimerRdfId) {
-            JPH_ASSERT(1 == pickableCnt); // 1 left shifted
+            JPH_ASSERT(2 == pickableCnt); // 1 left shifted
+            auto& pk1 = outerTimerRdf->pickables(0);
+            JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
+            auto& pk2 = outerTimerRdf->pickables(1);
+            JPH_ASSERT(PickableState::PIdle == pk2.pk_state());
         }
 
         outerTimerRdfId++;
@@ -8495,7 +8546,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
-
+    
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -8550,7 +8601,7 @@ int main(int argc, char** argv)
     
     runTestCase32(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase33(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
-
+     
     runTestCase34(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase35(wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);

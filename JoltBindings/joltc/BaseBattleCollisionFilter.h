@@ -458,7 +458,7 @@ public:
         uint64_t encodedBtnCLevel = (btnCLevel << 6);
         uint64_t encodedBtnDLevel = (btnDLevel << 7);
         uint64_t encodedBtnELevel = (btnELevel << 8);
-        uint64_t encodedBtnFLevel = (btnELevel << 9);
+        uint64_t encodedBtnFLevel = (btnFLevel << 9);
         uint64_t discretizedDir = encodeDir(dx, dy);
         return (discretizedDir + encodedBtnALevel + encodedBtnBLevel + encodedBtnCLevel + encodedBtnDLevel + encodedBtnELevel + encodedBtnFLevel);
     }
