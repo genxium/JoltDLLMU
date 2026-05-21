@@ -8098,6 +8098,9 @@ bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& tr1 = outerTimerRdf->triggers(0);
         auto tr1Ud = APP_CalcTriggerUserData(tr1.id());
 
+        auto& tr2 = outerTimerRdf->triggers(1);
+        auto tr2Ud = APP_CalcTriggerUserData(tr2.id());
+
         auto& p1 = outerTimerRdf->players(0);
         auto& p1Chd = p1.chd();
         auto p1Ud = APP_CalcPlayerUserData(p1.join_index());
@@ -8130,37 +8133,46 @@ bool runTestCase34(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(1 == tr1.quota());
         } else if (190 == outerTimerRdfId) {
             JPH_ASSERT(2 == pickableCnt);
-        } else if (313 == outerTimerRdfId) {
-            JPH_ASSERT(TriggerState::TrCooledDown == tr1.state());
             JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(1 == tr1.quota());
+            JPH_ASSERT(TriggerState::TrCoolingDown == tr1.state());
+        } else if (313 == outerTimerRdfId) {
+            JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
+            JPH_ASSERT(1 == tr1.quota());
+            JPH_ASSERT(TriggerState::TrCooledDown == tr1.state());
             JPH_ASSERT(1 == pickableCnt); // the first one picked up, the second one remains
         } else if (320 == outerTimerRdfId) {
-            JPH_ASSERT(TriggerState::TrReady == tr1.state());
             JPH_ASSERT(1 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(1 == tr1.quota());
+            JPH_ASSERT(TriggerState::TrReady == tr1.state());
             JPH_ASSERT(1 == stepResult->prepared_trigger_uds_size());
         } else if (360 == outerTimerRdfId) {
-            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(0 == stepResult->prepared_trigger_uds_size());
             JPH_ASSERT(0 == tr1.main_cycle_mask_to_fulfill());
             JPH_ASSERT(0 == tr1.quota());
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(1 == pickableCnt); // the second one remains
             auto& pk1 = outerTimerRdf->pickables(0);
             JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
         } else if (390 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(3 == pickableCnt);
             auto& pk1 = outerTimerRdf->pickables(0);
             JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
             auto& pk2 = outerTimerRdf->pickables(1);
             JPH_ASSERT(PickableState::PIdle == pk2.pk_state());
         } else if (420 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(3 == pickableCnt); // All spawned by "triggerId=43" picked up by far
         } else if (421 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(2 == pickableCnt); // 1 left shifted
         } else if (437 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
             JPH_ASSERT(3 == pickableCnt); // 1 dropped from exhausted NPC
         } else if (443 == outerTimerRdfId) {
+            JPH_ASSERT(TriggerState::TrExhausted == tr1.state());
+            JPH_ASSERT(TriggerState::TrExhaustedYetListening == tr2.state());
             JPH_ASSERT(2 == pickableCnt); // 1 left shifted
             auto& pk1 = outerTimerRdf->pickables(0);
             JPH_ASSERT(PickableState::PIdle == pk1.pk_state());
@@ -8546,7 +8558,6 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
-    
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -8601,7 +8612,7 @@ int main(int argc, char** argv)
     
     runTestCase32(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase33(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
-     
+
     runTestCase34(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     
     runTestCase35(wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
