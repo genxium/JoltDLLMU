@@ -603,6 +603,28 @@ namespace JoltCSharp {
         .AddHit(BasicRapidFireHit3) 
         .AddHit(BasicRapidFireHit4); 
 
+        public static BulletConfig BasicTimedBombHit0 = new BulletConfig {
+            StartupFrames = 80,
+            ActiveFrames = 1,
+            HitStunFrames = 0,
+            BlockStunFrames = 0,
+            CooldownFrames = 0,
+            Damage = 0,
+            PushbackVelX = PbPrimitives.underlying.NoLockVel,
+            PushbackVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelX = 0,
+            SelfLockVelY = PbPrimitives.underlying.NoLockVel,
+            SelfLockVelYWhenFlying = PbPrimitives.underlying.NoLockVel,
+            HitboxOffsetX = 16f,
+            HitboxOffsetY = 14f,
+            HitboxHalfSizeX = 1f,
+            HitboxHalfSizeY = 1f,
+            BType = BulletType.Melee,
+            MhType = MultiHitType.FromEmission,
+            NoHitAnim = true,
+            CollisionTypeMask = 0 // TODO
+        };
+
         public static BulletConfig BasicTimedBombHit1 = new BulletConfig {
             StartupFrames = 80,
             ActiveFrames = 180,
