@@ -912,35 +912,7 @@ protected:
         return visualBufferRdfCnt >= bullet->frames_in_bl_state();
     }
 
-    inline bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const {
-        if (BulletState::Vanishing == bullet->bl_state()) {
-            return bullet->frames_in_bl_state() < bc->vanishing_anim_rdf_cnt();
-        }
-        if (BulletState::Hit == bullet->bl_state()) {
-            return bullet->frames_in_bl_state() < bc->hit_anim_rdf_cnt();
-        }
-        uint64_t offenderUd = bullet->offender_ud();
-        uint64_t offenderUdt = getUDT(offenderUd);
-        bool isOffenderUdtCharacter = (UDT_PLAYER == offenderUdt || UDT_NPC == offenderUdt);
-        CharacterDownsync* nextOffenderChd = mutableNextChdFromUd(offenderUdt, offenderUd);
-        if (BulletType::Melee == bc->b_type() && isOffenderUdtCharacter) {
-            if (nullptr == nextOffenderChd) {
-                return false; // The offender might've been dead
-            }
-            if (bullet->skill_id() != nextOffenderChd->active_skill_id() || bullet->active_skill_hit() != nextOffenderChd->active_skill_hit()) {
-                return false; // The bullet should be no longer active
-            }
-        }
-        bool res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
-#ifndef  NDEBUG
-    if (false == res && BulletType::MechanicalBouncerSpherical == bc->b_type()) {
-        std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", bulletId=" << bullet->id() << " is no longer alive with bl_state=" << bullet->bl_state() << ", frames_in_bl_state=" << bullet->frames_in_bl_state() << ".";
-        Debug::Log(oss.str(), DColor::Orange);
-     } 
-#endif // ! NDEBUG
-        return res;
-    }
+    bool isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const;
 
     inline bool isTrapAlive(const Trap* trap, int currRdfId) const {
         return !(TrapState::TpDead == trap->trap_state() && globalPrimitiveConsts->dying_frames_to_recover() < trap->frames_in_trap_state());

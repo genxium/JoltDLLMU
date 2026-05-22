@@ -4753,6 +4753,36 @@ void BaseBattle::calcFallenDeath(const RenderFrame* currRdf, RenderFrame* nextRd
     }
 }
 
+bool BaseBattle::isBulletAlive(const Bullet* bullet, const BulletConfig* bc, const int currRdfId) const {
+    if (BulletState::Vanishing == bullet->bl_state()) {
+        return bullet->frames_in_bl_state() < bc->vanishing_anim_rdf_cnt();
+    }
+    if (BulletState::Hit == bullet->bl_state()) {
+        return bullet->frames_in_bl_state() < bc->hit_anim_rdf_cnt();
+    }
+    uint64_t offenderUd = bullet->offender_ud();
+    uint64_t offenderUdt = getUDT(offenderUd);
+    bool isOffenderUdtCharacter = (UDT_PLAYER == offenderUdt || UDT_NPC == offenderUdt);
+    CharacterDownsync* nextOffenderChd = mutableNextChdFromUd(offenderUdt, offenderUd);
+    if (BulletState::StartUp == bullet->bl_state() && isOffenderUdtCharacter) {
+        if (nullptr == nextOffenderChd) {
+            return false; // The offender might've been dead
+        }
+        if (atkedSet.count(nextOffenderChd->ch_state()) || noOpSet.count(nextOffenderChd->ch_state())) {
+            return false; // The bullet should be no longer active
+        }
+    }
+    bool res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+#ifndef  NDEBUG
+    if (false == res && BulletType::MechanicalBouncerSpherical == bc->b_type()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", bulletId=" << bullet->id() << " is no longer alive with bl_state=" << bullet->bl_state() << ", frames_in_bl_state=" << bullet->frames_in_bl_state() << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+    return res;
+}
+
 void BaseBattle::leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
     int mNextRdfBulletCountVal = mNextRdfBulletCount.load();
@@ -6225,7 +6255,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
-    int                     newEffFramesToRecover = nextChd->frames_to_recover();
+    int                     oldEffFramesToRecover = nextChd->frames_to_recover();
+    int                     newEffFramesToRecover = oldEffFramesToRecover;
     int                     newEffDef1QuotaReduction = 0;
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
@@ -6459,10 +6490,12 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         if (newEffBlownUp) {
             nextChd->set_ch_state(BlownUp1);
         } else {
-            if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
-                nextChd->set_ch_state(InAirAtked1);
-            } else {
-                nextChd->set_ch_state(Atked1);
+            if (newEffFramesToRecover > oldEffFramesToRecover) {
+                if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
+                    nextChd->set_ch_state(InAirAtked1);
+                } else {
+                    nextChd->set_ch_state(Atked1);
+                }
             }
         }
         nextChd->set_hp(nextChd->hp() - newEffDamage);

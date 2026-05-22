@@ -7620,10 +7620,10 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(globalPrimitiveConsts->no_skill() != npc1Chd.active_skill_id());
             JPH_ASSERT(globalPrimitiveConsts->no_skill_hit() != npc1Chd.active_skill_hit());
         } else if (68 == outerTimerRdfId) {
-            JPH_ASSERT(4 == outerTimerRdf->bullet_count());
             const Bullet& bl1 = outerTimerRdf->bullets(0);
             JPH_ASSERT(1 == bl1.id());
             JPH_ASSERT(0 > bl1.vel_x());
+            JPH_ASSERT(4 == outerTimerRdf->bullet_count());
         } else if (201 == outerTimerRdfId) {
             // Fled due to not enough MP.
             JPH_ASSERT(3 == npc1.cached_cue_cmd());
@@ -8558,6 +8558,7 @@ int main(int argc, char** argv)
 
     Hence I put "theAllocator->Reset()" BEFORE "reusedBattle->Clear()" in each "runTestCaseXxx(...)".
     */
+
     runTestCase1(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase2(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase3(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
