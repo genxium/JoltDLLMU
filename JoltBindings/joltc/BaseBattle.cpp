@@ -3600,6 +3600,15 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
         FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
         JPH_ASSERT(nullptr != tpConfig);
 
+        if (TrapState::TpIdle == currTp.trap_state() && nullptr != tpConfigFromTile) {
+            if (globalPrimitiveConsts->terminating_trigger_id() != tpConfigFromTile->subscribes_to_trigger_id()) {
+                // [TODO]
+            } else if (globalPrimitiveConsts->terminating_trigger_group_id() != tpConfigFromTile->subscribes_to_trigger_group_id()) {
+                // [TODO]
+            }
+            
+        }
+
         Vec3 newTpLinearVel = Vec3(nextTp->vel_x(), nextTp->vel_y(), nextTp->vel_z());
         Vec3 newTpAngVel = Vec3(nextTp->ang_vel_x(), nextTp->ang_vel_y(), nextTp->ang_vel_z());
         /**
@@ -4372,7 +4381,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             switch (oldNextChState) {
             case Idle1:
             case Def1:
-            case Def1Broken:
             case Walking:
                 if (Walking == oldNextChState) {
                     if (cc->omit_gravity()) {
@@ -4404,6 +4412,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     nextChd->set_ch_state(InAirIdle1NoJump);
                 }
                 if (Def1 == oldNextChState) {
+                    // [REMINDER] There's no "air-defense" by design
                     nextChd->set_remaining_def1_quota(0);
                 }
                 break;
@@ -4417,6 +4426,9 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     }
                     break;
                 }
+            case Def1Broken:
+                nextChd->set_ch_state(InAirAtked1);
+                break;
             }
         }
     } else {
@@ -4498,7 +4510,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 }
                 break;
             case Atked1:
-            case Def1Atked1:
+            case Def1Broken:
                 nextChd->set_ch_state(CrouchAtked1);
                 break;
             case BlownUp1:
@@ -4549,9 +4561,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     if (Def1 != nextChd->ch_state()) {
         nextChd->set_remaining_def1_quota(0);
     } else {
-        bool isWalkingAutoDef1 = (Walking == currChd.ch_state() && cc->walking_auto_def1());
-        bool isSkillAutoDef1 = (nullptr != activeSkillBuff && activeSkillBuff->auto_def1());
-        if (Def1 != currChd.ch_state() && !isWalkingAutoDef1 && !isSkillAutoDef1) {
+        if (Def1 != currChd.ch_state()) {
             nextChd->set_damaged_hint_rdf_countdown(0); // Clean up for correctly animating "Def1Atked1"
             nextChd->set_damaged_elemental_attrs(0);
         }
@@ -6261,6 +6271,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
+    JPH::Quat nextChdQ;
+    Vec3 nextChdFacing;
+    calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
+
     if (transientUdToCollisionUdHolder.count(ud)) {
         CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
         int cntNow = holder->GetCnt_Realtime();
@@ -6282,7 +6296,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 */
                 bool shouldSkipGroundServing = true;
                 bool shouldSkipWallServing = true;
-                handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, nextChd,
+                handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, nextChd, nextChdFacing,
                     udRhs, udtRhs, contactPointsLhs,
                     newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
                 if (!shouldSkipGroundServing || !shouldSkipWallServing) {
@@ -6334,7 +6348,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
 
-                // [TODO] handle actual pickable effects on character
                 if (globalPrimitiveConsts->pkt_hp_small() == currPk->pickup_type()) {
                     const PickableConfig& pkConfig = globalConfigConsts->pickable_configs().at(currPk->pickup_type());
                     int newHp = nextChd->hp() + pkConfig.amount_1();
@@ -6388,9 +6401,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     auto newGroundBodyID = collector.mGroundBodyID;
     groundBodyIsChCollider = transientUdToChCollider.count(newGroundUd);
-    JPH::Quat nextChdQ;
-    Vec3 nextChdFacing;
-    calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
     if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && !transientWallGrabProhibitingUds.count(collector.mWallUd)) {
         // Possibly on wall
         float wallNormalAlignment = nextChdFacing.Dot(collector.mWallNormal);
@@ -6491,6 +6501,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             nextChd->set_ch_state(BlownUp1);
         } else {
             if (newEffFramesToRecover > oldEffFramesToRecover) {
+                // [REMINDER] Covers "hardness induced ch_state continuation when hit"
                 if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
                     nextChd->set_ch_state(InAirAtked1);
                 } else {
@@ -6500,6 +6511,19 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
         nextChd->set_hp(nextChd->hp() - newEffDamage);
         nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
+    }
+
+    if (0 < newEffDef1QuotaReduction) {
+        int oldRemainingDef1Quota = nextChd->remaining_def1_quota();
+        int newRemainingDef1Quota = oldRemainingDef1Quota - newEffDef1QuotaReduction;
+        if (0 < oldRemainingDef1Quota && 0 >= newRemainingDef1Quota) {
+            newRemainingDef1Quota = 0;
+            nextChd->set_ch_state(Def1Broken);
+            if (cc->default_def1_broken_frames_to_recover() > newEffFramesToRecover) {
+                newEffFramesToRecover = cc->default_def1_broken_frames_to_recover();
+            }
+        }
+        nextChd->set_remaining_def1_quota(newRemainingDef1Quota);
     }
 
     nextChd->set_frames_to_recover(newEffFramesToRecover);
@@ -6958,10 +6982,61 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
     }
 }
 
+void BaseBattle::calcSingleBulletEffDamage(const int currRdfId, const CharacterDownsync* nextVictimChd, const Vec3 nextVictimFacing, const CharacterConfig* nextVictimCc, const Bullet* rhsCurrBl, const BulletConfig* rhsBlConfig, const bool isAllyTargetingBl, int* outBulletEffDamage, int* outBulletDef1QuotaReduction, bool* outSuccessfulDef1) {
+    if (isAllyTargetingBl) {
+        if (CharacterState::Dying == nextVictimChd->ch_state()) {
+            *outBulletEffDamage = 0;
+            *outBulletDef1QuotaReduction = 0;
+            *outSuccessfulDef1 = false;
+        } else {
+            *outBulletEffDamage = rhsBlConfig->damage();
+            *outBulletDef1QuotaReduction = 0;
+            *outSuccessfulDef1 = false;
+        }
+        return;
+    }
+
+    Vec3 rhsCurrBlFacing = Quat(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w())*Vec3::sAxisX();
+
+    bool bulletInFrontOfVictim = (0 > nextVictimFacing.GetX()*rhsCurrBlFacing.GetX());
+
+    *outSuccessfulDef1 = (Def1 == nextVictimChd->ch_state() && nextVictimCc->def1_startup_frames() < nextVictimChd->frames_in_ch_state() && 0 < nextVictimChd->remaining_def1_quota() && bulletInFrontOfVictim);
+    bool eleWeaknessHit = 0 < (nextVictimCc->ele_weakness() & rhsBlConfig->elemental_attrs());
+    bool eleResistanceHit = 0 < (nextVictimCc->ele_resistance() & rhsBlConfig->elemental_attrs());
+    if (eleWeaknessHit && !nextVictimCc->def1_defies_ele_weakness()) {
+        outSuccessfulDef1 = false;
+    }
+
+    if (*outSuccessfulDef1) {
+        *outBulletDef1QuotaReduction = (1 + rhsBlConfig->guard_breaker_extra_hit_cnt());
+        int minimumDamage = (0 == nextVictimCc->def1_damage_yield() ? 0 : 1);
+        int candidateDamage = minimumDamage;
+        if (eleWeaknessHit) {
+            candidateDamage = (int)std::floor(ELE_WEAKNESS_DEFAULT_YIELD * nextVictimCc->def1_damage_yield() * rhsBlConfig->damage());
+        } else if (eleResistanceHit) {
+            candidateDamage = (int)std::floor(ELE_RESISTANCE_DEFAULT_YIELD * nextVictimCc->def1_damage_yield() * rhsBlConfig->damage());
+        } else {
+            candidateDamage = (int)std::floor(nextVictimCc->def1_damage_yield() * rhsBlConfig->damage());
+        }
+        if (0 < rhsBlConfig->damage() && 0 >= candidateDamage) {
+            candidateDamage = minimumDamage;
+        }
+        *outBulletEffDamage = candidateDamage;
+    } else {
+        if (eleWeaknessHit) {
+            *outBulletEffDamage = (int)std::floor(ELE_WEAKNESS_DEFAULT_YIELD * rhsBlConfig->damage());
+        } else if (eleResistanceHit) {
+            *outBulletEffDamage = (int)std::floor(ELE_RESISTANCE_DEFAULT_YIELD * rhsBlConfig->damage());
+        } else {
+            *outBulletEffDamage = rhsBlConfig->damage();
+        }
+    }
+}
+
 void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const int currRdfId, 
     RenderFrame* nextRdf,
-    const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
+    const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const ContactPoints& contactPointsLhs,
     uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
@@ -6996,7 +7071,6 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         return;
     }
 
-    bool successfulDef1 = false; // TODO
     if (rhsBlConfig->remains_upon_hit()) {
         int immuneRcdI = 0;
         bool shouldBeImmune = false;
@@ -7017,34 +7091,34 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
         if (shouldBeImmune) {
             return;
-        }
-            
-        if (!(successfulDef1 && rhsBlConfig->takes_def1_as_hard_pushback())) {
-            int nextImmuneRcdI = immuneRcdI;
-            int terminatingImmuneRcdI = nextImmuneRcdI + 1;
-            auto nextImmuneRcd = nextImmuneRcdI < nextChd->bullet_immune_records_size() ? nextChd->mutable_bullet_immune_records(nextImmuneRcdI) : nextChd->add_bullet_immune_records();
-            nextImmuneRcd->set_bullet_id(rhsCurrBl->id());
-            int effImmuneRdfCnt = 2 + std::min(rhsBlConfig->hit_stun_frames(), rhsBlConfig->active_frames());
-            nextImmuneRcd->set_remaining_lifetime_rdf_count(effImmuneRdfCnt);
+        }        
 
-            if (terminatingImmuneRcdI < nextChd->bullet_immune_records_size()) {
-                auto terminatingImmuneRcd = nextChd->mutable_bullet_immune_records(terminatingImmuneRcdI);
-                terminatingImmuneRcd->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
-                terminatingImmuneRcd->set_remaining_lifetime_rdf_count(0);
-            }
-            nextChd->set_bir_count(terminatingImmuneRcdI);
+        int nextImmuneRcdI = immuneRcdI;
+        int terminatingImmuneRcdI = nextImmuneRcdI + 1;
+        auto nextImmuneRcd = nextImmuneRcdI < nextChd->bullet_immune_records_size() ? nextChd->mutable_bullet_immune_records(nextImmuneRcdI) : nextChd->add_bullet_immune_records();
+        nextImmuneRcd->set_bullet_id(rhsCurrBl->id());
+        int effImmuneRdfCnt = 2 + std::min(rhsBlConfig->hit_stun_frames(), rhsBlConfig->active_frames());
+        nextImmuneRcd->set_remaining_lifetime_rdf_count(effImmuneRdfCnt);
+
+        if (terminatingImmuneRcdI < nextChd->bullet_immune_records_size()) {
+            auto terminatingImmuneRcd = nextChd->mutable_bullet_immune_records(terminatingImmuneRcdI);
+            terminatingImmuneRcd->set_bullet_id(globalPrimitiveConsts->terminating_bullet_id());
+            terminatingImmuneRcd->set_remaining_lifetime_rdf_count(0);
         }
+        nextChd->set_bir_count(terminatingImmuneRcdI);
     }
 
-    const CharacterConfig* cc = getCc(currChd->species_id());
-    if (!(successfulDef1 && 0 >= cc->def1_damage_yield())) {
+    bool successfulDef1 = false;
+    int effSingleBlDamage = 0, effSingleBlDef1QuotaReduction = 0;
+    const CharacterConfig* cc = getCc(nextChd->species_id());
+    calcSingleBulletEffDamage(currRdfId, nextChd, nextChdFacing, cc, rhsCurrBl, rhsBlConfig, false /* TODO */, &effSingleBlDamage, &effSingleBlDef1QuotaReduction, &successfulDef1);
+
+    outNewDamage += effSingleBlDamage; 
+    outEffDef1QuotaReduction += effSingleBlDef1QuotaReduction;
+    if (0 < effSingleBlDamage) {
         outShouldSkipGroundServing = true;
         outShouldSkipWallServing = true;
 
-        int effDamage = rhsBlConfig->damage();
-        if (successfulDef1) {
-            effDamage = (int)std::ceil(cc->def1_damage_yield()*rhsBlConfig->damage());
-        }
 /*
 #ifndef NDEBUG
         if (UDT_PLAYER == udtLhs) {
@@ -7060,59 +7134,59 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         }
 #endif
 */
-        outNewDamage += effDamage; 
+        
         if (rhsBlConfig->blow_up()) {
             outNewEffBlownUp = true;
         }
 
-        if (0 < effDamage) {
-            // [REMINDER] Randomness comes from ordering of "transientUdToCollisionUdHolder".
-            uint64_t rhsOffenderUd = rhsCurrBl->offender_ud();
-            uint64_t rhsOffenderUdt = getUDT(rhsCurrBl->offender_ud());
-            nextChd->set_last_damaged_by_bullet_team_id(rhsCurrBl->team_id());
-            nextChd->set_last_damaged_by_ud(rhsOffenderUd);
+        // [REMINDER] Randomness comes from ordering of "transientUdToCollisionUdHolder".
+        uint64_t rhsOffenderUd = rhsCurrBl->offender_ud();
+        uint64_t rhsOffenderUdt = getUDT(rhsCurrBl->offender_ud());
+        nextChd->set_last_damaged_by_bullet_team_id(rhsCurrBl->team_id());
+        nextChd->set_last_damaged_by_ud(rhsOffenderUd);
 
-            switch (rhsOffenderUdt) {
-                case UDT_PLAYER:
-                case UDT_NPC: {
-                    const CharacterDownsync& rhsOffenderChd = immutableCurrChdFromUd(rhsOffenderUdt, rhsOffenderUd); 
-                    float newDx = rhsOffenderChd.x() - currChd->x();
-                    float newDy = rhsOffenderChd.y() - currChd->y();
-                    float newDz = rhsOffenderChd.z() - currChd->z();
-                    float newOffenderScore = (newDx*newDx + newDy*newDy + newDz*newDz);
-                    if (newOffenderScore < outClosestOffenderScore) {
-                        outClosestOffenderScore = newOffenderScore;
-                        outClosestOffenderUd = rhsOffenderUd; 
-                        outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
-                    } else if (newOffenderScore == outClosestOffenderScore && (0 == outClosestOffenderUd || rhsOffenderUd < outClosestOffenderUd)) {
-                        outClosestOffenderScore = newOffenderScore;
-                        outClosestOffenderUd = rhsOffenderUd; 
-                        outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
-                    }
-                    break;
+        switch (rhsOffenderUdt) {
+            case UDT_PLAYER:
+            case UDT_NPC: {
+                const CharacterDownsync& rhsOffenderChd = immutableCurrChdFromUd(rhsOffenderUdt, rhsOffenderUd); 
+                float newDx = rhsOffenderChd.x() - currChd->x();
+                float newDy = rhsOffenderChd.y() - currChd->y();
+                float newDz = rhsOffenderChd.z() - currChd->z();
+                float newOffenderScore = (newDx*newDx + newDy*newDy + newDz*newDz);
+                if (newOffenderScore < outClosestOffenderScore) {
+                    outClosestOffenderScore = newOffenderScore;
+                    outClosestOffenderUd = rhsOffenderUd; 
+                    outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
+                } else if (newOffenderScore == outClosestOffenderScore && (0 == outClosestOffenderUd || rhsOffenderUd < outClosestOffenderUd)) {
+                    outClosestOffenderScore = newOffenderScore;
+                    outClosestOffenderUd = rhsOffenderUd; 
+                    outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
                 }
-                // [TODO] What if "UDT_TRAP"?
-                default:
                 break;
             }
+            // [TODO] What if "UDT_TRAP"?
+            default:
+            break;
         }
+    }
 
-        float capsuleRadius = 0, capsuleHalfHeight = 0;
-        calcChdShape(currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
-        Vec3 hitPos(currChd->x(), currChd->y() + capsuleRadius + capsuleHalfHeight, currChd->z()); 
-        Vec3 hitPosAdds(0, 0, 0); 
-        int hitPosAddsCnt = 0; 
-        for (int k = 0; k < contactPointsLhs.size(); ++k) {
-            auto& contactPoint = contactPointsLhs.at(k);
-            hitPosAdds += contactPoint;
-            hitPosAddsCnt += 1;
-        }
-        if (0 < hitPosAddsCnt) {
-            hitPos += (hitPosAdds/hitPosAddsCnt); 
-        }
-        if (!rhsBlConfig->no_hit_anim()) {
-            addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effDamage);
-        }
+    float capsuleRadius = 0, capsuleHalfHeight = 0;
+    calcChdShape(currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+    Vec3 hitPos(currChd->x(), currChd->y() + capsuleRadius + capsuleHalfHeight, currChd->z()); 
+    Vec3 hitPosAdds(0, 0, 0); 
+    int hitPosAddsCnt = 0; 
+    for (int k = 0; k < contactPointsLhs.size(); ++k) {
+        auto& contactPoint = contactPointsLhs.at(k);
+        hitPosAdds += contactPoint;
+        hitPosAddsCnt += 1;
+    }
+
+    if (0 < hitPosAddsCnt) {
+        hitPos += (hitPosAdds/hitPosAddsCnt); 
+    }
+
+    if (!rhsBlConfig->no_hit_anim()) {
+        addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effSingleBlDamage);
     }
 
     JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
@@ -7130,6 +7204,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     }
 
     if (!successfulDef1) {
+        // [REMINDER] Including "frames_to_recover" extension during "Def1Broken".
         if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->hit_stun_frames(); 
             outShouldSkipGroundServing = true;
@@ -7141,6 +7216,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             outShouldSkipGroundServing = true;
             outShouldSkipWallServing = true;
         }
+        // [REMINDER] "Def1 -> Def1Broken" is handled separated after all "handleLhsCharacterCollisionWithRhsBullet" are called for the current character.
     }
 }
 

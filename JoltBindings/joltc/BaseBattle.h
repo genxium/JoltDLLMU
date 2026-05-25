@@ -653,11 +653,12 @@ protected:
     void processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
     void processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
+    void calcSingleBulletEffDamage(const int currRdfId, const CharacterDownsync* nextVictimChd, const Vec3 nextVictimFacing, const CharacterConfig* nextVictimCc, const Bullet* rhsCurrBl, const BulletConfig* rhsBlConfig, const bool isAllyTargetingBl, int* outBulletEffDamage, int* outBulletDef1QuotaReduction, bool* outSuccessfulDef1);
 
     void handleLhsCharacterCollisionWithRhsBullet(
         const int currRdfId,
         RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd,
+        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);

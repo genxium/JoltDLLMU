@@ -346,19 +346,16 @@ message CharacterConfig {
 
     bool isolated_air_jump_and_dash_quota = 62; // default is false, in most cases Air_jump and Air_dash quotas are deduced together (but default initial quota can be different) 
 
-
     uint32 transform_into_species_id_upon_death = 66;
     bool jump_holding_to_fly = 67;
     bool has_def1 = 68;
-    bool has_def1_atked1_anim = 69;
     int32 default_def1_broken_frames_to_recover = 70;
+
     int32 def1_startup_frames = 74;
     float def1_damage_yield = 75;
-    bool def1_defies_ele_weakness_penetration = 76;
+    bool def1_defies_ele_weakness = 76;
     bool def1_defies_debuff = 77;
     int32 flying_quota_rdf_cnt = 78;
-
-    bool walking_auto_def1 = 79;
 
     IfaceCat Ifc = 80;
     uint32 ele_weakness = 81;
@@ -367,7 +364,7 @@ message CharacterConfig {
 
     bool is_key_ch = 85;
 
-    bool allows_same_team_soft_pushback = 86; // For bricks
+    bool allows_same_team_soft_pushback = 86; 
     int32 gauge_inc_when_exhausted = 87;
 
     bool jumping_instead_of_walking = 88;
@@ -801,12 +798,10 @@ message BulletConfig {
 
     bool use_ch_offset_regardless_of_emission_mh = 89;
 
-    float gauge_inc_reduction_ratio = 93;
+    float gauge_inc_reduction_ratio = 93; // Normally 0 for SuperAtks
     bool mh_inherits_frames_in_bl_state = 94;
-    uint32 guard_breaker_extra_hit_cnt = 95;
+    int32 guard_breaker_extra_hit_cnt = 95;
         
-    bool takes_def1_as_hard_pushback = 96; // [WARNING] Always implies "beam_collision" and must be used together with "beam_collision".
-
     int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
     bool no_vanish_anim_on_hard_pushback = 98;
 
@@ -886,7 +881,7 @@ message TrapConfig {
     int32 dying_anim_rdf_cnt = 3;
     bool blow_up = 4;
 
-    int32 damage = 5;
+    int32 contact_damage = 5;
     int32 hit_stun_frames = 6;
     int32 hit_invinsible_frames = 7;
     bool deactivatable = 8;
@@ -899,12 +894,7 @@ message TrapConfig {
 
     bool use_kinematic = 12;
 
-    bool patrol_cue_requires_full_contain = 15; // For accurate positioning
-
-    bool atk1_upon_triggered = 22;
     uint32 atk1_skill_id = 23;
-    bool is_rotary = 24;
-    bool no_x_flip_rendering = 25;
 
     float default_box_half_size_x = 26;
     float default_box_half_size_y = 27;
@@ -913,6 +903,7 @@ message TrapConfig {
     int32 default_cooldown_rdf_count = 30;
 
     bool use_obstable_interface_body = 31;
+    bool no_x_flip_rendering = 32;
 
     string name = 1024;
 }
@@ -962,6 +953,9 @@ message TrapConfigFromTiled {
     BarrierColliderAttr barrier_attr = 25;  
     OverrideObsIfaceBodyOption ooibo = 26;
 
+    uint32 subscribes_to_trigger_id = 27;
+    uint32 subscribes_to_trigger_group_id = 28;
+
     // Used for constraint limit assignment
     float limit_1 = 128;  
     float limit_2 = 129;  
@@ -969,7 +963,6 @@ message TrapConfigFromTiled {
     float limit_4 = 131;  
 
     bool init_not_moving = 512; // thus only moves or rotates after triggered
-
 }
 
 message BarrierColliderAttr {
@@ -990,9 +983,6 @@ message Trap {
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
     
-    uint32 subscribes_to_trigger_id = 11;
-    uint32 subscribes_to_trigger_group_id = 12;
-
     float x = 13; 
     float y = 14;
     float z = 15;
@@ -1219,7 +1209,6 @@ message BuffConfig {
     uint32 xform_ch_species_id = 13;
     bool repel_soft_pushback = 14;
     bool omit_gravity = 15;
-    bool auto_def1 = 16;
 
     // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
     repeated uint32 associated_debuffs = 17;   
@@ -1780,6 +1769,7 @@ message PrimitiveConsts {
     uint32 tpt_conveyor_belt = 259; 
     uint32 tpt_falling_rock = 260; 
     uint32 tpt_spring = 261; 
+    uint32 tpt_brick = 262; 
 
     uint32 pkt_none = 512;
     uint32 pkt_hp_small = 513;
