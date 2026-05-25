@@ -48,28 +48,28 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     globalNpcReactionMap[chSpecies.blacksaber_test_with_vision()] = new BlackSaberTestWithVisionNpcReaction();
 
     trivialTrtSet = {
-        globalPrimitiveConsts->trt_by_init_delay(),
-        globalPrimitiveConsts->trt_by_movement(),
-        globalPrimitiveConsts->trt_by_attack(),
+        globalPrimitiveConsts->trts().by_init_delay(),
+        globalPrimitiveConsts->trts().by_movement(),
+        globalPrimitiveConsts->trts().by_attack(),
     };
 
     mixedMainAndSubCycleTrtSet = {
-        globalPrimitiveConsts->trt_victory(),
-        globalPrimitiveConsts->trt_save_point_only(),
-        globalPrimitiveConsts->trt_story_point_only(),
-        globalPrimitiveConsts->trt_save_and_story_point(),
-        globalPrimitiveConsts->trt_by_pattern_f(),
+        globalPrimitiveConsts->trts().victory(),
+        globalPrimitiveConsts->trts().save_point_only(),
+        globalPrimitiveConsts->trts().story_point_only(),
+        globalPrimitiveConsts->trts().save_and_story_point(),
+        globalPrimitiveConsts->trts().by_pattern_f(),
     };
 
     directSpawnerTrtSet = {
-        globalPrimitiveConsts->trt_indi_wave_npc_spawner(),
-        globalPrimitiveConsts->trt_indi_wave_pickable_spawner(),
+        globalPrimitiveConsts->trts().indi_wave_npc_spawner(),
+        globalPrimitiveConsts->trts().indi_wave_pickable_spawner(),
     };
 
     collidableTrtSet = {
-        globalPrimitiveConsts->trt_by_movement(),
-        globalPrimitiveConsts->trt_by_attack(),
-        globalPrimitiveConsts->trt_by_pattern_f(),
+        globalPrimitiveConsts->trts().by_movement(),
+        globalPrimitiveConsts->trts().by_attack(),
+        globalPrimitiveConsts->trts().by_pattern_f(),
     };
 
     return true;

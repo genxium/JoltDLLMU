@@ -13,8 +13,8 @@ public class FrontendTest {
     // Reference https://xunit.net/docs/capturing-output.html
 
     private readonly ITestOutputHelper _logger;
-    private static PrimitiveConsts primitives = PbPrimitives.underlying;
-    private static MapField<uint, CharacterConfig> characters = PbCharacters.underlying;
+    private PrimitiveConsts primitiveConsts;
+    private MapField<uint, CharacterConfig> characters;
 
     const int pbBufferSizeLimit = (1 << 14);
     byte[] rdfFetchBuffer;
@@ -22,6 +22,8 @@ public class FrontendTest {
     public FrontendTest(ITestOutputHelper theLogger) {
         _logger = theLogger;
         rdfFetchBuffer = new byte[pbBufferSizeLimit];
+        primitiveConsts = new PbPrimitives().getUnderlying();
+        characters = new PbCharacters(primitiveConsts).getUnderlying();
     }
     
     public static ImmutableArray<Vector2[]> hulls1 = ImmutableArray.Create<Vector2[]>().AddRange(new[]
@@ -38,8 +40,8 @@ public class FrontendTest {
 
     private RenderFrame mockStartRdf() {
         const int roomCapacity = 2;
-        var startRdf = Bindings.NewPreallocatedRdf(roomCapacity, 8, 128, primitives);
-        startRdf.Id = primitives.StartingRenderFrameId;
+        var startRdf = Bindings.NewPreallocatedRdf(roomCapacity, 8, 128, primitiveConsts);
+        startRdf.Id = primitiveConsts.StartingRenderFrameId;
         uint pickableIdCounter = 1;
         uint npcIdCounter = 1;
         uint bulletIdCounter = 1;
@@ -110,14 +112,14 @@ public class FrontendTest {
             JoltCSharp.Bindings.JPH_Init(10*1024*1024);
             _logger.WriteLine($"Initialized Jolt resource allocators");
 
-            var primitivesBytes = PbPrimitives.underlying.ToByteArray();
-            fixed (byte* primitivesBytesPtr = primitivesBytes) {
-                Bindings.PrimitiveConsts_Init((char*)primitivesBytesPtr, primitivesBytes.Length);
+            var primitiveConstsBytes = primitiveConsts.ToByteArray();
+            fixed (byte* primitiveConstsBytesPtr = primitiveConstsBytes) {
+                Bindings.PrimitiveConsts_Init((char*)primitiveConstsBytesPtr, primitiveConstsBytes.Length);
                 _logger.WriteLine($"PrimitiveConsts_Init done");
             }
 
             var configConsts = new ConfigConsts { };
-            configConsts.CharacterConfigs.Add(PbCharacters.underlying);
+            configConsts.CharacterConfigs.Add(characters);
             var configsBytes = configConsts.ToByteArray();
             fixed (byte* configsBytesPtr = configsBytes) {
                 Bindings.ConfigConsts_Init((char*)configsBytesPtr, configsBytes.Length);
@@ -172,7 +174,7 @@ public class FrontendTest {
             }
             Assert.NotEqual(UIntPtr.Zero, battle);
 
-            int timerRdfId = primitives.StartingRenderFrameId, newChaserRdfId = 0;
+            int timerRdfId = primitiveConsts.StartingRenderFrameId, newChaserRdfId = 0;
             long outBytesCnt = 0;
             RenderFrame rdfHolder = new RenderFrame();
             int* newChaserRdfIdPtr = &newChaserRdfId;
@@ -190,7 +192,7 @@ public class FrontendTest {
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                     Assert.True(rdfFetched);
-                    Bindings.PreemptRenderFrameBeforeMerge(rdfHolder, primitives);
+                    Bindings.PreemptRenderFrameBeforeMerge(rdfHolder, primitiveConsts);
                     rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
                     _logger.WriteLine(rdfHolder.Players.ToString());
                 }

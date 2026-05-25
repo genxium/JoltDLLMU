@@ -13,7 +13,9 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
 #include <Jolt/Physics/Constraints/SliderConstraint.h>
-#include <Jolt/Physics/Constraints/DistanceConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
+
+#include <atomic>
 
 // STL includes
 #include <cstdarg>
@@ -587,13 +589,13 @@ NON_CONTACT_CONSTRAINT_T* BaseBattle::getOrCreateCachedNonContactConstraint_NotT
             nonContactConstraint->c = newSliderConstraint;
             break;
         }
-        case EConstraintSubType::Distance: {
+        case EConstraintSubType::Hinge: {
             Constraint* cachedC = nonContactConstraint->c;
-            DistanceConstraintSettings* castedExistingSliderSettings = static_cast<DistanceConstraintSettings*>(inConstraintSettings);
+            HingeConstraintSettings* castedExistingSliderSettings = static_cast<HingeConstraintSettings*>(inConstraintSettings);
             void* newNonContactConstraintBuffer = (void*)cachedC;
-            DistanceConstraint* newDistanceConstraint = new (newNonContactConstraintBuffer) DistanceConstraint(*body1, *body2, *(castedExistingSliderSettings));
-            // [WARNING] No need to call ["DistanceConstraint::NotifyShapeChanged(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/Constraint.h#L161 ) here because "getOrCreateCachedNonContactConstraint_NotThreadSafe" is always called after the creation and update of "Body"s.
-            nonContactConstraint->c = newDistanceConstraint;
+            HingeConstraint* newHingeConstraint = new (newNonContactConstraintBuffer) HingeConstraint(*body1, *body2, *(castedExistingSliderSettings));
+            // [WARNING] No need to call ["HingeConstraint::NotifyShapeChanged(...)"](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/Constraint.h#L161 ) here because "getOrCreateCachedNonContactConstraint_NotThreadSafe" is always called after the creation and update of "Body"s.
+            nonContactConstraint->c = newHingeConstraint;
             break;
         }
         default:
@@ -747,9 +749,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
         Trigger* nextTrigger = nextRdf->mutable_triggers(i);
         auto ud = calcUserData(currTrigger);
-        if (globalPrimitiveConsts->trt_indi_wave_pickable_spawner() == trt) {
+        if (globalPrimitiveConsts->trts().indi_wave_pickable_spawner() == trt) {
             stepSingleIndiWavePickableSpawner(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
-        } else if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == trt) {
+        } else if (globalPrimitiveConsts->trts().indi_wave_npc_spawner() == trt) {
             stepSingleIndiWaveNpcSpawner(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
         } else {
             stepOtherSingleTriggerState(currRdfId, currTrigger, nextTrigger, nextRdf, stepResult);
@@ -1091,7 +1093,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
                     transitToDying(currRdfId, currNpc, cvInAir, nextNpc);
-                    if (globalPrimitiveConsts->pkt_none() != currNpc.exhausted_to_drop_pkt()) { 
+
+                    if (globalPrimitiveConsts->pkts().none() != currNpc.exhausted_to_drop_pkt()) { 
                         Vec3 newPos(currChd.x(), currChd.y() + cc->capsule_half_height(), currChd.z());
                         Vec3 newVel(0, globalPrimitiveConsts->default_pickable_rising_vel_y(), 0); // TODO
                         int newQuota = 1; // TODO
@@ -1149,6 +1152,15 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             bool hitOnCharacter = false;
             bool hitOnHarderBullet = false;
+
+            uint64_t offenderUd = currBl.offender_ud();
+            uint64_t offenderUdt = getUDT(offenderUd);
+            bool hitFromCharacter = (UDT_PLAYER == offenderUdt || UDT_NPC == offenderUdt);
+            CharacterDownsync* offenderNextChd = nullptr;
+            if (hitFromCharacter) {
+                offenderNextChd = mutableNextChdFromUd(offenderUd);
+            }
+
             if (transientUdToCollisionUdHolder.count(ud)) {
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
                 int cntNow = holder->GetCnt_Realtime();
@@ -1161,23 +1173,20 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
                     if (!fetched) continue;
                     uint64_t udtRhs = getUDT(udRhs);
+                    hitOnCharacter = (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs);
                     switch (udtRhs) {
                     case UDT_PLAYER:
                     case UDT_NPC:
                     case UDT_TRAP:
                     case UDT_OBSTACLE:
                     case UDT_TRIGGER:
-                        hitOnCharacter = (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs);
                         switch (lhsBlConfig->b_type()) {
                         case BulletType::Melee:
-                            if (!lhsBlConfig->remains_upon_hit() && hitOnCharacter) {
+                            if (!lhsBlConfig->remains_upon_hit() && nullptr != offenderNextChd && hitOnCharacter) {
                                 shouldVanish = true;
                                 if (0 < lhsBlConfig->melee_hit_self_stun_frames()) {
-                                    uint64_t offenderUd = currBl.offender_ud(); 
-                                    CharacterDownsync* offenderNextChd = mutableNextChdFromUd(offenderUd);
                                     // [REMINDER] We're in a multi-threaded callback handler, in theory it's NOT thread-safe to update "offenderNextChd" here, but in this specific case it's thread-safe because there'd be AT MOST ONE ACTIVE MELEE bullet satisfying "0 < lhsBlConfig->melee_hit_self_stun_frames()" from an offender at each RenderFrame.     
                                     if (offenderNextChd->ch_state() == lhsSkill->bound_ch_state()) {
-                                        //int remainingActiveRdfCnt = (lhsBlConfig->active_frames() - currBl.frames_in_bl_state());
                                         offenderNextChd->set_hit_self_stun_frames(lhsBlConfig->melee_hit_self_stun_frames() + lhsBlConfig->cooldown_frames() - 1);
                                         offenderNextChd->set_frames_to_recover(1);
                                     }
@@ -1217,23 +1226,39 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         default:
                             break;
                         }
-                        if (UDT_TRIGGER == udtRhs) {
+
+                        if (hitOnCharacter) {
+                            if (hitFromCharacter && transientOffenderUdToSuperAtkGaugeInc.count(offenderUd)) {
+                                CharacterDownsync* victimNextChd = mutableNextChdFromUd(udRhs);
+                                if (nullptr != victimNextChd && Dying == victimNextChd->ch_state() && 0 == victimNextChd->frames_in_ch_state()) {
+                                    // [WARNING] We haven't reached "calcFallenDeath", hence victim death can only be subjected to bullet hits.
+                                    const CharacterConfig* victimCurrCc = getCc(victimNextChd->species_id());
+                                    int effGaugeInc = lhsBlConfig->gauge_inc_reduction_ratio() * victimCurrCc->gauge_inc_when_exhausted();
+                                    transientOffenderUdToSuperAtkGaugeInc[offenderUd] += effGaugeInc;
+                                }
+                            }
+                        } else if (UDT_TRIGGER == udtRhs) {
                             // [REMINDER] "BaseBattle::validateLhsBulletContact" has helped filter out unnecessary collisions.
+                            if (UDT_PLAYER != offenderUdt) {
+                                break;
+                            }
                             if (!transientUdToCurrTrigger.count(udRhs)) {
                                 break;
                             }
                             const Trigger* rhsCurrTr = transientUdToCurrTrigger.at(udRhs);
-                            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt()) {
-                                if (!transientUdToNextTrigger.count(udRhs)) {
-                                    Trigger* rhsNextTr = transientUdToNextTrigger.at(udRhs);
-                                    rhsNextTr->set_main_cycle_mask_to_fulfill(0);
+                            if (globalPrimitiveConsts->trts().by_attack() != rhsCurrTr->trt()) {
+                                break;
+                            }
+                            if (!transientUdToNextTrigger.count(udRhs)) {
+                                break;
+                            }
+                            Trigger* rhsNextTr = transientUdToNextTrigger.at(udRhs);
+                            rhsNextTr->set_main_cycle_mask_to_fulfill(0);
 #ifndef NDEBUG
-                                    std::ostringstream oss;
-                                    oss << "@currRdfId=" << currRdfId << ", bullet ud=" << ud << ", offenderUd=" << currBl.offender_ud() << " pre-fulfilled by_attack trigger id=" << rhsCurrTr->id() << std::endl;
-                                    Debug::Log(oss.str(), DColor::Orange);
+                            std::ostringstream oss;
+                            oss << "@currRdfId=" << currRdfId << ", bullet ud=" << ud << ", offenderUd=" << currBl.offender_ud() << " pre-fulfilled by_attack trigger id=" << rhsCurrTr->id() << std::endl;
+                            Debug::Log(oss.str(), DColor::Orange);
 #endif
-                                }
-                            }  
                         }
                         break;
                     case UDT_BL: {
@@ -1329,6 +1354,30 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         postPhysicsUpdateMTBarrier->AddJob(handle);
     }
 
+    for (auto& [offenderUd, superAtkGaugeInc] : transientOffenderUdToSuperAtkGaugeInc) {
+        if (0 >= superAtkGaugeInc) continue;
+        CharacterDownsync* offenderNextChd = mutableNextChdFromUd(offenderUd);
+        const CharacterConfig* offenderCc = getCc(offenderNextChd->species_id());
+
+        InventorySlot* offenderNextSuperAtkGauge = offenderNextChd->mutable_super_atk_gauge();
+        const InventorySlotConfig& ivsConfig = offenderCc->super_atk_gauge();
+        int newGaugeCharged = offenderNextSuperAtkGauge->gauge_charged() + superAtkGaugeInc;
+        int newQuota = offenderNextSuperAtkGauge->quota();
+
+        if (newGaugeCharged > ivsConfig.gauge_required()) {
+            int quotaInc = newGaugeCharged / ivsConfig.gauge_required();
+            newQuota = newQuota + quotaInc;
+            newGaugeCharged = newGaugeCharged - quotaInc * ivsConfig.gauge_required();
+        }
+        if (newQuota > ivsConfig.quota()) {
+            newQuota = ivsConfig.quota();
+            newGaugeCharged = 0;
+        }
+        
+        offenderNextSuperAtkGauge->set_gauge_charged(newGaugeCharged);
+        offenderNextSuperAtkGauge->set_quota(newQuota);
+    }
+
     for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         if (globalPrimitiveConsts->terminating_trap_id() == currRdf->dynamic_traps(i).id()) break;
         auto handle = jobSys->CreateJob("dynamic-trap-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
@@ -1355,7 +1404,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextTp->set_x(newPos.GetX());
                     nextTp->set_y(newPos.GetY());
                     nextTp->set_z(0);
-                    if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+                    if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
                         nextTp->set_q_x(newRotFromPhySys.GetX());
                         nextTp->set_q_y(newRotFromPhySys.GetY());
                         nextTp->set_q_z(newRotFromPhySys.GetZ());
@@ -1760,9 +1809,9 @@ void BaseBattle::topoSortTriggerConfigFromTiledList(WsReq* initializerMapData) {
                 mutableTriggerConfigFromTiled->set_init_q_w(1);
             }
         }
-        if (globalPrimitiveConsts->trt_indi_wave_pickable_spawner() == c.trt()) {
+        if (globalPrimitiveConsts->trts().indi_wave_pickable_spawner() == c.trt()) {
             mutableTriggerConfigFromTiled->set_quota(c.pickable_spawner_time_seq_size()); // [REMINDER] This overwrite takes highest priority over whatever else is parsed from UI/Story Editor
-        } else if (globalPrimitiveConsts->trt_indi_wave_npc_spawner() == c.trt()) {
+        } else if (globalPrimitiveConsts->trts().indi_wave_npc_spawner() == c.trt()) {
             mutableTriggerConfigFromTiled->set_quota(c.character_spawner_time_seq_size()); // [REMINDER] This overwrite takes highest priority over whatever else is parsed from UI/Story Editor
         } else {
             if (0 >= c.recovery_frames()) {
@@ -1883,29 +1932,62 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         FillInventoryFromConfig(chConfig, mutableChd, ccOverride);
     }
 
+    auto& trapConfigs = globalConfigConsts->trap_configs();
     for (int i = 0; i < initializerMapData->trap_config_from_tile_list_size(); i++) {
         const TrapConfigFromTiled& c = initializerMapData->trap_config_from_tile_list(i);
+        const TrapConfig& tpConfig = trapConfigs.at(c.tpt());
         auto* effTrapConfigFromTiled = google::protobuf::Arena::Create<TrapConfigFromTiled>(&pbTempAllocator);
         effTrapConfigFromTiled->CopyFrom(c);
-        if (globalPrimitiveConsts->tpt_sliding_platform() == c.tpt()) {
-            Vec3 worldSpaceSliderAxis(c.slider_axis_x(), c.slider_axis_y(), c.slider_axis_z());
-            if (0 == worldSpaceSliderAxis.Length()) {
-                Vec3 initVel(c.init_vel_x(), c.init_vel_y(), c.init_vel_z());
-                if (0 != initVel.Length()) {
-                    worldSpaceSliderAxis = initVel.Normalized();
-                } else if (!(0 == c.init_q_x() && 0 == c.init_q_y() && 0 == c.init_q_z() && 0 == c.init_q_w())) {
-                    Quat initQ(c.init_q_x(), c.init_q_y(), c.init_q_z(), c.init_q_w());
-                    worldSpaceSliderAxis = initQ * Vec3::sAxisX();
-                } else {
-                    worldSpaceSliderAxis = Vec3::sAxisX();
-                }
+
+        int effCooldownRdfCount = (0 >= c.cooldown_rdf_count() ? tpConfig.default_cooldown_rdf_count() : c.cooldown_rdf_count());
+        effTrapConfigFromTiled->set_cooldown_rdf_count(effCooldownRdfCount);
+
+        Vec3 worldSpaceSliderAxis(c.slider_axis_x(), c.slider_axis_y(), c.slider_axis_z());
+        if (0 == worldSpaceSliderAxis.Length()) {
+            Vec3 initVel(c.init_vel_x(), c.init_vel_y(), c.init_vel_z());
+            if (0 != initVel.Length()) {
+                worldSpaceSliderAxis = initVel.Normalized();
+            } else if (!(0 == c.init_q_x() && 0 == c.init_q_y() && 0 == c.init_q_z() && 0 == c.init_q_w())) {
+                Quat initQ(c.init_q_x(), c.init_q_y(), c.init_q_z(), c.init_q_w());
+                worldSpaceSliderAxis = initQ * Vec3::sAxisX();
             } else {
-                worldSpaceSliderAxis = worldSpaceSliderAxis.Normalized();
+                worldSpaceSliderAxis = Vec3::sAxisX();
             }
+        } else {
+            worldSpaceSliderAxis = worldSpaceSliderAxis.Normalized();
+        }
+
+        if (globalPrimitiveConsts->tpts().sliding_platform() == c.tpt()) {
             effTrapConfigFromTiled->set_slider_axis_x(worldSpaceSliderAxis.GetX());
             effTrapConfigFromTiled->set_slider_axis_y(worldSpaceSliderAxis.GetY());
             effTrapConfigFromTiled->set_slider_axis_z(worldSpaceSliderAxis.GetZ());
-        } else if (globalPrimitiveConsts->tpt_conveyor_belt() == c.tpt()) {
+
+            // Sliders must be limited in space 
+            JPH_ASSERT(c.has_limit_1());
+            JPH_ASSERT(c.has_limit_2());
+            JPH_ASSERT(c.limit_1() <= c.limit_2());
+        } else if (globalPrimitiveConsts->tpts().rotating_platform() == c.tpt()) {
+            effTrapConfigFromTiled->set_slider_axis_x(worldSpaceSliderAxis.GetX());
+            effTrapConfigFromTiled->set_slider_axis_y(worldSpaceSliderAxis.GetY());
+            effTrapConfigFromTiled->set_slider_axis_z(worldSpaceSliderAxis.GetZ());
+
+            if (c.has_limit_1() && c.has_limit_2()) {
+                JPH_ASSERT(c.limit_1() <= c.limit_2());
+                float radianLimit1 = DegreesToRadians(c.limit_1());
+                float radianLimit2 = DegreesToRadians(c.limit_2());
+                const Vec3 initAngVel(c.init_ang_vel_x(), c.init_ang_vel_y(), c.init_ang_vel_z());
+                const float initAngSpeed = initAngVel.Length();
+                float cooldownRadians = initAngSpeed*effCooldownRdfCount/globalPrimitiveConsts->battle_dynamics_fps();
+                if (radianLimit1 + cooldownRadians > radianLimit2) {
+                    JPH_ASSERT(radianLimit1 + cooldownRadians <= radianLimit2);
+                }
+                effTrapConfigFromTiled->set_limit_1(radianLimit1);
+                effTrapConfigFromTiled->set_limit_2(radianLimit2);
+            } else {
+                effTrapConfigFromTiled->clear_limit_1();
+                effTrapConfigFromTiled->clear_limit_2();
+            }
+        } else if (globalPrimitiveConsts->tpts().conveyor_belt() == c.tpt()) {
             effTrapConfigFromTiled->set_init_not_moving(true);
         }
         trapConfigFromTileDict[c.id()] = effTrapConfigFromTiled;
@@ -1913,7 +1995,6 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
     topoSortTriggerConfigFromTiledList(initializerMapData);
 
-    auto& trapConfigs = globalConfigConsts->trap_configs();
     for (int i = 0; i < startRdf->dynamic_traps_size(); i++) {
         Trap* tp = startRdf->mutable_dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == tp->id()) break;
@@ -2202,7 +2283,7 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
         if (triggerConfigFromTileDict.count(tr->id())) {
             auto* triggerConfigFromTile = triggerConfigFromTileDict.at(tr->id());
             if (!collectedDemandedMask.count(tr->id())) {
-                tr->set_sub_cycle_mask_to_fulfill(1);
+                tr->set_sub_cycle_mask_to_fulfill(0);
             } else {
                 tr->set_sub_cycle_mask_to_fulfill(collectedDemandedMask[tr->id()]);
             }
@@ -2603,7 +2684,8 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
     bool recoverable3 = noOpSet.count(currChd.ch_state());
     bool recoverable4 = !nonAttackingSet.count(currChd.ch_state());
     bool recoverable5 = currDashing;
-    if (currChd.ch_state() == nextChd->ch_state() && (recoverable1 || recoverable2 || recoverable3 || recoverable4 || recoverable5)) {
+    bool recoverable6 = ((Def1 == currChd.ch_state() || Def1Broken == currChd.ch_state()) && 0 >= effDy);
+    if (currChd.ch_state() == nextChd->ch_state() && (recoverable1 || recoverable2 || recoverable3 || recoverable4 || recoverable5 || recoverable6)) {
         // Wrap up if none of the above conditions helped transit an attacking or attacked state into Idle1/Walking
         if (!isInWalkingAtkAndNotRecovered) {
             if (0 != ioInputInducedMotion->forceCOM.GetX()) {
@@ -3376,6 +3458,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         CH_COLLIDER_T* chCollider = getOrCreateCachedPlayerCollider_NotThreadSafe(ud, currPlayer, cc, nextPlayer);
         transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
         transientUdToInputInducedMotion[ud] = inputInducedMotionStockCache.Take_ThreadSafe();
+        transientOffenderUdToSuperAtkGaugeInc[ud] = 0;
 
         auto bodyID = chCollider->GetBodyID();
         bodyIDsToActivate.push_back(bodyID);
@@ -3392,6 +3475,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         CH_COLLIDER_T* chCollider = getOrCreateCachedNpcCollider_NotThreadSafe(ud, currNpc, cc, nextNpc);
         transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
         transientUdToInputInducedMotion[ud] = inputInducedMotionStockCache.Take_ThreadSafe();
+        transientOffenderUdToSuperAtkGaugeInc[ud] = 0;
 
         auto bodyID = chCollider->GetBodyID();
         bodyIDsToActivate.push_back(bodyID);
@@ -3467,7 +3551,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         }
         bodyIDsToActivate.push_back(trapBodyID);
 
-        if (globalPrimitiveConsts->tpt_sliding_platform() == currTp.tpt()) {
+        if (globalPrimitiveConsts->tpts().sliding_platform() == currTp.tpt()) {
             JPH_ASSERT(nullptr != tpConfigFromTile);
             
             // [WARNING] The "constraintHelperBody" is added into "activeTpColliders", hence it will be deactivated by "BaseBattle::batchRemoveFromPhySysAndCache" and deallocated by "BaseBattle::Clear" too.
@@ -3480,7 +3564,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             }
             bodyIDsToActivate.push_back(constraintHelperBodyID);   
 
-            if (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) {
+            if (isTrapUsingObsIface(tpConfig, tpConfigFromTile)) {
                 TP_COLLIDER_T* obsIfaceBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, true, newTrapPos, newTrapRot);
                 auto obsIfaceBodyID = obsIfaceBody->GetID();
                 if (!obsIfaceBody->IsInBroadPhase()) {
@@ -3488,7 +3572,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 }
                 bodyIDsToActivate.push_back(obsIfaceBodyID);
             }
-        } else if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+        } else if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
             JPH_ASSERT(nullptr != tpConfigFromTile);
             
             Vec3Arg newHelperPos(tpConfigFromTile->init_x(), tpConfigFromTile->init_y(), tpConfigFromTile->init_z());
@@ -3500,7 +3584,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             }
             bodyIDsToActivate.push_back(constraintHelperBodyID);   
 
-            if (tpConfig->use_obstable_interface_body() || OOIBOTrue == tpConfigFromTile->ooibo()) {
+            if (isTrapUsingObsIface(tpConfig, tpConfigFromTile)) {
                 TP_COLLIDER_T* obsIfaceBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, true, newTrapPos, newTrapRot);
                 auto obsIfaceBodyID = obsIfaceBody->GetID();
                 if (!obsIfaceBody->IsInBroadPhase()) {
@@ -3600,13 +3684,20 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
         FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
         JPH_ASSERT(nullptr != tpConfig);
 
-        if (TrapState::TpIdle == currTp.trap_state() && nullptr != tpConfigFromTile) {
-            if (globalPrimitiveConsts->terminating_trigger_id() != tpConfigFromTile->subscribes_to_trigger_id()) {
-                // [TODO]
-            } else if (globalPrimitiveConsts->terminating_trigger_group_id() != tpConfigFromTile->subscribes_to_trigger_group_id()) {
-                // [TODO]
-            }
-            
+        bool isTriggerBased = (nullptr != tpConfigFromTile && globalPrimitiveConsts->terminating_trigger_id() != tpConfigFromTile->subscribes_to_trigger_id());
+       
+        uint64_t subscribingToTriggerUd = 0;
+        const Trigger* currSubscribingToTrigger = nullptr;
+        const Trigger* nextSubscribingToTrigger = nullptr; 
+        bool subscribingToTriggerMainCycleTicked = false;
+        bool subscribingToTriggerSubCycleTicked = false;
+        if (isTriggerBased) {
+            subscribingToTriggerUd = calcTriggerUserData(tpConfigFromTile->subscribes_to_trigger_id());
+            currSubscribingToTrigger = transientUdToCurrTrigger.at(subscribingToTriggerUd);
+            nextSubscribingToTrigger = transientUdToNextTrigger.at(subscribingToTriggerUd);
+
+            subscribingToTriggerMainCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? (nextSubscribingToTrigger->quota() < currSubscribingToTrigger->quota()) : false;  
+            subscribingToTriggerSubCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? false : (nextSubscribingToTrigger->quota() == currSubscribingToTrigger->quota()  && nextSubscribingToTrigger->sub_cycle_index() > currSubscribingToTrigger->sub_cycle_index());
         }
 
         Vec3 newTpLinearVel = Vec3(nextTp->vel_x(), nextTp->vel_y(), nextTp->vel_z());
@@ -3626,15 +3717,16 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             obsIfaceBody = transientUdToConstraintObsIfaceBody.at(ud);
         }
 
-        if (globalPrimitiveConsts->tpt_sliding_platform() == currTp.tpt()) {
+        if (globalPrimitiveConsts->tpts().sliding_platform() == currTp.tpt()) {
             JPH_ASSERT(nullptr != tpConfigFromTile);
+            int effCooldownRdfCount = tpConfigFromTile->cooldown_rdf_count();
             Body* constraintHelperBody = transientUdToConstraintHelperBody.at(ud);
 
             const Vec3 worldSpaceSliderAxis(tpConfigFromTile->slider_axis_x(), tpConfigFromTile->slider_axis_y(), tpConfigFromTile->slider_axis_z());
             SliderConstraintSettings sliderSettings;
             sliderSettings.mAutoDetectPoint = false;
-            sliderSettings.mPoint1 = tpMainCollider->GetCenterOfMassPosition();
-            sliderSettings.mPoint2 = constraintHelperBody->GetCenterOfMassPosition();
+            sliderSettings.mPoint1 = constraintHelperBody->GetCenterOfMassPosition();
+            sliderSettings.mPoint2 = tpMainCollider->GetCenterOfMassPosition();
             // The combination of "mAutoDetectPoint & mPoint1 & mPoint2" makes "SliderConstraint.mLocalSpacePosition1 == SliderConstraint.mLocalSpacePosition2 == Vec3::sZero()".
             sliderSettings.SetSliderAxis(worldSpaceSliderAxis);
             sliderSettings.mLimitsMin = tpConfigFromTile->limit_1();
@@ -3642,7 +3734,14 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             sliderSettings.mLimitsSpringSettings.mFrequency = tpConfigFromTile->limit_3();
             sliderSettings.mLimitsSpringSettings.mDamping = tpConfigFromTile->limit_4();
             
-            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Slider, (usingObsIface ? obsIfaceBody : tpMainCollider), constraintHelperBody, &sliderSettings); // [WARNING] To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC!;
+            /*
+            [WARNING] 
+            
+            To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC;
+
+            Moreover, in a "TwoBodyConstraint", "Body1" should be the "reference one" and "Body2" should be the "moving one".
+            */
+            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Slider, constraintHelperBody, (usingObsIface ? obsIfaceBody : tpMainCollider), &sliderSettings); 
             JPH_ASSERT(nullptr != cachedConstraint); 
             JPH::Constraint* c = cachedConstraint->c;
             SliderConstraint* sc = static_cast<SliderConstraint*>(c);
@@ -3654,7 +3753,6 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
 
             Moreover, it's weird that without "SliderConstraint.mMotorConstraintPart" the whole "SliderConstraint" DOESN'T enforce "SliderAxis movement" when "mBody1" is far from "mBody2", i.e. "SliderConstraint.mPositionConstraintPart.mEffectiveMass" will decrease along "abs(mD)" making the enforcement weak on the sides (see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/SliderConstraint.cpp#L208 and https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/SliderConstraint.cpp#L310C13-L310C36), so I cut the velocity components perpendicular to "SliderAxis" manually.
             */
-            int effCooldownRdfCount = 0 >= tpConfigFromTile->cooldown_rdf_count() ? tpConfig->default_cooldown_rdf_count() : tpConfigFromTile->cooldown_rdf_count();
             if (mD <= tpConfigFromTile->limit_1()) {
                 if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
 /*
@@ -3667,18 +3765,26 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     nextTp->set_trap_state(TrapState::TpIdle);
                     nextTp->set_frames_in_trap_state(0);
                     newTpLinearVel = Vec3::sZero();
-                } else if (TrapState::TpIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                } else if (TrapState::TpIdle == currTp.trap_state()) {
+                    bool shouldTransitIntoMoving = false;
+                    if (isTriggerBased) {
+                        shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
+                    } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                        shouldTransitIntoMoving = true;
+                    }
+                    if (shouldTransitIntoMoving) {
 /*
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
-*/
-                    const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
-                    nextTp->set_trap_state(TrapState::TpWalking);
-                    nextTp->set_frames_in_trap_state(0);
-                    newTpLinearVel = projectedVel;
+*/                       
+                        const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
+                        nextTp->set_trap_state(TrapState::TpWalking);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpLinearVel = projectedVel;
+                    }
                 }
             } else if (mD >= tpConfigFromTile->limit_2()) {
                 if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
@@ -3693,35 +3799,134 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     nextTp->set_frames_in_trap_state(0);
                     newTpLinearVel = Vec3::sZero();
                 } else if (TrapState::TpIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                    bool shouldTransitIntoMoving = false;
+                    if (isTriggerBased) {
+                        shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
+                    } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                        shouldTransitIntoMoving = true;
+                    }
+                    if (shouldTransitIntoMoving) {
 /*
 #ifndef NDEBUG
-                    std::ostringstream oss;
-                    oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
-                    Debug::Log(oss.str(), DColor::Orange);
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
+                        Debug::Log(oss.str(), DColor::Orange);
 #endif
 */
-                    const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
-                    nextTp->set_trap_state(TrapState::TpWalking);
-                    nextTp->set_frames_in_trap_state(0);
-                    newTpLinearVel = projectedVel;
+                        const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
+                        nextTp->set_trap_state(TrapState::TpWalking);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpLinearVel = projectedVel;
+                    }
                 }
             }
-        } else if (globalPrimitiveConsts->tpt_rotating_platform() == currTp.tpt()) {
+        } else if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
             JPH_ASSERT(nullptr != tpConfigFromTile);
-            Body* constraintHelperBody = transientUdToConstraintHelperBody.at(ud);
-
-            DistanceConstraintSettings distanceSettings;
-            distanceSettings.mPoint1 = tpMainCollider->GetCenterOfMassPosition();
-            distanceSettings.mPoint2 = constraintHelperBody->GetCenterOfMassPosition();
-            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Distance, (usingObsIface ? obsIfaceBody : tpMainCollider), constraintHelperBody, &distanceSettings); // [WARNING] To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC!;
-            JPH_ASSERT(nullptr != cachedConstraint); 
-            JPH::Constraint* c = cachedConstraint->c;
-            DistanceConstraint* dc = static_cast<DistanceConstraint*>(c);
-            nextTp->set_trap_state(TrapState::TpWalking);
+            int effCooldownRdfCount = tpConfigFromTile->cooldown_rdf_count();
 
             const Vec3 initAngVel(tpConfigFromTile->init_ang_vel_x(), tpConfigFromTile->init_ang_vel_y(), tpConfigFromTile->init_ang_vel_z());
-            newTpAngVel = initAngVel;
-            // [TODO] Set actual "DistanceConstraint" and then let "tpCollider" rotate w.r.t. "constraintHelperBody", changing its orientation (in quaternion) effectively in world space.
+
+            Body* constraintHelperBody = transientUdToConstraintHelperBody.at(ud);
+
+            HingeConstraintSettings hingeSettings;
+            const Vec3 hingeAxisInWorldSpace(tpConfigFromTile->slider_axis_x(), tpConfigFromTile->slider_axis_y(), tpConfigFromTile->slider_axis_z());
+            const Vec3 hingeAxisNormalInWorldSpace = hingeAxisInWorldSpace.GetNormalizedPerpendicular();
+            hingeSettings.mSpace = EConstraintSpace::LocalToBodyCOM; // [WARNING] Intentionally NOT using "WorldSpace" to avoid mutation to "mInvInitialOrientation"
+
+            hingeSettings.mPoint1 = constraintHelperBody->GetCenterOfMassPosition();
+            hingeSettings.mHingeAxis1 = hingeAxisInWorldSpace;
+            hingeSettings.mNormalAxis1 = hingeAxisNormalInWorldSpace;
+
+            hingeSettings.mPoint2 = tpMainCollider->GetCenterOfMassPosition();
+            hingeSettings.mHingeAxis2 = hingeAxisInWorldSpace; // Axis of rotation on body 1
+            hingeSettings.mNormalAxis2 = hingeAxisNormalInWorldSpace;
+            
+            if (tpConfigFromTile->has_limit_1() && tpConfigFromTile->has_limit_2()) {
+                hingeSettings.mLimitsMin = tpConfigFromTile->limit_1();
+                hingeSettings.mLimitsMax = tpConfigFromTile->limit_2();
+            }
+            
+            /*
+            [WARNING]
+
+            To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC;
+
+            Moreover, in a "TwoBodyConstraint", "Body1" should be the "reference one" and "Body2" should be the "moving one".
+            */
+            NON_CONTACT_CONSTRAINT_T* cachedConstraint = getOrCreateCachedNonContactConstraint_NotThreadSafe(EConstraintType::TwoBodyConstraint, EConstraintSubType::Hinge, constraintHelperBody, (usingObsIface ? obsIfaceBody : tpMainCollider), &hingeSettings);
+            JPH_ASSERT(nullptr != cachedConstraint); 
+            JPH::Constraint* c = cachedConstraint->c;
+            HingeConstraint* hc = static_cast<HingeConstraint*>(c);
+         
+            const float mD = hc->GetCurrentAngle();
+
+            if (hc->HasLimits()) {
+                if (mD <= tpConfigFromTile->limit_1()) {
+                    if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from walking to idle per limit1=" << tpConfigFromTile->limit_1() << ", initAngVelZ=" << initAngVel.GetZ();
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+
+                        nextTp->set_trap_state(TrapState::TpIdle);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpAngVel = Vec3::sZero();
+                    } else if (TrapState::TpIdle == currTp.trap_state()) {
+                        bool shouldTransitIntoMoving = false;
+                        if (isTriggerBased) {
+                            shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
+                        } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                            shouldTransitIntoMoving = true;
+                        }
+                        if (shouldTransitIntoMoving) {
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from idle to walking per limit1=" << tpConfigFromTile->limit_1() << ", initAngVelZ=" << initAngVel.GetZ();
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                            nextTp->set_trap_state(TrapState::TpWalking);
+                            nextTp->set_frames_in_trap_state(0);
+                            newTpAngVel = initAngVel;
+                        }
+                    }
+                } else if (mD >= tpConfigFromTile->limit_2()) {
+                    if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() << ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from walking to idle per limit2 = " << tpConfigFromTile->limit_2() << ", initAngVelZ = " << initAngVel.GetZ();
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+
+                        nextTp->set_trap_state(TrapState::TpIdle);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpAngVel = Vec3::sZero();
+                    } else if (TrapState::TpIdle == currTp.trap_state()) {
+                        bool shouldTransitIntoMoving = false;
+                        if (isTriggerBased) {
+                            shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
+                        } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                            shouldTransitIntoMoving = true;
+                        }
+                        if (shouldTransitIntoMoving) {
+
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initAngVelZ=" << initAngVel.GetZ();
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                            nextTp->set_trap_state(TrapState::TpWalking);
+                            nextTp->set_frames_in_trap_state(0);
+                            newTpAngVel = -initAngVel;
+                        }
+                    }
+                }
+            } else {
+                nextTp->set_trap_state(TrapState::TpWalking);
+                newTpAngVel = initAngVel;
+            }
         }
 
         /*
@@ -3745,7 +3950,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             JPH::Constraint* singleC = single->c;
             // It's O(1) time, see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ConstraintManager.cpp#L17
             phySys->AddConstraint(singleC);
-        } 
+        }
     }
 }
 
@@ -4009,6 +4214,8 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
 
     transientUdToCurrPickable.clear();
     transientUdToNextPickable.clear(); 
+
+    transientOffenderUdToSuperAtkGaugeInc.clear();
     
     mNextRdfBulletIdCounter = 1;
     mNextRdfBulletCount = 0;
@@ -5134,7 +5341,7 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
 
     chd->set_omit_gravity(false);
 
-    chd->set_species_id(globalPrimitiveConsts->species_none_ch());
+    chd->set_species_id(globalPrimitiveConsts->ch_species().none());
 
     chd->set_ground_ud(0);
 
@@ -5200,12 +5407,11 @@ void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
     npc->set_publishing_to_trigger_id_upon_exhausted(globalPrimitiveConsts->terminating_trigger_id());
 
     npc->set_subscribes_to_trigger_id(globalPrimitiveConsts->terminating_trigger_id()); 
-    npc->set_subscribes_to_trigger_group_id(globalPrimitiveConsts->terminating_trigger_group_id()); 
 
     npc->set_captured_by_patrol_cue(0);
     npc->set_frames_in_patrol_cue(0);
 
-    npc->set_exhausted_to_drop_pkt(globalPrimitiveConsts->pkt_none());
+    npc->set_exhausted_to_drop_pkt(globalPrimitiveConsts->pkts().none());
 
     npc->set_is_main_tower_of_team(false);
     npc->set_waiving_patrol_cue_id(0);
@@ -5336,7 +5542,6 @@ void BaseBattle::CopyNpcChd(const NpcCharacterDownsync* from, NpcCharacterDownsy
     to->set_publishing_to_trigger_id_upon_exhausted(from->publishing_to_trigger_id_upon_exhausted());
 
     to->set_subscribes_to_trigger_id(from->subscribes_to_trigger_id()); 
-    to->set_subscribes_to_trigger_group_id(from->subscribes_to_trigger_group_id()); 
 
     to->set_captured_by_patrol_cue(from->captured_by_patrol_cue());
     to->set_frames_in_patrol_cue(from->frames_in_patrol_cue());
@@ -6035,18 +6240,18 @@ NON_CONTACT_CONSTRAINT_T* BaseBattle::createDefaultNonContactConstraint(const EC
             const uint64_t ud1 = inBody1->GetUserData();
             const uint64_t ud2 = inBody2->GetUserData();
             const uint64_t udt1 = getUDT(ud1);
-            const SliderConstraintSettings* inSliderSettings = static_cast<SliderConstraintSettings*>(inConstraintSettings);  
-            SliderConstraint* sliderConstraint = new SliderConstraint(*inBody1, *inBody2, *inSliderSettings);
-            NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(sliderConstraint, ud1, ud2);
+            const SliderConstraintSettings* castedInSettings = static_cast<SliderConstraintSettings*>(inConstraintSettings);  
+            SliderConstraint* constraint = new SliderConstraint(*inBody1, *inBody2, *castedInSettings);
+            NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(constraint, ud1, ud2);
             return ret;
         }
-        case EConstraintSubType::Distance: {
+        case EConstraintSubType::Hinge: {
             const uint64_t ud1 = inBody1->GetUserData();
             const uint64_t ud2 = inBody2->GetUserData();
             const uint64_t udt1 = getUDT(ud1);
-            const DistanceConstraintSettings* inDistanceSettings = static_cast<DistanceConstraintSettings*>(inConstraintSettings);
-            DistanceConstraint* distanceConstraint = new DistanceConstraint(*inBody1, *inBody2, *inDistanceSettings);
-            NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(distanceConstraint, ud1, ud2);
+            const HingeConstraintSettings* castedInSettings = static_cast<HingeConstraintSettings*>(inConstraintSettings);
+            HingeConstraint* constraint = new HingeConstraint(*inBody1, *inBody2, *castedInSettings);
+            NON_CONTACT_CONSTRAINT_T* ret = new NON_CONTACT_CONSTRAINT_T(constraint, ud1, ud2);
             return ret;
         }
         default:
@@ -6313,30 +6518,32 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                     collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, shouldSkipGroundServing, shouldSkipWallServing);
                 }
             } else if (UDT_TRIGGER == udtRhs) {
-                const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
-                Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
-                // [WARNING] Decrement of "quota" will be done in "stepSingleIndiWaveNpcSpawner/stepOtherSingleTriggerState" for thread-safety
-                if (globalPrimitiveConsts->trt_by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
-                    // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
-                    nextTrigger->set_main_cycle_mask_to_fulfill(0);
-#ifndef NDEBUG
-                    std::ostringstream oss;
-                    oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled trigger id=" << currTrigger->id() << std::endl;
-                    Debug::Log(oss.str(), DColor::Orange);
-#endif
-                } else if (globalPrimitiveConsts->trt_by_pattern_f() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
-                    if (inputInducedMotion->patternFTriggered) {
-                        nextTrigger->set_main_cycle_mask_to_fulfill(0);
+                if (UDT_PLAYER == udt) {
+                    const Trigger* currTrigger = transientUdToCurrTrigger.at(udRhs);
+                    Trigger* nextTrigger = transientUdToNextTrigger.at(udRhs);
+                    // [WARNING] Decrement of "quota" will be done in "stepSingleIndiWaveNpcSpawner/stepOtherSingleTriggerState" for thread-safety
+                    if (globalPrimitiveConsts->trts().by_movement() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
                         // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
-#ifndef NDEBUG
+                        nextTrigger->set_main_cycle_mask_to_fulfill(0);
+    #ifndef NDEBUG
                         std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled pattern_f trigger id=" << currTrigger->id() << std::endl;
+                        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled by_movement trigger id=" << currTrigger->id() << std::endl;
                         Debug::Log(oss.str(), DColor::Orange);
-#endif
-                    } else {
-                        transientPreparedTriggerUds.insert(udRhs);
-                    }
+    #endif
+                    } else if (globalPrimitiveConsts->trts().by_pattern_f() == currTrigger->trt() && TriggerState::TrReady == nextTrigger->state()) {
+                        if (inputInducedMotion->patternFTriggered) {
+                            nextTrigger->set_main_cycle_mask_to_fulfill(0);
+                            // [WARNING] Other criteria checked in "validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger)".
+    #ifndef NDEBUG
+                            std::ostringstream oss;
+                            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " pre-fulfilled pattern_f trigger id=" << currTrigger->id() << std::endl;
+                            Debug::Log(oss.str(), DColor::Orange);
+    #endif
+                        } else {
+                            transientPreparedTriggerUds.insert(udRhs);
+                        }
 
+                    }
                 }
             } else if (UDT_PICKABLE == udtRhs) {
                 const Pickable* currPk = transientUdToCurrPickable.at(udRhs);
@@ -6348,14 +6555,14 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
 
-                if (globalPrimitiveConsts->pkt_hp_small() == currPk->pickup_type()) {
+                if (globalPrimitiveConsts->pkts().hp_small() == currPk->pickup_type()) {
                     const PickableConfig& pkConfig = globalConfigConsts->pickable_configs().at(currPk->pickup_type());
                     int newHp = nextChd->hp() + pkConfig.amount_1();
                     if (newHp > cc->hp()) {
                         newHp = cc->hp();
                     }
                     nextChd->set_hp(newHp);
-                } else if (globalPrimitiveConsts->pkt_mp_small() == currPk->pickup_type()) {
+                } else if (globalPrimitiveConsts->pkts().mp_small() == currPk->pickup_type()) {
                     const PickableConfig& pkConfig = globalConfigConsts->pickable_configs().at(currPk->pickup_type());
                     int newMp = nextChd->mp() + pkConfig.amount_1();
                     if (newMp > cc->mp()) {
@@ -6495,12 +6702,14 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
     }
 
+    bool successfulDef1OrDef1BrokenExtended = (0 < newEffDef1QuotaReduction || Def1Broken == currChd.ch_state());
+    bool framesToRecoverIncreased = (newEffFramesToRecover > oldEffFramesToRecover);
     if (0 < newEffDamage) {
         jamBtnHolding(nextChd);
-        if (newEffBlownUp) {
-            nextChd->set_ch_state(BlownUp1);
-        } else {
-            if (newEffFramesToRecover > oldEffFramesToRecover) {
+        if (!successfulDef1OrDef1BrokenExtended) {
+            if (newEffBlownUp) {
+                nextChd->set_ch_state(BlownUp1);
+            } else if (framesToRecoverIncreased) {
                 // [REMINDER] Covers "hardness induced ch_state continuation when hit"
                 if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
                     nextChd->set_ch_state(InAirAtked1);
@@ -6509,6 +6718,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 }
             }
         }
+       
         nextChd->set_hp(nextChd->hp() - newEffDamage);
         nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
     }
@@ -6517,15 +6727,27 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         int oldRemainingDef1Quota = nextChd->remaining_def1_quota();
         int newRemainingDef1Quota = oldRemainingDef1Quota - newEffDef1QuotaReduction;
         if (0 < oldRemainingDef1Quota && 0 >= newRemainingDef1Quota) {
-            newRemainingDef1Quota = 0;
-            nextChd->set_ch_state(Def1Broken);
             if (cc->default_def1_broken_frames_to_recover() > newEffFramesToRecover) {
                 newEffFramesToRecover = cc->default_def1_broken_frames_to_recover();
             }
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " Def1Broken from oldNextChState=" << nextChd->ch_state() << ", newEffFramesToRecover=" << newEffFramesToRecover << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+#endif
+            newRemainingDef1Quota = 0;
+            nextChd->set_ch_state(Def1Broken);
         }
         nextChd->set_remaining_def1_quota(newRemainingDef1Quota);
     }
 
+#ifndef NDEBUG
+    if (Def1Broken ==  currChd.ch_state() && framesToRecoverIncreased) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " newEffFramesToRecover=" << newEffFramesToRecover << " extended from oldEffFramesToRecover=" << oldEffFramesToRecover << " during Def1Broken" << std::endl;
+        Debug::Log(oss.str(), DColor::Yellow);
+    }
+#endif
     nextChd->set_frames_to_recover(newEffFramesToRecover);
 
     if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelX) {
@@ -6874,7 +7096,7 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
         nextTrigger->set_main_cycle_mask_to_fulfill(1);
 
         if (globalPrimitiveConsts->terminating_trigger_id() != triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted()) {
-            // [WARNING] For "trt_indi_wave_npc_spawner", we should report to "publishing_to_trigger_id_upon_exhausted" upon "sub-cycle fulfilled" instead of "main-cycle exhausted".
+            // [WARNING] For "trts().indi_wave_npc_spawner", we should report to "publishing_to_trigger_id_upon_exhausted" upon "sub-cycle fulfilled" instead of "main-cycle exhausted".
             uint64_t nextReceivingTriggerUd = calcTriggerUserData(triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted());
             Trigger* nextReceivingTrigger = transientUdToNextTrigger.at(nextReceivingTriggerUd);
             publishToTrigger(currRdfId, triggerConfigFromTiled->publishing_mask_upon_exhausted(), currTrigger.offender_ud(), currTrigger.offender_bullet_team_id(), nextReceivingTrigger);
@@ -7189,6 +7411,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effSingleBlDamage);
     }
 
+    // [REMINDER] The output params "outNewEffPushbackVelX & outNewEffPushbackVelY" are applied regardless of "successfulDef1".
     JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
     Vec3Arg blInitPushbackVelocity(rhsBlConfig->pushback_vel_x(), rhsBlConfig->pushback_vel_y(), 0);
     auto blEffPushbackVelocity = blQ*blInitPushbackVelocity;
@@ -7211,7 +7434,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             outShouldSkipWallServing = true;
         }
     } else {
-        if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
+        if (rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->block_stun_frames(); 
             outShouldSkipGroundServing = true;
             outShouldSkipWallServing = true;

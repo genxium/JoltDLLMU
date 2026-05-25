@@ -1,21 +1,41 @@
 using Google.Protobuf.Collections;
 using jtshared;
+using System;
 using static JoltCSharp.PbPrimitives;
 
 namespace JoltCSharp {
-    public partial class PbBuffs {
+    public class PbBuffs {
 
-        public static BuffConfig ShortFreezer = new BuffConfig {
-            SpeciesId = 1,
-            StockType = BuffStockType.Timed,
-            Stock = 480,
-            XformChSpeciesId = PbPrimitives.SPECIES_NONE_CH,
-        }.AddAssociatedDebuff(PbDebuffs.ShortFrozen.SpeciesId);
+        private PrimitiveConsts primitiveConsts;
 
-        public static MapField<uint, BuffConfig> underlying = new MapField<uint, BuffConfig>() { };
+        public PbBuffs(PrimitiveConsts primitiveConsts) {
+            this.primitiveConsts = primitiveConsts;
 
-        static PbBuffs() {
+        }
+
+        protected MapField<uint, BuffConfig>? underlying;
+
+        protected virtual bool lazyInit() {
+            if (null != underlying) return true;
+
+            BuffConfig ShortFreezer = new BuffConfig {
+                SpeciesId = 1,
+                StockType = BuffStockType.Timed,
+                Stock = 480,
+                XformChSpeciesId = primitiveConsts.ChSpecies.None,
+            }.AddAssociatedDebuff(primitiveConsts.DebuffSpecies.ShortFrozen);
+            
+            underlying = new MapField<uint, BuffConfig>() { };
             underlying.Add(ShortFreezer.SpeciesId, ShortFreezer);
+            return true;
+        }
+    
+        public MapField<uint, BuffConfig> getUnderlying() {
+            if (!lazyInit() || null == underlying) {
+                throw new ArgumentNullException("Failed to initialize the underlying of PbBuffs");
+            }
+
+            return underlying;
         }
     }
 }

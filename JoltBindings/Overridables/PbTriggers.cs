@@ -1,35 +1,51 @@
 using Google.Protobuf.Collections;
 using jtshared;
-using static JoltCSharp.PbPrimitives;
+using System;
 
 namespace JoltCSharp {
-    public partial class PbTriggers {
+    public class PbTriggers {
+        private PrimitiveConsts primitiveConsts;
+        public PbTriggers(in PrimitiveConsts primitiveConsts) {
+            this.primitiveConsts = primitiveConsts;
+        }
 
-        public static TriggerConfig PatternFTrigger = new TriggerConfig {
-            Trt = PbPrimitives.underlying.TrtByPatternF,
-            Name = "PatternF"
-        };
+        protected MapField<uint, TriggerConfig>? underlying;
+        protected virtual bool lazyInit() {
+            if (null != underlying) return true;
+            TriggerConfig PatternFTrigger = new TriggerConfig {
+                Trt = primitiveConsts.Trts.ByPatternF,
+                Name = "PatternF"
+            };
 
-        public static TriggerConfig VictoryTrigger = new TriggerConfig {
-            Trt = PbPrimitives.underlying.TrtVictory
-        };
+            TriggerConfig VictoryTrigger = new TriggerConfig {
+                Trt = primitiveConsts.Trts.Victory
+            };
 
-        public static TriggerConfig IndiWaveNpcSpawner = new TriggerConfig {
-            Trt = PbPrimitives.underlying.TrtIndiWaveNpcSpawner,
-            Name = "IndiWaveDoor1"
-        };
+            TriggerConfig IndiWaveNpcSpawner = new TriggerConfig {
+                Trt = primitiveConsts.Trts.IndiWaveNpcSpawner,
+                Name = "IndiWaveDoor1"
+            };
 
-        public static TriggerConfig IndiWavePickableSpawner = new TriggerConfig {
-            Trt = PbPrimitives.underlying.TrtIndiWavePickableSpawner,
-        };
+            TriggerConfig IndiWavePickableSpawner = new TriggerConfig {
+                Trt = primitiveConsts.Trts.IndiWavePickableSpawner,
+            };
 
-        public static MapField<uint, TriggerConfig> underlying = new MapField<uint, TriggerConfig>() { };
+            underlying  = new MapField<uint, TriggerConfig> {
+                { PatternFTrigger.Trt, PatternFTrigger },
+                { VictoryTrigger.Trt, VictoryTrigger },
+                { IndiWaveNpcSpawner.Trt, IndiWaveNpcSpawner },
+                { IndiWavePickableSpawner.Trt, IndiWavePickableSpawner }
+            };
 
-        static PbTriggers() {
-            underlying.Add(PbPrimitives.underlying.TrtByPatternF, PatternFTrigger);
-            underlying.Add(PbPrimitives.underlying.TrtVictory, VictoryTrigger);
-            underlying.Add(PbPrimitives.underlying.TrtIndiWaveNpcSpawner, IndiWaveNpcSpawner);
-            underlying.Add(PbPrimitives.underlying.TrtIndiWavePickableSpawner, IndiWavePickableSpawner);
+            return true;
+       
+        }
+
+        public MapField<uint, TriggerConfig> getUnderlying() {
+            if (!lazyInit() || null == underlying) {
+                throw new ArgumentNullException("Failed to initialize the underlying of PbTriggers");
+            }
+            return underlying;
         }
     }
 }

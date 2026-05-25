@@ -586,7 +586,6 @@ message NpcCharacterDownsync {
     uint32 publishing_to_trigger_id_upon_exhausted = 8; // Configured from UI/Story Editor for awakening
 
     uint32 subscribes_to_trigger_id = 9; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
-    uint32 subscribes_to_trigger_group_id = 10; 
 
     bool captured_by_patrol_cue = 11;
     int32 frames_in_patrol_cue = 12;
@@ -954,13 +953,12 @@ message TrapConfigFromTiled {
     OverrideObsIfaceBodyOption ooibo = 26;
 
     uint32 subscribes_to_trigger_id = 27;
-    uint32 subscribes_to_trigger_group_id = 28;
 
     // Used for constraint limit assignment
-    float limit_1 = 128;  
-    float limit_2 = 129;  
-    float limit_3 = 130;  
-    float limit_4 = 131;  
+    optional float limit_1 = 128;  
+    optional float limit_2 = 129;  
+    optional float limit_3 = 130;  
+    optional float limit_4 = 131;  
 
     bool init_not_moving = 512; // thus only moves or rotates after triggered
 }
@@ -1243,7 +1241,6 @@ enum InventorySlotStockType {
     QuotaIv = 4;
     TimedMagazineIv = 5; // Has certain quotas before required to cooldown
     GaugedMagazineIv = 6;
-    GaugedTimedMagazineIv = 7; // NOT IMPLEMENTED!  
 }
 
 message InventorySlotConfig {
@@ -1535,14 +1532,79 @@ message ChSpeciesConsts {
     uint32 blacksaber1 = 3;
     uint32 blackshooter1 = 4;
     uint32 blackthrower1 = 5;
-    uint32 maintower1 = 6;
+    uint32 headquarter1 = 6;
 
     uint32 blacksaber2 = 7;
     uint32 blackshooter2 = 8;
 
-    uint32 none_ch = 2048;
+    uint32 shieldguard1 = 9;
+    uint32 shieldguard2 = 10;
+    uint32 riderguard1 = 11;
+
+    uint32 none = 2048;
     uint32 blacksaber_test_no_vision = 2049;
     uint32 blacksaber_test_with_vision = 2050;
+}
+
+message TrapTypes {
+    uint32 sliding_platform = 1; 
+    uint32 rotating_platform = 2; 
+    uint32 conveyor_belt = 3; 
+    uint32 falling_rock = 4; 
+    uint32 spring = 5; 
+    uint32 brick = 6; 
+
+    uint32 none = 2048;
+}
+
+message TriggerTypes {
+    uint32 victory = 1; 
+
+    uint32 by_init_delay = 2;
+    uint32 by_movement = 3;
+    uint32 by_attack = 4;
+    uint32 by_pattern_f = 5;
+
+    uint32 indi_wave_npc_spawner = 6;
+    uint32 indi_wave_pickable_spawner = 7;
+
+    uint32 sync_wave_group = 8;
+
+    uint32 save_point_only = 9;
+    uint32 story_point_only = 10;
+    uint32 save_and_story_point = 11;
+
+    uint32 none = 2048;
+}
+
+message PickableTypes {
+    uint32 hp_small = 1;
+    uint32 mp_small = 2;
+    uint32 inv_c_refill_small = 3;
+    uint32 inv_d_refill_small = 4;
+    uint32 vehicle_sedan_1 = 5;
+
+    uint32 none = 2048;
+}
+
+message AtkEleTypes {
+    uint32 fire = 1;
+    uint32 water = 2;
+    uint32 thunder = 3;
+    uint32 rock = 4;
+    uint32 wind = 5;
+    uint32 ice = 6;
+
+    uint32 none = 2048;
+}
+
+message DebuffSpecies {
+    uint32 short_frozen = 1;
+    uint32 short_paralyzed = 2;
+    uint32 long_frozen = 3;
+    uint32 long_paralyzed = 4;
+
+    uint32 none = 2048;
 }
 
 message PrimitiveConsts {
@@ -1662,7 +1724,7 @@ message PrimitiveConsts {
 
     uint32 no_skill = 90;
     int32 no_skill_hit = 91;
-    uint32 species_none_ch = 92;
+
     uint32 upsync_st_ifd_id_tolerance = 93;
     float no_lock_vel = 94;
     float crouch_forcing_ceiling_dot_threshold = 95; 
@@ -1732,51 +1794,11 @@ message PrimitiveConsts {
 
     int32 pattern_f = 146;
 
-    uint32 ele_none = 147;
-    uint32 ele_fire = 148;
-    uint32 ele_water = 149;
-    uint32 ele_thunder = 150;
-    uint32 ele_rock = 151;
-    uint32 ele_wind = 152;
-    uint32 ele_ice = 153;
-
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;
 
     int32 starting_render_frame_id = 156;
     int32 starting_input_frame_id = 157;
-
-    uint32 trt_none = 158; 
-    uint32 trt_victory = 159; 
-
-    uint32 trt_by_init_delay = 160;
-    uint32 trt_by_movement = 161;
-    uint32 trt_by_attack = 162;
-    uint32 trt_by_pattern_f = 163;
-
-    uint32 trt_indi_wave_npc_spawner = 164;
-    uint32 trt_indi_wave_pickable_spawner = 165;
-
-    uint32 trt_sync_wave_group = 166;
-
-    uint32 trt_save_point_only = 167;
-    uint32 trt_story_point_only = 168;
-    uint32 trt_save_and_story_point = 169;
-
-    uint32 tpt_none = 256; 
-    uint32 tpt_sliding_platform = 257; 
-    uint32 tpt_rotating_platform = 258; 
-    uint32 tpt_conveyor_belt = 259; 
-    uint32 tpt_falling_rock = 260; 
-    uint32 tpt_spring = 261; 
-    uint32 tpt_brick = 262; 
-
-    uint32 pkt_none = 512;
-    uint32 pkt_hp_small = 513;
-    uint32 pkt_mp_small = 514;
-    uint32 pkt_inv_c_refill_small = 515;
-    uint32 pkt_inv_d_refill_small = 516;
-    uint32 pkt_vehicle_sedan_1 = 517;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;
@@ -1787,6 +1809,11 @@ message PrimitiveConsts {
     int32 default_frames_to_continue_combo = 1030;
 
     ChSpeciesConsts ch_species = 2048;
+    TrapTypes tpts = 2049;
+    TriggerTypes trts = 2050;
+    PickableTypes pkts = 2051;
+    AtkEleTypes elets = 2052;
+    DebuffSpecies debuff_species = 2053;
 }
 
 message AimingRay {

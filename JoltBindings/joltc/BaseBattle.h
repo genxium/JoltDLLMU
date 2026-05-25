@@ -353,7 +353,6 @@ public:
         JPH_ASSERT(lhs.publishing_to_trigger_id_upon_exhausted() == rhs.publishing_to_trigger_id_upon_exhausted());
 
         JPH_ASSERT(lhs.subscribes_to_trigger_id() == rhs.subscribes_to_trigger_id()); 
-        JPH_ASSERT(lhs.subscribes_to_trigger_group_id() == rhs.subscribes_to_trigger_group_id()); 
 
         JPH_ASSERT(lhs.captured_by_patrol_cue() == rhs.captured_by_patrol_cue());
         JPH_ASSERT(lhs.frames_in_patrol_cue() == rhs.frames_in_patrol_cue());
@@ -521,6 +520,8 @@ protected:
 
     std::unordered_map<uint64_t, const Pickable*> transientUdToCurrPickable;
     std::unordered_map<uint64_t, Pickable*> transientUdToNextPickable;
+
+    std::unordered_map<uint64_t, atomic<int>> transientOffenderUdToSuperAtkGaugeInc;
 
     inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) {
         uint64_t udt = getUDT(ud);
@@ -950,7 +951,7 @@ protected:
     inline bool isBattleSettled(const StepResult* stepResult) const {
         for (int i = 0; i < stepResult->fulfilled_triggers_size(); i++) {
             auto& fulfilledTrigger = stepResult->fulfilled_triggers(i);
-            if (globalPrimitiveConsts->trt_victory() == fulfilledTrigger.trt()) {
+            if (globalPrimitiveConsts->trts().victory() == fulfilledTrigger.trt()) {
                 return true;
             }
         }
@@ -991,13 +992,13 @@ public:
         // [TODO] Check "CharacterConfig", trap visibility could be character-dependent.
         const Trap* currTp = transientUdToCurrTrap.at(udRhs);
         auto tpt = currTp->tpt();
-        if (globalPrimitiveConsts->tpt_sliding_platform() == tpt) {
+        if (globalPrimitiveConsts->tpts().sliding_platform() == tpt) {
             return true;
-        } else if (globalPrimitiveConsts->tpt_rotating_platform() == tpt) {
+        } else if (globalPrimitiveConsts->tpts().rotating_platform() == tpt) {
             return true;
-        } else if (globalPrimitiveConsts->tpt_conveyor_belt() == tpt) {
+        } else if (globalPrimitiveConsts->tpts().conveyor_belt() == tpt) {
             return true;
-        } else if (globalPrimitiveConsts->tpt_spring() == tpt) {
+        } else if (globalPrimitiveConsts->tpts().spring() == tpt) {
             return true;
         } else {
             return false;
@@ -1042,7 +1043,7 @@ public:
         const uint32_t trt = rhsCurrTrigger->trt();
         
         if (
-            (globalPrimitiveConsts->trt_by_movement() == trt || globalPrimitiveConsts->trt_by_pattern_f() == trt) 
+            (globalPrimitiveConsts->trts().by_movement() == trt || globalPrimitiveConsts->trts().by_pattern_f() == trt) 
             && 
             (TriggerState::TrReady == rhsCurrTrigger->state() && 0 < rhsCurrTrigger->quota())   
         ) {
@@ -1236,7 +1237,7 @@ public:
                 // obsolete
                 return JPH::ValidateResult::RejectContact;
             } 
-            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
+            if (globalPrimitiveConsts->trts().by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
                 return JPH::ValidateResult::AcceptContact;
             }
             return JPH::ValidateResult::RejectContact;
@@ -1296,7 +1297,7 @@ public:
                 // obsolete
                 return JPH::ValidateResult::RejectContact;
             }
-            if (globalPrimitiveConsts->trt_by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
+            if (globalPrimitiveConsts->trts().by_attack() == rhsCurrTr->trt() && TriggerState::TrReady == rhsCurrTr->state() && 0 < rhsCurrTr->quota()) {
                 return JPH::ValidateResult::AcceptContact;
             }
             return JPH::ValidateResult::RejectContact;
@@ -1364,7 +1365,7 @@ public:
             uint32_t trapId = getUDPayload(ud1);
             if (trapConfigFromTileDict.count(trapId)) {
                 const TrapConfigFromTiled* trapConfigFromTiled = trapConfigFromTileDict.at(trapId);
-                if (globalPrimitiveConsts->tpt_conveyor_belt() == trapConfigFromTiled->tpt()) {
+                if (globalPrimitiveConsts->tpts().conveyor_belt() == trapConfigFromTiled->tpt()) {
                     const AABox& trapAABB = inBody1.GetWorldSpaceBounds();
                     const AABox& rhsAABB = inBody2.GetWorldSpaceBounds();
                     bool isConveyorBelow = (trapAABB.mMax.GetY() < rhsAABB.mMax.GetY());
@@ -1380,7 +1381,7 @@ public:
             uint32_t trapId = getUDPayload(ud2);
             if (trapConfigFromTileDict.count(trapId)) {
                 const TrapConfigFromTiled* trapConfigFromTiled = trapConfigFromTileDict.at(trapId);
-                if (globalPrimitiveConsts->tpt_conveyor_belt() == trapConfigFromTiled->tpt()) {
+                if (globalPrimitiveConsts->tpts().conveyor_belt() == trapConfigFromTiled->tpt()) {
                     const AABox& lhsAABB = inBody1.GetWorldSpaceBounds();
                     const AABox& trapAABB = inBody2.GetWorldSpaceBounds();
                     bool isConveyorBelow = (trapAABB.mMax.GetY() < lhsAABB.mMax.GetY());

@@ -2,19 +2,25 @@ using Google.Protobuf;
 using JoltCSharp;
 using jtshared;
 
+PbPrimitives pbPrimitives = new PbPrimitives();
+PrimitiveConsts primitiveConsts = pbPrimitives.getUnderlying();
+
+var configConsts = new ConfigConsts { };
+configConsts.CharacterConfigs.Add(new PbCharacters(primitiveConsts).getUnderlying());
+configConsts.SkillConfigs.Add(new PbSkills(primitiveConsts).getUnderlying());
+configConsts.TriggerConfigs.Add(new PbTriggers(primitiveConsts).getUnderlying());
+configConsts.TrapConfigs.Add(new PbTraps(primitiveConsts).getUnderlying());
+configConsts.PickableConfigs.Add(new PbPickables(primitiveConsts).getUnderlying());
+
 var outputDir = Environment.GetEnvironmentVariable("UNITY_RT_PLUGINS_OUTPATH");
 Console.WriteLine($"outputDir={outputDir}");
 if (null == outputDir) return;
-Console.WriteLine($"DefaultBackendInputBufferSize={PbPrimitives.underlying.DefaultBackendInputBufferSize}");
+
+Console.WriteLine($"DefaultBackendInputBufferSize={pbPrimitives.getUnderlying().DefaultBackendInputBufferSize}");
 using (var output = File.Create(Path.Combine(outputDir, "PrimitiveConsts.pb"))) {
-    PbPrimitives.underlying.WriteTo(output);
+    pbPrimitives.getUnderlying().WriteTo(output);
 }
-var configConsts = new ConfigConsts {};
-configConsts.CharacterConfigs.Add(PbCharacters.underlying);
-configConsts.SkillConfigs.Add(PbSkills.underlying);
-configConsts.TriggerConfigs.Add(PbTriggers.underlying);
-configConsts.TrapConfigs.Add(PbTraps.underlying);
-configConsts.PickableConfigs.Add(PbPickables.underlying);
+
 
 CharacterConfig bladeGirl;
 configConsts.CharacterConfigs.TryGetValue(PbPrimitives.SPECIES_BLADEGIRL, out bladeGirl);
