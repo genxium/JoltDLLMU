@@ -7226,7 +7226,7 @@ void BaseBattle::calcSingleBulletEffDamage(const int currRdfId, const CharacterD
     bool eleWeaknessHit = 0 < (nextVictimCc->ele_weakness() & rhsBlConfig->elemental_attrs());
     bool eleResistanceHit = 0 < (nextVictimCc->ele_resistance() & rhsBlConfig->elemental_attrs());
     if (eleWeaknessHit && !nextVictimCc->def1_defies_ele_weakness()) {
-        outSuccessfulDef1 = false;
+        *outSuccessfulDef1 = false;
     }
 
     if (*outSuccessfulDef1) {
