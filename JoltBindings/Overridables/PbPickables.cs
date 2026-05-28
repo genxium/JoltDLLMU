@@ -1,46 +1,63 @@
 using Google.Protobuf.Collections;
 using jtshared;
-using static JoltCSharp.PbPrimitives;
-using static jtshared.PbBuilders;
+using System;
 
 namespace JoltCSharp {
-    public partial class PbPickables {
+    public class PbPickables {
 
-        public static PickableConfig HpSmall = new PickableConfig {
-            PickupType = PbPrimitives.underlying.PktHpSmall,
-            TakesGravity = true,
-            ActiveAnimName = "HpSmall",
-            Amount1 = 10 
-        };
+        private PrimitiveConsts primitiveConsts;
+        public PbPickables(PrimitiveConsts primitiveConsts) {
+            this.primitiveConsts = primitiveConsts;
+        }
 
-        public static PickableConfig MpSmall = new PickableConfig {
-            PickupType = PbPrimitives.underlying.PktMpSmall,
-            TakesGravity = true,
-            ActiveAnimName = "MpSmall", 
-            Amount1 = 10 
-        };
+        protected MapField<uint, PickableConfig>? underlying;
 
-        public static PickableConfig InvCRefillSmall = new PickableConfig {
-            PickupType = PbPrimitives.underlying.PktInvCRefillSmall,
-            TakesGravity = true,
-            ActiveAnimName = "InvCRefillSmall", 
-            Amount1 = 1 
-        };
+        protected virtual bool lazyInit() {
+            if (null != underlying) return true;
 
-        public static PickableConfig InvDRefillSmall = new PickableConfig {
-            PickupType = PbPrimitives.underlying.PktInvDRefillSmall,
-            TakesGravity = true,
-            ActiveAnimName = "InvDRefillSmall",
-            Amount1 = 1 
-        };
+             PickableConfig HpSmall = new PickableConfig {
+                 PickupType = primitiveConsts.Pkts.HpSmall,
+                 TakesGravity = true,
+                 ActiveAnimName = "HpSmall",
+                 Amount1 = 10
+             };
 
-        public static MapField<uint, PickableConfig> underlying = new MapField<uint, PickableConfig>() { };
+            PickableConfig MpSmall = new PickableConfig {
+                PickupType = primitiveConsts.Pkts.MpSmall,
+                TakesGravity = true,
+                ActiveAnimName = "MpSmall",
+                Amount1 = 10
+            };
 
-        static PbPickables() {
-            underlying.Add(HpSmall.PickupType, HpSmall);
-            underlying.Add(MpSmall.PickupType, MpSmall);
-            underlying.Add(InvCRefillSmall.PickupType, InvCRefillSmall);
-            underlying.Add(InvDRefillSmall.PickupType, InvDRefillSmall);
+            PickableConfig InvCRefillSmall = new PickableConfig {
+                PickupType = primitiveConsts.Pkts.InvCRefillSmall,
+                TakesGravity = true,
+                ActiveAnimName = "InvCRefillSmall",
+                Amount1 = 1
+            };
+
+            PickableConfig InvDRefillSmall = new PickableConfig {
+                PickupType = primitiveConsts.Pkts.InvDRefillSmall,
+                TakesGravity = true,
+                ActiveAnimName = "InvDRefillSmall",
+                Amount1 = 1
+            };
+
+            underlying = new MapField<uint, PickableConfig> {
+                { HpSmall.PickupType, HpSmall },
+                { MpSmall.PickupType, MpSmall },
+                { InvCRefillSmall.PickupType, InvCRefillSmall },
+                { InvDRefillSmall.PickupType, InvDRefillSmall }
+            };
+
+            return true;
+        }
+
+        public MapField<uint, PickableConfig> getUnderlying() {
+            if (!lazyInit() || null == underlying) {
+                throw new ArgumentNullException("Failed to initialize the underlying of PbPickables");
+            }
+            return underlying;
         }
     }
 }

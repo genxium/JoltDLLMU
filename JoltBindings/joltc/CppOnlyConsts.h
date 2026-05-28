@@ -16,6 +16,9 @@ The "const nomenclature" is as follows.
 This is chosen on purpose to align with Jolt Physics engine v5.3.0.
 */
 
+const float ELE_WEAKNESS_DEFAULT_YIELD = 1.4f; 
+const float ELE_RESISTANCE_DEFAULT_YIELD = 0.7f; 
+
 const uint64_t U64_0 = static_cast<uint64_t>(0);
 const uint64_t U64_1 = static_cast<uint64_t>(1);
 const uint64_t U64_15 = static_cast<uint64_t>(15);
@@ -66,7 +69,7 @@ const float  cDefaultBlDensity = 0.1f;
 const float  cDefaultTpHalfLength = cDefaultHalfThickness;
 const float  cDefaultTpDensity = 10000.f;
 const float  cCollisionTolerance = 0.05f;
-const float  cAngleEps = 3.14159265/720.f;
+const float  cAngleEps = 3.14159265f/1440.f;
 const float  cLengthEps = 1e-3;
 const float  cLengthEpsSquared = cLengthEps*cLengthEps;
 const float  cLengthNearlySameEps = cLengthEps;

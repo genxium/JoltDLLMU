@@ -346,19 +346,16 @@ message CharacterConfig {
 
     bool isolated_air_jump_and_dash_quota = 62; // default is false, in most cases Air_jump and Air_dash quotas are deduced together (but default initial quota can be different) 
 
-
     uint32 transform_into_species_id_upon_death = 66;
     bool jump_holding_to_fly = 67;
     bool has_def1 = 68;
-    bool has_def1_atked1_anim = 69;
     int32 default_def1_broken_frames_to_recover = 70;
+
     int32 def1_startup_frames = 74;
     float def1_damage_yield = 75;
-    bool def1_defies_ele_weakness_penetration = 76;
+    bool def1_defies_ele_weakness = 76;
     bool def1_defies_debuff = 77;
     int32 flying_quota_rdf_cnt = 78;
-
-    bool walking_auto_def1 = 79;
 
     IfaceCat Ifc = 80;
     uint32 ele_weakness = 81;
@@ -367,7 +364,7 @@ message CharacterConfig {
 
     bool is_key_ch = 85;
 
-    bool allows_same_team_soft_pushback = 86; // For bricks
+    bool allows_same_team_soft_pushback = 86; 
     int32 gauge_inc_when_exhausted = 87;
 
     bool jumping_instead_of_walking = 88;
@@ -589,7 +586,6 @@ message NpcCharacterDownsync {
     uint32 publishing_to_trigger_id_upon_exhausted = 8; // Configured from UI/Story Editor for awakening
 
     uint32 subscribes_to_trigger_id = 9; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
-    uint32 subscribes_to_trigger_group_id = 10; 
 
     bool captured_by_patrol_cue = 11;
     int32 frames_in_patrol_cue = 12;
@@ -801,12 +797,10 @@ message BulletConfig {
 
     bool use_ch_offset_regardless_of_emission_mh = 89;
 
-    float gauge_inc_reduction_ratio = 93;
+    float gauge_inc_reduction_ratio = 93; // Normally 0 for SuperAtks
     bool mh_inherits_frames_in_bl_state = 94;
-    uint32 guard_breaker_extra_hit_cnt = 95;
+    int32 guard_breaker_extra_hit_cnt = 95;
         
-    bool takes_def1_as_hard_pushback = 96; // [WARNING] Always implies "beam_collision" and must be used together with "beam_collision".
-
     int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
     bool no_vanish_anim_on_hard_pushback = 98;
 
@@ -886,7 +880,7 @@ message TrapConfig {
     int32 dying_anim_rdf_cnt = 3;
     bool blow_up = 4;
 
-    int32 damage = 5;
+    int32 contact_damage = 5;
     int32 hit_stun_frames = 6;
     int32 hit_invinsible_frames = 7;
     bool deactivatable = 8;
@@ -899,12 +893,7 @@ message TrapConfig {
 
     bool use_kinematic = 12;
 
-    bool patrol_cue_requires_full_contain = 15; // For accurate positioning
-
-    bool atk1_upon_triggered = 22;
     uint32 atk1_skill_id = 23;
-    bool is_rotary = 24;
-    bool no_x_flip_rendering = 25;
 
     float default_box_half_size_x = 26;
     float default_box_half_size_y = 27;
@@ -913,6 +902,7 @@ message TrapConfig {
     int32 default_cooldown_rdf_count = 30;
 
     bool use_obstable_interface_body = 31;
+    bool no_x_flip_rendering = 32;
 
     string name = 1024;
 }
@@ -962,14 +952,15 @@ message TrapConfigFromTiled {
     BarrierColliderAttr barrier_attr = 25;  
     OverrideObsIfaceBodyOption ooibo = 26;
 
+    uint32 subscribes_to_trigger_id = 27;
+
     // Used for constraint limit assignment
-    float limit_1 = 128;  
-    float limit_2 = 129;  
-    float limit_3 = 130;  
-    float limit_4 = 131;  
+    optional float limit_1 = 128;  
+    optional float limit_2 = 129;  
+    optional float limit_3 = 130;  
+    optional float limit_4 = 131;  
 
     bool init_not_moving = 512; // thus only moves or rotates after triggered
-
 }
 
 message BarrierColliderAttr {
@@ -990,9 +981,6 @@ message Trap {
     TrapState trap_state = 4;
     int32 frames_in_trap_state = 5;
     
-    uint32 subscribes_to_trigger_id = 11;
-    uint32 subscribes_to_trigger_group_id = 12;
-
     float x = 13; 
     float y = 14;
     float z = 15;
@@ -1219,7 +1207,6 @@ message BuffConfig {
     uint32 xform_ch_species_id = 13;
     bool repel_soft_pushback = 14;
     bool omit_gravity = 15;
-    bool auto_def1 = 16;
 
     // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
     repeated uint32 associated_debuffs = 17;   
@@ -1254,7 +1241,6 @@ enum InventorySlotStockType {
     QuotaIv = 4;
     TimedMagazineIv = 5; // Has certain quotas before required to cooldown
     GaugedMagazineIv = 6;
-    GaugedTimedMagazineIv = 7; // NOT IMPLEMENTED!  
 }
 
 message InventorySlotConfig {
@@ -1546,14 +1532,79 @@ message ChSpeciesConsts {
     uint32 blacksaber1 = 3;
     uint32 blackshooter1 = 4;
     uint32 blackthrower1 = 5;
-    uint32 maintower1 = 6;
+    uint32 headquarter1 = 6;
 
     uint32 blacksaber2 = 7;
     uint32 blackshooter2 = 8;
 
-    uint32 none_ch = 2048;
+    uint32 shieldguard1 = 9;
+    uint32 shieldguard2 = 10;
+    uint32 riderguard1 = 11;
+
+    uint32 none = 2048;
     uint32 blacksaber_test_no_vision = 2049;
     uint32 blacksaber_test_with_vision = 2050;
+}
+
+message TrapTypes {
+    uint32 sliding_platform = 1; 
+    uint32 rotating_platform = 2; 
+    uint32 conveyor_belt = 3; 
+    uint32 falling_rock = 4; 
+    uint32 spring = 5; 
+    uint32 brick = 6; 
+
+    uint32 none = 2048;
+}
+
+message TriggerTypes {
+    uint32 victory = 1; 
+
+    uint32 by_init_delay = 2;
+    uint32 by_movement = 3;
+    uint32 by_attack = 4;
+    uint32 by_pattern_f = 5;
+
+    uint32 indi_wave_npc_spawner = 6;
+    uint32 indi_wave_pickable_spawner = 7;
+
+    uint32 sync_wave_group = 8;
+
+    uint32 save_point_only = 9;
+    uint32 story_point_only = 10;
+    uint32 save_and_story_point = 11;
+
+    uint32 none = 2048;
+}
+
+message PickableTypes {
+    uint32 hp_small = 1;
+    uint32 mp_small = 2;
+    uint32 inv_c_refill_small = 3;
+    uint32 inv_d_refill_small = 4;
+    uint32 vehicle_sedan_1 = 5;
+
+    uint32 none = 2048;
+}
+
+message AtkEleTypes {
+    uint32 fire = 1;
+    uint32 water = 2;
+    uint32 thunder = 3;
+    uint32 rock = 4;
+    uint32 wind = 5;
+    uint32 ice = 6;
+
+    uint32 none = 2048;
+}
+
+message DebuffSpecies {
+    uint32 short_frozen = 1;
+    uint32 short_paralyzed = 2;
+    uint32 long_frozen = 3;
+    uint32 long_paralyzed = 4;
+
+    uint32 none = 2048;
 }
 
 message PrimitiveConsts {
@@ -1673,7 +1724,7 @@ message PrimitiveConsts {
 
     uint32 no_skill = 90;
     int32 no_skill_hit = 91;
-    uint32 species_none_ch = 92;
+
     uint32 upsync_st_ifd_id_tolerance = 93;
     float no_lock_vel = 94;
     float crouch_forcing_ceiling_dot_threshold = 95; 
@@ -1743,50 +1794,11 @@ message PrimitiveConsts {
 
     int32 pattern_f = 146;
 
-    uint32 ele_none = 147;
-    uint32 ele_fire = 148;
-    uint32 ele_water = 149;
-    uint32 ele_thunder = 150;
-    uint32 ele_rock = 151;
-    uint32 ele_wind = 152;
-    uint32 ele_ice = 153;
-
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;
 
     int32 starting_render_frame_id = 156;
     int32 starting_input_frame_id = 157;
-
-    uint32 trt_none = 158; 
-    uint32 trt_victory = 159; 
-
-    uint32 trt_by_init_delay = 160;
-    uint32 trt_by_movement = 161;
-    uint32 trt_by_attack = 162;
-    uint32 trt_by_pattern_f = 163;
-
-    uint32 trt_indi_wave_npc_spawner = 164;
-    uint32 trt_indi_wave_pickable_spawner = 165;
-
-    uint32 trt_sync_wave_group = 166;
-
-    uint32 trt_save_point_only = 167;
-    uint32 trt_story_point_only = 168;
-    uint32 trt_save_and_story_point = 169;
-
-    uint32 tpt_none = 256; 
-    uint32 tpt_sliding_platform = 257; 
-    uint32 tpt_rotating_platform = 258; 
-    uint32 tpt_conveyor_belt = 259; 
-    uint32 tpt_falling_rock = 260; 
-    uint32 tpt_spring = 261; 
-
-    uint32 pkt_none = 512;
-    uint32 pkt_hp_small = 513;
-    uint32 pkt_mp_small = 514;
-    uint32 pkt_inv_c_refill_small = 515;
-    uint32 pkt_inv_d_refill_small = 516;
-    uint32 pkt_vehicle_sedan_1 = 517;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;
@@ -1797,6 +1809,11 @@ message PrimitiveConsts {
     int32 default_frames_to_continue_combo = 1030;
 
     ChSpeciesConsts ch_species = 2048;
+    TrapTypes tpts = 2049;
+    TriggerTypes trts = 2050;
+    PickableTypes pkts = 2051;
+    AtkEleTypes elets = 2052;
+    DebuffSpecies debuff_species = 2053;
 }
 
 message AimingRay {

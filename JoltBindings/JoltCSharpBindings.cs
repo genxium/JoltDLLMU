@@ -210,7 +210,7 @@ namespace JoltCSharp {
         public static NpcCharacterDownsync NewPreallocatedNpcCharacterDownsync(int buffCapacity, int debuffCapacity, int inventoryCapacity, int bulletImmuneRecordCapacity, PrimitiveConsts primitives) {
             var single = new NpcCharacterDownsync();
             single.Id = primitives.TerminatingCharacterId;
-            single.ExhaustedToDropPkt = primitives.PktNone;
+            single.ExhaustedToDropPkt = primitives.Pkts.None;
             single.Chd = NewPreallocatedCharacterDownsync(buffCapacity, debuffCapacity, inventoryCapacity, bulletImmuneRecordCapacity, primitives);
             return single;
         }
@@ -504,12 +504,11 @@ namespace JoltCSharp {
             }
         }
 
-        public static (Skill?, BulletConfig?) FindBulletConfig(uint skillId, int skillHit) {
-            if (PbPrimitives.underlying.NoSkill == skillId) return (null, null);
-            if (PbPrimitives.underlying.NoSkillHit == skillHit) return (null, null);
-            var skillConfigs = PbSkills.underlying;
-            if (!skillConfigs.ContainsKey(skillId)) return (null, null);
-            var outSkill = skillConfigs[skillId];
+        public static (Skill?, BulletConfig?) FindBulletConfig(uint skillId, int skillHit, PrimitiveConsts primitives, PbSkills skills) {
+            if (primitives.NoSkill == skillId) return (null, null);
+            if (primitives.NoSkillHit == skillHit) return (null, null);
+            if (!skills.getUnderlying().ContainsKey(skillId)) return (null, null);
+            var outSkill = skills.getUnderlying()[skillId];
             if (null == outSkill.Hits || skillHit > outSkill.Hits.Count) {
                 return (null, null);
             }

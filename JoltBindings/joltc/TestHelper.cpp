@@ -27,7 +27,7 @@ void TestHelper::ProvisionPreallocatedCharacterDownsync(CharacterDownsync* singl
         Buff* singleBuff = single->add_buff_list();
         singleBuff->set_species_id(globalPrimitiveConsts->terminating_buff_species_id());
         singleBuff->set_originated_render_frame_id(globalPrimitiveConsts->terminating_render_frame_id());
-        singleBuff->set_orig_ch_species_id(globalPrimitiveConsts->species_none_ch());
+        singleBuff->set_orig_ch_species_id(globalPrimitiveConsts->ch_species().none());
     }
 
     for (int i = 0; i < debuffCapacity; i++) {
