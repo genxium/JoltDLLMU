@@ -212,7 +212,7 @@ inline T* RingBufferMt<T>::DryPut() {
 
     int oldDirtyPuttingCnt = cntGuard.getCnt1Old();
     if (oldDirtyPuttingCnt >= N) {
-        // [Cnt-protection] The worst case is that N threads are concurrently calling "DryPut()", and all switched after calling the above "Cnt.fetch_add(1) & Ed.fetch_add(1)" statements, then "holderIdx" should be capped by "2*N" in "the last thread" to AVOID evicting a "to-be-filled holder of the first thread" during this concurrency sprint. 
+        // [Cnt-protection] When the RingBuffer is already full, N threads are concurrently calling "DryPut()" yet all switched after calling the above "dirtyPuttingCnt.fetch_add(1) & Ed.fetch_add(1)" statements -- in such worst-case scenario, "holderIdx" should be capped by "holderIdx < 2*N" in "the last thread" to AVOID evicting a "to-be-filled holder of the first thread" during this concurrency sprint. 
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "[TOO MANY DIRTY] thId=" << std::this_thread::get_id() << ", oldDirtyPuttingCnt= " << oldDirtyPuttingCnt << ", N=" << this->N;

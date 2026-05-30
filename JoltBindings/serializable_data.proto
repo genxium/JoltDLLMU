@@ -1265,7 +1265,15 @@ message BattleEquipment {
 }
 
 message PlayerSettings {
-    int32 sound_volume = 1;
+    int32 sfx_volume = 1;
+    int32 bgm_volume = 2;
+
+    uint64 btn_a_binding = 3;
+    uint64 btn_b_binding = 4;
+    uint64 btn_c_binding = 5;
+    uint64 btn_d_binding = 6;
+    uint64 btn_e_binding = 7;
+    uint64 btn_f_binding = 8;
 }
 
 message PlayerRegionProgress {
