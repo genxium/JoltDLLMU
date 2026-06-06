@@ -1,41 +1,12 @@
-#[[
-
-Assuming that the static-lib version of "protoc" is installed by either 
-- "vcpkg install protobuf:x64-windows" (I use protobuf:x64-windows@6.33.4 for arena-allocation), or
-- cmake build from source.
-
-As an example, here're my ENV vars for [protobuf:x64-windows@6.33.4](https://vcpkg.io/en/package/protobuf.html) installed by vcpkg
-- VCPKG_INSTALLED = C:/Users/yflu/vcpkg/installed/x64-windows
-    - containing "protobuf-config.cmake" for `dynamic linking`, and the whole vcpkg package is built by `Dynamic CRT`.
-- VCPKG_INSTALLED_STATIC = C:/Users/yflu/vcpkg/installed/x64-windows-static
-    - containing "protobuf-config.cmake" for `static linking/bundling`, and the whole vcpkg package is built by `Static CRT`.
-
-]]
-
 if (MSVC)
-    if (USE_STATIC_PB)
-        if(NOT DEFINED ENV{VCPKG_INSTALLED_STATIC})
-            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_STATIC is not set!")
-        endif()
-        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED_STATIC})
-    else ()
-        if(NOT DEFINED ENV{VCPKG_INSTALLED})
-            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
-        endif()
-        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED})
-    endif ()
-    set(Protobuf_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/protobuf)
-    set(Protobuf_LIBRARY_PATH ${EFFECTIVE_VCPKG_INSTALLED}/lib)
-    set(Protobuf_INCLUDE_DIR ${EFFECTIVE_VCPKG_INSTALLED}/include)
-    set(Protobuf_PROTOC_EXECUTABLE ${EFFECTIVE_VCPKG_INSTALLED}/tools/protobuf/protoc)
-    set(absl_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/absl)
-    set(abseil_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/abseil)
-    set(utf8_range_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/utf8_range)
-    if(BUILD_TYPE STREQUAL "Debug")
-        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/debug/bin)
-    else()
-        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/bin)
-    endif()
+    # [WARNING] In this case we ALWAYS have "USE_STATIC_PB=true".
+    set(Protobuf_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/protobuf)
+    set(Protobuf_LIBRARY_PATH $ENV{PB_INSTALL_DIR}/lib)
+    set(Protobuf_INCLUDE_DIR $ENV{PB_INSTALL_DIR}/include)
+    set(Protobuf_PROTOC_EXECUTABLE $ENV{PB_INSTALL_DIR}/bin/protoc)
+    set(absl_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
+    set(abseil_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
+    set(utf8_range_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/utf8_range)
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 

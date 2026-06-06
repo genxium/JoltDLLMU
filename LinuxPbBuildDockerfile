@@ -1,0 +1,28 @@
+FROM joltc-cmake-base:latest 
+
+# For Linux builds, the default "BUILD_TYPE" is set to "Release" for convenience.
+ARG BUILD_TYPE="Release" 
+
+# For all builds, the default "SHARED_LIBS_SWITCH" is set to "OFF", see corresponding section(s) in `README.md` for details.
+ARG SHARED_LIBS_SWITCH="OFF" 
+ARG POS_INDEP_SWITCH="ON" # ALWAYS being the opposite to "SHARED_LIBS_SWITCH". 
+
+ADD https://github.com/protocolbuffers/protobuf/archive/refs/tags/v31.1.tar.gz /tmp/protobuf-31.1.tar.gz
+WORKDIR /tmp
+RUN tar -xzvf protobuf-31.1.tar.gz
+WORKDIR /tmp/protobuf-31.1
+# The default search path of "FindProtobuf(...)" is "/usr" 
+RUN mkdir build && cd build && \
+        cmake -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -Dprotobuf_BUILD_TESTS=OFF \
+        -Dprotobuf_BUILD_SHARED_LIBS=${SHARED_LIBS_SWITCH} \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=${POS_INDEP_SWITCH} \
+        -DCMAKE_INSTALL_PREFIX=/usr .. && \
+        cmake --build . -j 8 && \
+        cmake --install . -j 8 
+
+RUN rm -rf /tmp/protobuf-31.1 
+RUN rm -rf /tmp/protobuf-31.1.tar.gz 
+
+WORKDIR /app

@@ -137,39 +137,29 @@ if (USE_STATIC_PB)
         RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
     )
 else()
-    if (MSVC)
-        install(TARGETS ${TARGET_NAME} 
-            EXPORT ${TARGET_NAME}
-            ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}   
-            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
-            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
-        )
+    install(TARGETS ${TARGET_NAME} 
+        EXPORT ${TARGET_NAME}
+        RUNTIME_DEPENDENCY_SET joltc_rt_deps 
+        ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}  
+        LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+        RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
+    ) 
 
-        message(STATUS "Installing MSVC abseil dll from ${absl_DLL_DIR}")
-        install(DIRECTORY ${absl_DLL_DIR}/
+    #############################################################   
+    # [REMINDER] Don't forget to verify that ALL required "Google Abseil dynamic libraries" are copied by 
+    #
+    # ```
+    # ldd ${OVERRIDE_INSTALL_DESTINATION}/libjoltc.so | grep libabsl --color.
+    # ```
+    #############################################################   
 
-            DESTINATION ${OVERRIDE_INSTALL_DESTINATION}
-
-            FILES_MATCHING 
-            PATTERN "*.dll"
-        )
-    else ()
-        install(TARGETS ${TARGET_NAME} 
-            EXPORT ${TARGET_NAME}
-            RUNTIME_DEPENDENCY_SET joltc_rt_deps 
-            ARCHIVE DESTINATION ${OVERRIDE_INSTALL_DESTINATION}  
-            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
-            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} 
-        ) 
-
-        # [REMINDER] Don't forget to verify that ALL required "Google Abseil dynamic libraries" are copied by "ldd ${OVERRIDE_INSTALL_DESTINATION}/libjoltc.so | grep libabsl --color".
-        install(RUNTIME_DEPENDENCY_SET joltc_rt_deps 
-            POST_INCLUDE_REGEXES "(.*)libabsl(.*)"
-            POST_EXCLUDE_REGEXES "(.*)ld-(.*)" "(.*)libc(.*)" "(.*)libgcc(.*)" "(.*)libm(.*)" "(.*)librt(.*)" "(.*)libstdc(.*)" "(.*)libpthread(.*)" "(.*)linux-vdso(.*)"  
-            LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies 
-            RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
-        ) 
-    endif()
+    message(STATUS "Copying indirect protobuf runtime deps, e.g. abseil")
+    install(RUNTIME_DEPENDENCY_SET joltc_rt_deps 
+        POST_INCLUDE_REGEXES "(.*)libabsl(.*)"
+        POST_EXCLUDE_REGEXES "(.*)ld-(.*)" "(.*)libc(.*)" "(.*)libgcc(.*)" "(.*)libm(.*)" "(.*)librt(.*)" "(.*)libstdc(.*)" "(.*)libpthread(.*)" "(.*)linux-vdso(.*)"  
+        LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies 
+        RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+    ) 
 
     message(STATUS "Copying direct protobuf runtime deps")
     install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  

@@ -77,29 +77,14 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake", kindly note that this test project is NOT shipped, so there's no need to copy any Google Abseil dynamic libraries even if (!USE_STATIC_PB).
 if (MSVC)
-    if (USE_STATIC_PB)
-        if(NOT DEFINED ENV{VCPKG_INSTALLED_STATIC})
-            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED_STATIC is not set!")
-        endif()
-        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED_STATIC})
-    else ()
-        if(NOT DEFINED ENV{VCPKG_INSTALLED})
-            message(FATAL_ERROR "REQUIRED environment variable VCPKG_INSTALLED is not set!")
-        endif()
-        set(EFFECTIVE_VCPKG_INSTALLED $ENV{VCPKG_INSTALLED})
-    endif ()
-    set(Protobuf_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/protobuf)
-    set(Protobuf_LIBRARY_PATH ${EFFECTIVE_VCPKG_INSTALLED}/lib)
-    set(Protobuf_INCLUDE_DIR ${EFFECTIVE_VCPKG_INSTALLED}/include)
-    set(Protobuf_PROTOC_EXECUTABLE ${EFFECTIVE_VCPKG_INSTALLED}/tools/protobuf/protoc)
-    set(absl_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/absl)
-    set(abseil_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/abseil)
-    set(utf8_range_DIR ${EFFECTIVE_VCPKG_INSTALLED}/share/utf8_range)
-    if(BUILD_TYPE STREQUAL "Debug")
-        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/debug/bin)
-    else()
-        set(absl_DLL_DIR ${EFFECTIVE_VCPKG_INSTALLED}/bin)
-    endif()
+    # [WARNING] In this case we ALWAYS have "USE_STATIC_PB=true".
+    set(Protobuf_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/protobuf)
+    set(Protobuf_LIBRARY_PATH $ENV{PB_INSTALL_DIR}/lib)
+    set(Protobuf_INCLUDE_DIR $ENV{PB_INSTALL_DIR}/include)
+    set(Protobuf_PROTOC_EXECUTABLE $ENV{PB_INSTALL_DIR}/bin/protoc)
+    set(absl_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
+    set(abseil_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
+    set(utf8_range_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/utf8_range)
 endif()
 find_package(Protobuf CONFIG REQUIRED)
 
@@ -154,18 +139,6 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
-
-        if (MSVC) 
-            message(STATUS "LibExportImportCppTest installing MSVC abseil dll from ${absl_DLL_DIR}")
-            install(DIRECTORY  
-                 ${absl_DLL_DIR}/
-                
-                DESTINATION ${_rt_deps_destination} 
-                
-                FILES_MATCHING 
-                PATTERN "abseil*"
-            )
-        endif()
     endif()
 
     install(FILES ${PREBUILT_LIB_PATH}/PrimitiveConsts.pb DESTINATION ${_rt_deps_destination} OPTIONAL)
