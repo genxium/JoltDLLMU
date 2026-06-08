@@ -1,4 +1,4 @@
-As I live in China and use Docker Desktop on Windows 11, so I edited `$env:USERPROFILE/.docker/daemon.js` and `$env:USERPROFILE/.docker/windows-daemon.js` to add some registries.
+As I live in China and use Docker Desktop on Windows 11, so I edited `$env:USERPROFILE/.docker/daemon.json` and `$env:USERPROFILE/.docker/windows-daemon.json` to add some registries.
 ```
 {
     ...,
