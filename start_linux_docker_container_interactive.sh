@@ -5,16 +5,9 @@ if [ $# -le 1 ]; then
   exit 1
 fi
 
-BUILD_TYPE_LOWERCASE=
 if [ "Debug" != $1 ] && [ "Release" != $1 ]; then 
   echo "Usage/2: $0 <Debug|Release> [Linux|LinuxDynamicPb]"
   exit 1
-fi
-
-if [[ "Debug" == $1 ]]; then
-    BUILD_TYPE_LOWERCASE="debug"
-else
-    BUILD_TYPE_LOWERCASE="release"
 fi
 
 if [ ! -z $2 ] && [ "Linux" != $2 ] && [ "LinuxDynamicPb" != $2 ]; then 
@@ -31,11 +24,11 @@ pos_indep_switch=
 if [[ "Linux" == $2 ]]; then
     shared_lib_switch=OFF
     pos_indep_switch=ON
-    reusing_id=joltc-linux-builder-$BUILD_TYPE_LOWERCASE
+    reusing_id=joltc-linux-builder
 elif [[ "LinuxDynamicPb" == $2 ]]; then
     shared_lib_switch=ON
     pos_indep_switch=OFF
-    reusing_id=joltc-linux-builder-dynamic-pb-$BUILD_TYPE_LOWERCASE
+    reusing_id=joltc-linux-builder-dynamic-pb
 else 
     echo "Usage/4: $0 <Debug|Release> [Linux|LinuxDynamicPb]"
     exit 1

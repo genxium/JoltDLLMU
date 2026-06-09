@@ -76,16 +76,15 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 )
 
 # Reference "${JOLT_BINDINGS_ROOT}/PbClasses.cmake", kindly note that this test project is NOT shipped, so there's no need to copy any Google Abseil dynamic libraries even if (!USE_STATIC_PB).
-if (MSVC)
-    # [WARNING] In this case we ALWAYS have "USE_STATIC_PB=true".
-    set(Protobuf_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/protobuf)
-    set(Protobuf_LIBRARY_PATH $ENV{PB_INSTALL_DIR}/lib)
-    set(Protobuf_INCLUDE_DIR $ENV{PB_INSTALL_DIR}/include)
-    set(Protobuf_PROTOC_EXECUTABLE $ENV{PB_INSTALL_DIR}/bin/protoc)
-    set(absl_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
-    set(abseil_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
-    set(utf8_range_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/utf8_range)
-endif()
+set(absl_DIR $ENV{ABSEIL_INSTALL_DIR}/lib/cmake/absl)
+
+set(utf8_range_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/utf8_range)
+find_package(utf8_range CONFIG REQUIRED)
+
+set(Protobuf_DIR $ENV{PB_INSTALL_DIR}/lib/cmake/protobuf)
+set(Protobuf_LIBRARY_PATH $ENV{PB_INSTALL_DIR}/lib)
+set(Protobuf_INCLUDE_DIR $ENV{PB_INSTALL_DIR}/include)
+set(Protobuf_PROTOC_EXECUTABLE $ENV{PB_INSTALL_DIR}/bin/protoc)
 find_package(Protobuf CONFIG REQUIRED)
 
 if(USE_STATIC_PB)
@@ -94,18 +93,25 @@ if(USE_STATIC_PB)
     )
 else()
     target_link_libraries(${TARGET_NAME} PUBLIC 
+            utf8_range::utf8_validity
+    )
+    target_link_libraries(${TARGET_NAME} PUBLIC 
             protobuf::libprotobuf
     )
 endif()
 
-if (MSVC)
+set(ORIG_EXE_RPATH ${TARGET_NAME} INSTALL_RPATH)
+set(NEW_EXE_RPATH "$ORIGIN")
+
+if (ORIG_EXE_RPATH)
+    set(EFF_EXE_RPATH "${ORIG_EXE_RPATH};${NEW_EXE_RPATH}")
 else()
-    # Tells the linker to add the directory where the executable resides ($ORIGIN) to its search path for shared libraries.
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN'")
+    set(EFF_EXE_RPATH "${NEW_EXE_RPATH}")
 endif()
 
-# Set the debug/non-debug build flags
-target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
+set_target_properties(${TARGET_NAME} PROPERTIES
+    INSTALL_RPATH ${EFF_EXE_RPATH} 
+) # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify
 
 # ---------------------------- Installation ----------------------------
 set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
@@ -136,6 +142,9 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
     
     if (USE_STATIC_PB) 
     else()
+        install(IMPORTED_RUNTIME_ARTIFACTS utf8_range::utf8_validity  
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )

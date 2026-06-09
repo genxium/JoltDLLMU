@@ -36,8 +36,6 @@ set(PHYSICS_REPO_ROOT ${JOLT_BINDINGS_ROOT}/../joltphysics_v5.3.0)
 set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
 
 set(TARGET_NAME joltc)
-SET(CMAKE_INSTALL_RPATH "$ORIGIN") # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify 
-
 SET(BUILD_TYPE $ENV{BUILD_TYPE})
 message(STATUS "JoltBindings/CMakeLists.txt, build type=${BUILD_TYPE}")
 
@@ -48,6 +46,20 @@ set(PB_GEN_ROOT ${OVERRIDE_BINARY_DESTINATION}/pb_gen)
 include(${JOLT_BINDINGS_ROOT}/JoltBindingsBeforeTarget.cmake)
 
 add_library(${TARGET_NAME} SHARED ${JOLTC_SRC_FILES})
+
+set(ORIG_JOLTC_RPATH ${TARGET_NAME} INSTALL_RPATH)
+set(NEW_JOLTC_RPATH "$ORIGIN")
+
+if (ORIG_JOLTC_RPATH)
+    set(EFF_JOLTC_RPATH "${ORIG_JOLTC_RPATH};${NEW_JOLTC_RPATH}")
+else()
+    set(EFF_JOLTC_RPATH "${NEW_JOLTC_RPATH}")
+endif()
+
+set_target_properties(${TARGET_NAME} PROPERTIES
+    INSTALL_RPATH ${EFF_JOLTC_RPATH} 
+) # Use "objdump -x /path/to/file | grep 'R.*PATH'" to verify
+
 
 if (MSVC)
 else ()
@@ -81,31 +93,32 @@ if(MSVC)
 
     target_compile_definitions(${TARGET_NAME} PRIVATE joltc_EXPORTS) # [IMPORTANT] Moreover, ${TARGET_NAME} should toggle on "joltc_EXPORTS", a weird flag used in the autogen "joltc_export.h" to enable "__declspec(dllexport)" in Windows.
     target_compile_options(${TARGET_NAME} PRIVATE /FI$<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
-    # Expand inline functions for easier debugging.
-    target_compile_options(${TARGET_NAME} PUBLIC
-        $<$<CONFIG:Debug>: /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
-    )
 else()
     # [IMPORTANT] No need to toggle on the weird flag "joltc_EXPORTS" for Linux build.
     target_compile_options(${TARGET_NAME} PRIVATE -include $<BUILD_INTERFACE:${PB_GEN_ROOT}>/joltc_export.h)
-    target_compile_options(${TARGET_NAME} PUBLIC
-        $<$<CONFIG:Debug>: -include $<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h>
-    )
 endif()
     
 #target_compile_definitions(${TARGET_NAME} PUBLIC USE_RBMT)
 
 # Set the debug/non-debug build flags
-target_compile_definitions(${TARGET_NAME} PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 if(BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Turning on JPH_ASSERT for BUILD_TYPE=Debug")
     if(MSVC)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Z7") # See https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
+        # Expand inline functions for easier debugging.
+        target_compile_options(${TARGET_NAME} PUBLIC
+            /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h
+        )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Z7") # See https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
     else()
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
     endif()
 else()
     message(STATUS "Turning off JPH_ASSERT for BUILD_TYPE=Release")
+    if(MSVC)
+        # Set more compiler options
+    else()
+        # Set more compiler options
+    endif()
     target_compile_definitions(${TARGET_NAME} PUBLIC JPH_NO_DEBUG)
     target_compile_definitions(${TARGET_NAME} PUBLIC NDEBUG)
 endif()
@@ -153,6 +166,16 @@ else()
     # ```
     #############################################################   
 
+    message(STATUS "Copying direct utf8_range runtime deps")
+    install(IMPORTED_RUNTIME_ARTIFACTS utf8_range::utf8_validity  
+        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+    )
+
+    message(STATUS "Copying direct protobuf runtime deps")
+    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
+        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
+    )
+
     message(STATUS "Copying indirect protobuf runtime deps, e.g. abseil")
     install(RUNTIME_DEPENDENCY_SET joltc_rt_deps 
         POST_INCLUDE_REGEXES "(.*)libabsl(.*)"
@@ -160,11 +183,6 @@ else()
         LIBRARY DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies 
         RUNTIME DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
     ) 
-
-    message(STATUS "Copying direct protobuf runtime deps")
-    install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
-        DESTINATION ${OVERRIDE_INSTALL_DESTINATION} COMPONENT Dependencies
-    )
 endif()
 
 # Regular headers below

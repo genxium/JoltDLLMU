@@ -46,12 +46,12 @@ if [ ! -z $2 ]; then
         if [[ "Linux" == $2 ]]; then
             shared_lib_switch=OFF
             pos_indep_switch=ON
-            reusing_id=joltc-linux-builder-$BUILD_TYPE_LOWERCASE
+            reusing_id=joltc-linux-builder
             use_static_pb_value=true
         elif [[ "LinuxDynamicPb" == $2 ]]; then
             shared_lib_switch=ON
             pos_indep_switch=OFF
-            reusing_id=joltc-linux-builder-dynamic-pb-$BUILD_TYPE_LOWERCASE
+            reusing_id=joltc-linux-builder-dynamic-pb
             use_static_pb_value=false
         else 
             use_static_pb_value=true
