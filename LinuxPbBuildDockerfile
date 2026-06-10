@@ -1,28 +1,69 @@
 FROM joltc-cmake-base:latest 
 
-# For Linux builds, the default "BUILD_TYPE" is set to "Release" for convenience.
-ARG BUILD_TYPE="Release" 
-
 # For all builds, the default "SHARED_LIBS_SWITCH" is set to "OFF", see corresponding section(s) in `README.md` for details.
 ARG SHARED_LIBS_SWITCH="OFF" 
 ARG POS_INDEP_SWITCH="ON" # ALWAYS being the opposite to "SHARED_LIBS_SWITCH". 
 
-ADD https://github.com/protocolbuffers/protobuf/archive/refs/tags/v31.1.tar.gz /tmp/protobuf-31.1.tar.gz
+ARG ABSEIL_VERSION="20250127.0"
+ARG PROTOBUF_VERSION="31.1"
+
+####################################################################################################################################
+#   On Linux/GCC, ALWAYS build "Google Abseil" statically to simplify  
+# linking phase for "libjoltc.so" if "SHARED_LIBS_SWITCH=ON".
+####################################################################################################################################
+
+ADD https://github.com/abseil/abseil-cpp/releases/download/${ABSEIL_VERSION}/abseil-cpp-${ABSEIL_VERSION}.tar.gz /tmp/abseil-cpp-${ABSEIL_VERSION}.tar.gz
 WORKDIR /tmp
-RUN tar -xzvf protobuf-31.1.tar.gz
-WORKDIR /tmp/protobuf-31.1
-# The default search path of "FindProtobuf(...)" is "/usr" 
-RUN mkdir build && cd build && \
+RUN tar -xzvf abseil-cpp-${ABSEIL_VERSION}.tar.gz
+WORKDIR /tmp/abseil-cpp-${ABSEIL_VERSION}
+RUN for bt in Debug Release; do \
+        # This long "configuration & build" command is intentionally written to fit both "single-configuration" and "multi-configuration" build systems, within each some parameters might be ignored.
+        mkdir -p /tmp/abseil-cpp-${ABSEIL_VERSION}/build-"${bt}" && cd /tmp/abseil-cpp-${ABSEIL_VERSION}/build-"${bt}" && \
         cmake -DCMAKE_CXX_STANDARD=17 \
-        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release;MinSizeRel;RelWithDebInfo" \
+        -DCMAKE_BUILD_TYPE="${bt}" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+        -DABSL_ENABLE_INSTALL=ON \
+        -DABSL_BUILD_MONOLITHIC_SHARED_LIBS=OFF \
+        -DABSL_BUILD_TESTING=OFF \
+        -DABSL_BUILD_TEST_HELPERS=OFF \
+        -DABSL_USE_GOOGLETEST_HEAD=OFF \
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_INSTALL_PREFIX=/usr/abseil-"${ABSEIL_VERSION}"-"${bt}" .. && \
+        cmake --build . --config "${bt}" --target install --parallel 10 \
+    ; done
+
+####################################################################################################################################
+#   On Linux/GCC, ALWAYS set "-Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON" to bundle all "libabsl_xxx.a" and "libutf8_xxx.a" libraries 
+# into "libprotobuf.so" if "SHARED_LIBS_SWITCH=ON".
+####################################################################################################################################
+
+ADD https://github.com/protocolbuffers/protobuf/archive/refs/tags/v${PROTOBUF_VERSION}.tar.gz /tmp/protobuf-${PROTOBUF_VERSION}.tar.gz
+WORKDIR /tmp
+RUN tar -xzvf protobuf-${PROTOBUF_VERSION}.tar.gz
+WORKDIR /tmp/protobuf-${PROTOBUF_VERSION}
+RUN for bt in Debug Release; do \
+        mkdir /tmp/protobuf-${PROTOBUF_VERSION}/build-"${bt}" && cd /tmp/protobuf-${PROTOBUF_VERSION}/build-"${bt}" && \
+        cmake -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release;MinSizeRel;RelWithDebInfo" \
+        -Dabsl_DIR=/usr/abseil-"${ABSEIL_VERSION}"-"${bt}"/lib/cmake/absl \
+        -DCMAKE_BUILD_TYPE="${bt}" \
         -Dprotobuf_BUILD_TESTS=OFF \
         -Dprotobuf_BUILD_SHARED_LIBS=${SHARED_LIBS_SWITCH} \
         -DCMAKE_POSITION_INDEPENDENT_CODE=${POS_INDEP_SWITCH} \
-        -DCMAKE_INSTALL_PREFIX=/usr .. && \
-        cmake --build . -j 8 && \
-        cmake --install . -j 8 
+        -DCMAKE_INSTALL_PREFIX=/usr/protobuf-"${PROTOBUF_VERSION}"-"${bt}" .. && \
+        cmake --build . --config "${bt}" --target install --parallel 10 \
+    ; done
 
-RUN rm -rf /tmp/protobuf-31.1 
-RUN rm -rf /tmp/protobuf-31.1.tar.gz 
+####################################################################################################################################
+
+RUN rm -rf /tmp/abseil-cpp-${ABSEIL_VERSION} 
+RUN rm -rf /tmp/abseil-cpp-{ABSEIL_VERSION}.tar.gz 
+RUN rm -rf /tmp/protobuf-${PROTOBUF_VERSION} 
+RUN rm -rf /tmp/protobuf-${PROTOBUF_VERSION}.tar.gz 
+
+ENV PROTOBUF_VERSION=${PROTOBUF_VERSION}
+ENV ABSEIL_VERSION=${ABSEIL_VERSION}
 
 WORKDIR /app

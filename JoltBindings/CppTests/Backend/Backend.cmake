@@ -17,6 +17,9 @@ if(USE_STATIC_PB)
         protobuf::libprotobuf
     )
 else()
+    target_link_libraries(${TARGET_NAME} PUBLIC 
+        utf8_range::utf8_validity
+    )
     target_link_libraries(BackendTest PUBLIC 
         protobuf::libprotobuf
     )
@@ -53,6 +56,9 @@ foreach (_rt_deps_destination ${MY_RUNTIME_DEPS_DESTINATIONS})
 
     if (USE_STATIC_PB) 
     else()
+        install(IMPORTED_RUNTIME_ARTIFACTS utf8_range::utf8_validity  
+            DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
+        )
         install(IMPORTED_RUNTIME_ARTIFACTS protobuf::libprotobuf  
             DESTINATION ${_rt_deps_destination} COMPONENT Dependencies
         )
