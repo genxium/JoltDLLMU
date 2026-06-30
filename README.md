@@ -66,10 +66,16 @@ Please make sure that you enabled `Steam Networking` in `Steam/Settings/In Game`
 ![EnableSteamNetworking](./Screenshots/SteamNetworkingSetup.png)
 
 Here's a list of screen-recordings of Nanjing v.s. Dongguan PVP tests using Steam P2P. As I live in China, the famous "NetEase Virtual LAN room" has been tested just for fun -- performance-wise I don't think it contributes much to reduce delay or packet loss.
-- [movement test only](https://pan.baidu.com/s/1EQ7EhSR_z0DhThD1ZsH_TA?pwd=5vcb)
-- [NetEase UU accelerator Virtual LAN room test 1](https://pan.baidu.com/s/1i_OxM3j26p0ZfkcTd71pYg?pwd=yqrz)
-- [NetEase UU accelerator Virtual LAN room test 2](https://pan.baidu.com/s/1EzK17xwUjiP0g97PkPrR0A?pwd=62qg)
-- [a more realistic, competitive test](https://pan.baidu.com/s/1SCbX-Oj57WuyzYzUEz-Oww?pwd=gun8)
+
+- [recording#5, 2026-06-30](https://pan.baidu.com/s/1uyug7GbhqfIv4mbIqnch5g?pwd=n48b) 
+
+- [recording#4, 2026-06-27, a more realistic, competitive test](https://pan.baidu.com/s/1SCbX-Oj57WuyzYzUEz-Oww?pwd=gun8)
+
+- [recording#3, 2026-06-27, NetEase UU accelerator Virtual LAN room test 2](https://pan.baidu.com/s/1EzK17xwUjiP0g97PkPrR0A?pwd=62qg)
+
+- [recording#2, 2026-06-27, NetEase UU accelerator Virtual LAN room test 1](https://pan.baidu.com/s/1i_OxM3j26p0ZfkcTd71pYg?pwd=yqrz)
+
+- [recording#1, 2026-06-25, movement test only](https://pan.baidu.com/s/1EQ7EhSR_z0DhThD1ZsH_TA?pwd=5vcb)
 
 # Why NOT use a "static library `joltc`"?
 
