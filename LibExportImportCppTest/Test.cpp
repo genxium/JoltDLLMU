@@ -1,0 +1,263 @@
+#include "TestHelper.h"
+#include "DebugLog.h"
+
+#include "FrontendBattle.h"
+#include <chrono>
+#include <fstream>
+#include <filesystem>
+
+#include <google/protobuf/arena.h>
+google::protobuf::Arena pbTestCaseDataAllocator;
+
+using namespace jtshared;
+using namespace std::chrono;
+using namespace std::filesystem;
+
+const uint32_t SPECIES_BLADEGIRL = 1;
+const uint32_t SPECIES_BOUNTYHUNTER = 7;
+
+RenderFrame* mockStartRdf(google::protobuf::Arena* theAllocator) {
+    const int roomCapacity = 2;
+    auto startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 128, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    int pickableIdCounter = 1;
+    int npcIdCounter = 1;
+    int bulletIdCounter = 1;
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    playerCh1->set_x(-85);
+    playerCh1->set_y(300);
+    playerCh1->set_speed(10);
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(100);
+    playerCh1->set_species_id(SPECIES_BOUNTYHUNTER);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto player2 = startRdf->mutable_players(1);
+    auto playerCh2 = player2->mutable_chd();
+    playerCh2->set_x(+90);
+    playerCh2->set_y(300);
+    playerCh2->set_speed(10);
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(100);
+    playerCh2->set_species_id(SPECIES_BLADEGIRL);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    return startRdf;
+}
+
+const int pbBufferSizeLimit = (1 << 14);
+char pbByteBuffer[pbBufferSizeLimit];
+char rdfFetchBuffer[pbBufferSizeLimit];
+
+std::map<int, uint64_t> testCmds1 = {
+    {0, 3},
+    {120, 3},
+    {227, 0},
+    {228, 16},
+    {231, 16},
+    {251, 0},
+    {252, 16},
+    {699, 0},
+    {700, 20},
+    {720, 4},
+    {739, 4},
+    {740, 20},
+    {760, 4},
+    {780, 4},
+    {781, 4},
+    {820, 32},
+    {821, 4},
+    {910, 4},
+    {1100, 32},
+    {1200, 0}
+};
+
+void DebugLogCb(const char* message, int color, int size) {
+    std::cout << message << std::endl;
+}
+
+// Program entry point
+int main(int argc, char** argv)
+{
+#ifndef NDEBUG
+    std::cout << "Starting in debug mode" << std::endl;
+#else
+    std::cout << "Starting in release" << std::endl;
+#endif
+    path exePath(argv[0]);
+
+    // Get the parent path (the directory containing the executable)
+    path executableFolder = exePath.parent_path();
+    std::ifstream primitiveConstsFin(executableFolder.string() + "/PrimitiveConsts.pb", std::ios::in | std::ios::binary);
+    if (!primitiveConstsFin.is_open()) {
+        std::cerr << "Failed to open PrimitiveConsts.pb" << std::endl;
+        exit(1);
+    }
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
+    primitiveConstsFin.read(pbByteBuffer, pbBufferSizeLimit);
+    size_t bytesRead = primitiveConstsFin.gcount(); // Get actual bytes read
+    PrimitiveConsts_Init(pbByteBuffer, bytesRead);
+    primitiveConstsFin.close();
+
+    std::ifstream configConstsFin(executableFolder.string() + "/ConfigConsts.pb", std::ios::in | std::ios::binary);
+    if (!configConstsFin.is_open()) {
+        std::cerr << "Failed to open ConfigConsts.pb" << std::endl;
+        exit(1);
+    }
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
+    configConstsFin.read(pbByteBuffer, pbBufferSizeLimit);
+    bytesRead = configConstsFin.gcount(); // Get actual bytes read
+    ConfigConsts_Init(pbByteBuffer, bytesRead);
+    primitiveConstsFin.close();
+
+    std::vector<float> hull1 = {
+        -100, 0,
+        -100, 100,
+        100, 100,
+        100, 0
+    };
+
+    std::vector<float> hull2 = {
+        -200, 0,
+        -200, 1000,
+        -100, 1000,
+        -100, 0
+    };
+
+    std::vector<float> hull3 = {
+        200, 0,
+        200, 1000,
+        100, 1000,
+        100, 0
+    };
+
+    std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
+    JPH_Init(10*1024*1024);
+    std::cout << "Initiated" << std::endl;
+    
+    RegisterDebugCallback(DebugLogCb);
+
+    auto startRdf = mockStartRdf(&pbTestCaseDataAllocator);
+
+    WsReq* wsReq = google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator);
+    TestHelper::AddHullsToWsReq(wsReq, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    wsReq->set_allocated_self_parsed_rdf(startRdf);
+
+    memset(pbByteBuffer, 0, sizeof(pbByteBuffer));
+    long byteSize = wsReq->ByteSizeLong();
+    wsReq->SerializeToArray(pbByteBuffer, byteSize);
+    uint32_t selfJoinIndex = 1;
+    const char * const selfPlayerId = "foobar";
+    const int selfCmdAuthKey = 123456;
+    FrontendBattle* battle = static_cast<FrontendBattle*>(FRONTEND_CreateBattle(512, false));
+    std::cout << "Created battle = " << battle << std::endl;
+
+    bool resetStartRdfRes = FRONTEND_ResetStartRdf(battle, pbByteBuffer, (int)byteSize, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
+    std::cout << "resetStartRdfRes = " << resetStartRdfRes << std::endl;
+    
+    jtshared::RenderFrame outRdf;
+    int timerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 4);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    auto nowMillis = duration_cast<milliseconds>(
+        system_clock::now().time_since_epoch()
+    );
+    uint32_t inSingleJoinIndex = 1;
+    int chaserRdfId = 0;
+    while (loopRdfCnt > timerRdfId) {
+        auto it = testCmds1.lower_bound(timerRdfId);
+        if (it == testCmds1.end()) {
+            --it;
+        }
+        uint64_t inSingleInput = it->second;
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(battle, inSingleInput, &chaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for timerRdfId=" << timerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(battle);
+        timerRdfId++;
+        memset(rdfFetchBuffer, 0, sizeof(rdfFetchBuffer));
+        long outBytesCnt = pbBufferSizeLimit;
+        APP_GetRdf(battle, timerRdfId, rdfFetchBuffer, &outBytesCnt);
+        outRdf.ParseFromArray(rdfFetchBuffer, outBytesCnt);
+        if (0 < timerRdfId && 0 == (timerRdfId & printIntervalRdfCntMinus1)) {
+            auto newNowMillis = duration_cast<milliseconds>(
+                system_clock::now().time_since_epoch()
+            );
+            auto elapsed = newNowMillis - nowMillis;
+            // std::cout << "Elapsed=" << elapsed.count() << "ms/rdfCnt=" << printIntervalRdfCnt << ", @timerRdfId = " << timerRdfId << std::endl;
+            nowMillis = newNowMillis;
+        }
+        /*
+        if (300 >= timerRdfId) {
+            auto& p1 = outRdf.players(0);
+            auto& p1Chd = p1.chd();
+            std::cout << "@timerRdfId=" << timerRdfId << ", p1Chd chState=" << p1Chd.ch_state() << ", framesInChState=" << p1Chd.frames_in_ch_state() << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
+        }
+        */
+    }
+    
+    // clean up
+    APP_ClearBattle(battle);
+
+    // [REMINDER] "startRdf" will be automatically deallocated by the destructor of "wsReq"
+    bool destroyRes = APP_DestroyBattle(battle);
+    std::cout << "APP_DestroyBattle result=" << destroyRes << std::endl;
+    JPH_Shutdown();
+	return 0;
+}
+
+#ifdef _WIN32
+#include <windows.h>
+
+int APIENTRY WinMain(HINSTANCE hInstance,
+    HINSTANCE hPrevInstance,
+    LPSTR lpCmdLine, int nCmdShow)
+{
+    return main(__argc, __argv);
+}
+#endif

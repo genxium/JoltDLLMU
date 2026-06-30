@@ -1,0 +1,168 @@
+#ifndef CPP_ONLY_CONSTS_H
+#define CPP_ONLY_CONSTS_H 1
+
+#include "PbConsts.h"
+#include <vector>
+
+/*
+The "const nomenclature" is as follows.
+- Constant integer
+    - "const int" instead of "int const"
+- Pointer to constant integer
+    - "const int *" instead of "int const *"
+- Constant pointer to constant integer
+    - "const int * const" instead of "int const * const"
+
+This is chosen on purpose to align with Jolt Physics engine v5.3.0.
+*/
+
+const float ELE_WEAKNESS_DEFAULT_YIELD = 1.4f; 
+const float ELE_RESISTANCE_DEFAULT_YIELD = 0.7f; 
+
+const uint64_t U64_0 = static_cast<uint64_t>(0);
+const uint64_t U64_1 = static_cast<uint64_t>(1);
+const uint64_t U64_15 = static_cast<uint64_t>(15);
+const uint64_t U64_16 = static_cast<uint64_t>(16);
+const uint64_t U64_32 = static_cast<uint64_t>(32);
+const uint64_t U64_64 = static_cast<uint64_t>(64);
+const uint64_t U64_128 = static_cast<uint64_t>(128);
+const uint64_t U64_256 = static_cast<uint64_t>(256);
+
+const uint64_t U64_MAX = 0xFFFFFFFFFFFFFFFF;
+
+const uint64_t UDT_STRIPPER = 0xFFFFFFFF00000000; // UDT = "User Data Type"
+const uint64_t UD_PAYLOAD_STRIPPER = ~UDT_STRIPPER;
+const uint64_t UDT_OBSTACLE = (U64_0 << 32);
+const uint64_t UDT_PLAYER = (U64_1 << 32);
+const uint64_t UDT_NPC = (U64_1 << 33);
+const uint64_t UDT_BL = (U64_1 << 33) + (U64_1 << 32);
+const uint64_t UDT_TRIGGER = (U64_1 << 34);
+const uint64_t UDT_TRAP = (U64_1 << 34) + (U64_1 << 32);
+const uint64_t UDT_PICKABLE = (U64_1 << 34) + (U64_1 << 33); 
+
+const uint64_t UDT_PLAYER_HURTBOX = (U64_1 << 34) + (U64_1 << 33) + (U64_1 << 32);
+const uint64_t UDT_NPC_HURTBOX = (U64_1 << 35);
+const uint64_t UDT_PLAYER_SHIELDBOX = (U64_1 << 35) + (U64_1 << 32);
+const uint64_t UDT_NPC_SHIELDBOX = (U64_1 << 35) + (U64_1 << 33);
+const uint32_t UD_PAYLOAD_HB_SB_IDX_SHIFT = 16;
+
+const uint32_t cMaxBodies = 1024;
+const uint32_t cNumBodyMutexes = 0;
+const uint32_t cMaxBodyPairs = 1024;
+const uint32_t cMaxContactConstraints = 1024;
+const float  cDefaultWallDotThreshold = 0.10f;
+const float  cDefaultChDensity = 0.5f;
+const float  cDefaultChFriction = 0.01f; 
+const float  cDefaultChRestituion = 0.0f;
+const float  cGroundDashingChFriction = 0.001f; 
+const float  cAntiPushChFriction = 0.1f; 
+const float  cWalkstoppingChFriction = 125.0f; 
+const float  cFallstoppingChFriction = 90.0f; 
+const float  cDefaultThickness = 0.02f; // An impossibly small value
+const float  cDefaultHalfThickness = cDefaultThickness * 0.5f;
+const float  cDefaultBarrierFriction = 0.1f; 
+const float  cDefaultBarrierRestituion = 0.1f;
+const float  cDefaultBarrierThickness = 65536.0f;
+const float  cDefaultBarrierHalfThickness = cDefaultBarrierThickness * 0.5f;
+const float  cDefaultBlHalfLength = cDefaultHalfThickness;
+const float  cDefaultBlDensity = 0.1f;
+const float  cDefaultTpHalfLength = cDefaultHalfThickness;
+const float  cDefaultTpDensity = 10000.f;
+const float  cCollisionTolerance = 0.05f;
+const float  cAngleEps = 3.14159265f/1440.f;
+const float  cLengthEps = 1e-3;
+const float  cLengthEpsSquared = cLengthEps*cLengthEps;
+const float  cLengthNearlySameEps = cLengthEps;
+const float  cLengthNearlySameEpsSquared = cLengthNearlySameEps* cLengthNearlySameEps;
+const float  cDefaultAimingRayLength = 2048.0;
+const float  cDefaultBulletFriction = 0.2f; 
+const float  cDefaultBulletRestitution = 0.1f; 
+
+const std::vector<std::vector<int>> DIRECTION_DECODER = {
+    { 0, 0 }, // 0
+    { 0, +2 }, // 1
+    { 0, -2 }, // 2
+    { +2, 0 }, // 3
+    { -2, 0 }, // 4
+    { +1, +1 }, // 5
+    { -1, -1 }, // 6
+    { +1, -1 }, // 7
+    { -1, +1 }, // 8
+    /* The rest is for safe access from malicious inputs */
+    { 0, 0 }, // 9
+    { 0, 0 }, // 10
+    { 0, 0 }, // 11
+    { 0, 0 }, // 12
+    { 0, 0 }, // 13
+    { 0, 0 }, // 14
+    { 0, 0 }, // 15
+};
+
+typedef struct PairUint64Hasher {
+    std::size_t operator()(const std::pair<uint64_t, uint64_t>& v) const {
+        std::size_t seed = 2; // Start with the size of the vector
+        seed ^= std::hash<float>()(v.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} PairUint64Hasher;
+
+const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transientCollisionHolderApplicableUdtPairs = {
+    {UDT_PLAYER, UDT_TRIGGER},
+    {UDT_NPC,    UDT_TRIGGER},
+    {UDT_TRIGGER, UDT_PLAYER},
+    {UDT_TRIGGER, UDT_NPC},
+
+    {UDT_PLAYER, UDT_OBSTACLE},
+    {UDT_NPC,    UDT_OBSTACLE},
+    {UDT_OBSTACLE, UDT_PLAYER},
+    {UDT_OBSTACLE, UDT_NPC},
+
+    {UDT_PLAYER, UDT_TRAP},
+    {UDT_NPC,    UDT_TRAP},
+    {UDT_TRAP, UDT_PLAYER},
+    {UDT_TRAP, UDT_NPC},
+
+    {UDT_PLAYER, UDT_PICKABLE},
+    {UDT_NPC,    UDT_PICKABLE},
+    {UDT_PICKABLE, UDT_PLAYER},
+    {UDT_PICKABLE, UDT_NPC},
+
+    {UDT_PLAYER, UDT_NPC_SHIELDBOX},
+    {UDT_NPC,    UDT_NPC_SHIELDBOX},
+    {UDT_BL,     UDT_NPC_SHIELDBOX},
+    {UDT_TRAP,   UDT_NPC_SHIELDBOX},
+    {UDT_NPC_SHIELDBOX, UDT_PLAYER},
+    {UDT_NPC_SHIELDBOX, UDT_NPC},
+    {UDT_NPC_SHIELDBOX, UDT_BL},
+    {UDT_NPC_SHIELDBOX, UDT_TRAP},
+
+    {UDT_PLAYER, UDT_PLAYER_SHIELDBOX},
+    {UDT_NPC,    UDT_PLAYER_SHIELDBOX},
+    {UDT_BL,     UDT_PLAYER_SHIELDBOX},
+    {UDT_TRAP,   UDT_PLAYER_SHIELDBOX},
+    {UDT_PLAYER_SHIELDBOX, UDT_PLAYER},
+    {UDT_PLAYER_SHIELDBOX, UDT_NPC},
+    {UDT_PLAYER_SHIELDBOX, UDT_BL},
+    {UDT_PLAYER_SHIELDBOX, UDT_TRAP},
+
+    {UDT_PLAYER, UDT_BL},
+    {UDT_NPC,    UDT_BL},
+    {UDT_PLAYER_HURTBOX,    UDT_BL},
+    {UDT_NPC_HURTBOX,       UDT_BL},
+
+    {UDT_BL, UDT_PLAYER},
+    {UDT_BL, UDT_NPC},
+    {UDT_BL, UDT_PLAYER_HURTBOX},
+    {UDT_BL, UDT_NPC_HURTBOX},
+    {UDT_BL, UDT_TRAP},
+    {UDT_BL, UDT_TRIGGER},
+    {UDT_BL, UDT_OBSTACLE},
+    {UDT_BL, UDT_BL},
+
+    {UDT_OBSTACLE, UDT_BL},
+    {UDT_TRIGGER, UDT_BL},
+    {UDT_TRAP, UDT_BL},
+};
+
+#endif

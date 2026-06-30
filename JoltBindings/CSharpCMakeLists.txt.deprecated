@@ -1,0 +1,40 @@
+# [DEPRECATED] Decided to keep using ".csproj" for easier "ProjectReference" information persistence for backend.
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+
+project(joltphysics VERSION 0.0.1 LANGUAGES CSharp)
+
+set (TARGET_NAME joltphysics)
+
+set(SOURCE_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/SerializableData.cs
+	${CMAKE_CURRENT_SOURCE_DIR}/JoltCSharpBindings.cs
+	${CMAKE_CURRENT_SOURCE_DIR}/JoltcPrebuiltLoader.cs
+)
+
+add_library(${TARGET_NAME} SHARED ${SOURCE_FILES})
+target_compile_options(${TARGET_NAME} PRIVATE "/langversion:9") # C# 9 is the latest supported by "Unity 2021.3"
+target_compile_options(${TARGET_NAME} PUBLIC "/unsafe") # Equivalent to csproj "<AllowUnsafeBlocks>true</AllowUnsafeBlocks>"
+target_compile_options(${TARGET_NAME} PUBLIC "/nowarn CS0028;CS0618;CS8500")
+set_target_properties(${TARGET_NAME} PROPERTIES
+    DOTNET_SDK "Microsoft.NET.Sdk"
+    DOTNET_TARGET_FRAMEWORK "netstandard2.1"
+)
+
+set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_Nullable "enable" )
+set_property(TARGET ${TARGET_NAME} PROPERTY WIN32_EXECUTABLE FALSE)
+set_property(TARGET ${TARGET_NAME} PROPERTY VS_CONFIGURATION_TYPE ClassLibrary)
+set_property(TARGET ${TARGET_NAME} PROPERTY VS_PACKAGE_REFERENCES 
+        "System.Runtime.CompilerServices.Unsafe_6.1.2"
+        "Google.Protobuf_3.22.1"
+        "System.Collections.Immutable_7.0.0"
+)
+
+install(TARGETS ${TARGET_NAME}
+    EXPORT ${TARGET_NAME}
+    # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+    # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    # RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/../ # For convenience
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/../ # For convenience
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/../ # For convenience
+)

@@ -1,0 +1,400 @@
+using System;
+using jtshared;
+
+namespace JoltCSharp {
+    public class PbPrimitives {
+
+        public PbPrimitives() {
+
+        }
+        
+        public static float StdYAxisAngularSpeedPerRdf = (float)Math.PI/4; // rads/rdf
+        public static float OnWallYAxisAngularSpeedPerRdf = (float)Math.PI/24; // rads/rdf, this is a bit slower than "StdYAxisAngularSpeedPerRdf" to allow players to tap a "direction" at least 1 InputFrameDownsync before tapping "jump" -- instead of requiring to tap them altogether at the exact same InputFrameDownsync, kindly note that when on wall a character only needs to turn 90 degrees before detaching 
+        public static uint BladeGirlGroundSlash1Id = 1, BladeGirlGroundSlash2Id = 2, BladeGirlGroundSlash3Id = 3, BladeGirlGroundSuperSlashId = 4, BladeGirlSlidingId = 5, BladeGirlDiverImpactId = 6, BladeGirlSlidingSlashId = 7, BladeGirlCrouchSlashId = 8, BladeGirlAirSlash1Id = 9, BladeGirlAirSlash2Id = 10, BladeGirlDragonPunchId = 11, BladeGirlGroundBackDashingId = 12, BladeGirlAirDashingId = 13;
+
+        public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, HunterChargedPistolId = 137, HunterChargedPistolAirId = 138, HunterChargedPistolCrouchId = 139, HunterChargedPistolWallId = 140, HunterChargedPistolWalkingId = 141;
+        public static float HunterPistolOffsetY = 28f, HunterPistolOffsetYOnWall = 28f, HunterPistolOffsetYAir = 30f, HunterPistolOffsetYCrouch = 20f;
+
+        public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
+
+        public static uint BlackShooter1RapidFireId = 1026;
+        public static float BlackShooter1RapidFireOffsetY = 20f;
+
+        public static uint BlackThrower1TimedBombId = 1027;
+        public static float BlackThrower1TimedBombOffsetY = 20f;
+
+        public const uint SPECIES_NONE_CH = 0;
+        public const uint SPECIES_BLADEGIRL = 1;
+        public const uint SPECIES_BOUNTYHUNTER = 7;
+
+        public const uint SPECIES_BLACKSABER1 = 12;
+        public const uint SPECIES_BLACKSHOOTER1 = 13;
+        public const uint SPECIES_BLACKTHROWER1 = 14;
+        public const uint SPECIES_MAINTOWER1 = 15;
+
+        public const uint SPECIES_BLACKSABER2 = 16;
+        public const uint SPECIES_BLACKSHOOTER2 = 17;
+
+        public const uint SPECIES_HEADQUARTER1 = 18;
+        public const uint SPECIES_SHIELDGUARD1 = 19;
+        public const uint SPECIES_SHIELDGUARD2 = 20;
+        public const uint SPECIES_RIDERGUARD1 = 21;
+
+        public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
+        public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
+
+        public const uint TRT_NONE = 0;
+        public const uint TRT_BY_INIT_DELAY = 1;
+        public const uint TRT_BY_MOVEMENT = 2;
+        public const uint TRT_BY_ATTACK = 3;
+        public const uint TRT_BY_PATTERN_F = 4;
+        public const uint TRT_INDI_WAVE_NPC_SPAWNER = 5;
+        public const uint TRT_INDI_WAVE_PICKABLE_SPAWNER = 6;
+        public const uint TRT_SYNC_WAVE_GROUP = 7;
+        public const uint TRT_SAVE_POINT_ONLY = 8;
+        public const uint TRT_STORY_POINT_ONLY = 9;
+        public const uint TRT_SAVE_AND_STORY_POINT = 10;
+        public const uint TRT_VICTORY = 11;
+
+        public const uint TPT_NONE = 0;
+        public const uint TPT_SLIDING_PLATFORM = 1;
+        public const uint TPT_ROTATING_PLATFORM = 2;
+        public const uint TPT_CONVEYOR_BELT = 3;
+        public const uint TPT_FALLING_ROCK = 4;
+        public const uint TPT_BRICK = 5;
+
+        public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (1 << INPUT_SCALE_FRAMES);
+        public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
+
+        public const uint VISION_SEARCH_INTERVAL_IMMEDIATE_U = (1u << 0);
+        public const uint VISION_SEARCH_INTERVAL_FAST_U = (1u << 2);
+        public const uint VISION_SEARCH_INTERVAL_MID_U = (1u << 3);
+        public const uint VISION_SEARCH_INTERVAL_SLOW_U = (1u << 4);
+        public const int VISION_SEARCH_INTERVAL_IMMEDIATE = (int)VISION_SEARCH_INTERVAL_IMMEDIATE_U;
+        public const int VISION_SEARCH_INTERVAL_FAST = (int)VISION_SEARCH_INTERVAL_FAST_U;
+        public const int VISION_SEARCH_INTERVAL_MID = (int)VISION_SEARCH_INTERVAL_MID_U;
+        public const int VISION_SEARCH_INTERVAL_SLOW = (int)VISION_SEARCH_INTERVAL_SLOW_U;
+
+        public const int BATTLE_DYNAMICS_FPS = 60;
+        public const int DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER = 1024*BATTLE_DYNAMICS_FPS;
+
+        public const int INPUT_SCALE_FRAMES = 2;
+        public const int INPUT_SCALE = (1 << INPUT_SCALE_FRAMES);
+        public const int FRONTEND_WS_RECV_BYTE_LENGTH = 8196;
+        public const int JUMP_HOLDING_RDF_CNT_THRESHOLD_1 = (BATTLE_DYNAMICS_FPS >> 3) + (BATTLE_DYNAMICS_FPS >> 4);
+        public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_1 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_1 + INPUT_SCALE - 1) / INPUT_SCALE; // Ceiled  
+
+        public const int JUMP_HOLDING_RDF_CNT_THRESHOLD_2 = (BATTLE_DYNAMICS_FPS >> 1) + (BATTLE_DYNAMICS_FPS >> 4);
+        public const int JUMP_HOLDING_IFD_CNT_THRESHOLD_2 = (int)(1.0 * JUMP_HOLDING_RDF_CNT_THRESHOLD_2 + INPUT_SCALE - 1) / INPUT_SCALE;
+
+        public const int DEFAULT_BACKEND_INPUT_BUFFER_SIZE = ((30 * BATTLE_DYNAMICS_FPS) >> INPUT_SCALE_FRAMES) + 1;
+
+        public const int DEBUFF_ARR_IDX_ELEMENTAL = 0;
+
+        public const float GRAVITY_Y_MAGNITUDE = 0.30f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS;
+
+        public const int ROOM_ID_NONE = 0;        
+
+        public const long ROOM_STATE_IMPOSSIBLE = 0;
+        public const long ROOM_STATE_IDLE = 1;
+        public const long ROOM_STATE_WAITING = 2;
+        public const long ROOM_STATE_PREPARE = 3;
+        public const long ROOM_STATE_IN_BATTLE = 4;
+        public const long ROOM_STATE_IN_SETTLEMENT = 5;
+        public const long ROOM_STATE_STOPPED = 6;
+        public const long ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN = 7;
+        public const long ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN = 8;
+        public const long ROOM_STATE_FRONTEND_REJOINING = 9;
+
+        // Deliberately NOT using enum for "player battle states" to make use of "C# CompareAndExchange" 
+        public const long PLAYER_BATTLE_STATE_IMPOSSIBLE = -2;
+        public const long PLAYER_BATTLE_STATE_ADDED_PENDING_BATTLE_COLLIDER_ACK = 0;
+        public const long PLAYER_BATTLE_STATE_READDED_PENDING_FORCE_RESYNC = 1;
+        public const long PLAYER_BATTLE_STATE_ACTIVE = 2;
+        public const long PLAYER_BATTLE_STATE_DISCONNECTED = 3;
+        public const long PLAYER_BATTLE_STATE_LOST = 4;
+        public const long PLAYER_BATTLE_STATE_EXPELLED_DURING_GAME = 5;
+        public const long PLAYER_BATTLE_STATE_EXPELLED_IN_DISMISSAL = 6;
+
+        protected PrimitiveConsts? underlying;
+        protected virtual bool lazyInit() {
+            if (null != underlying) return true;
+            underlying = new PrimitiveConsts {
+              BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
+              DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
+
+              RoomIdNone = 0,
+
+              RoomStateImpossible = 0,
+              RoomStateIdle = 1,
+              RoomStateWaiting = 2,
+              RoomStatePrepare = 3,
+              RoomStateInBattle = 4,
+              RoomStateInSettlement = 5,
+              RoomStateStopped = 6,
+              RoomStateFrontendAwaitingAutoRejoin = 7,
+              RoomStateFrontendAwaitingManualRejoin = 8,
+              RoomStateFrontendRejoining = 9,
+
+              PlayerBattleStateImpossible = -2,
+              PlayerBattleStateAddedPendingBattleColliderAck = 0,
+              PlayerBattleStateReaddedPendingForceResync = 1,
+              PlayerBattleStateActive = 2,
+              PlayerBattleStateDisconnected = 3,
+              PlayerBattleStateLost = 4,
+              PlayerBattleStateExpelledDuringGame = 5,
+              PlayerBattleStateExpelledInDismissal = 6,
+
+              UpsyncMsgActPlayerColliderAck = 1,
+              UpsyncMsgActPlayerCmd = 2,
+              UpsyncMsgActHolepunchBackendUdpTunnel = 3,
+              UpsyncMsgActHolepunchPeerUdpAddr = 4,
+
+              TerminatingRenderFrameId = 0,
+              TerminatingInputFrameId = 0,
+              TerminatingLowerPartRdfCnt = -1,
+
+              DownsyncMsgActBattleColliderInfo = 1,
+              DownsyncMsgActInputBatch = 2,
+              DownsyncMsgActBattleStopped = 3,
+              DownsyncMsgActForcedResync = 4,
+              DownsyncMsgActPeerInputBatch = 5,
+              DownsyncMsgActPeerUdpAddr = 6,
+              DownsyncMsgActBattleReadyToStart = -1,
+              DownsyncMsgActBattleStart = 0,
+              DownsyncMsgActPlayerDisconnected = -96,
+              DownsyncMsgActPlayerReaddedAndAcked = -97,
+              DownsyncMsgActPlayerAddedAndAcked = -98,
+              DownsyncMsgWsClosed = -99,
+              DownsyncMsgWsOpen = -100,
+
+              MagicJoinIndexInvalid = 0xFFFFFFFF,
+              MagicJoinIndexSrvUdpTunnel = 0,
+              MagicQuotaInfinite = -1,
+
+              MagicLastSentInputFrameIdNormalAdded = -1,
+              MagicLastSentInputFrameIdReadded = -2,
+
+              BgmNoChange = 0,
+
+              MaxBtnHoldingRdfCnt = 999999999,
+              MaxFlyingRdfCnt = 999999999,
+              DefaultSlipJumpGracePeriodRdfCnt = 15,
+              DefaultMinSpeedForRestitution = 1.0f * BATTLE_DYNAMICS_FPS, // i.e. "1 pixel per RenderFrame" 
+              MaxReversePushbackFramesToRecover = 30,
+              SpeedNotHitNotSpecified = 0,
+              DefaultPreallocNpcCapacity = 24, // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
+              DefaultPreallocBulletCapacity = 128, // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)
+              DefaultPreallocTrapCapacity = 12,
+              DefaultPreallocTriggerCapacity = 15,
+              DefaultPreallocPickableCapacity = 32,
+              DefaultPerCharacterBuffCapacity = 1,
+              DefaultPerCharacterDebuffCapacity = 1,
+              DefaultPerCharacterInventoryCapacity = 1,
+              DefaultPerCharacterImmuneBulletRecordCapacity = 5,
+
+              GravityY = -GRAVITY_Y_MAGNITUDE,
+              GravityYJumpHolding = -0.6f * GRAVITY_Y_MAGNITUDE,
+
+              DefaultPatrolCueWaivingFrames = 150, // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
+              NoPatrolCueId = 0,
+
+              StickToGroundCorrectionLength = 1.0f,
+
+              DefaultPickableHurtboxHalfSizeX = 10f,
+              DefaultPickableHurtboxHalfSizeY = 12f,
+              DefaultPickableDisappearingAnimFrames = 10,
+              DefaultPickableConsumedAnimFrames = 10,
+              DefaultPickableRisingVelY = 8f,
+              DefaultPickableStartupFrames = 45,
+              DefaultPickableLifetimeRdfCnt = 60 * BATTLE_DYNAMICS_FPS,
+
+              DefaultBlockStunFrames = 10,
+              DefaultBlownupFramesForFlying = 30,
+
+              DefaultGaugeIncByHit = 5,
+              DefaultFramesDelayedOfBossSavepoint = 8,
+              InputDelayFrames = 2, // in the count of render frames
+              InputScaleFrames = INPUT_SCALE_FRAMES, // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
+              MaxChasingRenderFramesPerUpdate = (3 << INPUT_SCALE_FRAMES),
+              MagicFramesToBeOnWall = (BATTLE_DYNAMICS_FPS >> 2),
+              MagicFramesToBeOnWallAirJump = (BATTLE_DYNAMICS_FPS >> 1),
+
+              DyingFramesToRecover = 100, // MUST BE SAME FOR EVERY CHARACTER FOR FAIRNESS!
+
+              ParriedFramesToRecover = 25,
+              ParriedFramesToStartCancellable = 6,
+
+              NoSkill = 0,
+              NoSkillHit = 0,
+
+              NoLockVel = -65535f,
+              CrouchForcingCeilingDotThreshold = MathF.Cos((float)Math.PI / 8),
+              UpsyncStIfdIdTolerance = 8,
+
+              InvalidDefaultPlayerId = "INVALID_PLAYER_ID",
+              TerminatingCharacterId = 0,
+              TerminatingTrapId = 0,
+              TerminatingTriggerId = 0,
+              TerminatingTriggerGroupId = 0,
+              TerminatingPickableId = 0,
+              TerminatingBulletId = 0,
+              TerminatingBulletTeamId = 0, // Default for proto int32 to save space
+              TerminatingBuffSpeciesId = 0, // Default for proto int32 to save space in "CharacterDownsync.killedToDropBuffSpeciesId"
+              TerminatingDebuffSpeciesId = 0,
+              TerminatingConsumableSpeciesId = 0, // Default for proto int32 to save space in "CharacterDownsync.killedToDropConsumableSpeciesId"
+
+              FrontendWsRecvBytelength = FRONTEND_WS_RECV_BYTE_LENGTH, // Expirically enough and not too big to have a graphic smoothness impact when receiving
+
+              JammedBtnHoldingRdfCnt = -1,
+
+              InAirDashGracePeriodRdfCnt = 3,
+              InAirJumpGracePeriodRdfCnt = 6,
+
+              SpAtkLookupFrames = 5,
+
+              PatternIdUnableToOp = -2,
+              PatternIdNoOp = -1,
+              PatternB = 1,
+              PatternUpB = 2,
+              PatternDownB = 3,
+              PatternHoldB = 4,
+              PatternDownA = 5,
+              PatternReleasedB = 6,
+
+              PatternE = 7,
+              PatternFrontE = 8,
+              PatternBackE = 9,
+              PatternUpE = 10,
+              PatternDownE = 11,
+              PatternHoldE = 12,
+
+              PatternEHoldB = 13,
+              PatternFrontEHoldB = 14,
+              PatternBackEHoldB = 15,
+              PatternUpEHoldB = 16,
+              PatternDownEHoldB = 17,
+              PatternHoldEHoldB = 18,
+
+              PatternInventorySlotC = 1024,
+              PatternInventorySlotD = 1025,
+              PatternInventorySlotBc = 1026,
+
+              PatternHoldInventorySlotC = 1027,
+              PatternHoldInventorySlotD = 1028,
+
+              PatternF = 1029,
+
+              EleWeaknessDefaultYield = 1.5f,
+              EleResistanceDefaultYield = 0.5f,
+
+              DebuffArrayIdxElemental = 0,
+
+              EstimatedSecondsPerRdf = (1.0f / BATTLE_DYNAMICS_FPS),
+              InputScale = INPUT_SCALE,
+              DefaultBackendInputBufferSize = DEFAULT_BACKEND_INPUT_BUFFER_SIZE,
+
+              DefaultFramesToShowDamaged = (int)(1.2 * BATTLE_DYNAMICS_FPS),
+              DefaultFramesToContinueCombo = (int)(0.8f * BATTLE_DYNAMICS_FPS),
+              DefaultTrRecoveryFrames = (int)(3.0 * BATTLE_DYNAMICS_FPS),
+              DefaultFleeingGracePeriodRdfCnt = 2 * BATTLE_DYNAMICS_FPS,
+
+              BackendWsRecvBytelength = (FRONTEND_WS_RECV_BYTE_LENGTH + (FRONTEND_WS_RECV_BYTE_LENGTH >> 1)), // Slightly larger than FrontendWsRecvBytelength because it has to receive some initial collider information
+
+              BtnBHoldingRdfCntThreshold2 = BATTLE_DYNAMICS_FPS + (BATTLE_DYNAMICS_FPS >> 1),
+              BtnBHoldingRdfCntThreshold1 = (BATTLE_DYNAMICS_FPS >> 2) + (BATTLE_DYNAMICS_FPS >> 3),
+
+              JumpHoldingRdfCntThreshold1 = JUMP_HOLDING_RDF_CNT_THRESHOLD_1,
+              JumpHoldingIfdCntThreshold1 = JUMP_HOLDING_IFD_CNT_THRESHOLD_1,
+
+              JumpHoldingRdfCntThreshold2 = JUMP_HOLDING_RDF_CNT_THRESHOLD_2,
+              JumpHoldingIfdCntThreshold2 = JUMP_HOLDING_IFD_CNT_THRESHOLD_2,
+
+              BtnEHoldingRdfCntThreshold1 = JUMP_HOLDING_RDF_CNT_THRESHOLD_2,
+              BtnEHoldingIfdCntThreshold1 = JUMP_HOLDING_IFD_CNT_THRESHOLD_2,
+
+              StartingRenderFrameId = 1,
+              StartingInputFrameId = 1,
+
+              Elets = new AtkEleTypes {
+                  None = 0,
+                  Fire = 1,
+                  Water = 2,
+                  Thunder = 3,
+                  Rock = 4,
+                  Wind = 5,
+                  Ice = 6,
+              },
+
+              Trts = new TriggerTypes {
+                  None = TRT_NONE,
+                  Victory = TRT_VICTORY,
+                  ByInitDelay = TRT_BY_INIT_DELAY,
+                  ByMovement = TRT_BY_MOVEMENT,
+                  ByAttack = TRT_BY_ATTACK,
+                  ByPatternF = TRT_BY_PATTERN_F,
+
+                  IndiWaveNpcSpawner = TRT_INDI_WAVE_NPC_SPAWNER,
+                  IndiWavePickableSpawner = TRT_INDI_WAVE_PICKABLE_SPAWNER,
+                  SyncWaveGroup = TRT_SYNC_WAVE_GROUP,
+
+                  SavePointOnly = TRT_SAVE_POINT_ONLY,
+                  StoryPointOnly = TRT_STORY_POINT_ONLY,
+                  SaveAndStoryPoint = TRT_SAVE_AND_STORY_POINT,
+              },
+
+              Tpts = new TrapTypes {
+                  None = TPT_NONE,
+
+                  SlidingPlatform = TPT_SLIDING_PLATFORM,
+                  RotatingPlatform = TPT_ROTATING_PLATFORM,
+                  ConveyorBelt = TPT_CONVEYOR_BELT,
+                  FallingRock = TPT_FALLING_ROCK,
+                  Brick = TPT_BRICK
+              },
+
+              Pkts = new PickableTypes {
+                  None = 0,
+                  HpSmall = 1,
+                  MpSmall = 2,
+                  InvCRefillSmall = 3,
+                  InvDRefillSmall = 4,
+              },
+
+              ChSpecies = new ChSpeciesConsts {
+                  None = SPECIES_NONE_CH,
+                  Bladegirl = SPECIES_BLADEGIRL,
+                  Bountyhunter = SPECIES_BOUNTYHUNTER,
+
+                  Blacksaber1 = SPECIES_BLACKSABER1,
+                  Blackshooter1 = SPECIES_BLACKSHOOTER1,
+                  Blackthrower1 = SPECIES_BLACKTHROWER1,
+
+                  BlacksaberTestNoVision = SPECIES_BLACKSABER_TEST_NO_VISION,
+                  BlacksaberTestWithVision = SPECIES_BLACKSABER_TEST_WITH_VISION,
+
+                  Headquarter1 = SPECIES_HEADQUARTER1,
+                  Shieldguard1 = SPECIES_SHIELDGUARD1,
+                  Shieldguard2 = SPECIES_SHIELDGUARD2,
+                  Riderguard1 = SPECIES_RIDERGUARD1,
+              },
+
+              DebuffSpecies = new DebuffSpecies {
+                  None = 0,
+                  ShortFrozen = 1,
+                  ShortParalyzed = 2,
+                  LongFrozen = 3,
+                  LongParalyzed = 4,
+              },
+            };
+            return true;
+        }
+        
+        public PrimitiveConsts getUnderlying() {
+            if (!lazyInit() || null == underlying) {
+                throw new ArgumentNullException("Failed to initialize the underlying of PbPrimitives");
+            }
+            return underlying;
+        }
+    }
+}

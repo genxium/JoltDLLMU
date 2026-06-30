@@ -1,0 +1,810 @@
+#include "FrontendBattle.h"
+
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+
+bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) {
+    return UpsertSelfCmd(inSingleInput, outChaserRdfId, nullptr, nullptr);
+}
+
+bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
+    int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId+1);
+    bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
+    bool changedFromPrevSelfCmd = false;
+    auto prevIfd = ifdBuffer.GetByFrameId(toGenIfdId-1);
+    if (nullptr != prevIfd) {
+        changedFromPrevSelfCmd = (prevIfd->input_list(selfJoinIndexArrIdx) != inSingleInput);
+    }
+    bool canConfirmUDP = (isLastRdfInIfdCoverage || changedFromPrevSelfCmd);
+    bool outExistingInputMutated = false;
+    InputFrameDownsync* result = getOrPrefabInputFrameDownsync(toGenIfdId, selfJoinIndex, inSingleInput, canConfirmUDP, false, outExistingInputMutated);
+    if (outExistingInputMutated) {
+        handleIncorrectlyRenderedPrediction(toGenIfdId, true, false, false);
+    }
+
+    *outChaserRdfId = chaserRdfId;
+    if (!result) {
+        if (nullptr != outBytesCntLimit) {
+            *outBytesCntLimit = 0;
+        } 
+        return false;
+    }
+/*
+#ifndef NDEBUG
+    if (0 < (selfJoinIndexMask & result->confirmed_list()) && inSingleInput != result->input_list(selfJoinIndexArrIdx)) {
+        std::ostringstream oss;
+        oss << "@timerRdfId=" << timerRdfId << ", @toGenIfdId=" << toGenIfdId << ", @lcacIfdId=" << lcacIfdId << ", @chaserRdfId=" << chaserRdfId << ", @chaserRdfIdLowerBound=" << chaserRdfIdLowerBound << ", rejected inSingleInput=" << inSingleInput << " due to alreadyTcpConfirmed selfInput=" << result->input_list(selfJoinIndexArrIdx);
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
+    if (nullptr != outBytesPreallocatedStart && nullptr != outBytesCntLimit) {
+        long byteSize = result->ByteSizeLong();
+        if (byteSize > *outBytesCntLimit) {
+            return false;
+        }
+        *outBytesCntLimit = byteSize;
+        result->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    }
+    return true;
+}
+
+bool FrontendBattle::OnDownsyncSnapshotReceived(char* inBytes, int inBytesCnt, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    downsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
+    return OnDownsyncSnapshotReceived(downsyncSnapshotHolder, outPostTimerRdfEvictedCnt, outPostTimerRdfDelayedIfdEvictedCnt, outChaserRdfId, outLcacIfdId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+}
+
+bool FrontendBattle::OnDownsyncSnapshotReceived(const DownsyncSnapshot* downsyncSnapshot, int* outPostTimerRdfEvictedCnt, int* outPostTimerRdfDelayedIfdEvictedCnt, int* outChaserRdfId, int* outLcacIfdId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    /*
+    Assuming that rdfBuffer & ifdBuffer are both sufficiently large (e.g. 5 seconds) such that when 
+    - "timerRdfId" is to be evicted from "rdfBuffer.StFrameId", or
+    - "ConvertToDelayedInputFrameId(timerRdfId)" is to be evicted from "ifdBuffer.StFrameId"
+    , it's considered TOO LAGGY on frontend, thus reassigning "timerRdfId = chaserRdfIdLowerBound = refRdfId" will be allowed.
+
+    Moreover if no such eviction is to occur, the "refRdf & ifdBatch" handlings are fully de-coupled.
+
+    Edge cases
+    - If there's no "refRdf" BUT "0 < postTimerRdfDelayedIfdToEvictCnt", drop the exceeding "ifd_batch".
+    */
+    *outChaserRdfId = chaserRdfId;
+    *outLcacIfdId = lcacIfdId;
+    *outUdpLcacIfdId = udpLcacIfdId;
+    bool shouldDragTimerRdfIdForward = false;
+    *outPostTimerRdfEvictedCnt = 0;
+    *outPostTimerRdfDelayedIfdEvictedCnt = 0;
+    int refRdfId = downsyncSnapshot->ref_rdf_id();
+    int oldChaserRdfIdLowerBound = chaserRdfIdLowerBound;
+    uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
+/*
+#ifndef NDEBUG
+    std::ostringstream oss1;
+    oss1 << "OnDownsyncSnapshotReceived#1 @timerRdfId=" << timerRdfId ;
+    Debug::Log(oss1.str(), DColor::Orange);
+#endif
+*/
+    if (downsyncSnapshot->has_ref_rdf() && refRdfId != globalPrimitiveConsts->terminating_render_frame_id()) {
+        const RenderFrame& refRdf = downsyncSnapshot->ref_rdf();
+        if (refRdfId >= oldChaserRdfIdLowerBound) {
+            bool willEvictRdfSt = (refRdfId >= rdfBuffer.StFrameId + rdfBuffer.N);
+            if (willEvictRdfSt) {
+                int toEvictRdfCnt = (refRdfId - rdfBuffer.StFrameId - rdfBuffer.N + 1);
+                int postEvictionRdfStFrameId = rdfBuffer.StFrameId + toEvictRdfCnt;
+                shouldDragTimerRdfIdForward = (timerRdfId < postEvictionRdfStFrameId);
+                if (shouldDragTimerRdfIdForward) {
+                    *outPostTimerRdfEvictedCnt = (postEvictionRdfStFrameId - timerRdfId);
+                }
+            }
+            
+            while (rdfBuffer.EdFrameId <= refRdfId) {
+                int gapRdfId = rdfBuffer.EdFrameId; 
+                RenderFrame* holder = rdfBuffer.DryPut();
+                holder->set_id(gapRdfId);
+            }
+
+            while (stepResultBuffer.EdFrameId <= refRdfId) {
+                stepResultBuffer.DryPut();
+            }
+            
+            RenderFrame* targetHolder = rdfBuffer.GetByFrameId(refRdfId);
+            JPH_ASSERT(nullptr != targetHolder, "RenderFrame* targetHolder not found for refRdfId=" + refRdfId);
+            CopyRdf(&refRdf, targetHolder);
+
+            chaserRdfId = refRdfId;
+            chaserRdfIdLowerBound = refRdfId;
+/*
+#ifndef NDEBUG
+            std::ostringstream oss11;
+            oss11 << "OnDownsyncSnapshotReceived#1.1@timerRdfId=" << timerRdfId << ", @oldLcacIfdId=" << lcacIfdId << ", updated chaserRdfIdLowerBound=chaserRdfId=" << refRdfId << " from refRdf, willEvictRdfSt=" << willEvictRdfSt << ", shouldDragTimerRdfIdForward=" << shouldDragTimerRdfIdForward << ", postTimerRdfEvictedCnt=" << *outPostTimerRdfEvictedCnt;
+            Debug::Log(oss11.str(), DColor::Orange);
+#endif
+*/
+        }
+    }
+
+    bool shouldDragTimerRdfUsingDelayedIfdIdForward = false; 
+    int firstIncorrectlyPredictedIfdId = -1;
+    int ifdBatchSize = downsyncSnapshot->ifd_batch_size();
+/*
+#ifndef NDEBUG
+    std::ostringstream oss2;
+    oss2 << "OnDownsyncSnapshotReceived#2 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+    Debug::Log(oss2.str(), DColor::Orange);
+#endif
+*/
+    if (0 < ifdBatchSize) {
+        int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
+        for (int i = 0; i < ifdBatchSize; ++i) {
+            int ifdId = downsyncSnapshot->st_ifd_id() + i;
+            if (ifdId <= lcacIfdId) {
+                // obsolete
+                continue;
+            }
+            bool existingInputMutated = false;
+            InputFrameDownsync* targetHolder = ifdBuffer.GetByFrameId(ifdId); 
+/*
+#ifndef NDEBUG
+            std::ostringstream oss21;
+            oss21 << "OnDownsyncSnapshotReceived#2.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i;
+            Debug::Log(oss21.str(), DColor::Orange);
+#endif
+*/
+            const InputFrameDownsync& refIfd = downsyncSnapshot->ifd_batch(i);
+            if (nullptr != targetHolder && -1 == firstIncorrectlyPredictedIfdId) {
+/*
+#ifndef NDEBUG
+                std::ostringstream oss211;
+                oss211 << "OnDownsyncSnapshotReceived#2.1.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", targetHolder->input_list_size=" << targetHolder->input_list_size();
+                Debug::Log(oss211.str(), DColor::Orange);
+#endif
+*/
+                for (int k = 0; k < playersCnt; ++k) {
+                    if (targetHolder->input_list(k) != refIfd.input_list(k)) {
+                        existingInputMutated = true; 
+                        break;
+                    }
+                }
+/*
+#ifndef NDEBUG
+                std::ostringstream oss212;
+                oss212 << "OnDownsyncSnapshotReceived#2.1.2 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i;
+                Debug::Log(oss212.str(), DColor::Orange);
+#endif
+*/
+            } else {
+                bool willEvictIfdSt = (ifdId >= ifdBuffer.StFrameId + ifdBuffer.N);
+/*
+#ifndef NDEBUG
+                std::ostringstream oss221;
+                oss221 << "OnDownsyncSnapshotReceived#2.2.1 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", willEvictIfdSt=" << (int)willEvictIfdSt;
+                Debug::Log(oss221.str(), DColor::Orange);
+#endif
+*/
+                if (willEvictIfdSt) {
+                    int toEvictIfdCnt = (ifdId - ifdBuffer.StFrameId - ifdBuffer.N + 1);
+                    JPH_ASSERT((1 == toEvictIfdCnt || (1 < toEvictIfdCnt && 0 == i)), "Unqualified toEvictIfdCnt=" + toEvictIfdCnt);
+                    int postEvictionIfdStFrameId = ifdBuffer.StFrameId + toEvictIfdCnt;
+                    bool willDragTimerRdfUsingDelayedIfdIdForward = (delayedIfdId < postEvictionIfdStFrameId);
+                    if (willDragTimerRdfUsingDelayedIfdIdForward) {
+                        if (!downsyncSnapshot->has_ref_rdf()) {
+                            break;
+                        } else {
+                            shouldDragTimerRdfUsingDelayedIfdIdForward = true;
+                            *outPostTimerRdfDelayedIfdEvictedCnt = (postEvictionIfdStFrameId - delayedIfdId); // Will pick the LAST value
+                        }
+                    }
+                    // [WARNING] No need to check "shouldDragLcacIfdIdForward" here, it'll be assigned by "ifdId" at the current iteration.
+                }
+
+                while (ifdBuffer.EdFrameId <= ifdId) {
+                    InputFrameDownsync* holder = ifdBuffer.DryPut();
+                    holder->set_input_count(playersCnt);
+                    for (int k = 0; k < playersCnt; ++k) {
+                        uint64_t predictedCmd = 0;
+                        if (0 == (inactiveJoinMaskVal & CalcJoinIndexMask(k + 1))) {
+                            predictedCmd = playerInputFronts[k];
+                        }
+                        if (k < holder->input_list_size()) {
+                            holder->set_input_list(k, predictedCmd);
+                        } else {
+                            holder->add_input_list(predictedCmd);
+                        }
+                    }
+                    holder->set_confirmed_list(0);
+                    holder->set_udp_confirmed_list(0);
+                }
+
+                targetHolder = ifdBuffer.GetByFrameId(ifdId); 
+/*
+#ifndef NDEBUG
+                std::ostringstream oss223;
+                oss223 << "OnDownsyncSnapshotReceived#2.2.2 @timerRdfId=" << timerRdfId << ", ifdId=" << ifdId << ", i=" << i << ", refIfd->input_list_size=" << refIfd.input_list_size() << ", willEvictIfdSt=" << (int)willEvictIfdSt;
+                Debug::Log(oss223.str(), DColor::Orange);
+            }
+
+            if ((0 < (targetHolder->udp_confirmed_list() & selfJoinIndexMask) || 0 != targetHolder->input_list(selfJoinIndexArrIdx)) && targetHolder->input_list(selfJoinIndexArrIdx) != refIfd.input_list(selfJoinIndexArrIdx)) {
+                std::ostringstream oss;
+                oss << "@timerRdfId=" << timerRdfId << ", @refRdfId=" << refRdfId << ", @lcacIfdId=" << lcacIfdId << ", @chaserRdfId=" << chaserRdfId << ", @chaserRdfIdLowerBound=" << chaserRdfIdLowerBound << " overriding localSelfInput=" <<  targetHolder->input_list(selfJoinIndexArrIdx) << " by backend generated " << refIfd.input_list(selfJoinIndexArrIdx) << " of refIfdId=" << ifdId;
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+            }
+
+            CopyIfd(&refIfd, targetHolder);
+            targetHolder->set_confirmed_list(allConfirmedMask);
+            
+            for (int k = 0; k < playersCnt; ++k) {
+                if (k == selfJoinIndexArrIdx) continue;
+                bool frontsUpdated = updatePlayerInputFronts(ifdId, k, refIfd.input_list(k));
+            }
+
+            if (-1 == firstIncorrectlyPredictedIfdId && existingInputMutated) {
+                firstIncorrectlyPredictedIfdId = ifdId;
+            }
+        
+            lcacIfdId = ifdId;
+        }
+    }
+
+    if (lcacIfdId > udpLcacIfdId) {
+        udpLcacIfdId = lcacIfdId;
+    }
+/*
+#ifndef NDEBUG
+    std::ostringstream oss3;
+    oss3 << "OnDownsyncSnapshotReceived#3 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+    Debug::Log(oss3.str(), DColor::Orange);
+#endif
+*/
+    if (-1 != firstIncorrectlyPredictedIfdId) {
+/*
+#ifndef NDEBUG
+        std::ostringstream oss31;
+        oss31 << "OnDownsyncSnapshotReceived#3.1 @timerRdfId=" << timerRdfId << ", ifdBatchSize=" << ifdBatchSize;
+        Debug::Log(oss31.str(), DColor::Orange);
+#endif
+*/
+        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, false, false);
+    }
+
+/*
+#ifndef NDEBUG
+    std::ostringstream oss4;
+    oss4 << "OnDownsyncSnapshotReceived#4 @timerRdfId=" << timerRdfId << ", shouldDragTimerRdfIdForward=" << (int)shouldDragTimerRdfIdForward << ", shouldDragTimerRdfUsingDelayedIfdIdForward=" << (int)shouldDragTimerRdfUsingDelayedIfdIdForward;
+    Debug::Log(oss4.str(), DColor::Orange);
+#endif
+*/
+    if (shouldDragTimerRdfIdForward || shouldDragTimerRdfUsingDelayedIfdIdForward) {
+        timerRdfId = refRdfId;
+    }
+
+    if (!playerInputFrontIdsSorted.empty()) {
+        *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+        *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+/*
+#ifndef NDEBUG
+        Debug::Log("OnDownsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+    } else {
+        Debug::Log("OnDownsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
+#endif
+*/
+    }
+
+    *outChaserRdfId = chaserRdfId;
+    *outLcacIfdId = lcacIfdId;
+    *outUdpLcacIfdId = udpLcacIfdId;
+
+    return true;
+}
+
+bool FrontendBattle::OnUpsyncSnapshotReqReceived(char* inBytes, int inBytesCnt, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    peerUpsyncSnapshotHolder->ParseFromArray(inBytes, inBytesCnt);
+
+    uint32_t peerJoinIndex = peerUpsyncSnapshotHolder->join_index();
+    if (0 >= peerJoinIndex) return false;
+    if (selfJoinIndex == peerJoinIndex) return false;
+    if (!peerUpsyncSnapshotHolder->has_upsync_snapshot()) return false;
+    return OnUpsyncSnapshotReceived(peerJoinIndex, peerUpsyncSnapshotHolder->upsync_snapshot(), outChaserRdfId, outUdpLcacIfdId, outMaxPlayerInputFrontId, outMinPlayerInputFrontId);
+}
+
+bool FrontendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const UpsyncSnapshot& upsyncSnapshot, int* outChaserRdfId, int* outUdpLcacIfdId, int* outMaxPlayerInputFrontId, int* outMinPlayerInputFrontId) {
+    // See "BackendBattle::OnUpsyncSnapshotReceived" for reference.
+    bool fromUdp = true; // by design
+    int delayedIfdId = BaseBattle::ConvertToDelayedInputFrameId(timerRdfId);
+    int firstIncorrectlyPredictedIfdId = -1;
+    int cmdListSize = upsyncSnapshot.cmd_list_size();
+    *outChaserRdfId = chaserRdfId;
+    for (int i = 0; i < cmdListSize; ++i) {
+        int ifdId = upsyncSnapshot.st_ifd_id() + i;
+        if (ifdId <= lcacIfdId) {
+            // obsolete
+            continue;
+        }
+
+        bool willEvictSt = (ifdId >= ifdBuffer.StFrameId + ifdBuffer.N);
+        if (willEvictSt) {
+            int toEvictCnt = (ifdId - ifdBuffer.StFrameId - ifdBuffer.N + 1);
+            JPH_ASSERT(1 == toEvictCnt || (1 < toEvictCnt && 0 == i));  
+            int postEvictionStFrameId = ifdBuffer.StFrameId + toEvictCnt;
+            
+            if (postEvictionStFrameId > delayedIfdId) {
+                // [WARNING] Discard if it's about to evict the "delayedIfdId" to be used by "timerRdfId", such that we don't have to call "Step(...)" in a tricky way just for handling UDP "upsyncSnapshot".
+                break;
+            }
+            bool shouldDragLcacIfdIdForward = (lcacIfdId + 1 < postEvictionStFrameId);
+            if (!shouldDragLcacIfdIdForward) {
+            } else {
+                lcacIfdId = postEvictionStFrameId-1; // i.e. "ifdBuffer.StFrameId" will be incremented by the same amount later in "ifdBuffer.DryPut()".
+                JPH_ASSERT(lcacIfdId < ifdId);
+            }
+
+            // Now that we're all set for "StFrameId eviction upon DryPut() of ifdBuffer"
+        }
+
+        const uint64_t cmd = upsyncSnapshot.cmd_list(i);
+        bool outExistingInputMutated = false;
+        InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, fromUdp, false, outExistingInputMutated);
+        int peerJoinIndexArrIdx = peerJoinIndex - 1;
+        bool frontsUpdated = updatePlayerInputFronts(ifdId, peerJoinIndexArrIdx, cmd);
+        if (-1 == firstIncorrectlyPredictedIfdId && outExistingInputMutated) {
+            firstIncorrectlyPredictedIfdId = ifdId;
+        }
+    }
+
+    if (-1 != firstIncorrectlyPredictedIfdId) {
+        handleIncorrectlyRenderedPrediction(firstIncorrectlyPredictedIfdId, false, fromUdp, false);
+    }
+
+    if (!playerInputFrontIdsSorted.empty()) {
+        *outMaxPlayerInputFrontId = *playerInputFrontIdsSorted.rbegin();
+        *outMinPlayerInputFrontId = *playerInputFrontIdsSorted.begin();
+/*
+#ifndef NDEBUG
+        Debug::Log("OnUpsyncSnapshotReceived/C++ updated maxPlayerInputFrontId=" + std::to_string(*outMaxPlayerInputFrontId) + ", minPlayerInputFrontId=" + std::to_string(*outMinPlayerInputFrontId) + " after handling with playerInputFrontIdsSorted.size=" + std::to_string(playerInputFrontIdsSorted.size()), DColor::Orange);
+    }
+    else {
+        Debug::Log("OnUpsyncSnapshotReceived/C++ got empty playerInputFrontIdsSorted after handling, sth is wrong" , DColor::Orange);
+#endif
+*/
+    }
+    uint64_t inactiveJoinMaskVal = inactiveJoinMask.load();
+    int oldUdpLcacIfdId = moveForwardUdpLastConsecutivelyAllConfirmedIfdId(ifdBuffer.EdFrameId, inactiveJoinMaskVal);
+    if (lcacIfdId > udpLcacIfdId) {
+        udpLcacIfdId = lcacIfdId;
+    }
+    *outChaserRdfId = chaserRdfId;
+    *outUdpLcacIfdId = udpLcacIfdId;
+
+    return true;
+}
+
+int FrontendBattle::moveForwardUdpLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask) {
+    int oldUdpLcacIfdId = udpLcacIfdId;
+    int proposedIfdStFrameId = udpLcacIfdId + 1;
+    if (proposedIfdStFrameId >= proposedIfdEdFrameId) {
+        return oldUdpLcacIfdId;
+    }
+    if (proposedIfdStFrameId < ifdBuffer.StFrameId) {
+        proposedIfdStFrameId = ifdBuffer.StFrameId;
+    }
+    for (int inputFrameId = proposedIfdStFrameId; inputFrameId < proposedIfdEdFrameId; inputFrameId++) {
+        InputFrameDownsync* ifd = ifdBuffer.GetByFrameId(inputFrameId);
+
+        if (allConfirmedMask != (ifd->udp_confirmed_list() | skippableJoinMask | selfJoinIndexMask)) {
+            // [WARNING] The use of "selfJoinIndexMask" here is slightly different than "moveForwardLastConsecutivelyAllConfirmedIfdId", because we don't want to block any self-input later than an InputFrameDownsync prefabbed by a faster peer. 
+            break;
+        }
+
+        ifd->set_udp_confirmed_list(ifd->udp_confirmed_list() | skippableJoinMask);
+        if (udpLcacIfdId < inputFrameId) {
+            udpLcacIfdId = inputFrameId;
+        }
+    }
+
+    return oldUdpLcacIfdId;
+}
+
+bool FrontendBattle::ProduceUpsyncSnapshotRequest(int seqNo, int proposedBatchIfdIdSt, int proposedBatchIfdIdEd, int* outLastIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    int batchIfdIdSt = proposedBatchIfdIdSt;
+    if (batchIfdIdSt < ifdBuffer.StFrameId) {
+        batchIfdIdSt = ifdBuffer.StFrameId;
+    }
+    
+    int batchIfdIdEd = proposedBatchIfdIdEd;
+    if (batchIfdIdEd > ifdBuffer.EdFrameId) {
+        batchIfdIdEd = ifdBuffer.EdFrameId;
+    }
+
+    if (batchIfdIdEd < batchIfdIdSt) {
+        *outBytesCntLimit = 0;
+        return false;
+    }
+
+    std::vector<uint64> cmdList;
+    cmdList.reserve(batchIfdIdEd - batchIfdIdSt + 1);
+    for (int i = batchIfdIdSt; i < batchIfdIdEd; i++) {
+        auto ifd = ifdBuffer.GetByFrameId(i);
+        if (nullptr == ifd) {
+            break;
+        }
+        bool selfConfirmed = (0 < (selfJoinIndexMask & (ifd->confirmed_list() | ifd->udp_confirmed_list())));
+        if (!selfConfirmed) {
+            break;
+        }
+        cmdList.emplace_back(ifd->input_list(selfJoinIndexArrIdx));
+        *outLastIfdId = i;
+    }
+
+    if (cmdList.empty()) {
+        *outBytesCntLimit = 0;
+        return false;
+    }
+
+    selfUpsyncReqHolder->set_join_index(selfJoinIndex);
+    selfUpsyncReqHolder->set_auth_key(selfCmdAuthKey);
+    selfUpsyncReqHolder->set_seq_no(seqNo);
+    selfUpsyncReqHolder->set_act(UpsyncAct::UA_CMD);
+    UpsyncSnapshot* selfUpsyncSnapshot = selfUpsyncReqHolder->mutable_upsync_snapshot();
+    selfUpsyncSnapshot->set_st_ifd_id(batchIfdIdSt);
+    selfUpsyncSnapshot->clear_cmd_list();
+    for (auto& cmd : cmdList) {
+        selfUpsyncSnapshot->add_cmd_list(cmd);
+    }
+    long byteSize = selfUpsyncReqHolder->ByteSizeLong();
+    if (byteSize > *outBytesCntLimit) {
+        *outBytesCntLimit = 0;
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+
+    selfUpsyncReqHolder->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
+}
+
+bool FrontendBattle::WriteSingleStepFrameLog(int currRdfId, RenderFrame* nextRdf, int fromRdfId, int toRdfId, int delayedIfdId, InputFrameDownsync* delayedIfd, bool isChasing, bool snatched) {
+    JPH_ASSERT(currRdfId + 1 == nextRdf->id());
+    FrameLog* nextFrameLog = frameLogBuffer.GetByFrameId(currRdfId + 1);
+    if (!nextFrameLog) {
+        nextFrameLog = frameLogBuffer.DryPut();
+    }
+    if (frameLogBuffer.GetAllocator() == &pbTempAllocator) {
+        ArenaFreeFrameLog(nextFrameLog, &pbTempAllocator);
+    }
+    nextFrameLog->unsafe_arena_set_allocated_rdf(nextRdf);
+    uint64_t tcpConfirmedList = delayedIfd->confirmed_list();
+    uint64_t udpConfirmedList = delayedIfd->udp_confirmed_list();
+    nextFrameLog->set_used_ifd_confirmed_list(tcpConfirmedList);
+    nextFrameLog->set_used_ifd_udp_confirmed_list(udpConfirmedList);
+    nextFrameLog->set_actually_used_ifd_id(delayedIfdId);
+    nextFrameLog->clear_used_ifd_input_list();
+    for (int k = 0; k < delayedIfd->input_list_size(); k++) {
+        nextFrameLog->add_used_ifd_input_list(delayedIfd->input_list(k));
+    }
+    nextFrameLog->set_chaser_rdf_id_lower_bound_snatched(snatched);
+    nextFrameLog->set_timer_rdf_id(timerRdfId);
+    nextFrameLog->set_chaser_rdf_id(chaserRdfId);
+    nextFrameLog->set_chaser_rdf_id_lower_bound(chaserRdfIdLowerBound);
+    nextFrameLog->set_lcac_ifd_id(lcacIfdId);
+    if (isChasing) {
+        nextFrameLog->set_chaser_st_rdf_id(fromRdfId);
+        nextFrameLog->set_chaser_ed_rdf_id(toRdfId);
+    } else {
+        nextFrameLog->set_chaser_st_rdf_id(0);
+        nextFrameLog->set_chaser_ed_rdf_id(0);
+    }
+
+    /*
+#ifndef NDEBUG
+    if (delayedIfdId > lcacIfdId && allConfirmedMask == tcpConfirmedList) {
+        std::ostringstream oss;
+        oss << "Why @timerRdfId=" << timerRdfId << ", @currRdfId=" << currRdfId << ", (delayedIfdId:" << delayedIfdId << ") > (lcacIfdId:" << lcacIfdId << ") but delayedIfd is all confirmed? @chaserRdfId=" << chaserRdfId << ", chaserRdfIdLowerBound=" << chaserRdfIdLowerBound;
+        Debug::Log(oss.str(), DColor::Orange);
+    } else {
+        std::ostringstream oss;
+        oss << "Written @timerRdfId=" << timerRdfId << ", @currRdfId=" << currRdfId << ", (delayedIfdId:" << delayedIfdId << ", lcacIfdId:" << lcacIfdId << ", tcpConfirmedList=" << tcpConfirmedList << ", udpConfirmedList=" << udpConfirmedList << ") @chaserRdfId=" << chaserRdfId << ", chaserRdfIdLowerBound=" << chaserRdfIdLowerBound;
+        Debug::Log(oss.str(), DColor::White);
+    }
+#endif
+    */
+    return true;
+}
+
+bool FrontendBattle::Step() {
+    if (!onlineArenaMode && INT_MAX <= timerRdfId+1) {
+        // In Offline mode, "timerRdfId" might exceed INT_MAX and thus needs recycling.
+        RenderFrame* toRecycleRdf = rdfBuffer.GetLast(); 
+        int toUseOrigIfdId = ConvertToDelayedInputFrameId(toRecycleRdf->id());
+
+        int toReuseNewIfdId = 0;
+        timerRdfId = ConvertToFirstUsedRenderFrameId(toReuseNewIfdId) + 1;
+        toRecycleRdf->set_id(timerRdfId);
+
+        for (int ifdId = toUseOrigIfdId; ifdId < ifdBuffer.EdFrameId; ifdId++) {
+            InputFrameDownsync* toRecycleIfd = ifdBuffer.GetByFrameId(ifdId); 
+            if (nullptr == toRecycleIfd) break;
+            InputFrameDownsync* toReuseIfd = ifdBuffer.GetByOffset(toReuseNewIfdId);
+            CopyIfd(toRecycleIfd, toReuseIfd);
+            toReuseNewIfdId++;
+        }
+        ifdBuffer.StFrameId = 0;
+        ifdBuffer.EdFrameId = toReuseNewIfdId;
+        ifdBuffer.Cnt = (ifdBuffer.EdFrameId-ifdBuffer.StFrameId);
+        ifdBuffer.St = 0;
+        ifdBuffer.Ed = ifdBuffer.Cnt;
+
+        RenderFrame* toReuseRdf = rdfBuffer.GetFirst();
+        if (toReuseRdf != toRecycleRdf) {
+            CopyRdf(toRecycleRdf, toReuseRdf);
+        }
+        rdfBuffer.StFrameId = timerRdfId;
+        rdfBuffer.EdFrameId = timerRdfId+1;
+        rdfBuffer.Cnt = 1;
+        rdfBuffer.St = 0;
+        rdfBuffer.Ed = 1;
+    }
+
+    int delayedIfdId = ConvertToDelayedInputFrameId(timerRdfId);
+    InputFrameDownsync* delayedIfd = nullptr;
+
+    RenderFrame* nextRdf = nullptr;
+    bool snatched = (timerRdfId + 1 == chaserRdfIdLowerBound);
+    if (snatched) {
+        delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+        nextRdf = rdfBuffer.GetByFrameId(chaserRdfIdLowerBound); // [WARNING] DON'T re-calculate if an advanced "chaserRdfIdLowerBound" has been received;
+    } else {
+        delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        regulateCmdBeforeRender(timerRdfId, delayedIfdId, delayedIfd);
+        JPH_ASSERT(nullptr != delayedIfd);
+
+        nextRdf = BaseBattle::CalcSingleStep(timerRdfId, delayedIfdId, delayedIfd);
+    }
+    JPH_ASSERT(nullptr != nextRdf);
+
+    if (frameLogEnabled) {
+        WriteSingleStepFrameLog(timerRdfId, nextRdf, timerRdfId, timerRdfId + 1, delayedIfdId, delayedIfd, false, snatched);
+    }
+
+    if (chaserRdfId == timerRdfId) {
+        timerRdfId++;
+        chaserRdfId++;
+    } else {
+        timerRdfId++;
+    }
+
+    return true;
+}
+
+bool FrontendBattle::ChaseRolledBackRdfs(int* outChaserRdfId, bool toTimerRdfId) {
+    *outChaserRdfId = chaserRdfId;
+    const int fromRdfId = chaserRdfId;
+    int toRdfId = chaserRdfId + globalPrimitiveConsts->max_chasing_render_frames_per_update();
+    if (toTimerRdfId) {
+        toRdfId = timerRdfId;
+    } else if (toRdfId > timerRdfId) {
+        toRdfId = timerRdfId;
+    }
+    for (int currRdfId = fromRdfId; currRdfId < toRdfId; ++currRdfId) {
+        int delayedIfdId = ConvertToDelayedInputFrameId(currRdfId);
+        InputFrameDownsync* delayedIfd = ifdBuffer.GetByFrameId(delayedIfdId);
+        JPH_ASSERT(nullptr != delayedIfd);
+        regulateCmdBeforeRender(currRdfId, delayedIfdId, delayedIfd);
+        auto nextRdf = BaseBattle::CalcSingleStep(currRdfId, delayedIfdId, delayedIfd);
+        if (frameLogEnabled) {
+            WriteSingleStepFrameLog(currRdfId, nextRdf, fromRdfId, toRdfId, delayedIfdId, delayedIfd, true);
+        }
+        chaserRdfId++;
+    }
+    *outChaserRdfId = chaserRdfId;
+    return true;
+}
+
+void FrontendBattle::regulateCmdBeforeRender(const int currRdfId, const int delayedIfdId, InputFrameDownsync* delayedIfd) {
+    if (delayedIfdId <= lcacIfdId) {
+        return;
+    }
+
+    RenderFrame* currRdf = rdfBuffer.GetByFrameId(currRdfId); 
+    bool existingInputMutated = false;
+    for (int i = 0; i < playersCnt; i++) {
+        int joinIndex = (i + 1); 
+        if (joinIndex == selfJoinIndex) {
+            continue;
+        }
+        uint64_t newVal = delayedIfd->input_list(i);
+        uint64_t joinMask = (U64_1 << i);
+        auto& playerChd = currRdf->players(i);
+        auto& chd = playerChd.chd();
+        // [WARNING] Remove any predicted "rising edge" or a "falling edge" of any critical button before rendering.
+        bool shouldPredictBtnAHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_a_holding_rdf_cnt()) || (0 < chd.btn_a_holding_rdf_cnt());
+        bool shouldPredictBtnBHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_b_holding_rdf_cnt()) || (0 < chd.btn_b_holding_rdf_cnt());
+        bool shouldPredictBtnCHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_c_holding_rdf_cnt()) || (0 < chd.btn_c_holding_rdf_cnt());
+        bool shouldPredictBtnDHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_d_holding_rdf_cnt()) || (0 < chd.btn_d_holding_rdf_cnt());
+        bool shouldPredictBtnEHold = (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() == chd.btn_e_holding_rdf_cnt()) || (0 < chd.btn_e_holding_rdf_cnt());
+      
+        if (0 < (delayedIfd->confirmed_list() & joinMask)) {
+            // This regulation is only valid when "delayed input for this player is not yet confirmed"
+            continue;
+        } 
+
+        if (0 < (delayedIfd->udp_confirmed_list() & joinMask)) {
+            // Received from UDP, better than local prediction though "InputFrameDownsync.confirmed_list()" is not set until confirmed by TCP path
+            continue;
+        }
+
+        // Local prediction
+        if (playerInputFrontIds[i] < delayedIfdId) {
+            newVal = (playerInputFronts[i] & U64_15);
+        } else {
+        }
+
+        if (shouldPredictBtnAHold) newVal |= U64_16;
+        if (shouldPredictBtnBHold) newVal |= U64_32;
+        if (shouldPredictBtnCHold) newVal |= U64_64;
+        if (shouldPredictBtnDHold) newVal |= U64_128;
+        if (shouldPredictBtnEHold) newVal |= U64_256;
+
+        if (newVal != delayedIfd->input_list(i)) {
+            existingInputMutated = true;
+            delayedIfd->set_input_list(i, newVal);
+        }
+    }
+
+    if (existingInputMutated) {
+        handleIncorrectlyRenderedPrediction(delayedIfdId, false, false, true);
+    }
+}
+
+void FrontendBattle::handleIncorrectlyRenderedPrediction(int mismatchedInputFrameId, bool fromSelf, bool fromUdp, bool fromRegulateBeforeRender) {
+    if (0 > mismatchedInputFrameId) return;
+    int timerRdfId1 = ConvertToFirstUsedRenderFrameId(mismatchedInputFrameId);
+    if (timerRdfId1 >= chaserRdfId) return;
+    // By now timerRdfId1 < chaserRdfId, it's pretty impossible that "timerRdfId1 > timerRdfId" but we're still checking.
+    if (timerRdfId1 > timerRdfId) return; // The incorrect prediction is not yet rendered, no visual impact for player.
+    int timerRdfId2 = ConvertToLastUsedRenderFrameId(mismatchedInputFrameId);
+    if (timerRdfId2 <= chaserRdfIdLowerBound) {
+        /*
+           [WARNING]
+
+           There's no need to reset "chaserRdfId" if the impact of this input mismatch couldn't even reach "chaserRdfIdLowerBound".
+         */
+        return;
+    }
+    /*
+       A typical case is as follows.
+       --------------------------------------------------------
+       <timerRdfId1>                           :              36
+
+
+       <this.chaserRdfId>                 :              62
+
+       [this.timerRdfId]                       :              64
+       --------------------------------------------------------
+     */
+
+    // The actual rollback-and-chase would later be executed in "Step(...)".
+    if (timerRdfId1 < rdfBuffer.StFrameId) {
+        timerRdfId1 = rdfBuffer.StFrameId; // [WARNING] One of the edge cases here, just wait for the next "refRdf".
+    }
+/*
+#ifndef NDEBUG
+    std::ostringstream oss;
+    int localToGenIfdId = ConvertToGeneratingIfdId(timerRdfId);
+    int localRequiredIfdId = ConvertToDelayedInputFrameId(timerRdfId);
+    oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", @lcacIfdId=" << lcacIfdId << ", rewinding chaserRdfId from " << chaserRdfId << " to " << timerRdfId1 << " due to mismatchedInputFrameId=" << mismatchedInputFrameId << ", fromSelf=" << fromSelf << ", peerInputSource=" << (fromUdp ? "UDP" : "TCP") << ", fromRegulateBeforeRender=" << fromRegulateBeforeRender;
+
+    Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+    chaserRdfId = timerRdfId1;
+}
+
+void FrontendBattle::Clear() {
+    BaseBattle::Clear();
+    udpLcacIfdId = -1;
+}
+
+bool FrontendBattle::ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(&pbTempAllocator);
+    initializerMapData->ParseFromArray(inBytes, inBytesCnt);
+    return ResetStartRdf(initializerMapData, inSelfJoinIndex, inSelfPlayerId, inSelfCmdAuthKey);
+}
+
+bool FrontendBattle::ResetStartRdf(WsReq* initializerMapData, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey) {
+    if (0 >= inSelfJoinIndex) {
+        return false;
+    }
+    selfJoinIndex = inSelfJoinIndex;
+    selfJoinIndexInt = (int)inSelfJoinIndex;
+    selfJoinIndexArrIdx = selfJoinIndexInt-1;
+    selfJoinIndexMask = (U64_1 << selfJoinIndexArrIdx);
+    selfPlayerId = inSelfPlayerId;
+    selfCmdAuthKey = inSelfCmdAuthKey;
+    
+    bool res = BaseBattle::ResetStartRdf(initializerMapData);
+    timerRdfId = rdfBuffer.GetLast()->id();
+    chaserRdfId = chaserRdfIdLowerBound = timerRdfId;
+    
+    return res;
+}
+
+void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+    if (nullptr != stepResult && cc->has_btn_b_charging() && globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() < nextChd->btn_b_holding_rdf_cnt()) {
+        auto nextChState = nextChd->ch_state();
+        bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+        bool nextDashing = !nextNotDashing;
+        bool nextWalking = walkingSet.count(nextChState);
+        bool nextEffInAir = isEffInAir(*nextChd, nextNotDashing);
+        bool nextOnWall = onWallSet.count(nextChState);
+        bool nextCrouching = isCrouching(nextChState, cc);
+        int potentialEncodedPattern = EncodePatternForCancelTransit(globalPrimitiveConsts->pattern_released_b(), nextEffInAir, nextCrouching, nextOnWall, nextDashing, nextWalking);
+        auto initSkillDict = &(cc->init_skill_transit());
+        if (nullptr != battleSpecificConfig && 0 < battleSpecificConfig->character_overrides_size()) {
+            auto& characterOverrides = battleSpecificConfig->character_overrides();
+            if (characterOverrides.count(ud)) {
+                auto& characterOverride = characterOverrides.at(ud);
+                if (0 < characterOverride.init_skill_transit_size()) {
+                    initSkillDict = &(characterOverride.init_skill_transit());
+                }
+            }
+        }
+
+        if (initSkillDict->count(potentialEncodedPattern)) {
+            auto potentialSkillId = initSkillDict->at(potentialEncodedPattern);
+            if (globalConfigConsts->skill_configs().count(potentialSkillId)) {
+                const Skill& potentialSkillConfig = globalConfigConsts->skill_configs().at(potentialSkillId);
+                const BulletConfig& potentialBulletConfig = potentialSkillConfig.hits(0);
+                BodyID bodyID = chCollider->GetBodyID();
+                AimingRayBodyFilter aimingRayCastBodyFilter(((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, bodyID, ud, udt, this);
+                
+                JPH::Quat nextChdQ;
+                Vec3 nextChdFacing;
+                calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
+
+                JPH::Quat offenderEffQ = 0 < nextChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                if (OnWallAtk1 == potentialSkillConfig.bound_ch_state()) {
+                    offenderEffQ = cTurnbackAroundYAxis * offenderEffQ;
+                }
+                JPH::Quat offenderEffAimingQ = JPH::Quat(nextChd->aiming_q_x(), nextChd->aiming_q_y(), nextChd->aiming_q_z(), nextChd->aiming_q_w()) * offenderEffQ;
+
+                Vec3 blInitOffset(potentialBulletConfig.hitbox_offset_x(), potentialBulletConfig.hitbox_offset_y(), 0);
+                Vec3 blEffOffset = offenderEffAimingQ * blInitOffset;
+
+                RVec3 potentialBulletStPos(nextChd->x() + blEffOffset.GetX(), nextChd->y() + blEffOffset.GetY(), nextChd->z());
+                Vec3 blEffAiming = offenderEffAimingQ * cXAxis;
+                RVec3 potentialAimingRayFacingVec = cDefaultAimingRayLength * blEffAiming;
+                RRayCast ray(potentialBulletStPos, potentialAimingRayFacingVec);
+                bool rayTestPassed = false;
+                RayCastResult rcResult;
+                narrowPhaseQueryNoLock->CastRay(ray, rcResult, {}, {}, aimingRayCastBodyFilter); // [REMINDER] "RayCast direction" MUST come with a magnitude, i.e. DON'T just use a normalized vector!
+                uint32_t oldAimingRayCount = mNextRdfAimingRayCount.fetch_add(1);
+                AimingRay* newAimingRay = stepResult->mutable_aiming_rays(oldAimingRayCount);
+                newAimingRay->set_offender_ud(ud);
+                newAimingRay->set_offender_udt(udt);
+                newAimingRay->set_st_x(potentialBulletStPos.GetX());
+                newAimingRay->set_st_y(potentialBulletStPos.GetY());
+                newAimingRay->set_st_z(potentialBulletStPos.GetZ());
+                newAimingRay->set_ed_x(potentialBulletStPos.GetX()+rcResult.mFraction*potentialAimingRayFacingVec.GetX());
+                newAimingRay->set_ed_y(potentialBulletStPos.GetY()+rcResult.mFraction*potentialAimingRayFacingVec.GetY());
+                newAimingRay->set_ed_z(potentialBulletStPos.GetZ()+rcResult.mFraction*potentialAimingRayFacingVec.GetZ());
+            }
+        }
+    }
+
+    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, chCollider, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+
+/*
+#ifndef NDEBUG
+    auto udPayload = getUDPayload(ud);
+    if (udt == UDT_PLAYER && udPayload == selfJoinIndex && CrouchIdle1 == currChd.ch_state() && CrouchIdle1 != nextChd->ch_state()) {
+        std::ostringstream oss;
+        int localToGenIfdId = ConvertToGeneratingIfdId(timerRdfId);
+        int localRequiredIfdId = ConvertToDelayedInputFrameId(steppingRdfId);
+        oss << "@timerRdfId=" << timerRdfId << ", @localToGenIfdId=" << localToGenIfdId << ", @steppingRdfId=" << steppingRdfId << ", @localRequiredIfdId=" << localRequiredIfdId << ", @maxPlayerInputFrontId=" << *playerInputFrontIdsSorted.rbegin() << ", @minPlayerInputFrontId=" << *playerInputFrontIdsSorted.begin() << ", self character at(" << currChd.x() << ", " << currChd.y() << ") w / frames_in_ch_state = " << currChd.frames_in_ch_state() << ", vel = (" << currChd.vel_x() << ", " << currChd.vel_y() << ") revoked from " << currChd.ch_state() << " to " << nextChd->ch_state() << ", nextVel = (" << nextChd->vel_x() << ", " << nextChd->vel_y() << ")" << ", cvSupported = " << cvSupported << ", cvOnWall = " << cvOnWall << ", cvInAir = " << cvInAir << ", cvGroundState = " << (int)cvGroundState << " | self ifdBuffer = \n";
+
+        stringifyPlayerInputsInIfdBuffer(oss, selfJoinIndexArrIdx);
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
+}

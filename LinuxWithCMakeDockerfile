@@ -1,0 +1,32 @@
+FROM ubuntu:22.04 
+
+# Set environment variables to avoid interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Configure APT to ignore SSL verification and allow insecure connections
+RUN echo 'Acquire::https::Verify-Peer "false";' > /etc/apt/apt.conf.d/99verify-peer.conf \
+    && echo 'Acquire::AllowInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99verify-peer.conf \
+    && echo 'Acquire::AllowDowngradeToInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99verify-peer.conf
+
+RUN apt-get update -y 
+
+RUN apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    ca-certificates \
+    gcc-10 \
+    g++-10 \
+    gdb
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG CMAKE_VERSION=4.3.3
+ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz /usr/local/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
+WORKDIR /usr/local
+RUN tar -xzvf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz && \
+    rm -rf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz 
+ENV PATH=$PATH:/usr/local/cmake-"${CMAKE_VERSION}"-linux-x86_64/bin

@@ -1,0 +1,1848 @@
+syntax = "proto3";
+
+package jtshared;
+
+// Providing "csharp_namespace" to force generating lowercase namespace, reference https://protobuf.dev/programming-guides/proto3/#packages 
+option csharp_namespace = "jtshared";
+option optimize_for = LITE_RUNTIME; 
+
+/*
+[WARNING] 
+
+The following option is critical for "Message::GetArenaNoVirtual()" to return "_internal_metadata_.arena()" instead of "ALWAYS nullptr".
+
+When creating a pb-message instance in some old pb versions (e.g. "vcpkg install protobuf:x64-windows@3.7.1"), use "Arena::CreateMessage<>" but NOT "Arena::Create<>", e.g "google::protobuf::Arena::CreateMessage<WsReq>(&pbTestCaseDataAllocator)" but NOT "google::protobuf::Arena::Create<WsReq>(&pbTestCaseDataAllocator)" -- the former allows "Message._internal_metadata_.ptr_" to actually carry the arena pointer instead of "ALWAYS nullptr".   
+*/
+option cc_enable_arenas = true; 
+
+message PbVec2 {
+    float x = 1;
+    float y = 2;
+}
+
+message GapToJump {
+    float vision_alignment = 1;
+    float anti_gravity_alignment = 2;
+}
+
+message PbQuat {
+    // Quaternion
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+enum BoxInterpolationType {
+    UsePrev = 0; 
+    Interpolate = 1;
+}
+
+message AuthTokenUnderlying {
+    string player_id = 1;
+    uint32 from_authsrv_id = 2;
+    uint32 to_battlesrv_id = 3;
+    int64 expires_at = 4;
+}
+
+message AuthResult {
+    int32 ret_code = 1;
+    string uname = 2;
+    string captcha = 3;
+    int64 expires_at = 4;
+    string player_id = 5;
+    string new_auth_token = 6; // b64Encode(battleSrvPubkeyRsaEncrypt({...}))
+    string new_auth_token_sig = 7; // b64Encode(authSrvPrikeyRsaSign(newAuthToken))
+    uint32 captcha_submit_authsrv_id = 8;
+    string battlesrv_hostname_only = 9;
+    string battlesrv_endpoint = 10; // e.g. "ws://<battlesrvHostnameOnly>:ip/path/to/connect"
+}
+
+message SteamAuthenticateUserTicketPayloadParams {
+    string result = 1;
+    string steamid = 2;
+    string ownersteamid = 3;
+    bool vacbanned = 4;
+    bool publisherbanned = 5; 
+}
+
+message SteamAuthenticateUserTicketPayloadResp {
+    SteamAuthenticateUserTicketPayloadParams params = 1;
+}
+
+message SteamAuthenticateUserTicketResult {
+    SteamAuthenticateUserTicketPayloadResp response = 1;
+}
+
+/*
+Upon reception of an encoded "BattleInvitation", an invited player can either
+- enter it into a free-text editbox for joining, or 
+- click the link shared in a social media software, e.g. https://partner.steamgames.com/doc/api/ISteamFriends#InviteUserToGame.
+
+In both use cases, the invited player should visit its closest "auth-server" for exchanging 
+- "toBattlesrvId -> battlesrvEndpoint" for routing, and 
+- "steam ticket -> authTokenUnderlying" for "battle-server" security control.
+
+The received encoded "BattleInvitation" is a string produced by "b64Encode(protobufMarshal(instance: BattleInvitation))" from a "battle-server". 
+
+```ISteamFriends#InviteUserToGame
+bool InviteUserToGame( CSteamID steamIDFriend, const char *pchConnectString );
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Name            |    Type	     |    Description
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+steamIDFriend	|    CSteamID	 |    The Steam ID of the friend to invite.
+pchConnectString|	const char * |	  A string that lets the friend know how to join the game (I.E. the game server IP). This can not be longer than specified in k_cchMaxRichPresenceValueLength.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Invites a friend or clan member to the current game using a special invite string.
+
+If the target user accepts the invite then the pchConnectString gets added to the command-line when launching the game.
+If the game is already running for that user, then they will receive a GameRichPresenceJoinRequested_t callback with the connect string.
+
+- Returns: bool
+Triggers a GameRichPresenceJoinRequested_t callback.
+    - true if the invite was successfully sent.
+    - false under the following conditions:
+        - The Steam ID provided to steamIDFriend was invalid.
+        - The Steam ID provided to steamIDFriend is not a friend or does not share the same Steam Group as the current user.
+        - The value provided to pchConnectString was too long.
+```
+*/
+message BattleInvitation {
+    string from_player_id = 1;
+    uint32 to_battlesrv_id = 2;
+    int32 bound_room_id = 3;
+    int64 expires_at = 4;
+    string passcode = 5;
+}
+
+/*
+[WARNING] On the use of unsigned int.
+
+RdfId (as well as all configured "frames"), xxxLocalId, skillHit offset and join_index will be used as array index which doesn't support "uint", just use 0 as their TERMINATING value to save bandwidth.
+
+We should reduce runtime typecasting as much as possible!
+*/
+enum IfaceCat {
+    // Sound effect basis
+    EMPTY = 0; 
+    FLESH = 1; 
+    METAL = 2; 
+    FLUID = 3;
+    ROCK = 4; 
+    GRASS = 5; 
+    WOOD = 6; 
+}
+
+enum BulletState {
+    StartUp = 0;
+    Active = 1;
+    Vanishing = 2;
+    Hit = 3;
+}
+
+enum CharacterState {
+    InvalidChState = 0;
+    Idle1 = 1;
+    Walking = 2;
+    TurnAround = 3;
+    Atked1 = 4;
+    InAirIdle1NoJump = 5;
+    InAirIdle1ByJump = 6;
+    InAirIdle2ByJump = 7;
+    InAirIdle1ByWallJump = 8;
+    InAirAtked1 = 9;
+
+    BlownUp1 = 10;
+    LayDown1 = 11;
+    GetUp1 = 12;
+    Dying = 13;
+
+    Dashing = 14;
+    Sliding = 15;
+
+    Dimmed = 16; // Pre-activated state for trigger-based NPC 
+    TransformingInto = 17; // When at this state, the character has already completed transform, i.e. in new species_id
+
+    BackDashing = 18;
+    InAirWalking = 19;
+
+    TransformingIntoFromDeath = 20; // When at this state, the character has already completed transform, i.e. in new species_id
+
+    FallStopping = 21; // [REMINDER] Only used in rendering when "0 < CharacterDownsync.fallstopping_rdf_countdown".
+
+    Parried = 23;
+    Awaking = 24;
+    GroundDodged = 25;
+    BackWalking = 26;
+
+    InAirDashing = 27;
+    InAirBackDashing = 28;
+    InAirTurnAround = 29;
+
+    InAirIdle1BySlipJump = 30;
+
+    OnWallIdle1 = 128; 
+
+    CrouchIdle1 = 256; 
+    CrouchAtk1 = 257; 
+    CrouchWalking = 258; 
+    CrouchAtked1 = 259;
+
+    Def1 = 260;
+    Def1Atked1 = 261;
+    Def1Broken = 262;
+
+    Atk1 = 1024;
+    Atk2 = 1025;
+    Atk3 = 1026;
+    Atk4 = 1027;
+    Atk5 = 1028;
+    Atk6 = 1029;
+    Atk7 = 1030;
+    Atk7_Charging = 1031;
+    Atk7_ChargeRelease = 1032;
+    Atk8 = 1033;
+
+    InAirAtk1 = 2048;
+    InAirAtk2 = 2049;
+    WalkingAtk1 = 2050;
+    WalkingAtk4 = 2051;
+
+    InAirAtk6 = 2052;
+
+    OnWallAtk1 = 3072; 
+
+    Atk1_Charging = 3073;
+    WalkingAtk1_Charging = 3074;
+    InAirAtk1_Charging = 3075;
+    OnWallAtk1_Charging = 3076;
+    CrouchAtk1_Charging = 3077;
+}
+
+enum NpcGoal {
+    NIdle = 0;
+    NFollowAlly = 1;
+    NPatrol = 2;
+    NHuntThenIdle = 3;
+    NHuntThenPatrol = 4;
+    NHuntThenFollowAlly = 5;
+    NIdleIfGoHuntingThenPatrol = 6;
+    NPathPatrol = 7;
+    NHuntThenPathPatrol = 8;
+    NIdleIfGoHuntingThenPathPatrol = 9;
+}
+
+enum TrapState {
+    TpIdle = 0;
+    TpWalking = 1;
+    TpAtk1 = 2;
+    TpAtked1 = 3;
+    TpDeactivated = 4; // Wouldn't be left-shifted
+    TpDead = 5;
+}
+
+enum TriggerState {
+    TrReady = 0;
+    TrSubCycleReady = 1;
+    TrSubCycleCoolingDown = 2;
+    TrSubCycleCooledDown = 3;
+    TrSubCycleExhausted = 4;
+    TrCoolingDown = 5;
+    TrCooledDown = 6;
+    TrExhausted = 7; // Wouldn't be left-shifted 
+    TrDead = 8;
+    TrExhaustedYetListening = 9; // Special state for "trt_indi_wave_npc_spawner" 
+}
+
+enum PickableState {
+    PIdle = 0;
+    PDisappearing = 1;
+    PConsumed = 2;
+}
+
+message CharacterConfig {
+    uint32 species_id = 1;
+
+    int32 hp = 3;
+    int32 mp = 4;
+
+    int32 lay_down_frames_to_recover = 6;
+
+    int32 get_up_invinsible_frames = 7;
+    int32 get_up_frames_to_recover = 8;
+
+    float speed = 9;
+    int32 mp_regen_per_interval = 10;
+    int32 mp_regen_interval = 11; // an integer of RenderFrame count
+
+    float acc_mag_x = 12; // acceleration magnitude per second
+    float jump_acc_mag_y = 13;
+    float ang_y_speed = 14; // rads/second
+
+    int32 wall_jump_frames_to_recover = 15;
+    float wall_jump_acc_mag_x = 16;
+    float wall_jump_acc_mag_y = 17;
+    float wall_ang_y_speed = 18; // rads/second
+    float wall_slide_vel_y = 19;
+    float wall_jump_free_speed = 20;
+
+    float min_falling_vel_y = 21;
+    float max_ascending_vel_y = 22;
+
+    optional float collider_density = 23;
+
+    bool atk1_uses_magazine = 25;
+    InventorySlotConfig atk1_magazine = 26; 
+    InventorySlotConfig super_atk_gauge = 27; 
+
+    int32 ground_dodged_frames_to_recover = 28;
+    int32 ground_dodged_frames_invinsible = 29;
+    float ground_dodged_speed = 30; // TODO: For better flexibility, should allow "configurable list of speed keyframes", like that of "Hurtboxes"  
+    bool  has_vision_reaction = 31;
+
+    int32 walkstopping_inertia_rdf_count = 32;
+    int32 turnaround_inertia_rdf_count = 33;
+    int32 fallstopping_inertia_rdf_count = 34;
+
+    float capsule_radius = 35;
+    float capsule_half_height = 36;
+
+    float shrinked_capsule_radius = 37;
+    float shrinked_capsule_half_height = 38;
+
+    float lay_down_capsule_radius = 39;
+    float lay_down_capsule_half_height = 40;
+
+    float dying_capsule_radius = 41;
+    float dying_capsule_half_height = 42;
+
+    float dimmed_capsule_radius = 43;
+    float dimmed_capsule_half_height = 44;
+
+    bool anti_gravity_when_idle = 45;
+    int32 anti_gravity_frames_lingering = 46;
+
+    bool omit_gravity = 47;
+    bool omit_soft_pushback = 48;
+    bool repel_soft_pushback = 49;
+    uint64 collision_type_mask = 50;
+
+    float vision_offset_x = 51;
+    float vision_offset_y = 52;
+	float vision_half_height = 53;
+	float vision_top_radius = 54;
+	float vision_bottom_radius = 55;
+
+    bool lay_down_to_recover_from_dimmed = 56;
+
+    int32 hardness = 57;
+
+    int32 jump_startup_frames = 58;
+
+    uint32 default_air_jump_quota = 59;
+    uint32 default_air_dash_quota = 60;
+    uint32 default_def1_quota = 61;
+
+    bool isolated_air_jump_and_dash_quota = 62; // default is false, in most cases Air_jump and Air_dash quotas are deduced together (but default initial quota can be different) 
+
+    uint32 transform_into_species_id_upon_death = 66;
+    bool jump_holding_to_fly = 67;
+    bool has_def1 = 68;
+    int32 default_def1_broken_frames_to_recover = 70;
+
+    int32 def1_startup_frames = 74;
+    float def1_damage_yield = 75;
+    bool def1_defies_ele_weakness = 76;
+    bool def1_defies_debuff = 77;
+    int32 flying_quota_rdf_cnt = 78;
+
+    IfaceCat Ifc = 80;
+    uint32 ele_weakness = 81;
+    uint32 ele_resistance = 82;
+    bool has_btn_b_charging = 83;
+
+    bool is_key_ch = 85;
+
+    bool allows_same_team_soft_pushback = 86; 
+    int32 gauge_inc_when_exhausted = 87;
+
+    bool jumping_instead_of_walking = 88;
+    uint32 vision_search_interval_pow2Minus1U = 89;
+    int32 vision_search_interval_pow2Minus1 = 90;
+
+    bool npc_no_default_air_walking = 91;
+    bool npc_prioritize_bullet_handling = 92;
+    bool npc_prioritize_ally_healing = 93;
+    bool npc_not_hunting_in_air_oppo_ch = 94;
+
+    int32 transform_into_frames_to_recover = 95;
+    int32 transform_into_frames_invinsible = 96;
+
+    int32 awaking_frames_to_recover = 97;
+    int32 awaking_frames_invinsible = 98;
+
+    bool use_idle1_as_flying_idle = 99;
+
+    bool no_flee_as_npc = 100;
+
+    bool dashing_enabled = 101;
+    bool sliding_enabled = 102;
+    bool on_wall_enabled = 103;
+    bool crouching_enabled = 104; // Considering that a character might be forced to crouch, "CrouchAtked1" is a MUST if "true == crouching_enabled"
+    bool crouching_atk_enabled = 105; 
+    bool ground_dodge_enabled_by_iv_slot_c_in_block_stun = 106;
+    int32 ground_dodge_enabled_by_rdf_cnt_from_beginning = 107;
+
+    bool has_in_air_walking_anim = 110; 
+    bool has_turn_around_anim = 111;
+    bool has_in_air_turn_around_anim = 112;
+    bool has_walk_stopping_anim = 113; 
+    bool has_in_air_walk_stopping_anim = 114; 
+    bool has_dimmed_anim = 115;
+    bool has_awaking_anim = 116;
+
+    repeated InventorySlotConfig init_inventory_slots = 258;
+    map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
+    map<int32, int32> looping_ch_states = 260; 
+    map<int32, int32> trailing_rdf_chargeable_ch_states = 261; 
+
+    map<int32, uint32> init_skill_transit = 262; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
+    string species_name = 263;
+    string air_jump_vfx_anim_name = 264;
+    string def1_active_vfx_anim_name = 265;
+    string def1_atked_vfx_anim_name = 266;
+    string def1_broken_vfx_anim_name = 267;
+    string btn_b_charged_vfx_anim_name = 268;
+}
+
+enum SpecialMoveOverrideStatus {
+    SmusKeep = 0;    
+    SmusLocked = 1;    
+    SmusUnlocked = 2;    
+} 
+
+message CharacterBattleSpecificConfig {
+    map<int32, uint32> init_skill_transit = 1;     
+    repeated InventorySlotConfig init_inventory_slots = 2;
+    InventorySlotConfig atk1_magazine = 3; 
+    InventorySlotConfig super_atk_gauge = 4; 
+    SpecialMoveOverrideStatus air_jump_override = 5;
+}
+
+message BattleSpecificConfig {
+    map<uint64, CharacterBattleSpecificConfig> character_overrides = 1; 
+}
+
+message CharacterDownsync {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+
+    /*
+    The unit-quaternion that transforms the "world-axes" to align with the character's "local-axes" as if the bullet always stayed at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
+
+    Moreover, the body mesh starts with its "local-axes" aligned with the "world-axes". 
+    */
+    float q_x = 4;
+    float q_y = 5;
+    float q_z = 6;
+    float q_w = 7;
+
+    float vel_x = 8;
+    float vel_y = 9;
+    float vel_z = 10;
+
+    float ground_vel_x = 11;
+    float ground_vel_y = 12;
+    float ground_vel_z = 13;
+
+    // The unit-quaternion that rotates the character's aiming direction LOCALLY after "q_*". 
+    float aiming_q_x = 14;
+    float aiming_q_y = 15;
+    float aiming_q_z = 16;
+    float aiming_q_w = 17;
+
+    int32 walkstopping_rdf_countdown = 18;
+    int32 fallstopping_rdf_countdown = 19;
+
+    int32 hit_self_stun_frames = 20;
+
+    bool omit_gravity = 21;
+
+    uint32 species_id = 22; // For evolution during battle
+
+    uint64 ground_ud = 24;
+    uint64 wall_ud = 25;
+
+    int32 frames_to_recover = 26;
+
+    int32 new_birth_rdf_countdown = 27;
+
+    int32 frames_invinsible = 28;
+
+    int32 parry_prep_rdf_cnt_down = 29;
+
+    // Kindly note that "collision_type_mask" is NOT GRANULAR ENOUGH for inter-character collision configuration, e.g. same team omission, thus we'd still need the fields "bullet_team_id" and "ch_collision_team_id" here
+    int32 bullet_team_id = 31;
+    uint32 remaining_air_jump_quota = 32;
+    uint32 remaining_air_dash_quota = 33;
+
+    int32 damaged_hint_rdf_countdown = 34;
+    uint32 damaged_elemental_attrs = 35; // Should be cleared whenever entering a non-attacked ch_state
+
+    uint32 remaining_def1_quota = 36;
+
+    uint32 combo_hit_cnt = 37;
+    int32 combo_frames_remained = 38;
+
+    uint64 last_damaged_by_ud = 39;
+    int32 last_damaged_by_bullet_team_id = 40;
+    
+    uint32 active_skill_id = 41;
+    int32 active_skill_hit = 42; // TODO: change to 1-based in code and uint32
+
+    int32 btn_a_holding_rdf_cnt = 43;
+    int32 btn_b_holding_rdf_cnt = 44;
+    int32 btn_c_holding_rdf_cnt = 45;
+    int32 btn_d_holding_rdf_cnt = 46;
+    int32 btn_e_holding_rdf_cnt = 47;
+    int32 btn_f_holding_rdf_cnt = 48;
+    int32 mp_regen_rdf_countdown = 49;
+
+    int32 flying_rdf_countdown = 50;
+
+    uint64 locking_on_ud = 51;
+
+    int32 ch_collision_team_id = 52;
+    float speed = 53; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
+
+    int32 hp = 54;
+    int32 mp = 55;
+
+    CharacterState ch_state = 56;
+    int32 frames_in_ch_state = 57; // number of frames elapsed in the current character state   
+    int32 lower_part_rdf_cnt = 58;   
+
+    /*
+    [REMINDER] Repeated or collection fields of "CharacterDownsync" are not necessarily operated atomically, thus not necessary to preallocate.
+
+    However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
+    */
+
+    InventorySlot atk1_magazine = 59; 
+    InventorySlot super_atk_gauge = 60; 
+
+    repeated Buff buff_list = 61; 
+    uint32 buff_count = 62;
+
+    repeated Debuff debuff_list = 63; 
+    uint32 debuff_count = 64;
+
+    repeated InventorySlot inventory_slots = 65;
+    uint32 ivs_count = 66;
+
+    repeated BulletImmuneRecord bullet_immune_records = 67; 
+    uint32 bir_count = 68;
+
+    repeated float kinematic_knobs = 69; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 70;
+}
+
+message PlayerCharacterDownsync {
+    CharacterDownsync chd = 1;
+    uint32 join_index = 2;
+
+    uint32 beats_cnt = 3;
+    uint32 beaten_cnt = 4;
+
+    float revival_x = 5;
+    float revival_y = 6;
+    float revival_z = 7;
+
+    int32 revival_q_x = 8;
+    int32 revival_q_y = 9;
+    int32 revival_q_z = 10;
+    int32 revival_q_w = 11;
+
+    int32 not_enough_mp_hint_rdf_countdown = 12;
+
+    // The following "NPC" fields are prepared for mocking Player inputs in an online arena when real-player-matching is difficult.
+    uint64 cached_cue_cmd = 13;
+    NpcGoal goal_as_npc = 14;
+}
+
+message NpcCharacterDownsync {
+    CharacterDownsync chd = 1;
+
+    uint32 id = 2;
+
+    int32 activated_rdf_id = 3;
+    uint64 cached_cue_cmd = 4;
+    int32 last_fled_rdf_id = 5;
+    NpcGoal goal_as_npc = 6;
+
+    uint64 publishing_mask_upon_exhausted = 7; // [WARNING] NOT to be configured from UI/Story Editor.
+    uint32 publishing_to_trigger_id_upon_exhausted = 8; // Configured from UI/Story Editor for awakening
+
+    uint32 subscribes_to_trigger_id = 9; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
+
+    bool captured_by_patrol_cue = 11;
+    int32 frames_in_patrol_cue = 12;
+
+    uint32 exhausted_to_drop_pkt = 13;
+
+    bool is_main_tower_of_team = 16;
+    
+    int32 waiving_patrol_cue_id = 17;
+}
+
+message InputFrameDecoded {
+    int32 dx = 1;
+    int32 dy = 2;
+    uint64 btn_a_level = 3;
+    uint64 btn_b_level = 4;
+    uint64 btn_c_level = 5;
+    uint64 btn_d_level = 6;
+    uint64 btn_e_level = 7;
+    uint64 btn_f_level = 8;
+}
+
+message UpsyncSnapshot {
+    int32 st_ifd_id = 1; // By NOT allowing individual "ifdId" to be attached to an individual "cmd", it's easier to defend against malicious inputs.
+    repeated uint64 cmd_list = 2;
+}
+
+message WsReq {
+    uint32 seq_no = 1;
+    uint32 join_index = 2;
+    UpsyncAct act = 3;
+    int32 auth_key = 4;
+    UpsyncSnapshot upsync_snapshot = 5;
+    RenderFrame self_parsed_rdf = 6;
+    int32 battle_duration_seconds = 7;
+    repeated SerializedBarrierCollider serialized_barriers = 8;
+    map<uint32, uint32> preallocate_npc_species_dict = 11;
+    repeated TrapConfigFromTiled trap_config_from_tile_list = 12;
+    repeated TriggerConfigFromTiled trigger_config_from_tile_list = 13;
+    repeated PickableConfigFromTiled pickable_config_from_tile_list = 14;
+    float fallen_death_height = 15;
+    BattleSpecificConfig battle_specific_config = 16;
+}
+
+message PatrolCue {
+    int32  id = 1;
+    uint64 fl_act = 2; // "input when colliding from the left side"
+    uint64 fr_act = 3; // "input when colliding from the right side"
+    int32 fl_capture_frames = 4;
+    int32 fr_capture_frames = 5;
+
+    uint64 fd_act = 6; // "input when colliding from the down side"
+    uint64 fu_act = 7; // "input when colliding from the up side"
+    int32 fd_capture_frames = 8;
+    int32 fu_capture_frames = 9;
+
+    uint64 collision_type_mask = 1029; // [COLLISION_NPC_PATROL_CUE_INDEX_PREFIX, COLLISION_TRAP_PATROL_CUE_INDEX_PREFIX]
+}
+
+enum BulletType {
+    Undetermined = 0;
+    Melee = 1;
+    MechanicalCartridge = 2;
+    MechanicalBouncerSpherical = 3;
+    MagicalFireball = 4;
+    GroundWave = 5;
+}
+
+enum MultiHitType {
+    /**
+      [WARN] Multihit of a fireball (determined in turn by the "BulletType b_type" field) is more difficult to handle than that of melee, because we have to count from the fireball's first hit; the situation becomes even more complicated when a multihit fireball is in a crowd -- remains to be designed
+
+      Types of fireball multihit-singlebullet
+      a. References the emission frame
+      b. References the first hit only when actually hit
+      c. References the first hit even if blocked
+      d. References the prev hit only when actually hit
+      e. References the prev hit even if blocked
+     */
+    None=0;
+    FromEmission = 1;
+    FromFirstHitActual = 2;
+    FromFirstHitAnyway = 3;
+    FromPrevHitActual = 4;
+    FromPrevHitAnyway = 5;
+    FromVisionSeekOrDefault = 6;
+    FromPrevHitActualOrActiveTimeUp = 7;
+    FromEmissionJustActive = 8;
+}
+
+enum SkillInvocation {
+    RisingEdge = 0;
+    FallingEdge = 1;
+}
+
+enum VfxDurationType {
+    OneOff = 0;
+    Repeating = 1;
+}
+
+enum VfxMotionType {
+    NoMotion = 0;
+    Dropped = 1;
+    Tracing = 2;
+}
+
+message BulletConfig {
+    int32 startup_frames = 1;
+    int32 startup_invinsible_frames = 2;
+    int32 cancellable_st_frame = 3;
+    int32 cancellable_ed_frame = 4;
+    int32 active_frames = 5;
+    int32 cooldown_frames = 6;
+
+    int32 hit_stun_frames = 7;
+    int32 block_stun_frames = 8;
+    float pushback_vel_x = 9;
+    float pushback_vel_y = 10;
+    int32 damage = 11;
+
+    float self_lock_vel_x = 12;
+    float self_lock_vel_y = 13;
+    float self_lock_vel_y_when_flying = 14;
+
+    float hitbox_offset_x = 15;
+    float hitbox_offset_y = 16;
+    float hitbox_half_size_x = 17;
+    float hitbox_half_size_y = 18;
+
+    int32 melee_hit_self_stun_frames = 19; // [WARNING] Exclusive against "remains_upon_hit". 
+
+    int32 active_anim_looping_rdf_offset = 21;  
+    int32 vanishing_anim_rdf_cnt = 23;
+    int32 vanishing_anim_looping_rdf_offset = 24;  
+    int32 hit_anim_rdf_cnt = 26; // [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
+
+    BulletType b_type = 27;
+    MultiHitType mh_type = 28;
+
+    uint32 simultaneous_multi_hit_cnt = 29; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
+
+    float speed = 30; // For speed varying bullets, this is the initial speed
+    float speed_if_not_hit = 31;
+
+    int32 hardness = 32;
+    int32 hit_invinsible_frames = 35;
+
+    int32 perp_acc_mag = 37; // acceleration magnitude perpendicular to instantaneous velocity per second
+
+    bool delay_self_vel_to_active = 38; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
+    bool hit_on_multi_contact = 39; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
+
+    bool omit_soft_pushback = 40; // Only used for melee bullets
+
+    bool remains_upon_hit = 41; 
+    bool render_rotation_along_velocity = 42;
+
+    bool blow_up = 46;
+    int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
+
+    bool mh_vanish_on_melee_hit = 48; // "mh" short for "multihit"
+
+    bool mh_updates_origin_pos = 50; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
+    bool beam_collision = 51; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
+
+    bool for_ally = 52;
+
+    float hitbox_size_inc_x = 53; // Change of hitbox_size_x per second
+    float hitbox_size_inc_y = 54; // Change of hitbox_size_y per second
+
+    bool allows_walking = 55;
+    bool allows_crouching = 56;
+
+    uint32 elemental_attrs = 59;
+
+    float beam_visual_size_y = 64;
+
+    bool touch_hit_bomb_collision = 65;
+    
+    bool air_riding_ground_wave = 66; // Only applicable to "b_type == GroundWave"
+
+    bool ground_impact_melee_collision = 67; // Only applicable to "b_type == Melee"
+    bool wall_impact_melee_collision = 68; // Only applicable to "b_type == Melee"
+
+    bool mh_inherits_spin = 69;
+    PbQuat init_q = 70;
+
+    optional float friction = 71;
+    optional float restitution = 72; 
+    optional float gravity_factor = 73; 
+    bool no_hit_anim = 74;
+
+    IfaceCat ifc = 75;
+    bool reflect_fireball_x_if_not_harder = 76;
+    bool reject_reflection_from_another_bullet = 77;
+
+    bool provides_x_hard_pushback = 78;
+    bool provides_y_hard_pushback_top = 79;
+    bool provides_y_hard_pushback_bottom = 80;
+
+    bool ignore_slope_deceleration = 81;
+    bool rotate_offender_with_spin = 82;
+    bool mh_not_trigger_on_ch_hit = 83;
+    bool mh_not_trigger_on_harder_bullet_hit = 84;
+    bool mh_not_trigger_on_hard_pushback_hit = 85;
+    bool hopper_missile = 86;
+    bool beam_rendering = 87;
+    uint32 missile_search_interval_pow2Minus1 = 88;
+
+    bool use_ch_offset_regardless_of_emission_mh = 89;
+
+    float gauge_inc_reduction_ratio = 93; // Normally 0 for SuperAtks
+    bool mh_inherits_frames_in_bl_state = 94;
+    int32 guard_breaker_extra_hit_cnt = 95;
+        
+    int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
+    bool no_vanish_anim_on_hard_pushback = 98;
+
+    uint64 collision_type_mask = 1029;
+    bool takes_gravity = 1030; // e.g. a bomb, a ground-wave
+
+    BuffConfig buff_config = 1031;
+
+    map<int32, uint32> cancel_transit = 1032; // encodeForCancelTransit(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing) -> skill_id, and by definition the character is having none-zero <activeSkillId, activeSkillHit> which is more granular than <ch_state>
+
+    // Sfx configs
+    string character_emit_sfx_name = 2048;
+    string fireball_emit_sfx_name = 2049;
+    string hit_sfx_name = 2050;
+    string active_sfx_name = 2051;
+    string hit_on_flesh_sfx_name = 2052;
+    string hit_on_rock_sfx_name = 2053;
+    string hit_on_metal_sfx_name = 2054;
+    string hit_on_wood_sfx_name = 2055;
+    string anim_name = 2056;
+}
+
+message Bullet {
+    // Jargon reference https://www.thegamer.com/fighting-games-frame-data-explained/
+    // ALL lengths are in world coordinate
+    BulletState bl_state = 1;
+    int32 frames_in_bl_state = 2;
+
+    uint64 ud = 3;
+    int32 originated_render_frame_id = 4; // Copied from the first bullet for all subsequent bullets
+    uint64 offender_ud = 5; // Copied to favor collision handling of the dispatched bullet
+
+    float x = 6;
+    float y = 7;
+    float z = 8;
+
+    /*
+    The unit-quaternion that transforms the "world-axes" to align with the bullet's "local-axes" as if the bullet always stayed at the world-space-origin -- it's the same definition in Jolt Physics for "JPH::Body.GetRotation()". 
+
+    Moreover, the body mesh starts with its "local-axes" aligned with the "world-axes". 
+    */
+    float q_x = 9;
+    float q_y = 10;
+    float q_z = 11;
+    float q_w = 12;
+
+    float vel_x = 13;
+    float vel_y = 14;
+    float vel_z = 15;
+
+    float originated_x = 16;
+    float originated_y = 17;
+    float originated_z = 18;
+
+    int32 repeat_quota_left = 19;
+    uint64 target_ud = 21; 
+    int32 damage_dealed = 22;
+    IfaceCat hit_on_ifc = 23; // [REMINDER] Together with "BulletConfig.ifc" to determine sound effect.
+
+    int32 active_skill_hit = 25; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_hit" might've already been reset)
+    uint32 skill_id = 26; // for the convenience of selecting the correct next bullet for multihit fireball (where the offender's "active_skill_id" might've already been reset); also for reverse lookup in multihit transition, in the most extreme case, a same "BulletConfig" instance is to be shared across different "Skill"s, thus we put "skill_id" in "BulletBattleAttr" instead.
+
+    uint32 id = 27;
+
+    int32 team_id = 28;
+    
+    bool for_ally = 29;
+
+    float ground_vel_x = 30;
+    float ground_vel_y = 31;
+    float ground_vel_z = 32;
+}
+
+message TrapConfig {
+    uint32 tpt = 1; // short for "trap type"
+    string dying_anim_name = 2; 
+    int32 dying_anim_rdf_cnt = 3;
+    bool blow_up = 4;
+
+    int32 contact_damage = 5;
+    int32 hit_stun_frames = 6;
+    int32 hit_invinsible_frames = 7;
+    bool deactivatable = 8;
+
+    int32 hardness = 9;
+
+    bool deactivate_upon_triggered = 10;
+
+    float surface_friction = 11;
+
+    bool use_kinematic = 12;
+
+    uint32 atk1_skill_id = 23;
+
+    float default_box_half_size_x = 26;
+    float default_box_half_size_y = 27;
+    float default_linear_speed = 28;
+    float default_angular_speed = 29; // in "radians/second" 
+    int32 default_cooldown_rdf_count = 30;
+
+    bool use_obstable_interface_body = 31;
+    bool no_x_flip_rendering = 32;
+
+    string name = 1024;
+}
+
+enum OverrideObsIfaceBodyOption {
+    OOIBOKeep = 0;    
+    OOIBOTrue = 1;    
+    OOIBOFalse = 2;    
+}
+
+message TrapConfigFromTiled {
+    uint32 id = 1; 
+    uint32 tpt = 2; // Will be used for the "dynamic trap" to locate its Prefab for animating
+    int32 quota = 3;
+
+    float box_half_size_x = 4;
+    float box_half_size_y = 5;
+
+    float linear_speed = 6;
+    float angular_speed = 7; // in "radians/second"
+
+    float init_x = 8;
+    float init_y = 9;
+    float init_z = 10;
+
+    float init_q_x = 11;
+    float init_q_y = 12;
+    float init_q_z = 13;
+    float init_q_w = 14;
+
+    // "init_vel" is allowed to have different direction than "init_q", because it's for (tpCollider w.r.t. constraintHelperBody) 
+    float init_vel_x = 15;
+    float init_vel_y = 16;
+    float init_vel_z = 17;
+
+    // "init_ang_vel" is allowed to have different direction than "init_q", because it's for (tpCollider w.r.t. constraintHelperBody) 
+    float init_ang_vel_x = 18;
+    float init_ang_vel_y = 19;
+    float init_ang_vel_z = 20;
+
+    int32 cooldown_rdf_count = 21;
+
+    float slider_axis_x = 22;
+    float slider_axis_y = 23;
+    float slider_axis_z = 24;
+
+    BarrierColliderAttr barrier_attr = 25;  
+    OverrideObsIfaceBodyOption ooibo = 26;
+
+    uint32 subscribes_to_trigger_id = 27;
+
+    // Used for constraint limit assignment
+    optional float limit_1 = 128;  
+    optional float limit_2 = 129;  
+    optional float limit_3 = 130;  
+    optional float limit_4 = 131;  
+
+    bool init_not_moving = 512; // thus only moves or rotates after triggered
+}
+
+message BarrierColliderAttr {
+    bool provides_hard_pushback = 1;
+    bool provides_slip_jump = 2;
+    bool prohibits_wall_grabbing = 3;
+    int32 only_allows_aligned_vel_x = 5;
+    int32 only_allows_aligned_vel_y = 6;
+}
+
+/*
+   What distinguished "Trap" and "Npc(typed CharacterDownsync)" is that a "Trap" often has much simpler skillset, vision/patrol reaction -- yet more complicated boundaries and hard/soft pushback config.
+ */
+message Trap {
+    uint32 id = 1; 
+    uint32 tpt = 2; 
+
+    TrapState trap_state = 4;
+    int32 frames_in_trap_state = 5;
+    
+    float x = 13; 
+    float y = 14;
+    float z = 15;
+
+    float q_x = 16; 
+    float q_y = 17;
+    float q_z = 18;
+    float q_w = 19;
+
+    // Linear velocity.
+    float vel_x = 20;
+    float vel_y = 21;
+    float vel_z = 22;
+
+    // Angular velocity.
+    float ang_vel_x = 23;
+    float ang_vel_y = 24;
+    float ang_vel_z = 25;
+}
+
+message PeerUdpAddr {
+    string ip = 1;
+    int32 port = 2;
+    int32 auth_key = 3;
+    uint32 seq_no = 4;
+}
+
+message StepResult {
+    repeated AimingRay aiming_rays = 1;
+    uint32 aiming_ray_count = 2;
+    repeated Trigger fulfilled_triggers = 3;
+    map<uint32, bool> fulfilled_trigger_ids = 4;
+    map<uint32, bool> fulfilled_trigger_group_ids = 5;
+
+    repeated uint64 prepared_trigger_uds = 6;
+}
+
+message RenderFrame {
+    int32 id = 1;
+    repeated PlayerCharacterDownsync players = 2;
+    int64 countdown_nanos = 3;
+    
+    /*
+    [WARNING] 
+    
+    Repeated fields of "RenderFrame" are preallocated by design, such that "adding new bullet/npc/trap" can be thread-safe with the help of atomic-counter (see "BaseBattle::addNewBulletToNextFrame" and "BaseBattle::addNewNpcToNextFrame").
+
+    Using pb generated methods to "check current count and decide whether to reuse or add new element" instead couldn't be made atomic easily. 
+
+    It's for the same reason that ALL collection fields of "RenderFrame" are only of type "repeated", i.e. no collection field is of type "map<>" here by design because it's not easy to maintain thread-safety by a simple atomic-counter. 
+    */
+    repeated Bullet bullets = 4;  
+    repeated NpcCharacterDownsync npcs = 5;
+    repeated Trap dynamic_traps = 6;
+    repeated Trigger triggers = 7;
+    repeated Pickable pickables = 8;  
+
+    uint32 bullet_id_counter = 9;
+    uint32 bullet_count = 10;
+
+    uint32 npc_id_counter = 11;
+    uint32 npc_count = 12;
+
+    // [WARNING] There's no "trigger_id_counter" by design, every "Trigger.id" is assigned in UI almost arbitrarily.
+    uint32 trigger_count = 13; 
+
+    uint32 pickable_id_counter = 15;
+    uint32 pickable_count = 16;
+
+    // [WARNING] There's no "dynamic_trap_id_counter" by design, every "Trap.id" is assigned in UI almost arbitrarily.
+    uint32 dynamic_trap_count = 17;
+}
+
+message BattlePrepareInfo {
+    string stage_name = 1;
+    int32 bound_room_id = 2;
+    int64 battle_duration_frames = 3;
+    int32 bound_room_capacity = 4;
+    bool frame_log_enabled = 1025;
+}
+
+message InputFrameDownsync {
+    uint32 input_count = 1;
+    repeated uint64 input_list = 2; // Indexed by "join_index", we try to compress the "single player input" into 1 word (64-bit for 64-bit Golang runtime) because atomic compare-and-swap only works on 1 word. Although CAS on custom struct is possible in C# https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked?view=netstandard-2.1, using a single word is still faster whenever possible. 
+    uint64 confirmed_list = 3; // Indexed by "join_index", same compression concern as above
+    uint64 udp_confirmed_list = 4; // [WARNING] Only used by frontend, i.e. on backend this field can be always zero because backend sets "InputFrameDownsync.confirmed_list" by UDP packets too while frontend shouldn't. 
+}
+
+enum UpsyncAct {
+    UA_NONE = 0;
+    UA_CMD = 1;
+    UA_SELF_PARSED_RDF = 2;
+    UA_HOLEPUNCH_BACKEND_UDP_TUNNEL = 3;
+    UA_HOLEPUNCH_PEER_UDP_ADDR = 4;
+}
+
+enum DownsyncAct {
+    DA_NONE = 0;
+    DA_REGULAR = 1;
+
+    DA_BATTLE_PREPARE = 2;
+    DA_BATTLE_READY_TO_START = 3;
+    DA_BATTLE_STARTED = 4;
+    DA_BATTLE_STOPPED = 5;
+
+    DA_BATTLE_PEER_UDP_ADDR = 6;
+    DA_BATTLE_PEER_DISCONNECTED = 7;
+    DA_BATTLE_PEER_JOINED = 8;
+    DA_BATTLE_PEER_REJOINED = 9;
+
+    DA_FAILED_TO_JOIN_BATTLE_NOT_JOINABLE = 10;
+    DA_FAILED_TO_JOIN_ALREADY_IN_ROOM = 11;
+    DA_FAILED_TO_REJOIN_BATTLE_NOT_REJOINABLE = 12;
+    DA_FAILED_TO_REJOIN_NOT_FOUND_IN_ROOM = 13;
+    DA_FAILED_TO_REJOIN_PLAYER_STATE_INVALID = 14;
+
+    DA_WS_OPEN = 64;
+    DA_WS_CLOSED = 65;
+}
+
+message DownsyncSnapshot {
+    int32 ref_rdf_id = 1;
+    RenderFrame ref_rdf = 2;
+    uint64 unconfirmed_mask = 3;
+    int32 st_ifd_id = 4;
+    repeated InputFrameDownsync ifd_batch = 5;
+
+    DownsyncAct act = 7;
+    BattlePrepareInfo prepare_info = 8;
+    PeerUdpAddr assigned_udp_tunnel = 9;
+    repeated PeerUdpAddr peer_udp_addr_list = 10;
+
+    int32 participant_change_id = 11;
+    uint64 inactive_join_mask = 12;
+    uint32 peer_join_index = 13;
+    int32 peer_bullet_team_id = 14;
+    uint32 peer_species_id = 15;
+
+    string err_msg = 512;
+}
+
+message Skill {
+    uint32 id = 1;
+    int32 recovery_frames = 2;
+    int32 recovery_frames_on_block = 3; 
+    int32 recovery_frames_on_hit = 4; 
+    SkillInvocation invocation_type = 5;
+    CharacterState bound_ch_state = 6;
+    CharacterState bound_ch_state_on_hit = 7; 
+    int32 mp_delta = 8; // Usually used as "mp consumption"
+    int32 atk1_magazine_delta = 9;
+    int32 super_atk_gauge_delta = 10;
+
+    repeated BulletConfig hits = 1024; // Hits within a "Skill" are automatically triggered
+    BuffConfig self_non_stock_buff = 1025;
+}
+
+message FrameLog {
+    RenderFrame rdf = 1;
+    int32 actually_used_ifd_id = 2;
+    repeated uint64 used_ifd_input_list = 3; 
+    uint64 used_ifd_confirmed_list = 4;
+    uint64 used_ifd_udp_confirmed_list = 5; 
+    int32 timer_rdf_id = 6;
+    int32 lcac_ifd_id = 7;
+    int32 chaser_rdf_id = 8;
+    int32 chaser_rdf_id_lower_bound = 9;
+    int32 chaser_st_rdf_id = 10;
+    int32 chaser_ed_rdf_id = 11;
+    bool  chaser_rdf_id_lower_bound_snatched = 12;
+}
+
+message BattleResult {
+    uint32 winner_join_index = 1;
+    int32 winner_bullet_team_id = 2;
+}
+
+enum BuffStockType {
+    NoneBf = 0;
+    Timed = 1; // Would be calculated in number of renderFrames, not actual time in seconds or milliseconds
+    Quota = 2;
+}
+
+enum DebuffType {
+    NoneDbf = 0;
+    SpeedDownOnly = 1;
+    ColdSpeedDown = 2;
+    PositionLockedOnly = 3;
+    FrozenPositionLocked = 4;
+}
+
+message DebuffConfig {
+    uint32 species_id = 1;
+    BuffStockType stock_type = 2;
+    int32 stock = 3;
+    DebuffType type = 4;
+    int32 arr_idx = 5;
+    int32 impact_per_interval = 6;
+    int32 impact_interval = 7;
+}
+
+message BuffConfig {
+    uint32 species_id = 1;
+    BuffStockType stock_type = 2;
+    int32 stock = 3;
+    float speed_delta = 4;
+    float hitbox_half_size_x_delta = 5;
+    float hitbox_half_size_y_delta = 6;
+    /* 
+       It's not trivial to handle damage after the following sequence
+       1. Pick up damage_delta=+10 for 600 frames
+       2. Pick up damage_delta_by_percentage=+10% for 600 frames
+       3. Buff "damage_delta=+10" expires 
+       4. Buff "damage_delta_by_percentage=+10%" expires
+
+       Pick a deterministic way :)
+     */
+    int32 damage_delta = 7;
+    int32 damage_delta_by_percentage = 8;
+    int32 character_hardness_delta = 9;
+    int32 melee_hardness_delta = 10;
+    int32 fireball_hardness_delta = 11;
+    bool invinsible = 12;
+    uint32 xform_ch_species_id = 13;
+    bool repel_soft_pushback = 14;
+    bool omit_gravity = 15;
+
+    // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
+    repeated uint32 associated_debuffs = 17;   
+
+    string character_vfx_anim_name = 18;
+}
+
+message Buff {
+    uint32 species_id = 1; 
+    int32 stock = 2;
+    int32 originated_render_frame_id = 3;
+    uint32 orig_ch_species_id = 4;
+    bool orig_repel_soft_pushback = 5;
+    bool orig_omit_gravity = 6;
+}
+
+message Debuff {
+    uint32 species_id = 1; // A redundancy of "debuff_config" for easy termination detection 
+    int32 stock = 2;
+}
+
+message BulletImmuneRecord {
+    uint32 bullet_id = 1;
+    int32 remaining_lifetime_rdf_count = 2;
+}
+
+enum InventorySlotStockType {
+    NoneIv = 0;
+    DummyIv = 1; // For "slot D", just skip everything for this type
+    PocketIv = 2; // For "slot D", reserved for pickables
+    TimedIv = 3; // Reusable after cooldown
+    QuotaIv = 4;
+    TimedMagazineIv = 5; // Has certain quotas before required to cooldown
+    GaugedMagazineIv = 6;
+}
+
+message InventorySlotConfig {
+    InventorySlotStockType stock_type = 1;
+    uint32 quota = 2; 
+    int32 frames_to_recover = 3; 
+    int32 gauge_required = 4;
+    string badge_name = 64; // This is the default and it can change at runtime (maintained by "InventorySlot").
+}
+
+message InventorySlot {
+    InventorySlotStockType stock_type = 1;
+    uint32 quota = 2; 
+    int32 frames_to_recover = 3; 
+    int32 gauge_charged = 4;
+    uint32 adhoc_skill_id = 5; // [WARNING] An "adhoc_skill_id" here DOESN'T distinguish "air/ground/crouch/onwall" versions! Moreover an "adhoc_buff" can be carried by an "adhoc_skill" too.   
+}
+
+message BattleEquipment {
+    // Unlike "InventorySlot", "BattleEquipment" has no varying state during a battle
+    uint32 species_id = 1;
+}
+
+message PlayerSettings {
+    int32 sfx_volume = 1;
+    int32 bgm_volume = 2;
+
+    uint64 btn_a_binding = 3;
+    uint64 btn_b_binding = 4;
+    uint64 btn_c_binding = 5;
+    uint64 btn_d_binding = 6;
+    uint64 btn_e_binding = 7;
+    uint64 btn_f_binding = 8;
+}
+
+message PlayerRegionProgress {
+    int32 region_id = 1;
+    int32 completed_level_count = 2;
+
+    // Any region can be in a state of "partially unlocked"
+    map<int32, bool> remaining_dependencies = 3;
+    map<int32, bool> removed_dependencies = 4;
+}
+
+message PlayerLevelProgress {
+    int32 region_id = 1;
+    int32 level_id = 2;
+
+    int32 highest_score = 3;
+    int32 shortest_finish_time_at_highest_score = 4;
+    uint32 character_species_id_at_highest_score = 5;
+
+    int32 shortest_finish_time = 6;
+    int32 score_at_shortest_finish_time = 7;
+    uint32 character_species_id_at_shortest_finish_time = 8;
+
+    // Any level can be in a state of "partially unlocked", if a record exists in "PlayerStoryProgress.level_progress_dict" with non-empty "remaining_dependencies", then it's locked but visible
+    map<int32, bool> remaining_dependencies = 9;
+    map<int32, bool> removed_dependencies = 10;
+}
+
+message PlayerChUnlockProgress {
+    uint32 species_id = 1;
+    map<int32, bool> remaining_dependencies = 2;
+    map<int32, bool> removed_dependencies = 3;
+}
+
+enum PlayerStoryModeSelectView {
+    NONE = 0;
+    REGION = 1;
+    LEVEL = 2;
+}
+
+enum FinishedLvOption {
+    BOSS_ONLY = 0;
+    STORY_AND_BOSS = 1;
+}
+
+message PlayerStoryProgress {
+    map<int32, PlayerRegionProgress> region_progress_dict = 1; // Including just unlocked regions with 0 progress
+    map<int32, PlayerLevelProgress> level_progress_dict = 2; // Including just unlocked levels with 0 progress 
+
+    int32 cursor_region_id = 3;
+    int32 cursor_level_id = 4;
+
+    PlayerStoryModeSelectView view = 5;
+    uint64 saved_at_gmt_millis = 6;
+
+    map<uint32, PlayerChUnlockProgress> ch_unlock_progress_dict = 7; // keyed by "species_id: uint32"
+
+    // For config of all regions and levels (including unlock criterions), see "<proj-root>/frontend/Assets/Scripts/StoryConstants.cs"
+}
+
+message PlayerOnlineArenaProgress {
+    uint64 saved_at_gmt_millis = 1;
+    string player_id = 2;
+    map<uint32, PlayerChUnlockProgress> ch_unlock_progress_dict = 3; // keyed by "species_id: uint32"
+}
+
+message StoryPointDialogLine {
+    uint64 narrator_ud = 1;
+    uint32 narrator_species_id = 2;
+
+    string content = 3;
+    bool down_or_not = 4; // true is "down"
+}
+
+message StoryPointStep {
+    repeated StoryPointDialogLine lines = 1;
+    int32 nonctrl_alive_rdf_count = 2;
+}
+
+message StoryPoint {
+    repeated StoryPointStep steps = 1;
+    bool nonctrl = 2; // not taking over control if true
+    string cutscene_name = 3; // null for no cut scene
+}
+
+message LevelStory {
+    map<int32, StoryPoint> points = 1;
+}
+
+message SerializableConvexPolygon {
+    PbVec2 anchor = 1;
+    repeated PbVec2 points = 2;
+    bool is_box = 3;
+    // The following fields are only meaningful when "is_box == true"
+    float box_q_x = 4;
+    float box_q_y = 5;
+    float box_q_z = 6;
+    float box_q_w = 7;
+}
+
+message SerializedBarrierCollider {
+    BarrierColliderAttr attr = 1;  
+    SerializableConvexPolygon polygon = 2;
+}
+
+message PickableConfig {
+    uint32 pickup_type = 1;
+    bool takes_gravity = 2; 
+    string active_anim_name = 3;
+    int32 amount_1 = 4;
+    int32 amount_2 = 5;
+}
+
+message PickableConfigFromTiled {
+    uint32 pickup_type = 1;
+    int32 recur_quota = 2;
+    uint32 lifetime_rdf_count_per_occurrence = 3;
+    uint32 stock_quota_per_occurrence = 4;
+    float box_half_size_x = 5;
+    float box_half_size_y = 6;
+}
+
+message Pickable {
+    uint32 id = 1;
+
+    uint32 pickup_type = 2;
+    PickableState pk_state = 3;    
+    int32 frames_in_pk_state = 4;    
+
+    float x = 5;
+    float y = 6;
+    float z = 7;
+
+    float vel_x = 8;
+    float vel_y = 9;
+    float vel_z = 10;
+
+    int32 remaining_lifetime_rdf_count = 11; 
+    int32 remaining_recur_quota = 12;
+
+    uint64 picker_ud = 512;
+}
+
+message InjectedCmdConfig {
+    int32 cutoff_rdf_id = 1;
+    uint64 op = 2;    
+}
+
+message CharacterSpawnerConfig {
+    int32 cutoff_rdf_id = 1;
+    repeated uint32 species_id_list = 2; // the k-th subcycle tick corresponds to species_id_list[k]   
+    repeated uint64 init_op_list = 3;    
+}
+
+message PickableSpawnerConfig {
+    int32 cutoff_rdf_id = 1;
+    repeated uint32 pickup_type_list = 2; // the k-th subcycle tick corresponds to pickup_type_list[k]   
+    repeated uint64 init_op_list = 3;    
+}
+
+message TriggerConfig {
+    uint32 trt = 1; // Short for "trigger type" 
+    string name = 2;
+}
+
+message TriggerConfigFromTiled {
+    uint32 id = 1;
+    uint32 trt = 2; 
+    int32 delayed_frames = 3;  
+    int32 recovery_frames = 4;
+    int32 bullet_team_id = 5; 
+
+    int32 sub_cycle_trigger_frames = 6;
+    int32 sub_cycle_quota = 7;
+
+    int32 quota = 8;
+
+    float box_half_size_x = 9;
+    float box_half_size_y = 10;
+
+    float new_revival_x = 11;
+    float new_revival_y = 12;
+    float init_q_x = 13;
+    float init_q_y = 14;
+    float init_q_z = 15;
+    float init_q_w = 16;
+
+    uint64 publishing_mask_upon_exhausted = 17; // [WARNING] NOT to be configured from UI/Story Editor. 
+    uint32 publishing_to_trigger_id_upon_exhausted = 18; // [WARNING] Points to a "topo_lv" smaller than itself, and "A.topo_lv < B.topo_lv" means "A" is an ancestor of "B".  
+
+    int32 force_ctrl_rdf_count = 19;
+    uint64 force_ctrl_cmd = 20;
+
+    uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
+
+    uint64 cached_sub_cycle_mask_to_fulfill = 22;
+
+    int32 story_point_id = 512;
+    int32 bgm_id = 513;
+    bool is_boss_savepoint = 514; 
+    map<uint32, bool> boss_species_set = 515;   
+    bool is_story_ready_go = 516; 
+
+    repeated CharacterSpawnerConfig character_spawner_time_seq = 1024; // MUST Be configured by increasing "cutoff_rdf_id"!
+    repeated PickableSpawnerConfig pickable_spawner_time_seq = 1025; // MUST Be configured by increasing "cutoff_rdf_id"!
+}
+
+message Trigger {
+    /*
+       :repeats "quota" times
+       |<-------------------------------------- recoveryFrames ----------------------------->|<-----------------recoveryFrames ---------->|.......
+       :repeats "subCycleQuota" times                                                        :repeats "subCycleQuota" times
+       |<-delayedFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|<-subCycleTriggerFrames->|       |.......
+       |TReady           |TCoolingDown             |TCoolingDown(replay)     |TCoolingDown(replay)     |TReady |.......
+     */
+
+    uint32 id = 1;
+    uint32 group_id = 2;
+    int32 frames_to_fire = 3; 
+    int32 frames_to_recover = 4; 
+    int32 quota = 5; // the initial value is from static config, but decreases upon use 
+    int32 bullet_team_id = 6; 
+
+    int32 sub_cycle_index = 9; // Only used by "character_spawner_time_seq" or "pickable_spawner_time_seq" 
+
+    TriggerState state = 10; 
+    int32 frames_in_state = 11; 
+
+    float x = 12;
+    float y = 13;
+    float z = 14;
+
+    uint64 main_cycle_mask_to_fulfill = 15;
+    uint64 sub_cycle_mask_to_fulfill = 16;
+
+    uint64 sub_cycle_gen_mask_counter = 19;
+
+    uint64 offender_ud = 20; 
+    int32 offender_bullet_team_id = 21; 
+
+    uint32 trt = 22;
+    
+    uint32 topo_lv = 23; // Inherited from "TriggerConfigFromTiled"
+}
+
+message PlayerMetaInfo {
+    string player_id = 1;
+    uint32 join_index = 2; 
+    int32 bullet_team_id = 3;
+    uint32 species_id = 4;
+    int32 room_id = 5;
+}
+
+message RpcEndpointHolder {
+    uint32 id = 1; 
+    string external_addr_host = 2;
+    uint32 external_addr_port = 3;
+    string internal_addr_host = 4;
+}
+
+message ChSpeciesConsts {
+    uint32 bladegirl = 1;
+    uint32 bountyhunter = 2;
+    uint32 blacksaber1 = 3;
+    uint32 blackshooter1 = 4;
+    uint32 blackthrower1 = 5;
+    uint32 headquarter1 = 6;
+
+    uint32 blacksaber2 = 7;
+    uint32 blackshooter2 = 8;
+
+    uint32 shieldguard1 = 9;
+    uint32 shieldguard2 = 10;
+    uint32 riderguard1 = 11;
+
+    uint32 none = 2048;
+    uint32 blacksaber_test_no_vision = 2049;
+    uint32 blacksaber_test_with_vision = 2050;
+}
+
+message TrapTypes {
+    uint32 sliding_platform = 1; 
+    uint32 rotating_platform = 2; 
+    uint32 conveyor_belt = 3; 
+    uint32 falling_rock = 4; 
+    uint32 spring = 5; 
+    uint32 brick = 6; 
+
+    uint32 none = 2048;
+}
+
+message TriggerTypes {
+    uint32 victory = 1; 
+
+    uint32 by_init_delay = 2;
+    uint32 by_movement = 3;
+    uint32 by_attack = 4;
+    uint32 by_pattern_f = 5;
+
+    uint32 indi_wave_npc_spawner = 6;
+    uint32 indi_wave_pickable_spawner = 7;
+
+    uint32 sync_wave_group = 8;
+
+    uint32 save_point_only = 9;
+    uint32 story_point_only = 10;
+    uint32 save_and_story_point = 11;
+
+    uint32 none = 2048;
+}
+
+message PickableTypes {
+    uint32 hp_small = 1;
+    uint32 mp_small = 2;
+    uint32 inv_c_refill_small = 3;
+    uint32 inv_d_refill_small = 4;
+    uint32 vehicle_sedan_1 = 5;
+
+    uint32 none = 2048;
+}
+
+message AtkEleTypes {
+    uint32 fire = 1;
+    uint32 water = 2;
+    uint32 thunder = 3;
+    uint32 rock = 4;
+    uint32 wind = 5;
+    uint32 ice = 6;
+
+    uint32 none = 2048;
+}
+
+message DebuffSpecies {
+    uint32 short_frozen = 1;
+    uint32 short_paralyzed = 2;
+    uint32 long_frozen = 3;
+    uint32 long_paralyzed = 4;
+
+    uint32 none = 2048;
+}
+
+message PrimitiveConsts {
+    int32 battle_dynamics_fps = 1;
+    int32 default_timeout_for_last_all_confirmed_ifd = 2; // in milliseconds
+
+    // Deliberately NOT using enum for "room states" to make use of "C# CompareAndExchange" 
+    int32 room_id_none = 3;
+
+    int32 room_state_impossible = 4;
+    int32 room_state_idle = 5;
+    int32 room_state_waiting = 6;
+    int32 room_state_prepare = 7;
+    int32 room_state_in_battle = 8;
+    int32 room_state_in_settlement = 9;
+    int32 room_state_stopped = 10;
+    int32 room_state_frontend_awaiting_auto_rejoin = 11;
+    int32 room_state_frontend_awaiting_manual_rejoin = 12;
+    int32 room_state_frontend_rejoining = 13;
+
+    // Deliberately NOT using enum for "player battle states" to make use of "C# CompareAndExchange" 
+    int32 player_battle_state_impossible = 14;
+    int32 player_battle_state_added_pending_battle_collider_ack = 15;
+    int32 player_battle_state_readded_pending_force_resync = 16;
+    int32 player_battle_state_active = 17;
+    int32 player_battle_state_disconnected = 18;
+    int32 player_battle_state_lost = 19;
+    int32 player_battle_state_expelled_during_game = 20;
+    int32 player_battle_state_expelled_in_dismissal = 21;
+
+    int32 upsync_msg_act_player_collider_ack = 22;
+    int32 upsync_msg_act_player_cmd = 23;
+    int32 upsync_msg_act_holepunch_backend_udp_tunnel = 24;
+    int32 upsync_msg_act_holepunch_peer_udp_addr = 25;
+
+    int32 downsync_msg_act_battle_collider_info = 26;
+    int32 downsync_msg_act_input_batch = 27;
+    int32 downsync_msg_act_battle_stopped = 28;
+    int32 downsync_msg_act_forced_resync = 29;
+    int32 downsync_msg_act_peer_input_batch = 30;
+    int32 downsync_msg_act_peer_udp_addr = 31;
+    int32 downsync_msg_act_battle_ready_to_start = 32;
+    int32 downsync_msg_act_battle_start = 33;
+    int32 downsync_msg_act_player_disconnected = 34;
+    int32 downsync_msg_act_player_readded_and_acked = 35;
+    int32 downsync_msg_act_player_added_and_acked = 36;
+    int32 downsync_msg_ws_closed = 37;
+    int32 downsync_msg_ws_open = 38;
+
+    uint32 magic_join_index_invalid = 39;
+    uint32 magic_join_index_srv_udp_tunnel = 40;
+    int32 magic_quota_infinite = 41;
+
+
+    int32 magic_last_sent_input_frame_id_normal_added = 43;
+    int32 magic_last_sent_input_frame_id_readded = 44;
+
+    int32 bgm_no_change = 45;
+
+    string invalid_default_player_id = 46;
+    float estimated_seconds_per_rdf = 47;
+
+    int32 max_btn_holding_rdf_cnt = 48;
+    int32 max_flying_rdf_cnt = 49;
+    int32 max_reverse_pushback_frames_to_recover = 50;
+
+    int32 default_slip_jump_grace_period_rdf_cnt = 51;
+
+    float default_min_speed_for_restitution = 52;
+
+    int32 speed_not_hit_not_specified = 53;
+    int32 default_prealloc_npc_capacity = 54; // 1 serialized "CharacterDownsync" is around 112 bytes per experiment, (7465 - 7017)/(28-24) 
+    int32 default_prealloc_bullet_capacity = 55; // 1 serialized "Bullet" is around 18.5 bytes per experiment, (7465 - 7317)/(56 - 48)
+    int32 default_prealloc_trap_capacity = 56;
+    int32 default_prealloc_trigger_capacity = 57;
+    int32 default_prealloc_pickable_capacity = 58;
+    int32 default_per_character_buff_capacity = 59;
+    int32 default_per_character_debuff_capacity = 60;
+    int32 default_per_character_inventory_capacity = 61;
+    int32 default_per_character_immune_bullet_record_capacity = 62;
+
+    float gravity_y = 63;
+    float gravity_y_jump_holding = 64;
+    int32 default_patrol_cue_waiving_frames = 65; // in the count of render frames, should be big enough for any NPC to move across the largest patrol cue
+    int32 no_patrol_cue_id = 66;
+
+    float stick_to_ground_correction_length = 67;
+
+    float default_pickable_hurtbox_half_size_x = 68;
+    float default_pickable_hurtbox_half_size_y = 69;
+    int32 default_pickable_disappearing_anim_frames = 70;
+    int32 default_pickable_consumed_anim_frames = 71;
+    float default_pickable_rising_vel_y = 72;
+    int32 default_pickable_startup_frames = 73;
+    int32 default_pickable_lifetime_rdf_cnt = 74;
+
+    int32 default_block_stun_frames = 76;
+    int32 default_blownup_frames_for_flying = 77;
+
+    int32 default_gauge_inc_by_hit = 78;
+
+    int32 default_frames_delayed_of_boss_savepoint = 79;
+    // [WARNING] Experimentally having an input rate > 15 (e.g., 60 >> 2) doesn't improve multiplayer smoothness, in fact higher input rate often results in higher packet loss (both TCP and UDP) thus higher wrong prediction rate!
+    int32 input_scale_frames = 80; // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
+    int32 input_scale = 81;
+    int32 input_delay_frames = 82; // in the count of render frames
+    int32 default_backend_input_buffer_size = 83; 
+
+    int32 max_chasing_render_frames_per_update = 84;
+    int32 magic_frames_to_be_on_wall = 85;
+    int32 magic_frames_to_be_on_wall_air_jump = 86;
+
+    int32 dying_frames_to_recover = 87; // MUST BE SAME FOR EVERY CHARACTER FOR FAIRNESS!
+
+    int32 parried_frames_to_recover = 88;
+    int32 parried_frames_to_start_cancellable = 89;
+
+    uint32 no_skill = 90;
+    int32 no_skill_hit = 91;
+
+    uint32 upsync_st_ifd_id_tolerance = 93;
+    float no_lock_vel = 94;
+    float crouch_forcing_ceiling_dot_threshold = 95; 
+    int32 terminating_render_frame_id = 96;
+    int32 terminating_input_frame_id = 97;
+
+    uint32 terminating_character_id = 98;
+    uint32 terminating_trap_id = 99;
+    uint32 terminating_trigger_id = 100;
+    uint32 terminating_trigger_group_id = 101;
+    uint32 terminating_pickable_id = 102;
+    uint32 terminating_bullet_id = 103;
+    int32  terminating_bullet_team_id = 104; 
+    uint32 terminating_buff_species_id = 105; 
+    uint32 terminating_debuff_species_id = 106;
+    uint32 terminating_consumable_species_id = 107; 
+
+    int32 frontend_ws_recv_bytelength = 108; // Expirically enough and not too big to have a graphic smoothness impact when receiving
+    int32 backend_ws_recv_bytelength = 109; // Slightly larger than FRONTEND_WS_RECV_BYTELENGTH because it has to receive some initial collider information
+
+    int32 jammed_btn_holding_rdf_cnt = 110;
+
+    int32 btn_b_holding_rdf_cnt_threshold_2 = 111;
+    int32 btn_b_holding_rdf_cnt_threshold_1 = 112;
+
+    int32 jump_holding_rdf_cnt_threshold_1 = 113;  
+    int32 jump_holding_ifd_cnt_threshold_1 = 114;  
+
+    int32 jump_holding_rdf_cnt_threshold_2 = 115;  
+    int32 jump_holding_ifd_cnt_threshold_2 = 116;  
+
+    int32 in_air_dash_grace_period_rdf_cnt = 117;
+    int32 in_air_jump_grace_period_rdf_cnt = 118;
+
+    int32 btn_e_holding_rdf_cnt_threshold_1 = 119;  
+    int32 btn_e_holding_ifd_cnt_threshold_1 = 120;  
+
+    int32 pattern_id_unable_to_op = 121;
+    int32 pattern_id_no_op = 122;
+    int32 pattern_b = 123;
+    int32 pattern_up_b = 124;
+    int32 pattern_down_b = 125;
+    int32 pattern_hold_b = 126;
+    int32 pattern_down_a = 127;
+    int32 pattern_released_b = 128;
+
+    int32 pattern_e = 129;
+    int32 pattern_front_e = 130;
+    int32 pattern_back_e = 131;
+    int32 pattern_up_e = 132;
+    int32 pattern_down_e = 133;
+    int32 pattern_hold_e = 134;
+
+    int32 pattern_e_hold_b = 135;
+    int32 pattern_front_e_hold_b = 136;
+    int32 pattern_back_e_hold_b = 137;
+    int32 pattern_up_e_hold_b = 138;
+    int32 pattern_down_e_hold_b = 139;
+    int32 pattern_hold_e_hold_b = 140;
+
+    int32 pattern_inventory_slot_c = 141;
+    int32 pattern_inventory_slot_d = 142;
+    int32 pattern_inventory_slot_bc = 143;
+
+    int32 pattern_hold_inventory_slot_c = 144;
+    int32 pattern_hold_inventory_slot_d = 145;
+
+    int32 pattern_f = 146;
+
+    float ele_weakness_default_yield = 154;
+    float ele_resistance_default_yield = 155;
+
+    int32 starting_render_frame_id = 156;
+    int32 starting_input_frame_id = 157;
+
+    int32 sp_atk_lookup_frames = 1024;
+    int32 debuff_array_idx_elemental = 1025;
+    int32 terminating_lower_part_rdf_cnt = 1026;
+    int32 default_tr_recovery_frames = 1027;
+    int32 default_fleeing_grace_period_rdf_cnt = 1028;
+    int32 default_frames_to_show_damaged = 1029;
+    int32 default_frames_to_continue_combo = 1030;
+
+    ChSpeciesConsts ch_species = 2048;
+    TrapTypes tpts = 2049;
+    TriggerTypes trts = 2050;
+    PickableTypes pkts = 2051;
+    AtkEleTypes elets = 2052;
+    DebuffSpecies debuff_species = 2053;
+}
+
+message AimingRay {
+    uint64 offender_ud = 1;
+    uint64 offender_udt = 2;
+
+    float st_x = 3;
+    float st_y = 4;
+    float st_z = 5;
+
+    float ed_x = 6;
+    float ed_y = 7;
+    float ed_z = 8;
+}
+
+message ConfigConsts {
+    map<uint32, CharacterConfig> character_configs = 1;
+    map<uint32, Skill> skill_configs = 2;
+    map<uint32, BuffConfig> buff_configs = 3;
+    map<uint32, DebuffConfig> debuff_configs = 4;
+    map<uint32, TrapConfig> trap_configs = 5;
+    map<uint32, TriggerConfig> trigger_configs = 6;
+    map<uint32, PickableConfig> pickable_configs = 7;
+}

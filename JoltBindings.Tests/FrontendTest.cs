@@ -1,0 +1,209 @@
+namespace joltphysics.Tests;
+
+using Google.Protobuf;
+using Google.Protobuf.Collections;
+using JoltCSharp;
+using jtshared;
+using System;
+using System.Collections.Immutable;
+using System.Numerics;
+using Xunit.Abstractions;
+
+public class FrontendTest {
+    // Reference https://xunit.net/docs/capturing-output.html
+
+    private readonly ITestOutputHelper _logger;
+    private PrimitiveConsts primitiveConsts;
+    private MapField<uint, CharacterConfig> characters;
+
+    const int pbBufferSizeLimit = (1 << 14);
+    byte[] rdfFetchBuffer;
+
+    public FrontendTest(ITestOutputHelper theLogger) {
+        _logger = theLogger;
+        rdfFetchBuffer = new byte[pbBufferSizeLimit];
+        primitiveConsts = new PbPrimitives().getUnderlying();
+        characters = new PbCharacters(primitiveConsts).getUnderlying();
+    }
+    
+    public static ImmutableArray<Vector2[]> hulls1 = ImmutableArray.Create<Vector2[]>().AddRange(new[]
+    {
+        new Vector2[] {
+            new Vector2(-1000f, 0f),
+            new Vector2(-1000f, 1000f),
+            new Vector2(1000f, 1000f),
+            new Vector2(1000f, 0f),
+            new Vector2(0f, -25f),
+        }
+    });
+
+
+    private RenderFrame mockStartRdf() {
+        const int roomCapacity = 2;
+        var startRdf = Bindings.NewPreallocatedRdf(roomCapacity, 8, 128, primitiveConsts);
+        startRdf.Id = primitiveConsts.StartingRenderFrameId;
+        uint pickableIdCounter = 1;
+        uint npcIdCounter = 1;
+        uint bulletIdCounter = 1;
+
+        var player1 = startRdf.Players[0];
+        var ch1 = player1.Chd;
+        player1.JoinIndex = 1;
+        ch1.X = 50f;
+        ch1.Y = 2000f;
+        player1.RevivalX = ch1.X;
+        player1.RevivalY = ch1.Y;
+        player1.RevivalQX = 0;
+        player1.RevivalQY = 0;
+        player1.RevivalQZ = 0;
+        player1.RevivalQW = 1;
+        ch1.Speed = 10f;
+        ch1.ChState = CharacterState.InAirIdle1NoJump;
+        ch1.FramesToRecover = 0;
+        ch1.QX = 0;
+        ch1.QY = 0;
+        ch1.QZ = 0;
+        ch1.QW = 1;
+        ch1.AimingQX = 0;
+        ch1.AimingQY = 0;
+        ch1.AimingQZ = 0;
+        ch1.AimingQW = 1;
+        ch1.VelX = 0;
+        ch1.VelY = 0;
+        ch1.Hp = 100;
+        ch1.SpeciesId = PbPrimitives.SPECIES_BLADEGIRL;
+
+        var player2 = startRdf.Players[1];
+        var ch2 = player2.Chd;
+        player2.JoinIndex = 2;
+        ch2.X = -50f;
+        ch2.Y = 2000f;
+        player2.RevivalX = ch2.X;
+        player2.RevivalY = ch2.Y;
+        player2.RevivalQX = 0;
+        player2.RevivalQY = 1;
+        player2.RevivalQZ = 0;
+        player2.RevivalQW = 0;
+        ch2.Speed = 10f;
+        ch2.ChState = CharacterState.InAirIdle1NoJump;
+        ch2.FramesToRecover = 0;
+        ch2.QX = 0;
+        ch2.QY = 1;
+        ch2.QZ = 0;
+        ch2.QW = 0;
+        ch2.AimingQX = 0;
+        ch2.AimingQY = 1;
+        ch2.AimingQZ = 0;
+        ch2.AimingQW = 0;
+        ch2.VelX = 0;
+        ch2.VelY = 0;
+        ch2.Hp = 100;
+        ch2.SpeciesId = PbPrimitives.SPECIES_BOUNTYHUNTER;
+
+        startRdf.NpcIdCounter = npcIdCounter;
+        startRdf.BulletIdCounter = bulletIdCounter;
+        startRdf.PickableIdCounter = pickableIdCounter;
+        
+        return startRdf;
+    }
+
+    [Fact]
+        public unsafe void TestSimpleAllocDealloc() {
+            JoltCSharp.Bindings.JPH_Init(10*1024*1024);
+            _logger.WriteLine($"Initialized Jolt resource allocators");
+
+            var primitiveConstsBytes = primitiveConsts.ToByteArray();
+            fixed (byte* primitiveConstsBytesPtr = primitiveConstsBytes) {
+                Bindings.PrimitiveConsts_Init((char*)primitiveConstsBytesPtr, primitiveConstsBytes.Length);
+                _logger.WriteLine($"PrimitiveConsts_Init done");
+            }
+
+            var configConsts = new ConfigConsts { };
+            configConsts.CharacterConfigs.Add(characters);
+            var configsBytes = configConsts.ToByteArray();
+            fixed (byte* configsBytesPtr = configsBytes) {
+                Bindings.ConfigConsts_Init((char*)configsBytesPtr, configsBytes.Length);
+                _logger.WriteLine($"ConfigConsts_Init done");
+            }
+
+            var startRdf = mockStartRdf();
+            int playerRdfId = startRdf.Id;
+
+            WsReq wsReq = new WsReq {
+                SelfParsedRdf = startRdf,
+            };
+
+            var serializedBarriers = wsReq.SerializedBarriers;
+            foreach (var hull in hulls1) {
+                List<PbVec2> points2 = new List<PbVec2>();
+                float anchorX = 0, anchorY = 0;
+                foreach (var point in hull) {
+                    points2.Add(new PbVec2 {
+                        X = point.X,
+                        Y = point.Y, 
+                    });
+                    anchorX += point.X;
+                    anchorY += point.Y;
+                }
+                anchorX /= (points2.Count);
+                anchorY /= (points2.Count);
+                var srcPolygon = new SerializableConvexPolygon {
+                    Anchor = new PbVec2 {
+                        X = anchorX, 
+                        Y = anchorY
+                    },
+                };
+                srcPolygon.Points.AddRange(points2);
+                var srcBarrier = new SerializedBarrierCollider {
+                    Polygon = srcPolygon
+                };
+                serializedBarriers.Add(srcBarrier);
+            }
+
+            byte[] buffer = wsReq.ToByteArray();
+
+            UIntPtr battle = UIntPtr.Zero;
+            fixed (byte* bufferPtr = buffer) {
+                battle = Bindings.FRONTEND_CreateBattle(512, false);
+                _logger.WriteLine($"Created battle at pointer addr = 0x{battle:x}");
+                uint selfJoinIndex = 1;
+                string selfPlayerId = "foobar";
+                int selfCmdAuthKey = 123456;
+                bool res = Bindings.FRONTEND_ResetStartRdf(battle, (char*)bufferPtr, buffer.Length, selfJoinIndex, selfPlayerId, selfCmdAuthKey);
+                _logger.WriteLine($"ResetStartRdf finished for battle at pointer addr = 0x{battle:x}, res={res}");
+            }
+            Assert.NotEqual(UIntPtr.Zero, battle);
+
+            int timerRdfId = primitiveConsts.StartingRenderFrameId, newChaserRdfId = 0;
+            long outBytesCnt = 0;
+            RenderFrame rdfHolder = new RenderFrame();
+            int* newChaserRdfIdPtr = &newChaserRdfId;
+            fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer) {
+                while (4096 > timerRdfId) {
+                    bool cmdInjected = Bindings.FRONTEND_UpsertSelfCmd(battle, 0, newChaserRdfIdPtr);
+                    Assert.True(cmdInjected);
+
+                    Bindings.FRONTEND_Step(battle);
+
+                    int chaserRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, oldUdpLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
+                    Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, &chaserRdfId, &chaserRdfIdLowerBound, &oldLcacIfdId, &oldUdpLcacIfdId, &toGenIfdId, &localRequiredIfdId);
+
+                    long* outBytesCntPtr = &outBytesCnt;
+                    *outBytesCntPtr = pbBufferSizeLimit;
+                    bool rdfFetched = Bindings.APP_GetRdf(battle, timerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
+                    Assert.True(rdfFetched);
+                    Bindings.PreemptRenderFrameBeforeMerge(rdfHolder, primitiveConsts);
+                    rdfHolder.MergeFrom(rdfFetchBuffer, 0, (int)(*outBytesCntPtr));
+                    _logger.WriteLine(rdfHolder.Players.ToString());
+                }
+            }
+
+            // Clean up
+            Bindings.APP_ClearBattle(battle);
+            bool destroyRes = Bindings.APP_DestroyBattle(battle);
+            Assert.True(destroyRes);
+            _logger.WriteLine($"Destroyed battle at pointer addr = 0x{battle:x} with result={destroyRes}");
+            bool shutdownRes = Bindings.JPH_Shutdown();
+            _logger.WriteLine($"Jolt infra shutdown result = {shutdownRes}");
+        }
+}
