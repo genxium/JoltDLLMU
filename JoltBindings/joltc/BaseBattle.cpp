@@ -6644,8 +6644,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 #endif
             */
             processWallGrabbingPostPhysicsUpdate(currRdfId, currChd, nextChd, cc, chOverride, single, inJumpStartupOrJustEnded);
-        } else if (cvSupported && OnWallIdle1 == currChd.ch_state()) {
+        } else if (OnWallIdle1 == currChd.ch_state()) {
             nextChd->set_ch_state(InAirIdle1NoJump);
+        } else {
+            // Unchanged if "OnWallAtk1"
         }
     }
 
