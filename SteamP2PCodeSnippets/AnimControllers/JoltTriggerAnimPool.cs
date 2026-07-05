@@ -4,7 +4,7 @@ using JoltCSharp;
 
 public class JoltTriggerAnimPool : AbstractCacheableAnimNodePool<Trigger, TriggerState, TriggerConfigFromTiled, uint, JoltTriggerAnimController> {
 
-    public JoltTriggerAnimPool(in AbstractJoltMapController joltMap) : base(joltMap, Bindings.APP_CalcTriggerUserData(PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId), PbPrimitivesOverride.Instance.getUnderlying().Tpts.None) {
+    public JoltTriggerAnimPool(in AbstractJoltMapController joltMap) : base(joltMap, Bindings.APP_CalcTriggerUserData(PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId), PbPrimitivesOverride.Instance.getUnderlying().Trts.None) {
     }
 
     protected override GameObject loadPrefab(TriggerConfigFromTiled insConfig) {

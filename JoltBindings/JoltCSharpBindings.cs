@@ -382,6 +382,7 @@ namespace JoltCSharp {
             chd.BtnCHoldingRdfCnt = 0;
             chd.BtnDHoldingRdfCnt = 0;
             chd.BtnEHoldingRdfCnt = 0;
+            chd.BtnFHoldingRdfCnt = 0;
             chd.ParryPrepRdfCntDown = 0;
             chd.MpRegenRdfCountdown = 0;
             chd.FlyingRdfCountdown = 0;

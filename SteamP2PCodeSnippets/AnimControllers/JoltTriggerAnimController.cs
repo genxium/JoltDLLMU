@@ -8,7 +8,7 @@ public class JoltTriggerAnimController : AbstractCacheableAnimNode<Trigger, Trig
 
     public JoltTriggerAnimController() {
         SetUd(PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId);
-        SetCacheGroupId(PbPrimitivesOverride.Instance.getUnderlying().Tpts.None);
+        SetCacheGroupId(PbPrimitivesOverride.Instance.getUnderlying().Trts.None);
     }
 
     protected override bool lazyInit() {
