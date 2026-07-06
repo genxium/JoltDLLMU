@@ -220,6 +220,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_USE_DRAGONPUNCH == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(+2);
@@ -228,6 +229,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_USE_FIREBALL == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(-2);
@@ -236,6 +238,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_USE_SLOT_C == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(0);
@@ -244,6 +247,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(1);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_SLIP_JUMP_TOWARDS_CH == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(-2);
@@ -252,15 +256,31 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER == newVisionReaction) {
-        int toMoveDirX = 0 < visionDirection.GetX() ? -2 : +2;
-        ifDecodedHolder.set_dx(toMoveDirX);
+        int anchorRdfId = (outLastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt() + 1);
+        bool toEnterFleeingGracePeriod = (currRdfId > anchorRdfId);
+        if (toEnterFleeingGracePeriod) {
+            ifDecodedHolder.set_dx(0);
+            outLastFledRdfId = currRdfId;
+            /* 
+            [REMINDER] 
+
+            After this assignment to "outLastFledRdfId", in "BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker" we'll have "inFleeingGracePeriod = true", thus returning "TARGET_CH_REACTION_STOP_BY_MV_BLOCKER" in the next "globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt()" RenderFrames.
+
+            Once the NPC has the next "inFleeingGracePeriod = false", it means "currRdfId == lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt()", thus "TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER" will be returned yet "currRdfId < anchorRdfId" here, therefore the actual turn-around will occur. 
+            */
+        } else {
+            int toMoveDirX = 0 < visionDirection.GetX() ? -2 : +2;
+            ifDecodedHolder.set_dx(toMoveDirX);
+        }
         ifDecodedHolder.set_dy(0);
         ifDecodedHolder.set_btn_a_level(0);
         ifDecodedHolder.set_btn_b_level(0);
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_JUMP_TOWARDS_CH == newVisionReaction || TARGET_CH_REACTION_JUMP_TOWARDS_MV_BLOCKER == newVisionReaction) {
         int toMoveDirX = 0 < visionDirection.GetX() ? +2 : -2;
         ifDecodedHolder.set_dx(toMoveDirX);
@@ -270,6 +290,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     } else if (TARGET_CH_REACTION_HUNTING_LOSS == newVisionReaction) {
         int inheritedDirX = 0 < visionDirection.GetX() ? +2 : -2;
         switch (outNextNpcGoal) {
@@ -281,6 +302,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             ifDecodedHolder.set_btn_c_level(0);
             ifDecodedHolder.set_btn_d_level(0);
             ifDecodedHolder.set_btn_e_level(0);
+            ifDecodedHolder.set_btn_f_level(0);
             break;
         default:
             ifDecodedHolder.set_dx(inheritedDirX);
@@ -290,6 +312,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             ifDecodedHolder.set_btn_c_level(0);
             ifDecodedHolder.set_btn_d_level(0);
             ifDecodedHolder.set_btn_e_level(0);
+            ifDecodedHolder.set_btn_f_level(0);
             break;
         }
     } else {
@@ -317,6 +340,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_c_level(0);
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
+        ifDecodedHolder.set_btn_f_level(0);
     }
 
     uint64_t newCachedCueCmd = BaseBattleCollisionFilter::encodeInput(ifDecodedHolder);
@@ -629,7 +653,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
             ||
             (0 > currGapToJump.vision_alignment())
         );
-    bool inFleeingGracePeriod = (currRdfId - lastFledRdfId < globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
+    bool inFleeingGracePeriod = (currRdfId < lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
 
     if (cvSupported) {
         if (!currGroundCanHoldMeIfWalkOn || hasEffectiveMvBlocker) {
