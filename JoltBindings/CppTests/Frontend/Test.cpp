@@ -6382,28 +6382,40 @@ bool runTestCase8(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(350 < npc2Chd.x() && 400 > npc2Chd.x());
             JPH_ASSERT(0 < npc2Chd.vel_x());
         } else if (220 == outerTimerRdfId) {
-            // Same as above, this is a relative long walk
-            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            // Gracing for turnaround
+            JPH_ASSERT(CharacterState::Idle1 == npc2Chd.ch_state());
+            JPH_ASSERT(0 != npc2.last_fled_rdf_id());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(400 < npc2Chd.x() && 500 > npc2Chd.x());
-            JPH_ASSERT(0 > npc2Chd.vel_x());
         } else if (320 == outerTimerRdfId) {
             // It has turned around on "npcVisionHull5" and moving to the left due to vision reaction of "npcVisionHull3"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(350 < npc2Chd.x() && 500 > npc2Chd.x());
             JPH_ASSERT(0 > npc2Chd.vel_x());
-        } else if (485 == outerTimerRdfId) {
+        } else if (580 == outerTimerRdfId) {
             // It's proactively jumping towards left onto "npcVisionHull6" and moving to the left
             JPH_ASSERT(CharacterState::InAirIdle1ByJump == npc2Chd.ch_state());
             JPH_ASSERT(0 > npc2Chd.vel_x());
-        } else if (513 == outerTimerRdfId) {
+        } else if (610 == outerTimerRdfId) {
             // It has jumped on "npcVisionHull6" and moving to the left
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
             JPH_ASSERT(200 < npc2Chd.x() && 350 > npc2Chd.x());
             JPH_ASSERT(0 > npc2Chd.vel_x());
+        } else if (855 == outerTimerRdfId) {
+            // Still walking but soon to enter grace period due to blocked by "npcVisionHull7"
+            JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
+            JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
+            JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
+            JPH_ASSERT(0 > npc2Chd.vel_x());
         } else if (900 == outerTimerRdfId) {
+            // Gracing due to blocked by "npcVisionHull7"
+            JPH_ASSERT(CharacterState::Idle1 == npc2Chd.ch_state());
+            JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
+            JPH_ASSERT(100 < npc2Chd.x() && 300 > npc2Chd.x());
+            JPH_ASSERT(850 < npc2.last_fled_rdf_id());
+        } else if (1024 == outerTimerRdfId) {
             // It's still on "npcVisionHull6" but turned to move to the right due to vision reaction of "npcVisionHull7"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(500 < npc2Chd.y() && 520 >= npc2Chd.y());
@@ -6415,7 +6427,13 @@ bool runTestCase8(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
             JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
             JPH_ASSERT(0 < npc2Chd.vel_x());
-        } else if (1440 == outerTimerRdfId) {
+        } else if (1550 == outerTimerRdfId) {
+            // Gracing
+            JPH_ASSERT(CharacterState::Idle1 == npc2Chd.ch_state());
+            JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
+            JPH_ASSERT(300 < npc2Chd.x() && 500 > npc2Chd.x());
+            JPH_ASSERT(1450 < npc2.last_fled_rdf_id());
+        } else if (1800 == outerTimerRdfId) {
             // Again it has turned around on "npcVisionHull5" and moving to the left due to vision reaction of "npcVisionHull3"
             JPH_ASSERT(CharacterState::Walking == npc2Chd.ch_state());
             JPH_ASSERT(400 < npc2Chd.y() && 500 >= npc2Chd.y());
