@@ -683,7 +683,7 @@ bool BaseBattle::transitToDying(const int currRdfId, const NpcCharacterDownsync&
 
 void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_COLLIDER_T* chCollider, const float dt, const CharacterDownsync& currChd, const CharacterConfig* cc, const InputInducedMotion* inInputInducedMotion, const bool inGravityDirty, const bool inFrictionDirty) {
         /*
-        From the source codes of [JPH::Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) and [MotionPropertis](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/MotionProperties.h#L148) it seems like "accelerations" are only calculated during stepping, not cached.
+        From the source codes of [JPH::Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) and [MotionProperties](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/MotionProperties.h#L148) it seems like "accelerations" are only calculated during stepping, not cached.
         */
         auto bodyID = chCollider->GetBodyID();
         if (!inGravityDirty) {
