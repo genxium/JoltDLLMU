@@ -275,7 +275,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         bool ok1 = Bindings.FRONTEND_GetRdfAndIfdIds(battle, pTimerRdfId, pNewChaserRdfId, pChaserRdfIdLowerBound, &oldLcacIfdId, &oldUdpLcacIfdId, pToGenIfdId, pLocalRequiredIfdId);
 
         if (ok1 && 0 < messageCount && !SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
-            Debug.Log($"pollAndHandleFromOwnerRecvBuffer, @csharpTimerRdfId={csharpTimerRdfId}, timerRdfId={*pTimerRdfId}, newChaserRdfId={*pNewChaserRdfId}, chaserRdfIdLowerBound={*pChaserRdfIdLowerBound}, toGenIfdId={*pToGenIfdId}, localRequiredIfdId={*pLocalRequiredIfdId}, newLcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
+            //Debug.Log($"pollAndHandleFromOwnerRecvBuffer, @csharpTimerRdfId={csharpTimerRdfId}, timerRdfId={*pTimerRdfId}, newChaserRdfId={*pNewChaserRdfId}, chaserRdfIdLowerBound={*pChaserRdfIdLowerBound}, toGenIfdId={*pToGenIfdId}, localRequiredIfdId={*pLocalRequiredIfdId}, newLcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
         }
     }
 
@@ -297,7 +297,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         /*
                          [WARNING]
                          
-                         The function "BACKEND_OnUpsyncSnapshotReqReceived" MIGHT advance "shadowBattleNewDynamicsRdfId" yet it NEVER produces a "RefRenderFrame" in the output "shadowBattleDownsyncSnapshotBytes" (which contains only "DownsyncSnapshot.st_ifd_id" & "DownsyncSnapshot.ifd_batch").
+                         The function "BACKEND_OnUpsyncSnapshotReqReceived" MIGHT increment "shadowBattleNewDynamicsRdfId" yet it NEVER produces a "RefRenderFrame" in the output "shadowBattleDownsyncSnapshotBytes" (which contains only "DownsyncSnapshot.st_ifd_id" & "DownsyncSnapshot.ifd_batch").
                          
                          Therefore we ALWAYS pass in "refRdfId: lastSentRefRdfIdAsOwner" here to avoid blocking regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
                         */
@@ -608,7 +608,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 lastSentRefRdfAtTimerRdfIdAsOwner = csharpTimerRdfId;
                 lastSentRefRdfIdAsOwner = refRdfId;
 
-                Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, buffered to be broadcasted DaRegular from owner due to [refRdfId={refRdfId}, lastSentIfdId={lastSentIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, pre-lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner}, pre-lastSentRefRdfIdAsOwner={lastSentRefRdfIdAsOwner}");
+                //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, buffered to be broadcasted DaRegular from owner due to [refRdfId={refRdfId}, lastSentIfdId={lastSentIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, pre-lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner}, pre-lastSentRefRdfIdAsOwner={lastSentRefRdfIdAsOwner}");
             }
         }
         return true;
@@ -795,6 +795,17 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 if (snatched) {
                     SteamNetworkDoctor.Instance.LogForceResyncFutureApplied();
                 } else if (csharpTimerRdfId + slowDownRdfLagThreshold < chaserRdfIdLowerBound) {
+                    /*
+                    [REMINDER]
+    
+                    In this case
+                    
+                    ``` 
+                    localRequiredIfdId = ToUseIfdId(csharpTimerRdfId) < ToUseIfdId(chaserRdfIdLowerBound) = newLcacIfdId <= newUdpLcacIfdId 
+                    ```
+
+                    , hence no slowing down would occur.
+                    */
                     *outBytesCntPtr = pbBufferSizeLimit;
                     bool extraSteppingCmdInjected = FRONTEND_UpsertSelfCmd_With_Ifd_Output(battle, currSelfInput, newChaserRdfIdPtr, (char*)ifdFetchBufferPtr, outBytesCntPtr); // [WARNING] Don't forget to call "FRONTEND_UpsertSelfCmd_With_Ifd_Output(...)" for extra stepping, otherwise some "FrontendBattle.ifdBuffer" would lack "self-confirmed bitmask" and thus blocking "FRONTEND_ProduceUpsyncSnapshotRequest(...)" from setting "actualLastIfdInBatch" correctly. 
                     if (extraSteppingCmdInjected) {
@@ -804,7 +815,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     }
                     FRONTEND_Step(battle);
                     Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}: 1 extra FRONTEND_Step for quicker snatching");
-                    csharpTimerRdfId = timerRdfId+1;
+                    csharpTimerRdfId++;
                 }
                 
                 *outBytesCntPtr = pbBufferSizeLimit;

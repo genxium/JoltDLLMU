@@ -8,6 +8,15 @@ bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId) 
 }
 
 bool FrontendBattle::UpsertSelfCmd(uint64_t inSingleInput, int* outChaserRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    /*
+    [REMINDER]
+
+    This function DOESN'T increment "lcacIfdId" or "udpLcacIfdId" by design, because
+    
+    - The field "lcacIfdId" is designed to measure "TCP delay between peer and dedicated-server" or "reliable-UDP-delay of DownsyncSnapshot between peer and battle-owner in P2P", thus shouldn't be impacted by local command progress (even for "battle-owner in P2P"). 
+
+    - The field "udpLcacIfdId" is designed to simply ignore "self-confirmed bitmask", see "moveForwardUdpLastConsecutivelyAllConfirmedIfdId" for details. 
+    */
     int toGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId);
     int nextRdfToGenIfdId = BaseBattle::ConvertToGeneratingIfdId(timerRdfId+1);
     bool isLastRdfInIfdCoverage = (nextRdfToGenIfdId > toGenIfdId);
@@ -728,7 +737,7 @@ bool FrontendBattle::ResetStartRdf(WsReq* initializerMapData, const uint32_t inS
     return res;
 }
 
-void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
     if (nullptr != stepResult && cc->has_btn_b_charging() && globalPrimitiveConsts->btn_b_holding_rdf_cnt_threshold_2() < nextChd->btn_b_holding_rdf_cnt()) {
         auto nextChState = nextChd->ch_state();
         bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
@@ -791,7 +800,7 @@ void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, c
         }
     }
 
-    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, chCollider, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+    BaseBattle::postStepSingleChdStateCorrection(steppingRdfId, udt, ud, chCollider, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
 /*
 #ifndef NDEBUG
