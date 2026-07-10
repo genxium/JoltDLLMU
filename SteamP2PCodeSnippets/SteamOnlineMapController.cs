@@ -283,6 +283,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             Bindings.FRONTEND_OnUpsyncSnapshotReqReceived(battle, (char*)pData, bytesCnt, newChaserRdfIdPtr, newUdpLcacIfdIdPtr, maxPlayerInputFrontIdPtr, minPlayerInputFrontIdPtr);
         }
 
+        shadowBattleDownsyncSnapshotByteCnt = pbBufferSizeLimit;
         fixed (byte* shadowBattleDownsyncSnapshotBytesPtr = shadowBattleDownsyncSnapshotBytes)
         fixed (long* shadowBattleDownsyncSnapshotByteCntPtr = &shadowBattleDownsyncSnapshotByteCnt) 
         fixed (int* shadowBattleOldLcacIfdIdPtr = &shadowBattleOldLcacIfdId, shadowBattleNewLcacIfdIdPtr = &shadowBattleNewLcacIfdId, shadowBattleOldDynamicsRdfIdPtr = &shadowBattleOldDynamicsRdfId, shadowBattleNewDynamicsRdfIdPtr = &shadowBattleNewDynamicsRdfId, shadowBattleEvictedStCntPtr = &shadowBattleEvictedStCnt, shadowBattleMaxPlayerInputFrontIdPtr = &shadowBattleMaxPlayerInputFrontId, shadowBattleMinPlayerInputFrontIdPtr = &shadowBattleMinPlayerInputFrontId) {
