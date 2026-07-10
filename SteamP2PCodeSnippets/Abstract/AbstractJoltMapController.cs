@@ -25,15 +25,31 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected const uint KV_PREFIX_VFX_CH_EMIT = (KV_PREFIX_VFX_CHARGE << 1);
     protected const uint KV_PREFIX_VFX_CH_ELE_DEBUFF = (KV_PREFIX_VFX_CH_EMIT << 1);
 
+    public Material sprDefaultMaterial;
+
     public Material chMaterial;
     public Material blMaterial;
+
     public GameObject damageIndicatorPrefab;
     public GameObject inplaceHpBarPrefab;
     public GameObject aimingRayPrefab;
+    public GameObject gameplayBtnsHintPrefab;
     public GameObject errStackLogPanelPrefab;
     public GameObject teamRibbonPrefab;
     public GameObject keyChPointerPrefab;
+    
     public GameObject sfxSourcePrefab;
+    public GameObject loadSfxSourcePrefab() {
+        return sfxSourcePrefab;
+    }
+
+    public GameObject keyChLightSource2DPrefab;
+    public GameObject loadKeyChLightSource2DPrefab() {
+        return keyChLightSource2DPrefab;
+    }
+
+    public GameObject flameTorchLightSource2DPrefab;
+
     protected GameObject errStackLogPanelObj;
     protected GameObject underlyingMap;
     public Canvas canvas;
@@ -83,15 +99,17 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected JoltBulletAnimPool bulletAnimPool = null;
     protected JoltTrapAnimPool trapAnimPool = null;
     protected JoltTriggerAnimPool triggerAnimPool = null;
+    protected Dictionary<ulong, Trigger> activeTriggerDictionary = new Dictionary<ulong, Trigger>();
     protected JoltInplaceHpBarAnimPool inplaceHpBarAnimPool = null;
     protected JoltAimingRayAnimPool aimingRayAnimPool = null;
     protected JoltPickableAnimPool pickableAnimPool = null;
+    protected GameplayBtnsHintAnimPool gameplayBtnsHintAnimPool = null;
+    protected KeyChLightSourceAnimPool keyChLightSourceAnimPool = null;
+    protected SfxSourceAnimPool sfxSourceAnimPool = null;
 
     protected bool shouldDetectRealtimeRenderHistoryCorrection = false; // Not recommended to enable in production, it might have some memory performance impact.
     protected bool frameLogEnabled = false;
 
-    protected KvPriorityQueue<int, SFXSource> cachedSfxNodes;
-    protected KvPriorityQueue<int, SFXSource>.ValScore sfxNodeScore = (x) => x.score;
     public BGMSource bgmSource;
     public Camera gameplayCamera;
 
@@ -210,6 +228,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         Application.SetStackTraceLogType(LogType.Exception, StackTraceLogType.None);
 
         iptmgr.SetMap(this);
+
+        if (null == sprDefaultMaterial) {
+            sprDefaultMaterial = Resources.Load("DefaultSpriteLitMaterial") as Material;
+        }
     }
 
     protected virtual void OnDestroy() {
@@ -230,14 +252,17 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         characterUdToColorSwapRuleLock = new Dictionary<ulong, int>();
         playerSpeciesIdOccurrenceCnt = new Dictionary<uint, int>();
 
-        playerAnimPool = new JoltCharacterAnimPool(this);
-        npcAnimPool = new JoltCharacterAnimPool(this);
-        bulletAnimPool = new JoltBulletAnimPool(this);
-        trapAnimPool = new JoltTrapAnimPool(this);
-        triggerAnimPool = new JoltTriggerAnimPool(this);
+        playerAnimPool = new JoltCharacterAnimPool(this, chMaterial);
+        npcAnimPool = new JoltCharacterAnimPool(this, chMaterial);
+        bulletAnimPool = new JoltBulletAnimPool(this, blMaterial);
+        trapAnimPool = new JoltTrapAnimPool(this, sprDefaultMaterial);
+        triggerAnimPool = new JoltTriggerAnimPool(this, sprDefaultMaterial);
         inplaceHpBarAnimPool = new JoltInplaceHpBarAnimPool(this);
         aimingRayAnimPool = new JoltAimingRayAnimPool(this);
-        pickableAnimPool = new JoltPickableAnimPool(this);
+        pickableAnimPool = new JoltPickableAnimPool(this, sprDefaultMaterial);
+        gameplayBtnsHintAnimPool = new GameplayBtnsHintAnimPool(this);
+        keyChLightSourceAnimPool = new KeyChLightSourceAnimPool(this);
+        sfxSourceAnimPool = new SfxSourceAnimPool(this);
 
         playerAnimPool.ResetUponBattlePreparation();
         npcAnimPool.ResetUponBattlePreparation();
@@ -247,6 +272,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         inplaceHpBarAnimPool.ResetUponBattlePreparation();
         aimingRayAnimPool.ResetUponBattlePreparation();
         pickableAnimPool.ResetUponBattlePreparation();
+        gameplayBtnsHintAnimPool.ResetUponBattlePreparation();
+        keyChLightSourceAnimPool.ResetUponBattlePreparation();
+        sfxSourceAnimPool.ResetUponBattlePreparation();
     }
 
     protected int camFovW, camFovH, camPaddingX, camPaddingY;
@@ -310,6 +338,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         triggerAnimPool.SetGeometricConsts(effInftyFar, triggerZ);
         inplaceHpBarAnimPool.SetGeometricConsts(effInftyFar, inplaceHpBarZ);
         pickableAnimPool.SetGeometricConsts(effInftyFar, pickableZ);
+        gameplayBtnsHintAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
+        keyChLightSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
+        sfxSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
 
         selfBattleHeading.ResetSelf();
     }
@@ -363,6 +394,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         return aimingRayPrefab;
     }
 
+    public GameObject loadGameplayBtnsHintPrefab() {
+        return gameplayBtnsHintPrefab;
+    }
 
     protected virtual void onBattleStopped() {
         enableBattleInput(false);
@@ -1010,51 +1044,96 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         posHolder.Set(newX, newY, newZ);
     }
 
-    
+    private float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.0425f;
+    private float CROUCH_PEEKING_CAM_SPEED_FACTOR = 0.75f;
+    protected float camCurrSpeedPerSecond = 0.0f;
+    protected float CAM_SPEED_LINEAR_DAMPING = 0.2f;
+    protected float CAM_REGULAR_ACC_PER_SECOND = 4.5f;
+    protected float CAM_FAST_ACC_PER_SECOND = 8.0f;
+
     protected virtual void cameraTrack(RenderFrame rdf, RenderFrame prevRdf, bool battleResultIsSet, bool forceTeleport = false) {
+        float dt = Time.deltaTime;
         uint targetJoinIndex = selfJoinIndex; // TODO
         ulong playerUd = APP_CalcPlayerUserData(targetJoinIndex);
         int joinIndexArrIdx = (int)targetJoinIndex - 1;
         var playerChd = rdf.Players[joinIndexArrIdx];
         var chd = playerChd.Chd;
         var chConfig = characters[chd.SpeciesId];
+        var (chGameObj, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, chd.SpeciesId, chConfig, underlyingMap.transform);
 
-        var (chGameObj, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, chd.SpeciesId, chConfig, underlyingMap.transform, chMaterial);
-        float camSpeed = chd.Speed;
-        bool isChdMoving = (0 != chd.VelX || 0 != chd.VelY);
-        newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, chGameObj.transform.position.z);
+        if (forceTeleport) {
+            newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
+            clampToMapBoundary(ref newPosHolder);
+            gameplayCamera.transform.position = newPosHolder;
+            return;
+        }
+
+        bool isCrouching = (
+                             CharacterState.CrouchIdle1 == chd.ChState
+                           || CharacterState.CrouchAtk1 == chd.ChState
+                           || CharacterState.CrouchAtked1 == chd.ChState
+                            );
+
+        bool isProactivelyJumping = (
+                             CharacterState.InAirIdle1ByJump == chd.ChState
+                           || CharacterState.InAirIdle2ByJump == chd.ChState
+                           || CharacterState.InAirIdle1ByWallJump == chd.ChState
+                            );
+        float camMaxSpeedPerSecond = chd.Speed;
+        float camEffAccPerSecond = CAM_REGULAR_ACC_PER_SECOND;
+        bool isChdMoving = (float.Epsilon < Mathf.Abs(chd.VelX - chd.GroundVelX) || float.Epsilon < Mathf.Abs(chd.VelY - chd.GroundVelY));
+
+        var camOldPos = gameplayCamera.transform.position;
+        newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
+
         var (offCameraCenterRadioSquaredX, offCameraCenterRadioSquaredY) = calcOffCameraCenterRatioSquared(newPosHolder);
         bool justDead = ((0 >= chd.Hp) || (0 < chd.NewBirthRdfCountdown));
         if (justDead || battleResultIsSet) {
-            camSpeed *= 500f;
+            newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, chGameObj.transform.position.z);
+            camEffAccPerSecond = CAM_FAST_ACC_PER_SECOND;
+            camCurrSpeedPerSecond = Mathf.Lerp(camCurrSpeedPerSecond, camMaxSpeedPerSecond, camEffAccPerSecond * dt);
         } else {
-            if (isChdMoving || offCameraCenterRadioSquaredX > 0.0625 || offCameraCenterRadioSquaredY > 0.0625) {
-                float offCamTrackingBoost = 5f * (offCameraCenterRadioSquaredX + offCameraCenterRadioSquaredY - 0.0625f); 
-                float verticalTrackingBoost = 0.1f * (Math.Abs(chd.VelY)/chConfig.Speed);
-                camSpeed *= (1f + offCamTrackingBoost + verticalTrackingBoost);
-            } else if (!forceTeleport) {
-                return; // Don't trace if the offset is too small
-            }
-        }
+            if (offCameraCenterRadioSquaredX > SQUARED_DISTANCE_NO_MOVE_THRESHOLD || offCameraCenterRadioSquaredY > SQUARED_DISTANCE_NO_MOVE_THRESHOLD) {
+                newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
+                if (isChdMoving) {
+                    float offCamTrackingBoost = 5f * (offCameraCenterRadioSquaredX + offCameraCenterRadioSquaredY - SQUARED_DISTANCE_NO_MOVE_THRESHOLD);
+                    float verticalTrackingBoost = 0.1f * (Math.Abs(chd.VelY) / chConfig.Speed);
+                    camMaxSpeedPerSecond *= (1f + offCamTrackingBoost + verticalTrackingBoost);
+                } else if (isCrouching) {
+                    camMaxSpeedPerSecond = CROUCH_PEEKING_CAM_SPEED_FACTOR * chd.Speed;
+                }
+                camCurrSpeedPerSecond = Mathf.Lerp(camCurrSpeedPerSecond, camMaxSpeedPerSecond, camEffAccPerSecond * dt);
 
-        var camOldPos = gameplayCamera.transform.position;
-        var dst = chGameObj.transform.position;
-
-        if (forceTeleport) {
-            newPosHolder.Set(dst.x, dst.y, defaultGameplayCamZ);
-        } else {
-            camDiffDstHolder.Set(dst.x - camOldPos.x, dst.y - camOldPos.y);
-            float camDiffMagnitude = camDiffDstHolder.magnitude;
-            var stepLength = Time.deltaTime * camSpeed;
-            if (stepLength > camDiffMagnitude) {
-                // Immediately teleport
-                newPosHolder.Set(dst.x, dst.y, defaultGameplayCamZ);
+                // [REMINDER] Regularly looking a bit upward.
+                newPosHolder.y = (chGameObj.transform.position.y + chConfig.CapsuleHalfHeight * 1.5f);
             } else {
-                var newMapPosDiff2 = camDiffDstHolder.normalized * stepLength;
-                newPosHolder.Set(camOldPos.x + newMapPosDiff2.x, camOldPos.y + newMapPosDiff2.y, defaultGameplayCamZ);
+                newPosHolder.Set(camOldPos.x, camOldPos.y, defaultGameplayCamZ);
+                camCurrSpeedPerSecond = camCurrSpeedPerSecond * Math.Max(0.0f, 1.0f - CAM_SPEED_LINEAR_DAMPING);
+                if (isCrouching) {
+                    camMaxSpeedPerSecond = CROUCH_PEEKING_CAM_SPEED_FACTOR * chd.Speed;
+                    camCurrSpeedPerSecond = Mathf.Lerp(camCurrSpeedPerSecond, camMaxSpeedPerSecond, camEffAccPerSecond * dt);
+                }
             }
-            clampToMapBoundary(ref newPosHolder);
+
+            // [REMINDER] When crouching or jumping, fine tune camera position.
+            if (isCrouching) {
+                newPosHolder.y = (chGameObj.transform.position.y - chConfig.CapsuleHalfHeight * 3.5f);
+            } else if (isProactivelyJumping) {
+                newPosHolder.y = (chGameObj.transform.position.y + chConfig.CapsuleHalfHeight * 3.0f);
+            }
         }
+
+        camCurrSpeedPerSecond = Math.Max(0.1f * camMaxSpeedPerSecond, camCurrSpeedPerSecond); // Don't be too small such that "stepLength" becomes essentially 0
+        camDiffDstHolder.Set(newPosHolder.x - camOldPos.x, newPosHolder.y - camOldPos.y);
+        float camDiffMagnitude = camDiffDstHolder.magnitude;
+        var stepLength = camCurrSpeedPerSecond*dt;
+        if (stepLength > camDiffMagnitude) {
+            // Immediately teleport
+        } else {
+            var newMapPosDiff2 = camDiffDstHolder.normalized * stepLength;
+            newPosHolder.Set(camOldPos.x + newMapPosDiff2.x, camOldPos.y + newMapPosDiff2.y, defaultGameplayCamZ);
+        }
+        clampToMapBoundary(ref newPosHolder);
 
         gameplayCamera.transform.position = newPosHolder;
     }
@@ -1062,6 +1141,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected void applyRdf(RenderFrame rdf, StepResult? stepResult, float dtSeconds) {
         int rdfId = rdf.Id;
         float selfPlayerWx = 0f, selfPlayerWy = 0f;
+        activeTriggerDictionary.Clear();
 
         for (int k = 0; k < roomCapacity; k++) {
             var player = rdf.Players[k];
@@ -1070,6 +1150,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var chConfig = characters[currCharacterDownsync.SpeciesId];
             
             var (wx, wy) = CollisionSpacePositionToWorldPosition(currCharacterDownsync.X, currCharacterDownsync.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+
+            bool shouldAttachLightSource = false;
 
             if (player.JoinIndex == selfJoinIndex) {
                 selfPlayerWx = wx;
@@ -1118,9 +1200,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     iptmgr.btnC.gameObject.SetActive(false);
                     iptmgr.btnD.gameObject.SetActive(false);
                 }
+
+                shouldAttachLightSource = true;
             }
 
-            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform, chMaterial);
+            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform);
 
             var origPlayerSpeciesId = cachedWsReqForStartRdf.SelfParsedRdf.Players[k].Chd.SpeciesId; // In case Character used "Transform".
             var material = chAnimCtrl.GetMaterial();
@@ -1151,6 +1235,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             chAnimCtrl.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
 
+            if (shouldAttachLightSource) {
+                var (keyChLightSourceCtrl, oldLightSourceUd) = keyChLightSourceAnimPool.GetOrCreateAnimNode(playerUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform);
+                newPosHolder.y = (newPosHolder.y + chConfig.CapsuleHalfHeight);
+                keyChLightSourceCtrl.gameObject.transform.position = newPosHolder;
+                keyChLightSourceCtrl.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
+            }
+
             // Add character vfx
             float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
             playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chConfig.CapsuleHalfHeight, chAnimCtrl, playerUd, material, false);
@@ -1165,7 +1256,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             
             var (wx, wy) = CollisionSpacePositionToWorldPosition(currCharacterDownsync.X, currCharacterDownsync.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
-            var (chAnimCtrl, oldUd) = npcAnimPool.GetOrCreateAnimNode(npcUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform, chMaterial);
+            var (chAnimCtrl, oldUd) = npcAnimPool.GetOrCreateAnimNode(npcUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform);
             var material = chAnimCtrl.GetMaterial();
             bool shouldInterpolate = (npcUd == oldUd);
 
@@ -1214,7 +1305,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             var bulletUd = Bindings.APP_CalcBulletUserData(bullet.Id);
             if (!String.IsNullOrEmpty(bulletConfig.AnimName)) {
-                var (bulletAnimHolder, oldUd) = bulletAnimPool.GetOrCreateAnimNode(bulletUd, bulletConfig.AnimName, bulletConfig, underlyingMap.transform, blMaterial);
+                var (bulletAnimHolder, oldUd) = bulletAnimPool.GetOrCreateAnimNode(bulletUd, bulletConfig.AnimName, bulletConfig, underlyingMap.transform);
                 bulletAnimHolder.damageDealedIndicatorPrefab = damageIndicatorPrefab;
                 bulletAnimHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
 
@@ -1251,6 +1342,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var trigger = rdf.Triggers[k];
             if (PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId == trigger.Id) break;
             ulong triggerUd = Bindings.APP_CalcTriggerUserData(trigger.Id);
+            activeTriggerDictionary[triggerUd] = trigger;
             if (PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWaveNpcSpawner != trigger.Trt && PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWavePickableSpawner != trigger.Trt) {
                 continue;
             }
@@ -1299,7 +1391,18 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             }
 
             foreach (var preparedTriggerUd in stepResultHolder.PreparedTriggerUds) {
-                // [TODO]
+                var trigger = activeTriggerDictionary[preparedTriggerUd];
+                var triggerConfigFromTiled = triggerUdToConfigFromTiled[preparedTriggerUd];
+
+                var (wx, wy) = CollisionSpacePositionToWorldPosition(trigger.X, trigger.Y + triggerConfigFromTiled.BoxHalfSizeY*2, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+
+                var (gameplayBtnsHintCtrl, oldUd) = gameplayBtnsHintAnimPool.GetOrCreateAnimNode(preparedTriggerUd, triggerConfigFromTiled.Trt, triggerConfigFromTiled, underlyingMap.transform);
+
+                newPosHolder.Set(wx, wy, bulletZ);
+
+                gameplayBtnsHintCtrl.gameObject.transform.position = newPosHolder;
+
+                gameplayBtnsHintCtrl.updateAnim(rdfId, preparedTriggerUd, trigger, TriggerState.TrReady, triggerConfigFromTiled, 0);
             }
         }
 
@@ -1311,6 +1414,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         inplaceHpBarAnimPool.HideInactiveAnimNodes(rdfId);
         aimingRayAnimPool.HideInactiveAnimNodes(rdfId);
         pickableAnimPool.HideInactiveAnimNodes(rdfId);
+        gameplayBtnsHintAnimPool.HideInactiveAnimNodes(rdfId);
+        keyChLightSourceAnimPool.HideInactiveAnimNodes(rdfId);
+        sfxSourceAnimPool.HideInactiveAnimNodes(rdfId);
 
         cameraTrack(rdf, null, false);
     }
@@ -1365,64 +1471,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
     }
 #nullable disable
-
-    protected void preallocateSfxNodes() {
-        // TODO: Shall I use the same preallocation strategy for VFX? Would run for a while and see the difference...
-        Debug.Log("preallocateSfxNodes begins");
-        if (null != cachedSfxNodes) {
-            while (0 < cachedSfxNodes.Cnt()) {
-                var g = cachedSfxNodes.Pop();
-                if (null != g) {
-                    Destroy(g.gameObject);
-                }
-            }
-        }
-        int sfxNodeCacheCapacity = 24;
-        cachedSfxNodes = new KvPriorityQueue<int, SFXSource>(sfxNodeCacheCapacity, sfxNodeScore);
-        string[] allSfxClipsNames = new string[] {
-            "Explosion1",
-            "Explosion2",
-            "Explosion3",
-            "Explosion4",
-            "Explosion8",
-            "Piercing",
-            "Jump1",
-            "Landing1",
-            "Melee_Explosion1",
-            "Melee_Explosion2",
-            "Melee_Explosion3",
-            "Melee_Explosion4",
-            "PistolEmit",
-            "FlameBurning1",
-            "FlameEmit1",
-            "SlashEmitSpd1",
-            "SlashEmitSpd2",
-            "SlashEmitSpd3",
-            "FootStep1",
-            "DoorOpen",
-            "DoorClose",
-            "WaterSplashSpd1",
-            "Pickup1"
-        };
-        var audioClipDict = new Dictionary<string, AudioClip>();
-        foreach (string name in allSfxClipsNames) {
-            string prefabPathUnderResources = "SFX/" + name;
-            var theClip = Resources.Load(prefabPathUnderResources) as AudioClip;
-            audioClipDict[name] = theClip;
-        }
-
-        for (int i = 0; i < sfxNodeCacheCapacity; i++) {
-            GameObject newSfxNode = Instantiate(sfxSourcePrefab, new Vector3(effInftyFar, effInftyFar, bulletZ), Quaternion.identity, underlyingMap.transform);
-            SFXSource newSfxSource = newSfxNode.GetComponent<SFXSource>();
-            newSfxSource.score = -1;
-            newSfxSource.maxDistanceInWorld = effInftyFar * 0.25f;
-            newSfxSource.audioClipDict = audioClipDict;
-            int initLookupKey = i;
-            cachedSfxNodes.Put(initLookupKey, newSfxSource);
-        }
-
-        Debug.Log("preallocateSfxNodes ends");
-    }
 
     protected void resetLevelIdAndBgm() {
         var mapProps = underlyingMap.GetComponent<SuperCustomProperties>();
@@ -1545,7 +1593,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var player = rdfHolder.Players[k];
             var playerUd = APP_CalcPlayerUserData(player.JoinIndex);
             var chConfig = PbCharactersOverride.Instance.getUnderlying()[player.Chd.SpeciesId];
-            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, player.Chd.SpeciesId, chConfig, underlyingMap.transform, chMaterial);
+            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, player.Chd.SpeciesId, chConfig, underlyingMap.transform);
             chAnimCtrl.pause(toPause);
         }
         
@@ -1554,7 +1602,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             if (PbPrimitivesOverride.Instance.getUnderlying().TerminatingCharacterId == npc.Id) break;
             var npcUd = APP_CalcNpcUserData(npc.Id);
             var chConfig = PbCharactersOverride.Instance.getUnderlying()[npc.Chd.SpeciesId];
-            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(npcUd, npc.Chd.SpeciesId, chConfig, underlyingMap.transform, chMaterial);
+            var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(npcUd, npc.Chd.SpeciesId, chConfig, underlyingMap.transform);
             if (null == chAnimCtrl) continue;
             chAnimCtrl.pause(toPause);
         }

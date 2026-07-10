@@ -6,7 +6,7 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     protected Animator animator;
     protected SpriteRenderer spr;
-    protected Material material;
+    protected Material material; // [REMINDER] Keeping a reference here to allow "AnimNode-scope material specification"
 
     private ulong ud = 0;
     public ulong GetUd() {
@@ -79,7 +79,7 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     protected Material sprDefaultMaterial;
 
-    public void setSprDefaultMaterial(Material theSprDefaultMaterial) {
+    public void SetSprDefaultMaterial(Material theSprDefaultMaterial) {
         sprDefaultMaterial = theSprDefaultMaterial;
     }
 

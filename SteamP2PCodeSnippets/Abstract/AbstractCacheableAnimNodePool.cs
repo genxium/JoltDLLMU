@@ -11,9 +11,9 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
 
     protected Vector3 positionHolder = new Vector3();
 
-    public void SetGeometricConsts(in float effectivelyInfinitelyFar, in float defaultZ) {
-        this.effectivelyInfinitelyFar = effectivelyInfinitelyFar;
-        this.defaultZ = defaultZ;
+    public void SetGeometricConsts(in float theEffectivelyInfinitelyFar, in float theDefaultZ) {
+        this.effectivelyInfinitelyFar = theEffectivelyInfinitelyFar;
+        this.defaultZ = theDefaultZ;
     }
 
     public AbstractCacheableAnimNodePool(in AbstractJoltMapController joltMap, in ulong terminatingUd, in G terminatingGroupId) {
@@ -75,7 +75,7 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
 
     protected abstract GameObject loadPrefab(C insConfig);
 
-    public A CreateAnimNode(in G cacheGroupId, in C insConfig, in Transform parent, in Material mat = null, in int specifiedLayer = -1) {
+    protected virtual A CreateAnimNode(in G cacheGroupId, in C insConfig, in Transform parent, in int specifiedLayer = -1) {
         var thePrefab = loadPrefab(insConfig);
         positionHolder.Set(effectivelyInfinitelyFar, effectivelyInfinitelyFar, defaultZ);
         GameObject newNode = UnityEngine.Object.Instantiate(thePrefab, positionHolder, Quaternion.identity, parent);
@@ -88,13 +88,10 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
         }
         g.SetUd(terminatingUd);
         g.SetCacheGroupId(cacheGroupId);
-        if (null != mat) {
-            g.setSprDefaultMaterial(mat);
-        }
         return g;
     }
 
-    public (A, ulong) GetOrCreateAnimNode(in ulong ud, in G cacheGroupId, in C insConfig, in Transform parent, in Material mat = null, in int specifiedLayer = -1) {
+    public (A, ulong) GetOrCreateAnimNode(in ulong ud, in G cacheGroupId, in C insConfig, in Transform parent, in int specifiedLayer = -1) {
         A g = null;
         ulong oldUd = terminatingUd;
         if (activeAnimNodes.ContainsKey(ud)) {
@@ -116,11 +113,11 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
 
         if (null == g) {
             if (!cachedAnimNodes.ContainsKey(cacheGroupId)) {
-                g = CreateAnimNode(cacheGroupId, insConfig, parent, mat, specifiedLayer);
+                g = CreateAnimNode(cacheGroupId, insConfig, parent, specifiedLayer);
             } else {
                 var cachedQ = cachedAnimNodes[cacheGroupId];
                 if (0 >= cachedQ.Count) {
-                    g = CreateAnimNode(cacheGroupId, insConfig, parent, mat, specifiedLayer);
+                    g = CreateAnimNode(cacheGroupId, insConfig, parent, specifiedLayer);
                 } else {
                     g = cachedQ.Last.Value;
                     cachedQ.RemoveLast();

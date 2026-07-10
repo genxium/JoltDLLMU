@@ -1,18 +1,16 @@
 using JoltCSharp;
 using System.Threading;
 using TMPro;
-using UnityEngine;
 
 public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectPanel {
-    
+    public SysBtnsHintController sysBtnsHint;
     public ConfirmOrCancelSelectGroup yesOrNoSelectGroup;
     public TMP_Text hint;
 
-    public void SetCallbacks(in SteamOnlineMapController theMap, in UISoundSource theUiSoundSource, in PostCancelledCallbackT thePostScopeCancelledCb, in SysBtnsHintController theSysBtnsHint) {
+    public void SetCallbacks(in SteamOnlineMapController theMap, in UISoundSource theUiSoundSource, in PostCancelledCallbackT thePostScopeCancelledCb) {
         base.setUiSoundSource(theUiSoundSource);
         base.setPanelScopeCallbacks(thePostScopeCancelledCb);
         map = theMap;
-        sysBtnsHint = theSysBtnsHint;
         yesOrNoSelectGroup.SetCallbacks(thePostConfirmedCb: () => {
             var selectedCell = yesOrNoSelectGroup.GetActiveCell();
             if (null == selectedCell) {
@@ -51,14 +49,10 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
 
     /////////////////////////////////////////////////////////////////////////////////////////
     protected SteamOnlineMapController map;
-    protected SysBtnsHintController sysBtnsHint;
     private Timer rejoinTimer = null;
 
     protected override void Start() {
         base.Start();
-        RectTransform rect = this.GetComponent<RectTransform>();
-        rect.offsetMin = new Vector2(128, 128);
-        rect.offsetMax = new Vector2(-128, -128);
         if (null != sysBtnsHint) {
             sysBtnsHint.setForConfirmOrCancelSelect();
         }
