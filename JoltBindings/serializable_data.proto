@@ -206,18 +206,21 @@ enum CharacterState {
 
     InAirAtk1 = 2048;
     InAirAtk2 = 2049;
-    WalkingAtk1 = 2050;
-    WalkingAtk4 = 2051;
+    InAirAtk6 = 2050;
 
-    InAirAtk6 = 2052;
+    WalkingAtk1 = 2051;
+    WalkingAtk4 = 2052;
+    InAirWalkingAtk1 = 2053;
+    InAirWalkingAtk4 = 2054;
 
     OnWallAtk1 = 3072; 
 
     Atk1_Charging = 3073;
     WalkingAtk1_Charging = 3074;
-    InAirAtk1_Charging = 3075;
-    OnWallAtk1_Charging = 3076;
-    CrouchAtk1_Charging = 3077;
+    InAirWalkingAtk1_Charging = 3075;
+    InAirAtk1_Charging = 3076;
+    OnWallAtk1_Charging = 3077;
+    CrouchAtk1_Charging = 3078;
 }
 
 enum NpcGoal {
@@ -483,6 +486,8 @@ message CharacterDownsync {
 
     int32 parry_prep_rdf_cnt_down = 29;
 
+    int32 mp_regen_rdf_countdown = 30;
+
     // Kindly note that "collision_type_mask" is NOT GRANULAR ENOUGH for inter-character collision configuration, e.g. same team omission, thus we'd still need the fields "bullet_team_id" and "ch_collision_team_id" here
     int32 bullet_team_id = 31;
     uint32 remaining_air_jump_quota = 32;
@@ -508,11 +513,9 @@ message CharacterDownsync {
     int32 btn_d_holding_rdf_cnt = 46;
     int32 btn_e_holding_rdf_cnt = 47;
     int32 btn_f_holding_rdf_cnt = 48;
-    int32 mp_regen_rdf_countdown = 49;
-
-    int32 flying_rdf_countdown = 50;
-
-    uint64 locking_on_ud = 51;
+    int32 btn_l_holding_rdf_cnt = 49;
+    int32 btn_r_holding_rdf_cnt = 50;
+    int32 flying_rdf_countdown = 51;
 
     int32 ch_collision_team_id = 52;
     float speed = 53; // This is the instantaneous scalar attribute of a character, different from but will be accounted in "vel_x" and "vel_y"
@@ -523,6 +526,7 @@ message CharacterDownsync {
     CharacterState ch_state = 56;
     int32 frames_in_ch_state = 57; // number of frames elapsed in the current character state   
     int32 lower_part_rdf_cnt = 58;   
+    uint64 locking_on_ud = 59;
 
     /*
     [REMINDER] Repeated or collection fields of "CharacterDownsync" are not necessarily operated atomically, thus not necessary to preallocate.
@@ -530,23 +534,23 @@ message CharacterDownsync {
     However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
     */
 
-    InventorySlot atk1_magazine = 59; 
-    InventorySlot super_atk_gauge = 60; 
+    InventorySlot atk1_magazine = 60; 
+    InventorySlot super_atk_gauge = 61; 
 
-    repeated Buff buff_list = 61; 
-    uint32 buff_count = 62;
+    repeated Buff buff_list = 62; 
+    uint32 buff_count = 63;
 
-    repeated Debuff debuff_list = 63; 
-    uint32 debuff_count = 64;
+    repeated Debuff debuff_list = 64; 
+    uint32 debuff_count = 65;
 
-    repeated InventorySlot inventory_slots = 65;
-    uint32 ivs_count = 66;
+    repeated InventorySlot inventory_slots = 66;
+    uint32 ivs_count = 67;
 
-    repeated BulletImmuneRecord bullet_immune_records = 67; 
-    uint32 bir_count = 68;
+    repeated BulletImmuneRecord bullet_immune_records = 68; 
+    uint32 bir_count = 69;
 
-    repeated float kinematic_knobs = 69; // including both forward-kinematics and inverse-kinematics   
-    uint32 kk_count = 70;
+    repeated float kinematic_knobs = 70; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 71;
 }
 
 message PlayerCharacterDownsync {
@@ -606,6 +610,8 @@ message InputFrameDecoded {
     uint64 btn_d_level = 6;
     uint64 btn_e_level = 7;
     uint64 btn_f_level = 8;
+    uint64 btn_l_level = 9;
+    uint64 btn_r_level = 10;
 }
 
 message UpsyncSnapshot {
@@ -1008,6 +1014,11 @@ message PeerUdpAddr {
     uint32 seq_no = 4;
 }
 
+message SteamBinding {
+    uint64 ul_steam_id = 1;
+    uint32 ch_species_id = 2;
+}
+
 message StepResult {
     repeated AimingRay aiming_rays = 1;
     uint32 aiming_ray_count = 2;
@@ -1118,6 +1129,8 @@ message DownsyncSnapshot {
     uint32 peer_join_index = 13;
     int32 peer_bullet_team_id = 14;
     uint32 peer_species_id = 15;
+
+    repeated SteamBinding peer_steam_binding_list = 16;
 
     string err_msg = 512;
 }
@@ -1801,6 +1814,10 @@ message PrimitiveConsts {
     int32 pattern_hold_inventory_slot_d = 145;
 
     int32 pattern_f = 146;
+    int32 pattern_l = 147;
+    int32 pattern_r = 148;
+
+    float default_air_linear_damping = 149;
 
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;

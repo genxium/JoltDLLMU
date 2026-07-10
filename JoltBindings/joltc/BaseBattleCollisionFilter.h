@@ -449,18 +449,20 @@ public:
     }
 
     inline static uint64_t encodeInput(const InputFrameDecoded& ifDecoded) {
-        return encodeInput(ifDecoded.dx(), ifDecoded.dy(), ifDecoded.btn_a_level(), ifDecoded.btn_b_level(), ifDecoded.btn_c_level(), ifDecoded.btn_d_level(), ifDecoded.btn_e_level(), ifDecoded.btn_f_level());
+        return encodeInput(ifDecoded.dx(), ifDecoded.dy(), ifDecoded.btn_a_level(), ifDecoded.btn_b_level(), ifDecoded.btn_c_level(), ifDecoded.btn_d_level(), ifDecoded.btn_e_level(), ifDecoded.btn_f_level(), ifDecoded.btn_l_level(), ifDecoded.btn_r_level());
     }
 
-    inline static uint64_t encodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel) {
+    inline static uint64_t encodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel, const uint64_t btnLLevel, const uint64_t btnRLevel) {
         uint64_t encodedBtnALevel = (btnALevel << 4);
         uint64_t encodedBtnBLevel = (btnBLevel << 5);
         uint64_t encodedBtnCLevel = (btnCLevel << 6);
         uint64_t encodedBtnDLevel = (btnDLevel << 7);
         uint64_t encodedBtnELevel = (btnELevel << 8);
         uint64_t encodedBtnFLevel = (btnFLevel << 9);
+        uint64_t encodedBtnLLevel = (btnFLevel << 10);
+        uint64_t encodedBtnRLevel = (btnFLevel << 11);
         uint64_t discretizedDir = encodeDir(dx, dy);
-        return (discretizedDir + encodedBtnALevel + encodedBtnBLevel + encodedBtnCLevel + encodedBtnDLevel + encodedBtnELevel + encodedBtnFLevel);
+        return (discretizedDir + encodedBtnALevel + encodedBtnBLevel + encodedBtnCLevel + encodedBtnDLevel + encodedBtnELevel + encodedBtnFLevel + encodedBtnLLevel + encodedBtnRLevel);
     }
 
     inline static bool decodeInput(uint64_t encodedInput, InputFrameDecoded* holder) {
@@ -472,6 +474,8 @@ public:
         uint64_t btnDLevel = ((encodedInput >> 7) & 1);
         uint64_t btnELevel = ((encodedInput >> 8) & 1);
         uint64_t btnFLevel = ((encodedInput >> 9) & 1);
+        uint64_t btnLLevel = ((encodedInput >> 10) & 1);
+        uint64_t btnRLevel = ((encodedInput >> 11) & 1);
 
         holder->set_dx(DIRECTION_DECODER[encodedDirection][0]);
         holder->set_dy(DIRECTION_DECODER[encodedDirection][1]);
@@ -481,6 +485,8 @@ public:
         holder->set_btn_d_level(btnDLevel);
         holder->set_btn_e_level(btnELevel);
         holder->set_btn_f_level(btnFLevel);
+        holder->set_btn_l_level(btnLLevel);
+        holder->set_btn_r_level(btnRLevel);
         return true;
     }
 
@@ -624,6 +630,28 @@ public:
             } else if (ioVel.GetX() <= minVelX) {
                 ioVel.SetX(minVelX);
             }
+        }
+    }
+
+    inline static void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) {
+        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state())) {
+            return;
+        }
+
+        const float maxVelX = cc->speed();
+        const float minVelX = -cc->speed();
+        if (ioVel.GetX() >= maxVelX) {
+            ioVel.SetX(maxVelX);
+        } else if (ioVel.GetX() <= minVelX) {
+            ioVel.SetX(minVelX);
+        }
+
+        const float maxVelY = cc->speed();
+        const float minVelY = -cc->speed();
+        if (ioVel.GetY() >= maxVelY) {
+            ioVel.SetY(maxVelY);
+        } else if (ioVel.GetY() <= minVelY) {
+            ioVel.SetY(minVelY);
         }
     }
 

@@ -804,7 +804,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 bool usedSkill = false;
                 const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(chCollider->GetShape());
                 const MassProperties massProps = shape->GetMassProperties();
-                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, massProps, currChdFacing, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, chOverride, nextChd, nextRdf, usedSkill, chCollider, inputInducedMotion, gravityDirty, frictionDirty);
+
+                const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
+
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, massProps, currChdFacing, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, currIsFlying, cc, chOverride, nextChd, nextRdf, usedSkill, chCollider, inputInducedMotion, gravityDirty, frictionDirty);
             }
 
             updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, cc, inputInducedMotion, gravityDirty, frictionDirty); 
@@ -858,7 +861,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(chCollider->GetShape());
                 const MassProperties massProps = shape->GetMassProperties();
 
-                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, massProps, currChdFacing, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, cc, chOverride, nextChd, nextRdf, usedSkill, chCollider, inputInducedMotion, gravityDirty, frictionDirty);
+                const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
+
+                processSingleCharacterInput(currRdfId, dt, patternId, jumpedOrNot, slipJumpedOrNot, effDx, effDy, slowDownToAvoidOverlap, currChd, massProps, currChdFacing, ud, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed, currIsFlying, cc, chOverride, nextChd, nextRdf, usedSkill, chCollider, inputInducedMotion, gravityDirty, frictionDirty);
                 
                 if (usedSkill) {
                     nextNpc->set_cached_cue_cmd(0);
@@ -1005,9 +1010,12 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             uint64_t closestOffenderUd = 0;
             float closestOffenderScore = FLT_MAX;
             Vec3 closestOffenderPosDiff = Vec3::sZero();
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
 
-            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+            const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
+
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
+
+            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
@@ -1083,8 +1091,11 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             uint64_t closestOffenderUd = 0;
             float closestOffenderScore = FLT_MAX;
             Vec3 closestOffenderPosDiff = Vec3::sZero();
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
-            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+
+            const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
+
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
+            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             Quat currChdQ;
             Vec3 currChdFacing;
@@ -1123,7 +1134,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         uint64_t toRevengeOppoUdt = getUDT(closestOffenderUd);
                         
                         int newLastFledRdfId = nextNpc->last_fled_rdf_id();
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd, newLastFledRdfId);
+                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd, newLastFledRdfId);
                         nextNpc->set_goal_as_npc(newGoal);
                         nextNpc->set_cached_cue_cmd(newCmd);
                         nextNpc->set_last_fled_rdf_id(newLastFledRdfId);
@@ -2052,6 +2063,13 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     }
 
     RenderFrame* effStartRdf = rdfBuffer.GetByFrameId(stRdfId);
+#ifndef NDEBUG
+    if (nullptr == effStartRdf) {
+        std::ostringstream oss;
+        oss << "The effStartRdf is NULL for stRdfId=" << stRdfId << ", rdfBuffer bounds [StFrameId=" << rdfBuffer.StFrameId << ", EdFrameId=" << rdfBuffer.EdFrameId << ")";
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
     if (frameLogEnabled) {
         while (frameLogBuffer.EdFrameId <= stRdfId) {
             int gapRdfId = frameLogBuffer.EdFrameId;
@@ -2651,7 +2669,7 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
             } else {
                 ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
                 if (exactTurningAround && cc->has_turn_around_anim()) {
-                    if (currEffInAir) {
+                    if (currEffInAir && cc->has_in_air_turn_around_anim()) {
                         nextChd->set_ch_state(InAirTurnAround);
                     } else {
                         nextChd->set_ch_state(TurnAround);
@@ -2698,14 +2716,99 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
     }
 }
 
-void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
-    // TBD
-    return;
+void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
+    if (currParalyzed) {
+        return;
+    }
+
+    if (walkingSet.count(currChd.ch_state())) {
+        if (0 == currChd.walkstopping_rdf_countdown()) {
+            int effInertiaRdfCountdown = cc->walkstopping_inertia_rdf_count();
+            if (0 >= effInertiaRdfCountdown) {
+                effInertiaRdfCountdown = 8;
+            }
+            nextChd->set_walkstopping_rdf_countdown(effInertiaRdfCountdown);
+        } else if (1 == currChd.walkstopping_rdf_countdown()) {
+            if (!isInWalkingAtkAndNotRecovered) {
+                nextChd->set_ch_state(Idle1);
+            }
+        }
+    }
+
+    // [REMINDER] This is how "MotionProperties::mLinearDamping" works in JoltPhysics.
+    float linearDampingMultiplier = max(0.0f, 1.0f - globalPrimitiveConsts->default_air_linear_damping()*dt);
+    ioInputInducedMotion->velCOM.Set(currChd.vel_x() * linearDampingMultiplier, currChd.vel_y() * linearDampingMultiplier, currChd.vel_z());
 }
 
 void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
-    // TBD
-    return;
+    if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
+        return;
+    }
+
+    if (currInBlockStun) {
+        return;
+    }
+ 
+    bool exactTurningAround = false;
+    if (0 > effDx * currChdFacing.GetX()) {
+        exactTurningAround = true;
+    }
+    
+    bool isInWalkingAtk = walkingAtkSet.count(currChd.ch_state());
+    bool isInWalkingAtkAndNotRecovered = false;
+    if (0 < currChd.frames_to_recover()) {
+        if (!isInWalkingAtk) {
+            return;
+        } else {
+            // Otherwise don't change nextChd->ch_state()
+            isInWalkingAtkAndNotRecovered = true;
+        }
+    }
+
+    bool hasNonZeroSpeed = !(0 == cc->speed() && 0 == currChd.speed());
+    if ((0 != effDx || 0 != effDy) && hasNonZeroSpeed) {
+        int xfac = (0 < effDx ? 1 : -1);
+        int yfac = (0 < effDy ? 1 : -1);
+        float forceX = 0, forceY = 0;   
+        if (!currParalyzed) {
+            ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
+            ioInputInducedMotion->forceCOM.SetY(yfac * (cc->acc_mag_x() * massProps.mMass));
+            if (exactTurningAround && cc->has_turn_around_anim()) {
+                if (cc->has_in_air_turn_around_anim()) {
+                    nextChd->set_ch_state(InAirTurnAround);
+                } else {
+                    nextChd->set_ch_state(TurnAround);
+                }
+            } else {
+                if (!isInWalkingAtkAndNotRecovered) {
+                    nextChd->set_ch_state(Walking);
+                }
+            }
+        }
+    } else {
+        // (0 == effDx && 0 == effDy) or speed is zero
+        if (0 != effDx || 0 != effDy) {
+            // false == hasNonZeroSpeed, no need to handle velocity lerping
+        } else {
+            processInertiaFlyingHandleZeroEffDxAndDy(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, cc, chOverride, currParalyzed, isInWalkingAtkAndNotRecovered, ud, chCollider, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
+        }
+    }
+
+    bool recoverable2 = atkedSet.count(currChd.ch_state());
+    bool recoverable3 = noOpSet.count(currChd.ch_state());
+    bool recoverable4 = !nonAttackingSet.count(currChd.ch_state());
+    bool recoverable5 = currDashing;
+    if (currChd.ch_state() == nextChd->ch_state() && (recoverable2 || recoverable3 || recoverable4 || recoverable5)) {
+        // Wrap up if none of the above conditions helped transit an attacking or attacked state into Idle1/Walking
+        if (!isInWalkingAtkAndNotRecovered) {
+            if (0 != ioInputInducedMotion->forceCOM.GetX()) {
+                nextChd->set_ch_state(Walking);
+            } else {
+                nextChd->set_ch_state(Idle1);
+            }
+            ioInputInducedMotion->velCOM.Set(currChd.vel_x(), currChd.vel_y(), currChd.vel_z());
+        }
+    }
 }
 
 bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed) {
@@ -4344,11 +4447,19 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
             if (0 == currChd.btn_f_holding_rdf_cnt()) {
                 outPatternId = globalPrimitiveConsts->pattern_f();
             }
+        } else if (0 < ifDecoded.btn_l_level()) {
+            if (0 == currChd.btn_l_holding_rdf_cnt()) {
+                outPatternId = globalPrimitiveConsts->pattern_l();
+            }
+        } else if (0 < ifDecoded.btn_f_level()) {
+            if (0 == currChd.btn_r_holding_rdf_cnt()) {
+                outPatternId = globalPrimitiveConsts->pattern_r();
+            }
         }
     }
 }
 
-void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
+void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int patternId, bool jumpedOrNot, bool slipJumpedOrNot, int effDx, int effDy, bool slowDownToAvoidOverlap, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, uint64_t ud, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed, const bool currIsFlying, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CharacterDownsync* nextChd, RenderFrame* nextRdf, bool& usedSkill, const CH_COLLIDER_T* chCollider, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
     bool slotUsed = false;
     uint32_t slotLockedSkillId = globalPrimitiveConsts->no_skill();
     bool dodgedInBlockStun = false;
@@ -4438,7 +4549,7 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
         prepareJumpStartup(currRdfId, currChd, ud, massProps, currChdFacing, jumpedOrNot, slipJumpedOrNot, nextChd, currEffInAir, cc, chOverride, currParalyzed, chCollider, currInJumpStartup, currDashing, ioInputInducedMotion);
         bool nextInJumpStartup = isInJumpStartup(*nextChd, cc); 
 
-        if (!currChd.omit_gravity() && !cc->omit_gravity()) {
+        if (!currIsFlying) {
             processInertiaWalking(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, currEffInAir, effDx, effDy, cc, chOverride, currParalyzed, currInBlockStun, ud, chCollider, currInJumpStartup, nextInJumpStartup, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
         } else {
             processInertiaFlying(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, effDx, effDy, cc, chOverride, currParalyzed, currInBlockStun, ud, chCollider, currInJumpStartup, nextInJumpStartup, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
@@ -4566,7 +4677,7 @@ void BaseBattle::processDelayedBulletSelfVel(const int currRdfId, const Characte
     }
 }
 
-void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
     CharacterState oldNextChState = nextChd->ch_state();
 
     uint32_t activeSkillId = currChd.active_skill_id();
@@ -6450,19 +6561,19 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     }
 }
 
-void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
+void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
     auto bodyID = single->GetBodyID();
 
     RVec3 newPos;
     Quat newRot;
     single->GetPositionAndRotation(newPos, newRot, false);
     auto newOverallVel = single->GetLinearVelocity(false);
-    
+
     /*
     [TODO] For damage taking, calculate all "hurtboxUds (by BaseBattleCollisionFilter::calcXxxHurtboxUserData)" and "sheldboxUds (by BaseBattleCollisionFilter::calcXxxShieldboxUserData)", then traverse and aggregate over "transientUdToCollisionUdHolder[each hurtboxUd/shieldboxUd]".
     */
     
-    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
     
     bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
     bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
@@ -6651,7 +6762,12 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
     }
 
-    clampChdVel(nextChd, newOverallVel, cc, newGroundVel);
+    if (!currIsFlying) {
+        clampChdVel(nextChd, newOverallVel, cc, newGroundVel);
+    } else {
+        clampFlyingChdVel(nextChd, newOverallVel, cc);
+    }
+
     nextChd->set_x(newPos.GetX());
     nextChd->set_y(newPos.GetY());
     nextChd->set_z(0);
@@ -6765,7 +6881,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     CharacterState oldNextChState = nextChd->ch_state();
 
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
-        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion);
+        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying);
 
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());

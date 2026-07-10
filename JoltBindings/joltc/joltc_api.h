@@ -45,6 +45,7 @@ Kindly note that in Jolt, the default gravity direction is negative-y.
 JPH_CAPI void APP_ClearBattle(void* inBattle);
 JPH_CAPI bool APP_DestroyBattle(void* inBattle);
 JPH_CAPI bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+JPH_CAPI bool APP_GetIfd(void* inBattle, int inIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
 JPH_CAPI bool APP_GetRdfBufferBounds(void* inBattle, int* outStRdfId, int* outEdRdfId);
 JPH_CAPI bool APP_SetFrameLogEnabled(void* inBattle, bool val);
 JPH_CAPI bool APP_GetFrameLog(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
@@ -63,7 +64,12 @@ JPH_CAPI uint64_t APP_CalcBulletUserData(uint32_t bulletId);
 JPH_CAPI uint64_t APP_CalcTriggerUserData(uint32_t triggerId);
 JPH_CAPI uint64_t APP_CalcTrapUserData(uint32_t trapId);
 JPH_CAPI uint64_t APP_CalcPickableUserData(uint32_t pickableId);
-JPH_CAPI uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel);
+JPH_CAPI uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel, const uint64_t btnLLevel, const uint64_t btnRLevel);
+JPH_CAPI int APP_EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking);
+JPH_CAPI int APP_EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed);
+JPH_CAPI int APP_ConvertToDelayedInputFrameId(int renderFrameId);
+JPH_CAPI int APP_ConvertToFirstUsedRenderFrameId(int inputFrameId);
+JPH_CAPI int APP_ConvertToLastUsedRenderFrameId(int inputFrameId);
 
 /*
 [WARNING] 

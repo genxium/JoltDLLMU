@@ -801,7 +801,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     In this case
                     
                     ``` 
-                    localRequiredIfdId = ToUseIfdId(csharpTimerRdfId) < ToUseIfdId(chaserRdfIdLowerBound) = newLcacIfdId <= newUdpLcacIfdId 
+                    localRequiredIfdId = APP_ConvertToDelayedInputFrameId(csharpTimerRdfId) < APP_ConvertToDelayedInputFrameId(chaserRdfIdLowerBound) <= newLcacIfdId <= newUdpLcacIfdId 
                     ```
 
                     , hence no slowing down would occur.

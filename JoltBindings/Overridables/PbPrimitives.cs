@@ -284,6 +284,10 @@ namespace JoltCSharp {
               PatternHoldInventorySlotD = 1028,
 
               PatternF = 1029,
+              PatternL = 1030,
+              PatternR = 1031,
+
+              DefaultAirLinearDamping = 0.2f,
 
               EleWeaknessDefaultYield = 1.5f,
               EleResistanceDefaultYield = 0.5f,

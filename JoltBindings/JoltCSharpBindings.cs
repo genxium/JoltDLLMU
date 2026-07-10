@@ -36,6 +36,10 @@ namespace JoltCSharp {
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool APP_GetIfd(UIntPtr inBattle, int inIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool APP_GetRdfBufferBounds(UIntPtr inBattle, int* outStRdfId, int* outEdRdfId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -90,13 +94,22 @@ namespace JoltCSharp {
         public static extern ulong APP_CalcPickableUserData(uint pickableId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ulong APP_EncodeInput(int dx, int dy, ulong btnALevel, ulong btnBLevel, ulong btnCLevel, ulong btnDLevel, ulong btnELevel, ulong btnFLevel);
+        public static extern ulong APP_EncodeInput(int dx, int dy, ulong btnALevel, ulong btnBLevel, ulong btnCLevel, ulong btnDLevel, ulong btnELevel, ulong btnFLevel, ulong btnLLevel, ulong btnRLevel);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int APP_EncodePatternForCancelTransit(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing);
+        public static extern int APP_EncodePatternForCancelTransit(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing, [MarshalAs(UnmanagedType.U1)] bool currWalking);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int APP_EncodePatternForInitSkill(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing, [MarshalAs(UnmanagedType.U1)] bool currInBlockStun, [MarshalAs(UnmanagedType.U1)] bool currAtked, [MarshalAs(UnmanagedType.U1)] bool currParalyzed);
+        public static extern int APP_EncodePatternForInitSkill(int patternId, [MarshalAs(UnmanagedType.U1)] bool currEffInAir, [MarshalAs(UnmanagedType.U1)] bool currCrouching, [MarshalAs(UnmanagedType.U1)] bool currOnWall, [MarshalAs(UnmanagedType.U1)] bool currDashing, [MarshalAs(UnmanagedType.U1)] bool currWalking, [MarshalAs(UnmanagedType.U1)] bool currInBlockStun, [MarshalAs(UnmanagedType.U1)] bool currAtked, [MarshalAs(UnmanagedType.U1)] bool currParalyzed);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int APP_ConvertToDelayedInputFrameId(int renderFrameId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int APP_ConvertToFirstUsedRenderFrameId(int inputFrameId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int APP_ConvertToLastUsedRenderFrameId(int inputFrameId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern UIntPtr FRONTEND_CreateBattle(int rdfBufferSize, [MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
@@ -383,6 +396,8 @@ namespace JoltCSharp {
             chd.BtnDHoldingRdfCnt = 0;
             chd.BtnEHoldingRdfCnt = 0;
             chd.BtnFHoldingRdfCnt = 0;
+            chd.BtnLHoldingRdfCnt = 0;
+            chd.BtnRHoldingRdfCnt = 0;
             chd.ParryPrepRdfCntDown = 0;
             chd.MpRegenRdfCountdown = 0;
             chd.FlyingRdfCountdown = 0;

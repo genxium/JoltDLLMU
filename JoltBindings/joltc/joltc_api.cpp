@@ -155,6 +155,22 @@ bool APP_GetRdf(void* inBattle, int inRdfId, char* outBytesPreallocatedStart, lo
     return true;
 }
 
+bool APP_GetIfd(void* inBattle, int inIfdId, char* outBytesPreallocatedStart, long* outBytesCntLimit) {
+    BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
+    if (nullptr == battle) return false;
+    InputFrameDownsync* ifd = battle->ifdBuffer.GetByFrameId(inIfdId);
+    if (nullptr == ifd) {
+        return false;
+    }
+    long byteSize = ifd->ByteSizeLong();
+    if (byteSize > *outBytesCntLimit) {
+        return false;
+    }
+    *outBytesCntLimit = byteSize;
+    ifd->SerializeToArray(outBytesPreallocatedStart, byteSize);
+    return true;
+}
+
  bool APP_GetRdfBufferBounds(void* inBattle, int* outStRdfId, int* outEdRdfId) {
     BaseBattle* battle = static_cast<BaseBattle*>(inBattle);
     if (nullptr == battle) return false;
@@ -278,8 +294,28 @@ uint64_t APP_CalcPickableUserData(uint32_t pickableId) {
     return BaseBattleCollisionFilter::calcPickableUserData(pickableId);
 }
 
-uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel) {
-    return BaseBattleCollisionFilter::encodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel, btnFLevel);
+uint64_t APP_EncodeInput(const int dx, const int dy, const uint64_t btnALevel, const uint64_t btnBLevel, const uint64_t btnCLevel, const uint64_t btnDLevel, const uint64_t btnELevel, const uint64_t btnFLevel, const uint64_t btnLLevel, const uint64_t btnRLevel) {
+    return BaseBattleCollisionFilter::encodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel, btnFLevel, btnLLevel, btnRLevel);
+}
+
+int APP_EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
+    return BaseBattleCollisionFilter::EncodePatternForCancelTransit(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking);
+}
+
+int APP_EncodePatternForInitSkill(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking, bool currInBlockStun, bool currAtked, bool currParalyzed) {
+    return BaseBattleCollisionFilter::EncodePatternForInitSkill(patternId, currEffInAir, currCrouching, currOnWall, currDashing, currWalking, currInBlockStun, currAtked, currParalyzed);
+}
+
+int APP_ConvertToDelayedInputFrameId(int renderFrameId) {
+    return BaseBattle::ConvertToDelayedInputFrameId(renderFrameId);
+}
+
+int APP_ConvertToFirstUsedRenderFrameId(int inputFrameId) {
+    return BaseBattle::ConvertToFirstUsedRenderFrameId(inputFrameId);
+}
+
+int APP_ConvertToLastUsedRenderFrameId(int inputFrameId) {
+    return BaseBattle::ConvertToLastUsedRenderFrameId(inputFrameId);
 }
 
 void* BACKEND_CreateBattle(int rdfBufferSize) {

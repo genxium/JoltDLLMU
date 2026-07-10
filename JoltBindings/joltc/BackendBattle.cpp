@@ -1,15 +1,11 @@
 #include "BackendBattle.h"
 
 bool BackendBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
-    return BaseBattle::ResetStartRdf(inBytes, inBytesCnt);
+    bool res = BaseBattle::ResetStartRdf(inBytes, inBytesCnt);
+    return res;
 }
 
 bool BackendBattle::ResetStartRdf(WsReq* initializerMapData) {
-#ifndef NDEBUG
-        std::ostringstream oss;
-        oss << "BackendBattle::ResetStartRdf starts for deserialized initializerMapData";
-        Debug::Log(oss.str(), DColor::Orange);
-#endif
     bool res = BaseBattle::ResetStartRdf(initializerMapData);
     dynamicsRdfId = rdfBuffer.GetLast()->id();
     return res;
@@ -156,6 +152,11 @@ bool BackendBattle::OnUpsyncSnapshotReceived(const uint32_t peerJoinIndex, const
         }
         bool outExistingInputMutated = false;
         bool canConfirmTcp = (fromUdp || fromTcp); // Backend doesn't care about whether it's from TCP or UDP, either can set "ifd.confirmed_list"
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "dynamicsRdfId: " << dynamicsRdfId << ", @lcacIfdId=" << lcacIfdId << ", upsyncSnapshot from peerJoinIndex==" << peerJoinIndex << " see playersCnt=" << playersCnt << ", ifdBuffer.StFrameId=" << ifdBuffer.StFrameId << ", upsyncSnapshot.StIfdId=" << upsyncSnapshot.st_ifd_id(); 
+        Debug::Log(oss.str());
+#endif
         InputFrameDownsync* ifd = getOrPrefabInputFrameDownsync(ifdId, peerJoinIndex, cmd, canConfirmTcp, canConfirmTcp, outExistingInputMutated);
         int peerJoinIndexArrIdx = peerJoinIndex - 1;
         bool frontsUpdated = updatePlayerInputFronts(ifdId, peerJoinIndexArrIdx, cmd);
