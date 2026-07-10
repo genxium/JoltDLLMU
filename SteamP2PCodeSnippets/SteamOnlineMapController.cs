@@ -293,7 +293,14 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
                         byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                         Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
-                        broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId);
+                        /*
+                         [WARNING]
+                         
+                         The function "BACKEND_OnUpsyncSnapshotReqReceived" MIGHT advance "shadowBattleNewDynamicsRdfId" yet it NEVER produces a "RefRenderFrame" in the output "shadowBattleDownsyncSnapshotBytes" (which contains only "DownsyncSnapshot.st_ifd_id" & "DownsyncSnapshot.ifd_batch").
+                         
+                         Therefore we ALWAYS pass in "refRdfId: lastSentRefRdfIdAsOwner" here to avoid blocking regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
+                        */
+                        broadcastDaRegularAsOwner(copiedBytes, refRdfId: lastSentRefRdfIdAsOwner);
                     }
                 }
             }
@@ -582,7 +589,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     private unsafe bool broadcastDaRegularAsOwner(in byte[] toSendBytes, in int refRdfId) {
-        if (refRdfId <= lastSentRefRdfIdAsOwner) {
+        if (refRdfId < lastSentRefRdfIdAsOwner) {
             return false;
         }
         fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer, ifdFetchBufferPtr = ifdFetchBuffer) {
@@ -590,8 +597,11 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
             //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, buffered to be broadcasted DaRegular from owner due to [refRdfId={refRdfId}, lastSentIfdId={lastSentIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, pre-lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner}, pre-lastSentRefRdfIdAsOwner={lastSentRefRdfIdAsOwner}");
 
-            lastSentRefRdfAtTimerRdfIdAsOwner = csharpTimerRdfId;
-            lastSentRefRdfIdAsOwner = refRdfId;
+            if (refRdfId > lastSentRefRdfIdAsOwner) {
+                // [REMINDER] In case "false == stepShadowBattleAlongWithMainBattle && true == broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle", we shouldn't block regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
+                lastSentRefRdfAtTimerRdfIdAsOwner = csharpTimerRdfId;
+                lastSentRefRdfIdAsOwner = refRdfId;
+            }
         }
         return true;
     }
@@ -757,7 +767,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         }
                     }
                 } else {
-                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner() && !broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
+                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
                         if (-1 == lastSentRefRdfAtTimerRdfIdAsOwner && csharpTimerRdfId > (REF_RDF_ID_INTERVAL_RDF_CNT << 1)) {
                             forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId}, {lastSentRefRdfAtTimerRdfIdAsOwner}=-1, initial force-confirmation to all peers");
                         } else if (csharpTimerRdfId > (lastSentRefRdfAtTimerRdfIdAsOwner + REF_RDF_ID_INTERVAL_RDF_CNT)) {
