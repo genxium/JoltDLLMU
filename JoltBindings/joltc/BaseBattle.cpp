@@ -2412,6 +2412,12 @@ void BaseBattle::jamBtnHolding(CharacterDownsync* nextChd) {
     if (0 < nextChd->btn_f_holding_rdf_cnt()) {
         nextChd->set_btn_f_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
     }
+    if (0 < nextChd->btn_l_holding_rdf_cnt()) {
+        nextChd->set_btn_l_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
+    }
+    if (0 < nextChd->btn_r_holding_rdf_cnt()) {
+        nextChd->set_btn_r_holding_rdf_cnt(globalPrimitiveConsts->jammed_btn_holding_rdf_cnt());
+    }
 }
 
 void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd) {
@@ -2466,6 +2472,24 @@ void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const
         nextChd->set_btn_f_holding_rdf_cnt(currChd.btn_f_holding_rdf_cnt() + 1);
         if (nextChd->btn_f_holding_rdf_cnt() > globalPrimitiveConsts->max_btn_holding_rdf_cnt()) {
             nextChd->set_btn_f_holding_rdf_cnt(globalPrimitiveConsts->max_btn_holding_rdf_cnt());
+        }
+    }
+
+    if (0 == decodedInputHolder.btn_l_level()) {
+        nextChd->set_btn_l_holding_rdf_cnt(0);
+    } else if (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() != currChd.btn_l_holding_rdf_cnt() && 0 < decodedInputHolder.btn_l_level()) {
+        nextChd->set_btn_l_holding_rdf_cnt(currChd.btn_l_holding_rdf_cnt() + 1);
+        if (nextChd->btn_l_holding_rdf_cnt() > globalPrimitiveConsts->max_btn_holding_rdf_cnt()) {
+            nextChd->set_btn_l_holding_rdf_cnt(globalPrimitiveConsts->max_btn_holding_rdf_cnt());
+        }
+    }
+
+    if (0 == decodedInputHolder.btn_r_level()) {
+        nextChd->set_btn_r_holding_rdf_cnt(0);
+    } else if (globalPrimitiveConsts->jammed_btn_holding_rdf_cnt() != currChd.btn_r_holding_rdf_cnt() && 0 < decodedInputHolder.btn_r_level()) {
+        nextChd->set_btn_r_holding_rdf_cnt(currChd.btn_r_holding_rdf_cnt() + 1);
+        if (nextChd->btn_r_holding_rdf_cnt() > globalPrimitiveConsts->max_btn_holding_rdf_cnt()) {
+            nextChd->set_btn_r_holding_rdf_cnt(globalPrimitiveConsts->max_btn_holding_rdf_cnt());
         }
     }
 }
@@ -4451,7 +4475,7 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
             if (0 == currChd.btn_l_holding_rdf_cnt()) {
                 outPatternId = globalPrimitiveConsts->pattern_l();
             }
-        } else if (0 < ifDecoded.btn_f_level()) {
+        } else if (0 < ifDecoded.btn_r_level()) {
             if (0 == currChd.btn_r_holding_rdf_cnt()) {
                 outPatternId = globalPrimitiveConsts->pattern_r();
             }
