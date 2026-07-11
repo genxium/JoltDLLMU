@@ -68,15 +68,24 @@ const std::unordered_set<CharacterState> walkingSet = {
     WalkingAtk1,
     WalkingAtk1_Charging,
     WalkingAtk4,
+
     BackWalking,
     CrouchWalking,
+
     InAirWalking,
+    InAirWalkingAtk1,
+    InAirWalkingAtk1_Charging,
+    InAirWalkingAtk4,
 };
 
 const std::unordered_set<CharacterState> walkingAtkSet = {
     WalkingAtk1,
     WalkingAtk1_Charging,
     WalkingAtk4,
+
+    InAirWalkingAtk1,
+    InAirWalkingAtk1_Charging,
+    InAirWalkingAtk4,
 };
 
 const std::unordered_set<CharacterState> invinsibleSet = {
@@ -91,6 +100,7 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     Idle1,
     Walking,
     WalkingAtk1_Charging,
+    InAirWalkingAtk1_Charging,
     Atk1_Charging,
     BackWalking, 
     Dashing,
@@ -202,17 +212,28 @@ const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairH
     std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk1),
     std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk4),
     std::make_pair<CharacterState, CharacterState>(Walking, WalkingAtk1_Charging),
+
+    std::make_pair<CharacterState, CharacterState>(InAirWalking, InAirWalkingAtk1),
+    std::make_pair<CharacterState, CharacterState>(InAirWalking, InAirWalkingAtk4),
+    std::make_pair<CharacterState, CharacterState>(InAirWalking, InAirWalkingAtk1_Charging),
 };
 
 const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairHasher> lowerPartReverseTransitionSet = {
     std::make_pair<CharacterState, CharacterState>(WalkingAtk1, Walking),
     std::make_pair<CharacterState, CharacterState>(WalkingAtk4, Walking),
     std::make_pair<CharacterState, CharacterState>(WalkingAtk1_Charging, Walking),
+
+    std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk1, InAirWalking),
+    std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk4, InAirWalking),
+    std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk1_Charging, InAirWalking),
 };
 
 const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairHasher> lowerPartInheritTransitionSet = {
     std::make_pair<CharacterState, CharacterState>(WalkingAtk1_Charging, WalkingAtk1),
     std::make_pair<CharacterState, CharacterState>(WalkingAtk1, WalkingAtk1_Charging),
+
+    std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk1_Charging, InAirWalkingAtk1),
+    std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk1, InAirWalkingAtk1_Charging),
 };
 
 #endif

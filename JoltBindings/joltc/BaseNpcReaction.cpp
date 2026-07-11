@@ -357,7 +357,9 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
                 if (0 == toMoveDirX) {
                     toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +2 : -2;
                 } else {
-                    toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
+                    if (!BaseBattleCollisionFilter::IsLengthNearZero(selfNpcPositionDiffForOppoChUd.GetY())) {
+                        toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
+                    }
                 }
             } else {
                 if (TARGET_CH_REACTION_FLEE_OPPO == newVisionReaction) {
@@ -376,7 +378,9 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
                 if (0 == toMoveDirX) {
                     toMoveDirY = 0 < selfNpcPositionDiffForAllyUd.GetY() ? +2 : -2;
                 } else {
-                    toMoveDirY = 0 < selfNpcPositionDiffForAllyUd.GetY() ? +1 : -1;
+                    if (!BaseBattleCollisionFilter::IsLengthNearZero(selfNpcPositionDiffForOppoChUd.GetY())) {
+                        toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
+                    }
                 }
             } else {
                 toMoveDirX = 0 < selfNpcPositionDiffForAllyUd.GetX() ? +2 : -2;
@@ -384,7 +388,9 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         } else {
             toMoveDirX = 0 < visionDirection.GetX() ? +2 : -2;
             if (currIsFlying) {
-                toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
+                if (!BaseBattleCollisionFilter::IsLengthNearZero(selfNpcPositionDiffForOppoChUd.GetY())) {
+                    toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
+                }
             }
         }
        
