@@ -689,8 +689,18 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
         if (!inGravityDirty) {
             if (onWallSet.count(currChd.ch_state())) {
                 bi->SetGravityFactor(bodyID, 0);
-            } else if (currChd.omit_gravity() || cc->omit_gravity()) {
+            } else if (currChd.omit_gravity()) {
                 bi->SetGravityFactor(bodyID, 0);
+            } else if (cc->omit_gravity()) {
+                if (InAirIdle1NoJump == currChd.ch_state() && cc->anti_gravity_when_idle()) {
+                    bi->SetGravityFactor(bodyID, -1);
+                } else {
+                    if (Dying == currChd.ch_state()) {
+                        bi->SetGravityFactor(bodyID, 1);
+                    } else {
+                        bi->SetGravityFactor(bodyID, 0);
+                    } 
+                }
             } else {
                 if (currChd.btn_a_holding_rdf_cnt() > globalPrimitiveConsts->jump_holding_rdf_cnt_threshold_1()) {
                     bi->SetGravityFactor(bodyID, 0.75);
@@ -913,7 +923,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             if (blConfig->has_friction()) {
                 bi->SetFriction(bodyID, blConfig->friction());
             } else {
-                bi->SetFriction(bodyID, cDefaultBulletFriction);
+                bi->SetFriction(bodyID, globalPrimitiveConsts->default_bullet_friction());
             }
 
             if (BulletType::GroundWave == blConfig->b_type()) {
@@ -921,7 +931,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             } else if (blConfig->has_restitution()) {
                 bi->SetRestitution(bodyID, blConfig->restitution());
             } else {
-                bi->SetRestitution(bodyID, cDefaultBulletRestitution);
+                bi->SetRestitution(bodyID, globalPrimitiveConsts->default_bullet_restitution());
             }
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
@@ -1134,11 +1144,15 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         uint64_t toRevengeOppoUdt = getUDT(closestOffenderUd);
                         
                         int newLastFledRdfId = nextNpc->last_fled_rdf_id();
+                        if (0 >= newLastFledRdfId) {
+                            // [WARNING] To workaround the edge case when an NPC is born right at a "movement blocker".
+                            newLastFledRdfId = INT_MIN;
+                        }
                         npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd, newLastFledRdfId);
                         nextNpc->set_goal_as_npc(newGoal);
                         nextNpc->set_cached_cue_cmd(newCmd);
                         nextNpc->set_last_fled_rdf_id(newLastFledRdfId);
-                    }   
+                    }
                 }
             }
         }, 0);
@@ -2138,7 +2152,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             const BoxShape* bodyShape = new BoxShape(bodyShapeSettings, shapeResult);
             BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
-            bodyCreationSettings.mFriction = cDefaultBarrierFriction;
+            bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
             Body* body = biNoLock->CreateBody(bodyCreationSettings);
             newBodyID = &(body->GetID());
             staticColliderBodyIDs.push_back(*newBodyID);
@@ -2209,8 +2223,8 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             const MeshShape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
             BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
-            bodyCreationSettings.mFriction = cDefaultBarrierFriction;
-            bodyCreationSettings.mRestitution = cDefaultBarrierRestituion;
+            bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
+            bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
             Body* body = biNoLock->CreateBody(bodyCreationSettings);
             newBodyID = &(body->GetID());
             staticColliderBodyIDs.push_back(*newBodyID);
@@ -2494,7 +2508,7 @@ void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const
     }
 }
 
-void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion) {
+void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const bool currIsFlying, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion) {
     if (0 < currChd.frames_to_recover()) {
         return;
     }
@@ -2530,7 +2544,7 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
             Debug::Log(oss.str(), DColor::Orange);
 #endif
 */
-        } else if (!currChd.omit_gravity()) {
+        } else if (!currIsFlying) {
             if (jumpTriggered) {
                 if (InAirIdle1ByWallJump == currChd.ch_state() || InAirIdle1ByJump == currChd.ch_state() || InAirIdle1NoJump == currChd.ch_state() || InAirIdle1BySlipJump == currChd.ch_state()) {
                     bool canAirJump = (0 < currChd.remaining_air_jump_quota());
@@ -2570,8 +2584,9 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_ch_state(InAirIdle1BySlipJump);
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
-    } else if (!cc->omit_gravity() && cc->jump_holding_to_fly() && currChd.omit_gravity() && 0 >= currChd.flying_rdf_countdown()) {
+    } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
+        nextChd->set_frames_in_ch_state(0);
         nextChd->set_omit_gravity(false);
     } else {
         // Intentionally left blank
@@ -2579,10 +2594,6 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
 }
 
 void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
-    if (currParalyzed) {
-        return;
-    }
-
     if (walkingSet.count(currChd.ch_state())) {
         if (0 == currChd.walkstopping_rdf_countdown()) {
             int effInertiaRdfCountdown = cc->walkstopping_inertia_rdf_count();
@@ -2593,18 +2604,19 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
         } else if (1 == currChd.walkstopping_rdf_countdown()) {
             if (!isInWalkingAtkAndNotRecovered) {
                 nextChd->set_ch_state(Idle1);
+                nextChd->set_frames_in_ch_state(0);
             }
         }
     } 
 
     if (isCrouching(currChd.ch_state(), cc)) {
-        biNoLock->SetFriction(chCollider->GetBodyID(), cWalkstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+        biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
         ioFrictionDirty = true;
     } else if (0 < currChd.walkstopping_rdf_countdown()) {
-        biNoLock->SetFriction(chCollider->GetBodyID(), cWalkstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+        biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
         ioFrictionDirty = true;
     } else if (0 < currChd.fallstopping_rdf_countdown()) {
-        biNoLock->SetFriction(chCollider->GetBodyID(), cFallstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+        biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->fallstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
         ioFrictionDirty = true;
     } else if (0 != currChd.ground_ud()) {
         uint64_t gudt = getUDT(currChd.ground_ud());
@@ -2613,9 +2625,13 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
             ioFrictionDirty = true;
         } else if (0 == currChd.ground_vel_x() && 0 != currChd.vel_x()) {
             // Being pushed away
-            biNoLock->SetFriction(chCollider->GetBodyID(), cAntiPushChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+            biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->anti_push_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
         }
+    }
+
+    if (currParalyzed) {
+        return;
     }
 
     if (proactiveJumpingSet.count(currChd.ch_state())) {
@@ -2684,14 +2700,17 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
             if (InAirIdle1ByWallJump == currChd.ch_state()) {
                 if (cc->wall_jump_frames_to_recover() < currChd.frames_in_ch_state()) {
                     const float wallJumpingFreeOpAccX = cc->wall_jump_acc_mag_x()*2;
-                    ioInputInducedMotion->forceCOM.SetX(xfac * (wallJumpingFreeOpAccX * massProps.mMass));
+                    forceX = xfac * (wallJumpingFreeOpAccX * massProps.mMass);
+                    ioInputInducedMotion->forceCOM.SetX(forceX);
                 }
             } else if (isCrouching(currChd.ch_state(), cc)) {
-                ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass)); // [WARNING] Yet wouldn't be used by "BodyInterface::AddForceAndTorque" in "updateChColliderBeforePhysicsUpdate_ThreadSafe" -- this is only used for smooth "CrouchIdle1 -> Walking" transition.
-                biNoLock->SetFriction(chCollider->GetBodyID(), cWalkstoppingChFriction); // Will be resumed in "batchRemoveFromPhySysAndCache"
+                forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
+                ioInputInducedMotion->forceCOM.SetX(forceX); // [WARNING] Yet wouldn't be used by "BodyInterface::AddForceAndTorque" in "updateChColliderBeforePhysicsUpdate_ThreadSafe" -- this is only used for smooth "CrouchIdle1 -> Walking" transition.
+                biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
                 ioFrictionDirty = true;
             } else {
-                ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
+                forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
+                ioInputInducedMotion->forceCOM.SetX(forceX);
                 if (exactTurningAround && cc->has_turn_around_anim()) {
                     if (currEffInAir && cc->has_in_air_turn_around_anim()) {
                         nextChd->set_ch_state(InAirTurnAround);
@@ -2704,6 +2723,12 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
                     }
                 }
             }
+        }
+
+        if (0 == forceX) {
+            // e.g. "true == currParalyzed"
+            biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
+            ioFrictionDirty = true;
         }
     } else {
         // 0 == effDx or speed is zero
@@ -2741,10 +2766,6 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
 }
 
 void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
-    if (currParalyzed) {
-        return;
-    }
-
     if (walkingSet.count(currChd.ch_state())) {
         if (0 == currChd.walkstopping_rdf_countdown()) {
             int effInertiaRdfCountdown = cc->walkstopping_inertia_rdf_count();
@@ -2755,22 +2776,32 @@ void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, f
         } else if (1 == currChd.walkstopping_rdf_countdown()) {
             if (!isInWalkingAtkAndNotRecovered) {
                 nextChd->set_ch_state(Idle1);
+                nextChd->set_frames_in_ch_state(0);
             }
         }
     }
 
-    // [REMINDER] This is how "MotionProperties::mLinearDamping" works in JoltPhysics.
-    float linearDampingMultiplier = max(0.0f, 1.0f - globalPrimitiveConsts->default_air_linear_damping()*dt);
-    ioInputInducedMotion->velCOM.Set(currChd.vel_x() * linearDampingMultiplier, currChd.vel_y() * linearDampingMultiplier, currChd.vel_z());
-}
+    if (!currDashing) {
+        float newVelX = currChd.vel_x();
+        float newVelY = currChd.vel_y();
+        BaseBattle::DampLinearly(newVelX, newVelY, globalPrimitiveConsts->default_air_linear_damping(), dt);
+        ioInputInducedMotion->velCOM.Set(newVelX, newVelY, currChd.vel_z());
+    }
 
-void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
-    if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
+    if (currParalyzed) {
         return;
     }
 
+}
+
+void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty) {
+    bool shouldReturnEarly = false;
+    if ((TransformingInto == currChd.ch_state() && 0 < currChd.frames_to_recover()) || (TransformingInto == nextChd->ch_state() && 0 < nextChd->frames_to_recover())) {
+        shouldReturnEarly = true;
+    }
+
     if (currInBlockStun) {
-        return;
+        shouldReturnEarly = true;
     }
  
     bool exactTurningAround = false;
@@ -2782,21 +2813,32 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
     bool isInWalkingAtkAndNotRecovered = false;
     if (0 < currChd.frames_to_recover()) {
         if (!isInWalkingAtk) {
-            return;
+            shouldReturnEarly = true;
         } else {
             // Otherwise don't change nextChd->ch_state()
             isInWalkingAtkAndNotRecovered = true;
         }
     }
 
+    if (shouldReturnEarly) {
+        processInertiaFlyingHandleZeroEffDxAndDy(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, cc, chOverride, currParalyzed, false, ud, chCollider, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
+        return;
+    }
+
+    if (0 != effDx) {
+        ioInputInducedMotion->angVelCOM.SetY(0 > effDx ? cc->ang_y_speed() : -cc->ang_y_speed());
+    }
+
     bool hasNonZeroSpeed = !(0 == cc->speed() && 0 == currChd.speed());
     if ((0 != effDx || 0 != effDy) && hasNonZeroSpeed) {
-        int xfac = (0 < effDx ? 1 : -1);
-        int yfac = (0 < effDy ? 1 : -1);
+        int xfac = (0 == effDx ? 0 : (0 < effDx ? 1 : -1));
+        int yfac = (0 == effDy ? 0 : (0 < effDy ? 1 : -1));
         float forceX = 0, forceY = 0;   
         if (!currParalyzed) {
-            ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
-            ioInputInducedMotion->forceCOM.SetY(yfac * (cc->acc_mag_x() * massProps.mMass));
+            forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
+            forceY = yfac * (cc->acc_mag_x() * massProps.mMass);
+            ioInputInducedMotion->forceCOM.SetX(forceX);
+            ioInputInducedMotion->forceCOM.SetY(forceY);
             if (exactTurningAround && cc->has_turn_around_anim()) {
                 if (cc->has_in_air_turn_around_anim()) {
                     nextChd->set_ch_state(InAirTurnAround);
@@ -2808,6 +2850,19 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
                     nextChd->set_ch_state(Walking);
                 }
             }
+        }
+
+        if (!currDashing) {
+            float newVelX = currChd.vel_x();
+            float newVelY = currChd.vel_y();
+            BaseBattle::DampLinearly(newVelX, newVelY, globalPrimitiveConsts->default_air_linear_damping(), dt);
+            if (0 != forceX) {
+                newVelX = currChd.vel_x();
+            }
+            if (0 != forceY) {
+                newVelY = currChd.vel_y();
+            }
+            ioInputInducedMotion->velCOM.Set(newVelX, newVelY, currChd.vel_z());
         }
     } else {
         // (0 == effDx && 0 == effDy) or speed is zero
@@ -2825,7 +2880,7 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
     if (currChd.ch_state() == nextChd->ch_state() && (recoverable2 || recoverable3 || recoverable4 || recoverable5)) {
         // Wrap up if none of the above conditions helped transit an attacking or attacked state into Idle1/Walking
         if (!isInWalkingAtkAndNotRecovered) {
-            if (0 != ioInputInducedMotion->forceCOM.GetX()) {
+            if (0 != ioInputInducedMotion->forceCOM.GetX() || 0 != ioInputInducedMotion->forceCOM.GetY()) {
                 nextChd->set_ch_state(Walking);
             } else {
                 nextChd->set_ch_state(Idle1);
@@ -4130,7 +4185,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
             auto& cacheQue = it->second;
             cacheQue.push_back(single);
         }
-        biNoLock->SetFriction(bodyID, cDefaultChFriction); // ALWAYS resume friction here, single-threaded
+        biNoLock->SetFriction(bodyID, globalPrimitiveConsts->default_ch_friction()); // ALWAYS resume friction here, single-threaded
         single->SetGroundBodyID(invalidBodyID, emptySubShapeID);
         single->SetGroundBodyPosition(Vec3::sZero(), Vec3::sZero());
         single->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
@@ -4524,37 +4579,40 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
     */
 
     if (usedSkill) {
-        bi->SetFriction(chBodyID, cDefaultChFriction);
-        ioFrictionDirty = true;
-        if (!outPivotBc->allows_walking()) {
-            if (globalPrimitiveConsts->no_lock_vel() != outPivotBc->self_lock_vel_x()) {
-                ioInputInducedMotion->velCOM.SetX(currChd.ground_vel_x());
-            }
-            if (globalPrimitiveConsts->no_lock_vel() != outPivotBc->self_lock_vel_y()) {
-                ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
-            }
-        } else {
-            if (0 != effDx) {
-                int xfac = (0 < effDx ? 1 : -1);
-                ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
-            }
-        }
-
-        if (InAirDashing == outSkillConfig->bound_ch_state()) {
-            if (!currChd.omit_gravity() && 0 < currChd.remaining_air_dash_quota()) {
-                nextChd->set_remaining_air_dash_quota(currChd.remaining_air_dash_quota() - 1);
-                if (!cc->isolated_air_jump_and_dash_quota() && 0 < currChd.remaining_air_jump_quota()) {
-                    nextChd->set_remaining_air_jump_quota(currChd.remaining_air_jump_quota() - 1);
+        if (!currIsFlying) {
+            bi->SetFriction(chBodyID, globalPrimitiveConsts->default_ch_friction());
+            ioFrictionDirty = true;
+            if (!outPivotBc->allows_walking()) {
+                if (globalPrimitiveConsts->no_lock_vel() != outPivotBc->self_lock_vel_x()) {
+                    ioInputInducedMotion->velCOM.SetX(currChd.ground_vel_x());
+                }
+                if (globalPrimitiveConsts->no_lock_vel() != outPivotBc->self_lock_vel_y()) {
+                    ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
+                }
+            } else {
+                if (0 != effDx) {
+                    int xfac = (0 < effDx ? 1 : -1);
+                    ioInputInducedMotion->forceCOM.SetX(xfac * (cc->acc_mag_x() * massProps.mMass));
                 }
             }
-            bi->SetGravityFactor(chBodyID, 0);
-            ioGravityDirty = true;
-        } else {
-            bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
-            if (!nextNotDashing) {
-                bi->SetFriction(chBodyID, cGroundDashingChFriction);
-                ioFrictionDirty = true;
+
+            if (InAirDashing == outSkillConfig->bound_ch_state()) {
+                if (!currChd.omit_gravity() && 0 < currChd.remaining_air_dash_quota()) {
+                    nextChd->set_remaining_air_dash_quota(currChd.remaining_air_dash_quota() - 1);
+                    if (!cc->isolated_air_jump_and_dash_quota() && 0 < currChd.remaining_air_jump_quota()) {
+                        nextChd->set_remaining_air_jump_quota(currChd.remaining_air_jump_quota() - 1);
+                    }
+                }
+                bi->SetGravityFactor(chBodyID, 0);
+                ioGravityDirty = true;
+            } else {
+                bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+                if (!nextNotDashing) {
+                    bi->SetFriction(chBodyID, globalPrimitiveConsts->ground_dashing_ch_friction());
+                    ioFrictionDirty = true;
+                }
             }
+        } else {
         }
 /*
 #ifndef NDEBUG
@@ -4564,19 +4622,32 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
 #endif // !NDEBUG
 */
     } else {
-        // [WARNING] This is a necessary cleanup before "processInertiaWalking"!
-        if (1 == currChd.frames_to_recover() && 0 == nextChd->frames_to_recover() && atkedSet.count(currChd.ch_state())) {
-            ioInputInducedMotion->velCOM.Set(currChd.ground_vel_x(), currChd.ground_vel_y(), 0);
-        }
-
         bool currInJumpStartup = isInJumpStartup(currChd, cc); 
-        prepareJumpStartup(currRdfId, currChd, ud, massProps, currChdFacing, jumpedOrNot, slipJumpedOrNot, nextChd, currEffInAir, cc, chOverride, currParalyzed, chCollider, currInJumpStartup, currDashing, ioInputInducedMotion);
+        prepareJumpStartup(currRdfId, currChd, currIsFlying, ud, massProps, currChdFacing, jumpedOrNot, slipJumpedOrNot, nextChd, currEffInAir, cc, chOverride, currParalyzed, chCollider, currInJumpStartup, currDashing, ioInputInducedMotion);
         bool nextInJumpStartup = isInJumpStartup(*nextChd, cc); 
 
         if (!currIsFlying) {
+            // [WARNING] This is a necessary cleanup before "processInertiaWalking"!
+            if (1 == currChd.frames_to_recover() && 0 == nextChd->frames_to_recover() && atkedSet.count(currChd.ch_state())) {
+                ioInputInducedMotion->velCOM.Set(currChd.ground_vel_x(), currChd.ground_vel_y(), 0);
+            }
+
             processInertiaWalking(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, currEffInAir, effDx, effDy, cc, chOverride, currParalyzed, currInBlockStun, ud, chCollider, currInJumpStartup, nextInJumpStartup, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
         } else {
             processInertiaFlying(currRdfId, dt, currChd, massProps, currChdFacing, nextChd, effDx, effDy, cc, chOverride, currParalyzed, currInBlockStun, ud, chCollider, currInJumpStartup, nextInJumpStartup, currDashing, ioInputInducedMotion, ioGravityDirty, ioFrictionDirty);
+
+            if (!currParalyzed && globalPrimitiveConsts->pattern_id_unable_to_op() != patternId && 0 == currChd.locking_on_ud() && true == cc->anti_gravity_when_idle() && 0 >= currChd.frames_to_recover() && InAirIdle1NoJump != currChd.ch_state() && cc->anti_gravity_frames_lingering() < currChd.frames_in_ch_state()) {
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", flying characterUd=" << ud << " turning anit-gravity idle: currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state();
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+                nextChd->set_ch_state(InAirIdle1NoJump);
+                nextChd->set_frames_in_ch_state(InAirIdle1NoJump);
+                float newVelX = 0;
+                float newVelY = cc->speed();
+                ioInputInducedMotion->velCOM.Set(newVelX, newVelY, currChd.vel_z());
+            }
         }
             
         Quat currChdQRaw(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
@@ -4610,20 +4681,17 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
         processDelayedBulletSelfVel(currRdfId, currChd, massProps, currChdFacing, nextChd, cc, chOverride, currParalyzed, nextEffInAir, ioInputInducedMotion);
 
         if (0 >= currChd.frames_to_recover()) {
-            if (globalPrimitiveConsts->pattern_id_unable_to_op() != patternId && cc->anti_gravity_when_idle() && (Walking == nextChd->ch_state() || InAirWalking == nextChd->ch_state()) && cc->anti_gravity_frames_lingering() < nextChd->frames_in_ch_state()) {
-                nextChd->set_ch_state(InAirIdle1NoJump);
-                nextChd->set_frames_in_ch_state(0);
-            } else if (slowDownToAvoidOverlap) {
+            if (slowDownToAvoidOverlap) {
                 ioInputInducedMotion->velCOM *= 0.25;
             }
         }
 
-        if (currDashing) {
+        if (!currIsFlying && currDashing) {
             if (InAirDashing == currChd.ch_state()) {
                 bi->SetGravityFactor(chBodyID, 0);
                 ioGravityDirty = true;
             } else {
-                bi->SetFriction(chBodyID, cGroundDashingChFriction);
+                bi->SetFriction(chBodyID, globalPrimitiveConsts->ground_dashing_ch_friction());
                 ioFrictionDirty = true;
             }
         }
@@ -4631,10 +4699,6 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
         if (globalPrimitiveConsts->pattern_f() == patternId) {
             ioInputInducedMotion->patternFTriggered = true;
         }
-    }
-
-    if (currParalyzed) {
-        ioInputInducedMotion->velCOM.Set(currChd.ground_vel_x(), currChd.ground_vel_y(), currChd.ground_vel_z());
     }
 }
 
@@ -4736,10 +4800,10 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     }
                 }
                 if (Idle1 == oldNextChState) {
-                    auto defaultInAirIdleChState = cc->use_idle1_as_flying_idle() ? Idle1 : InAirWalking;
                     if (cc->omit_gravity()) {
-
+                        return;
                     } else if (nextChd->omit_gravity()) {
+                        auto defaultInAirIdleChState = cc->use_idle1_as_flying_idle() ? Idle1 : InAirWalking;
                         nextChd->set_ch_state(defaultInAirIdleChState);
                         break;
                     }
@@ -4994,6 +5058,10 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         /* 
            [TODO] If "activeSkill & activeBulletConfig" implies a "GroundImpact", transit to cooldown phase animation.
         */
+    }
+
+    if (cc->anti_gravity_when_idle() && currIsFlying && InAirIdle1NoJump == nextChd->ch_state() && 0 != nextChd->vel_x()) {
+        nextChd->set_vel_x(0);
     }
 
 #ifndef NDEBUG
@@ -6260,7 +6328,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     Ref<CharacterSettings> settings = new CharacterSettings();
     settings->mMaxSlopeAngle = cMaxSlopeAngle;
     settings->mLayer = MyObjectLayers::MOVING;
-    settings->mFriction = cDefaultChFriction;
+    settings->mFriction = globalPrimitiveConsts->default_ch_friction();
     settings->mSupportingVolume = Plane(Vec3::sAxisY(), -cc->capsule_radius()); // Accept contacts that touch the lower sphere of the capsule
     settings->mEnhancedInternalEdgeRemoval = cEnhancedInternalEdgeRemoval;
     settings->mShape = chShape;
@@ -6274,7 +6342,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
     auto ret = new Character(settings, newPos, newRot, newUd, phySys);
 	ret->AddToPhysicsSystem(EActivation::DontActivate, false);
     inBodyInterface->SetMotionQuality(ret->GetBodyID(), EMotionQuality::LinearCast);
-    inBodyInterface->SetRestitution(ret->GetBodyID(), cDefaultChRestituion);
+    inBodyInterface->SetRestitution(ret->GetBodyID(), globalPrimitiveConsts->default_ch_restitution());
     return ret;
 }
 
@@ -6753,7 +6821,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
     }
 
-    if (cvOnWall) {
+    if (cvOnWall || currIsFlying) {
         cvSupported = false; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
     } else {
         cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
@@ -7500,7 +7568,9 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 */
         
         if (rhsBlConfig->blow_up()) {
-            outNewEffBlownUp = true;
+            if (!cc->omit_gravity()) {       
+                outNewEffBlownUp = true;
+            }
         }
 
         // [REMINDER] Randomness comes from ordering of "transientUdToCollisionUdHolder".
@@ -7570,8 +7640,9 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
     if (!successfulDef1) {
         // [REMINDER] Including "frames_to_recover" extension during "Def1Broken".
-        if (rhsBlConfig->hardness() >= cc->hardness() && rhsBlConfig->hit_stun_frames() > outNewEffFramesToRecover) {
-            outNewEffFramesToRecover = rhsBlConfig->hit_stun_frames(); 
+        int effHitStunFramesComparand = (cc->omit_gravity() && rhsBlConfig->blow_up()) ? rhsBlConfig->block_stun_frames() : rhsBlConfig->hit_stun_frames(); 
+        if (rhsBlConfig->hardness() >= cc->hardness() && effHitStunFramesComparand > outNewEffFramesToRecover) {
+            outNewEffFramesToRecover = effHitStunFramesComparand; 
             outShouldSkipGroundServing = true;
             outShouldSkipWallServing = true;
         }

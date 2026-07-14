@@ -43,11 +43,27 @@ namespace JoltCSharp {
                 Amount1 = 1
             };
 
+             PickableConfig Coin = new PickableConfig {
+                 PickupType = primitiveConsts.Pkts.Coin,
+                 TakesGravity = true,
+                 ActiveAnimName = "Coin",
+                 Amount1 = 1
+             };
+
+             PickableConfig DragonCrystal = new PickableConfig {
+                 PickupType = primitiveConsts.Pkts.DragonCrystal,
+                 TakesGravity = true,
+                 ActiveAnimName = "DragonCrystal",
+                 Amount1 = 1
+             };
+
             underlying = new MapField<uint, PickableConfig> {
                 { HpSmall.PickupType, HpSmall },
                 { MpSmall.PickupType, MpSmall },
                 { InvCRefillSmall.PickupType, InvCRefillSmall },
-                { InvDRefillSmall.PickupType, InvDRefillSmall }
+                { InvDRefillSmall.PickupType, InvDRefillSmall },
+                { Coin.PickupType, Coin },
+                { DragonCrystal.PickupType, DragonCrystal },
             };
 
             return true;

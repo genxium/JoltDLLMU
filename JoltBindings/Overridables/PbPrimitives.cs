@@ -23,6 +23,15 @@ namespace JoltCSharp {
         public static uint BlackThrower1TimedBombId = 1027;
         public static float BlackThrower1TimedBombOffsetY = 20f;
 
+        public static uint ShieldGuard1GroundSlashId = 1028, ShieldGuard1AirSlashId = 1029;
+
+        public static uint Bat1BiteId = 1030;
+
+        public static uint BlackSaber2GroundSlash1Id = 1031, BlackSaber2AirSlash1Id = 1032;
+
+        public static uint BlackShooter2CannonId = 1033;
+        public static float BlackShooter2CannonOffsetY = 20f;
+
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
         public const uint SPECIES_BOUNTYHUNTER = 7;
@@ -39,6 +48,10 @@ namespace JoltCSharp {
         public const uint SPECIES_SHIELDGUARD1 = 19;
         public const uint SPECIES_SHIELDGUARD2 = 20;
         public const uint SPECIES_RIDERGUARD1 = 21;
+
+        public const uint SPECIES_BAT1 = 22;
+        public const uint SPECIES_WOLF1 = 23;
+        public const uint SPECIES_WOLVERINE1 = 24;
 
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
@@ -320,6 +333,19 @@ namespace JoltCSharp {
               StartingRenderFrameId = 1,
               StartingInputFrameId = 1,
 
+              DefaultChFriction = 0.01f, 
+              DefaultChRestitution = 0.0f,
+              GroundDashingChFriction = 0.001f, 
+              AntiPushChFriction = 0.1f, 
+              WalkstoppingChFriction = 125.0f,
+              FallstoppingChFriction = 90.0f, 
+
+              DefaultBarrierFriction = 0.1f, 
+              DefaultBarrierRestitution = 0.1f,
+
+              DefaultBulletFriction = 0.2f, 
+              DefaultBulletRestitution = 0.1f, 
+
               Elets = new AtkEleTypes {
                   None = 0,
                   Fire = 1,
@@ -363,6 +389,9 @@ namespace JoltCSharp {
                   MpSmall = 2,
                   InvCRefillSmall = 3,
                   InvDRefillSmall = 4,
+                  VehicleSedan1 = 5,
+                  Coin = 6,
+                  DragonCrystal = 7,
               },
 
               ChSpecies = new ChSpeciesConsts {
@@ -381,6 +410,10 @@ namespace JoltCSharp {
                   Shieldguard1 = SPECIES_SHIELDGUARD1,
                   Shieldguard2 = SPECIES_SHIELDGUARD2,
                   Riderguard1 = SPECIES_RIDERGUARD1,
+
+                  Bat1 = SPECIES_BAT1,
+                  Wolf1 = SPECIES_WOLF1,
+                  Wolverine1 = SPECIES_WOLVERINE1,
               },
 
               DebuffSpecies = new DebuffSpecies {

@@ -198,6 +198,13 @@ public:
     std::unordered_map< NON_CONTACT_CONSTRAINT_CACHE_KEY_T, NON_CONTACT_CONSTRAINT_Q, NonContactConstraintCacheKeyHasher > cachedNonContactConstraints;
 
 public:
+    static void DampLinearly(float& ioXVal, float& ioYVal, const float damping, const float dt) {
+        // [REMINDER] This is how "MotionProperties::mLinearDamping" works in JoltPhysics.
+        float multiplier = max(0.0f, 1.0f - damping*dt);
+        ioXVal *= multiplier;
+        ioYVal *= multiplier;
+    }
+
     static void FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const std::unordered_map<uint32_t, const TrapConfigFromTiled*> inTrapConfigFromTileDict, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled);
 
     static void FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
@@ -646,7 +653,7 @@ protected:
     }
 
 
-    void prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
+    void prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const bool currIsFlying, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion);
 
     void processInertiaWalkingHandleZeroEffDx(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool effInAir, bool currParalyzed, const bool isInWalkingAtkAndNotRecovered, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
     void processInertiaWalking(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, bool currEffInAir, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool nextInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
@@ -807,7 +814,7 @@ protected:
         return &(characterOverrides->at(ud));
     }
 
-    inline const CharacterConfig* getCc(uint32_t speciesId) {
+    inline const CharacterConfig* getCc(uint32_t speciesId) const {
         auto& ccs = globalConfigConsts->character_configs();
         JPH_ASSERT(ccs.contains(speciesId));
         auto& v = ccs.at(speciesId);
@@ -1054,9 +1061,14 @@ public:
     }
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+        auto* lhsCc = getCc(lhsCurrChd->species_id());
         if (transientSlipJumpableUds.count(udRhs)) {
             // Check early returns
-            if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state() && lhsCurrChd->frames_in_ch_state() < globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
+            if (lhsCc->omit_gravity()) {
+                return JPH::ValidateResult::RejectContact;
+            } else if (lhsCurrChd->omit_gravity()) {
+                return JPH::ValidateResult::RejectContact;
+            } else if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state() && lhsCurrChd->frames_in_ch_state() < globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
                 return JPH::ValidateResult::RejectContact;
             } else if (CharacterState::InAirIdle1BySlipJump == lhsNextChd->ch_state() && lhsNextChd->frames_in_ch_state() <= globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
                 return JPH::ValidateResult::RejectContact;

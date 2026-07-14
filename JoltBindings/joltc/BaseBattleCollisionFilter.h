@@ -276,7 +276,10 @@ static const JPH::Vec3  cYAxis = JPH::Vec3(0, 1, 0);
 static const JPH::Vec3  cNegativeZAxis = JPH::Vec3(0, 0, -1);
 
 static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
+static const JPH::Quat  cTurn180DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), JPH_PI);
+
 static const JPH::Mat44 cTurn90DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn90DegsAroundZAxis);
+static const JPH::Mat44 cTurn180DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn180DegsAroundZAxis);
 
 class BaseBattleCollisionFilter {
 public:

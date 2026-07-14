@@ -206,15 +206,6 @@ set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}
 set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/BaseBattleCollisionFilter.h
     ${JOLTC_ROOT}/CharacterCollisionCollector.h
-    ${JOLTC_ROOT}/BaseNpcReaction.h
-    ${JOLTC_ROOT}/BaseNpcReaction.cpp
-    ${JOLTC_ROOT}/BlackSaber1NpcReaction.h
-    ${JOLTC_ROOT}/BlackSaber1NpcReaction.cpp
-    ${JOLTC_ROOT}/BlackShooter1NpcReaction.h
-    ${JOLTC_ROOT}/BlackShooter1NpcReaction.cpp
-    ${JOLTC_ROOT}/BlackThrower1NpcReaction.h
-    ${JOLTC_ROOT}/BlackThrower1NpcReaction.cpp
-    ${JOLTC_ROOT}/BlackSaberTestWithVisionNpcReaction.h
     ${JOLTC_ROOT}/NpcReactionConsts.h
     ${JOLTC_ROOT}/CollisionCallbacks.h
     ${JOLTC_ROOT}/CollisionLayers.h
@@ -238,3 +229,9 @@ set(JOLTC_SRC_FILES
     ${JOLTC_ROOT}/DebugLog.h
     ${JOLTC_ROOT}/DebugLog.cpp
 )
+
+file(GLOB NPC_REACTION_SRC_FILES 
+    "${JOLTC_ROOT}/*NpcReaction.h"
+    "${JOLTC_ROOT}/*NpcReaction.cpp"
+)
+

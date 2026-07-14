@@ -1,12 +1,10 @@
-using JoltCSharp;
 using jtshared;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering.Universal;
 
 public class KeyChLightSourceAnimController : AbstractCacheableAnimNode<CharacterDownsync, CharacterState, CharacterConfig, uint> {
     private bool initialized = false;
-    public Light2D spotLight;
+    public Light2D light2D;
 
     public KeyChLightSourceAnimController() {
         SetUd(0);
@@ -23,11 +21,6 @@ public class KeyChLightSourceAnimController : AbstractCacheableAnimNode<Characte
     protected override bool lazyInit() {
         if (initialized) return true;
         initialized = true;
-        spotLight.pointLightInnerRadius = 0;
-        spotLight.pointLightOuterRadius = 0;
-        spotLight.pointLightInnerAngle = 360f;
-        spotLight.pointLightOuterAngle = 360f;
-        spotLight.falloffIntensity = 0.25f;
         return true;
     }
 
@@ -48,9 +41,6 @@ public class KeyChLightSourceAnimController : AbstractCacheableAnimNode<Characte
                 this.gameObject.transform.localRotation = facingXPlus;
             }
         }
-
-        spotLight.pointLightInnerRadius = insConfig.CapsuleRadius * 4;
-        spotLight.pointLightOuterRadius = insConfig.CapsuleHalfHeight * 10;
 
         return true;
     }

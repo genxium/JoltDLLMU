@@ -5,6 +5,10 @@
 #include "BlackShooter1NpcReaction.h"
 #include "BlackThrower1NpcReaction.h"
 #include "BlackSaberTestWithVisionNpcReaction.h"
+#include "BlackSaber2NpcReaction.h"
+#include "BlackShooter2NpcReaction.h"
+#include "ShieldGuard1NpcReaction.h"
+#include "Bat1NpcReaction.h"
 #include <map>
 
 extern JOLTC_EXPORT std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;

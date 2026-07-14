@@ -105,7 +105,7 @@ namespace JoltCSharp {
                 WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
                 WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
 
-                CapsuleRadius = (8.0f),
+                CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
                 CapsuleHalfHeight = (16.0f),
                 ShrinkedCapsuleRadius = (8.0f),
                 ShrinkedCapsuleHalfHeight = (10.0f),
@@ -159,7 +159,7 @@ namespace JoltCSharp {
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
-                CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleRadius = (6.0f), 
                 CapsuleHalfHeight = (8.0f),
                 ShrinkedCapsuleRadius = (6.0f),
                 ShrinkedCapsuleHalfHeight = (8.0f),
@@ -187,7 +187,7 @@ namespace JoltCSharp {
                 JumpAccMagY = 0,
                 AccMagX = 0.1f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
                 AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
-                CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleRadius = (6.0f), 
                 CapsuleHalfHeight = (8.0f),
                 ShrinkedCapsuleRadius = (6.0f),
                 ShrinkedCapsuleHalfHeight = (8.0f),
@@ -224,7 +224,7 @@ namespace JoltCSharp {
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
-                CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleRadius = (6.0f), 
                 CapsuleHalfHeight = (8.0f),
                 ShrinkedCapsuleRadius = (6.0f),
                 ShrinkedCapsuleHalfHeight = (8.0f),
@@ -264,7 +264,7 @@ namespace JoltCSharp {
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
-                CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleRadius = (6.0f), 
                 CapsuleHalfHeight = (8.0f),
                 ShrinkedCapsuleRadius = (6.0f),
                 ShrinkedCapsuleHalfHeight = (8.0f),
@@ -305,7 +305,7 @@ namespace JoltCSharp {
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
-                CapsuleRadius = (6.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleRadius = (6.0f), 
                 CapsuleHalfHeight = (8.0f),
                 ShrinkedCapsuleRadius = (6.0f),
                 ShrinkedCapsuleHalfHeight = (8.0f),
@@ -406,6 +406,129 @@ namespace JoltCSharp {
                 Def1DefiesDebuff = false
             };
 
+            CharacterConfig BAT1 = new CharacterConfig {
+                SpeciesId = SPECIES_BAT1,
+                SpeciesName = "Bat1",
+                Hp = 9,
+                Mp = 0,
+                MpRegenPerInterval = 0,
+                MpRegenInterval = 0,
+                LayDownFramesToRecover = 0,
+                GetUpInvinsibleFrames = 0,
+                GetUpFramesToRecover = 0,
+                Speed = 0.7f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 0,
+                JumpStartupFrames = 0,
+                AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                OmitGravity = true,
+                VisionOffsetX = (32.0f),
+                VisionOffsetY = (10.0f),
+                VisionHalfHeight = (96.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                CapsuleRadius = (4.0f), 
+                CapsuleHalfHeight = (3.0f),
+                ShrinkedCapsuleRadius = (4.0f),
+                ShrinkedCapsuleHalfHeight = (3.0f),
+                LayDownCapsuleRadius = (4.0f),
+                LayDownCapsuleHalfHeight = (3.0f),
+                DyingCapsuleRadius = (4.0f),
+                DyingCapsuleHalfHeight = (3.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 1, // Basically a touch to die species
+                ColliderDensity = 12.0f,
+                HasDimmedAnim = false,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                MaxAscendingVelY = -DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                AntiGravityWhenIdle = true,
+                AntiGravityFramesLingering = 10*BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 10,
+                Ifc = IfaceCat.Flesh,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+            };
+
+            CharacterConfig BLACKSABER2 = new CharacterConfig {
+                SpeciesId = SPECIES_BLACKSABER2,
+                SpeciesName = "BlackSaber2",
+                Hp = 60,
+                LayDownFramesToRecover = 12,
+                GetUpInvinsibleFrames = 19,
+                GetUpFramesToRecover = 14,
+                Speed = 1.1f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 4.9f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                AccMagX = 0.08f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (24.0f),
+                VisionOffsetY = (10.0f),
+                VisionHalfHeight = (96.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                CapsuleRadius = (6.0f), 
+                CapsuleHalfHeight = (8.0f),
+                ShrinkedCapsuleRadius = (6.0f),
+                ShrinkedCapsuleHalfHeight = (8.0f),
+                LayDownCapsuleRadius = (6.0f),
+                LayDownCapsuleHalfHeight = (4.0f),
+                DyingCapsuleRadius = (6.0f),
+                DyingCapsuleHalfHeight = (4.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 6,
+                HasDimmedAnim = false,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Metal,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+            };
+
+            CharacterConfig BLACKSHOOTER2 = new CharacterConfig {
+                SpeciesId = SPECIES_BLACKSHOOTER2,
+                SpeciesName = "BlackShooter2",
+                Hp = 30,
+                Mp = 300,
+                MpRegenPerInterval = 60,
+                MpRegenInterval = 70,
+                LayDownFramesToRecover = 12,
+                GetUpInvinsibleFrames = 19,
+                GetUpFramesToRecover = 14,
+                Speed = 0.6f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (64.0f),
+                VisionOffsetY = (10.0f),
+                VisionHalfHeight = (144.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                CapsuleRadius = (6.0f), 
+                CapsuleHalfHeight = (8.0f),
+                ShrinkedCapsuleRadius = (6.0f),
+                ShrinkedCapsuleHalfHeight = (8.0f),
+                LayDownCapsuleRadius = (6.0f),
+                LayDownCapsuleHalfHeight = (4.0f),
+                DyingCapsuleRadius = (6.0f),
+                DyingCapsuleHalfHeight = (4.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 6,
+                HasDimmedAnim = false,
+                ColliderDensity = 10.0f,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 90,
+                Ifc = IfaceCat.Metal,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+            };
+
             // BLADEGIRL
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
@@ -484,11 +607,24 @@ namespace JoltCSharp {
             BLACKSABER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackSaber1AirSlash1Id);
             underlying.Add(BLACKSABER1.SpeciesId, BLACKSABER1);
 
+            // BLACKSABER2
+            BLACKSABER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BlackSaber2GroundSlash1Id);
+            BLACKSABER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BlackSaber2GroundSlash1Id);
+
+            BLACKSABER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackSaber2AirSlash1Id);
+            underlying.Add(BLACKSABER2.SpeciesId, BLACKSABER2);
+
             // BLACKSHOOTER1
             BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BlackShooter1RapidFireId);
             BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BlackShooter1RapidFireId);
             BLACKSHOOTER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackShooter1RapidFireId);
             underlying.Add(BLACKSHOOTER1.SpeciesId, BLACKSHOOTER1);
+
+            // BLACKSHOOTER2
+            BLACKSHOOTER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BlackShooter2CannonId);
+            BLACKSHOOTER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BlackShooter2CannonId);
+            BLACKSHOOTER2.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackShooter2CannonId);
+            underlying.Add(BLACKSHOOTER2.SpeciesId, BLACKSHOOTER2);
 
             // BLACKTHROWER1
             BLACKTHROWER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
@@ -500,7 +636,17 @@ namespace JoltCSharp {
             underlying.Add(HEADQUARTER1.SpeciesId, HEADQUARTER1);
 
             // SHIELDGUARD1
+            SHIELDGUARD1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), ShieldGuard1GroundSlashId);
+            SHIELDGUARD1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), ShieldGuard1GroundSlashId);
+
+            SHIELDGUARD1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), ShieldGuard1AirSlashId);
             underlying.Add(SHIELDGUARD1.SpeciesId, SHIELDGUARD1);
+
+            // BAT1
+            BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), Bat1BiteId);
+            BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Bat1BiteId);
+            BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Bat1BiteId);
+            underlying.Add(BAT1.SpeciesId, BAT1);
 
             // BLACKSABER_TEST
             underlying.Add(BLACKSABER_TEST_NO_VISION.SpeciesId, BLACKSABER_TEST_NO_VISION);

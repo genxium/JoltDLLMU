@@ -453,7 +453,7 @@ namespace JoltCSharp {
                               CooldownFrames = 5,
                               PushbackVelX = primitiveConsts.NoLockVel,
                               PushbackVelY = primitiveConsts.NoLockVel,
-                              SelfLockVelX = 8.0f * BATTLE_DYNAMICS_FPS,
+                              SelfLockVelX = 8.5f * BATTLE_DYNAMICS_FPS,
                               SelfLockVelY = primitiveConsts.NoLockVel,
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               BType = BulletType.Melee,
@@ -468,7 +468,7 @@ namespace JoltCSharp {
                               CooldownFrames = 5,
                               PushbackVelX = primitiveConsts.NoLockVel,
                               PushbackVelY = primitiveConsts.NoLockVel,
-                              SelfLockVelX = 7.8f * BATTLE_DYNAMICS_FPS,
+                              SelfLockVelX = 8.8f * BATTLE_DYNAMICS_FPS,
                               SelfLockVelY = 0,
                               SelfLockVelYWhenFlying = 0,
                               BType = BulletType.Melee,
@@ -483,7 +483,7 @@ namespace JoltCSharp {
                               CooldownFrames = 5,
                               PushbackVelX = primitiveConsts.NoLockVel,
                               PushbackVelY = primitiveConsts.NoLockVel,
-                              SelfLockVelX = 7.5f * BATTLE_DYNAMICS_FPS,
+                              SelfLockVelX = 8.2f * BATTLE_DYNAMICS_FPS,
                               SelfLockVelY = primitiveConsts.NoLockVel,
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               BType = BulletType.Melee,
@@ -714,6 +714,74 @@ namespace JoltCSharp {
             .AddHit(BasicTimedBombHit1) 
             .AddHit(BasicTimedBombHit2);
 
+             BulletConfig SlowBladeHit2 = new BulletConfig(BasicBladeHit1)
+                .SetDamage(18)
+                .SetStartupFrames(26)
+                .SetActiveFrames(4)
+                .SetCooldownFrames(6)
+                ; 
+
+             BulletConfig SlowBladeAirHit2 = new BulletConfig(SlowBladeHit2)
+                .SetSelfLockVel(primitiveConsts.NoLockVel, primitiveConsts.NoLockVel, primitiveConsts.NoLockVel);
+
+             Skill ShieldGuard1AirSlash = new Skill {
+                Id = ShieldGuard1AirSlashId,
+                   RecoveryFrames = SlowBladeAirHit2.StartupFrames+SlowBladeAirHit2.ActiveFrames+SlowBladeAirHit2.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowBladeAirHit2.StartupFrames+SlowBladeAirHit2.ActiveFrames+SlowBladeAirHit2.CooldownFrames,
+                   RecoveryFramesOnHit = SlowBladeAirHit2.StartupFrames+SlowBladeAirHit2.ActiveFrames+SlowBladeAirHit2.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.InAirAtk1
+            }.AddHit(SlowBladeAirHit2);
+
+             Skill ShieldGuard1GroundSlash = new Skill {
+                Id = ShieldGuard1GroundSlashId,
+                   RecoveryFrames = SlowBladeHit2.StartupFrames+SlowBladeHit2.ActiveFrames+SlowBladeHit2.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowBladeHit2.StartupFrames+SlowBladeHit2.ActiveFrames+SlowBladeHit2.CooldownFrames,
+                   RecoveryFramesOnHit = SlowBladeHit2.StartupFrames+SlowBladeHit2.ActiveFrames+SlowBladeHit2.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk1
+            }.AddHit(SlowBladeHit2);
+
+             Skill Bat1Bite = new Skill {
+                Id = Bat1BiteId,
+                   RecoveryFrames = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnHit = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk1
+            }.AddHit(SlowBladeAirHit1);
+
+             Skill BlackShooter2Cannon = new Skill {
+                Id = BlackShooter2CannonId,
+                   RecoveryFrames = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+                   RecoveryFramesOnBlock = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+                   RecoveryFramesOnHit = BasicChargedPistolBulletAir.StartupFrames+BasicChargedPistolBulletAir.CooldownFrames,
+                   InvocationType = SkillInvocation.FallingEdge,
+                   BoundChState = CharacterState.Atk1,
+                   Atk1MagazineDelta = 1,
+            }
+            .AddHit(new BulletConfig(BasicChargedPistolBulletGround)
+                    .SetHitboxOffsets(BasicChargedPistolBulletGround.HitboxOffsetX, BlackShooter2CannonOffsetY)
+            );
+
+             Skill BlackSaber2AirSlash1 = new Skill {
+                Id = BlackSaber2AirSlash1Id,
+                   RecoveryFrames = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnHit = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.InAirAtk1
+            }.AddHit(new BulletConfig(SlowBladeAirHit1).SetDamage(15));
+
+             Skill BlackSaber2GroundSlash1 = new Skill {
+                Id = BlackSaber2GroundSlash1Id,
+                   RecoveryFrames = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+                   RecoveryFramesOnHit = SlowBladeHit1.StartupFrames+SlowBladeHit1.ActiveFrames+SlowBladeHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk1
+            }.AddHit(new BulletConfig(SlowBladeHit1).SetDamage(15));
+
             underlying = new MapField<uint, Skill> {
                 { BladeGirlAirSlash1Id, BladeGirlAirSlash1 },
                 { BladeGirlGroundSlash1Id, BladeGirlGroundSlash1 },
@@ -733,10 +801,18 @@ namespace JoltCSharp {
                 { HunterChargedPistolWalkingId, HunterChargedPistolWalking },
                 { HunterChargedPistolCrouchId, HunterChargedPistolCrouch },
                 { HunterSlidingId, BountyhunterSliding },
+
                 { BlackSaber1GroundSlash1Id, BlackSaber1GroundSlash1 },
                 { BlackSaber1AirSlash1Id, BlackSaber1AirSlash1 },
+
                 { BlackShooter1RapidFireId, BlackShooter1RapidFire },
-                { BlackThrower1TimedBombId, BlackThrower1TimedBomb }
+                { BlackThrower1TimedBombId, BlackThrower1TimedBomb },
+                { ShieldGuard1AirSlashId, ShieldGuard1AirSlash },
+                { ShieldGuard1GroundSlashId, ShieldGuard1GroundSlash },
+                { Bat1BiteId, Bat1Bite },
+                { BlackShooter2CannonId, BlackShooter2Cannon },
+                { BlackSaber2GroundSlash1Id, BlackSaber2GroundSlash1 },
+                { BlackSaber2AirSlash1Id, BlackSaber2AirSlash1 },
             };
 
             return true;

@@ -1344,7 +1344,8 @@ message PlayerStoryProgress {
 
     map<uint32, PlayerChUnlockProgress> ch_unlock_progress_dict = 7; // keyed by "species_id: uint32"
 
-    // For config of all regions and levels (including unlock criterions), see "<proj-root>/frontend/Assets/Scripts/StoryConstants.cs"
+    uint32 coin_count = 8;
+    uint32 dragon_crystal_count = 9;
 }
 
 message PlayerOnlineArenaProgress {
@@ -1562,6 +1563,10 @@ message ChSpeciesConsts {
     uint32 shieldguard2 = 10;
     uint32 riderguard1 = 11;
 
+    uint32 bat1 = 12;
+    uint32 wolf1 = 13;
+    uint32 wolverine1 = 14;
+
     uint32 none = 2048;
     uint32 blacksaber_test_no_vision = 2049;
     uint32 blacksaber_test_with_vision = 2050;
@@ -1604,6 +1609,8 @@ message PickableTypes {
     uint32 inv_c_refill_small = 3;
     uint32 inv_d_refill_small = 4;
     uint32 vehicle_sedan_1 = 5;
+    uint32 coin = 6;
+    uint32 dragon_crystal = 7;
 
     uint32 none = 2048;
 }
@@ -1824,6 +1831,19 @@ message PrimitiveConsts {
 
     int32 starting_render_frame_id = 156;
     int32 starting_input_frame_id = 157;
+
+    float default_ch_friction = 158; 
+    float default_ch_restitution = 159;
+    float ground_dashing_ch_friction = 160; 
+    float anti_push_ch_friction = 161; 
+    float walkstopping_ch_friction = 162; 
+    float fallstopping_ch_friction = 163; 
+
+    float default_barrier_friction = 164; 
+    float default_barrier_restitution = 165;
+
+    float default_bullet_friction = 166; 
+    float default_bullet_restitution = 167; 
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;

@@ -47,6 +47,11 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     globalNpcReactionMap[chSpecies.blackthrower1()] = new BlackThrower1NpcReaction();
     globalNpcReactionMap[chSpecies.blacksaber_test_with_vision()] = new BlackSaberTestWithVisionNpcReaction();
 
+    globalNpcReactionMap[chSpecies.blacksaber2()] = new BlackSaber2NpcReaction();
+    globalNpcReactionMap[chSpecies.blackshooter2()] = new BlackShooter2NpcReaction();
+    globalNpcReactionMap[chSpecies.shieldguard1()] = new ShieldGuard1NpcReaction();
+    globalNpcReactionMap[chSpecies.bat1()] = new Bat1NpcReaction();
+
     trivialTrtSet = {
         globalPrimitiveConsts->trts().by_init_delay(),
         globalPrimitiveConsts->trts().by_movement(),
