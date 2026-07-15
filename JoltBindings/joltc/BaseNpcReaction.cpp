@@ -10,10 +10,20 @@
 
 #include <climits>
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3& antiGravityNorm, const float gravityMagnitude, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const DefaultBroadPhaseLayerFilter& bplf, const DefaultObjectLayerFilter& olf, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal currNpcGoal, const uint64_t currNpcCachedCueCmd, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const uint64_t toRevengeOppoUdt, const uint64_t toRevengeOppoUd, const Vec3& positionDiffForToRevengeOppoUd, NpcGoal& outNextNpcGoal, uint64_t& outCmd, int& outLastFledRdfId) {
 
     Vec3 initVisionOffset(cc->vision_offset_x(), cc->vision_offset_y(), 0);
     auto visionInitTransform = cTurn90DegsAroundZAxisMat.PostTranslated(initVisionOffset); // Rotate, and then translate
+
+    if (currIsFlying && InAirIdle1NoJump == currChd.ch_state() && cc->anti_gravity_when_idle()) {
+        initVisionOffset.Set(0, 0, 0);
+        visionInitTransform = cTurn180DegsAroundZAxisMat.PostTranslated(initVisionOffset); // Rotate, and then translate
+    }
+
     Vec3 selfNpcPosition(currChd.x(), currChd.y(), currChd.z());
     JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
     auto visionCOMTransform = (JPH::Mat44::sRotation(offenderEffQ)*visionInitTransform).PostTranslated(selfNpcPosition); //and then rotate again by the NPC's orientation (affecting "initVisionOffset" too), and finally apply the NPC's position as translation
@@ -189,6 +199,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         case TARGET_CH_REACTION_USE_DRAGONPUNCH:
         case TARGET_CH_REACTION_USE_MELEE:
         case TARGET_CH_REACTION_USE_SLOT_C:
+        case TARGET_CH_REACTION_HUNTING_LOSS:
             break;
         case TARGET_CH_REACTION_FOLLOW:
         case TARGET_CH_REACTION_FLEE_OPPO: {
@@ -223,6 +234,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_USE_DRAGONPUNCH == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(+2);
@@ -232,6 +245,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_USE_FIREBALL == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(-2);
@@ -241,6 +256,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_USE_SLOT_C == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(0);
@@ -250,6 +267,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_SLIP_JUMP_TOWARDS_CH == newVisionReaction) {
         ifDecodedHolder.set_dx(0);
         ifDecodedHolder.set_dy(-2);
@@ -259,11 +278,27 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER == newVisionReaction) {
         int anchorRdfId = (outLastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt() + 1);
         bool toEnterFleeingGracePeriod = (currRdfId > anchorRdfId);
         if (toEnterFleeingGracePeriod) {
-            ifDecodedHolder.set_dx(0);
+            int toMoveDirX = 0;
+            int toMoveDirY = 0;
+            if (currIsFlying) {
+                float comparand = 6 * cc->capsule_half_height();
+                float anitGravityAlignmentAbs = fabs(currGapToJump.anti_gravity_alignment());
+                if (comparand < anitGravityAlignmentAbs) {
+                    toMoveDirY = 0;
+                } else if (0 < currGapToJump.anti_gravity_alignment()) {
+                    toMoveDirY = (-1);
+                } else {
+                    toMoveDirY = (+1);
+                }
+            }
+            ifDecodedHolder.set_dx(toMoveDirX);
+            ifDecodedHolder.set_dy(toMoveDirY);
             outLastFledRdfId = currRdfId;
             /* 
             [REMINDER] 
@@ -272,20 +307,40 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
 
             Once the NPC has the next "inFleeingGracePeriod = false", it means "currRdfId == lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt()", thus "TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER" will be returned yet "currRdfId < anchorRdfId" here, therefore the actual turn-around will occur. 
             */
+/*
+#ifndef NDEBUG
+            if (currIsFlying) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", flying selfNpcUd=" << selfNpcUd << " has newVisionReaction=TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER but entered grace period, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(vis_alignment=" << currGapToJump.vision_alignment() << ", anti_g_alignment=" << currGapToJump.anti_gravity_alignment() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd;
+                Debug::Log(oss.str(), DColor::Green);
+            }
+#endif
+*/
         } else {
             int toMoveDirX = 0 < visionDirection.GetX() ? -2 : +2;
-            ifDecodedHolder.set_dx(toMoveDirX);
+            int toMoveDirY = 0;
             if (currIsFlying) {
-                if (BaseBattleCollisionFilter::IsLengthNearZero(currChd.vel_y()*globalPrimitiveConsts->estimated_seconds_per_rdf())) {
-                    ifDecodedHolder.set_dy(0);
-                } else if (0 < currChd.vel_y()) {
-                    ifDecodedHolder.set_dy(-1);
+                float comparand = 6 * cc->capsule_half_height();
+                float anitGravityAlignmentAbs = fabs(currGapToJump.anti_gravity_alignment());
+                if (comparand < anitGravityAlignmentAbs) {
+                    toMoveDirY = 0;
+                } else if (0 < currGapToJump.anti_gravity_alignment()) {
+                    toMoveDirY = (-1);
                 } else {
-                    ifDecodedHolder.set_dy(+1);
+                    toMoveDirY = (+1);
                 }
-            } else {
-                ifDecodedHolder.set_dy(0);
             }
+            ifDecodedHolder.set_dx(toMoveDirX);
+            ifDecodedHolder.set_dy(toMoveDirY);
+/*
+#ifndef NDEBUG
+            if (currIsFlying) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", flying selfNpcUd=" << selfNpcUd << " has newVisionReaction=TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER and about to turn around, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(vis_alignment=" << currGapToJump.vision_alignment() << ", anti_g_alignment=" << currGapToJump.anti_gravity_alignment() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd;
+                Debug::Log(oss.str(), DColor::Yellow);
+            }
+#endif
+*/
         }
         ifDecodedHolder.set_btn_a_level(0);
         ifDecodedHolder.set_btn_b_level(0);
@@ -293,6 +348,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_JUMP_TOWARDS_CH == newVisionReaction || TARGET_CH_REACTION_JUMP_TOWARDS_MV_BLOCKER == newVisionReaction) {
         // [REMINDER] Not need to consider "currIsFlying" in this case.
         int toMoveDirX = 0 < visionDirection.GetX() ? +2 : -2;
@@ -304,18 +361,11 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_HUNTING_LOSS == newVisionReaction) {
         int inheritedDirX = 0 < visionDirection.GetX() ? +2 : -2;
-        int inheritedDirY = 0;
-        if (currIsFlying) {
-            if (BaseBattleCollisionFilter::IsLengthNearZero(currChd.vel_y()*globalPrimitiveConsts->estimated_seconds_per_rdf())) {
-                ifDecodedHolder.set_dy(0);
-            } else if (0 < currChd.vel_y()) {
-                ifDecodedHolder.set_dy(+1);
-            } else {
-                ifDecodedHolder.set_dy(-1);
-            }
-        }
+        int inheritedDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
         switch (outNextNpcGoal) {
         case NpcGoal::NIdle:
             ifDecodedHolder.set_dx(0);
@@ -326,16 +376,20 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             ifDecodedHolder.set_btn_d_level(0);
             ifDecodedHolder.set_btn_e_level(0);
             ifDecodedHolder.set_btn_f_level(0);
+            ifDecodedHolder.set_btn_l_level(0);
+            ifDecodedHolder.set_btn_r_level(0);
             break;
         default:
             ifDecodedHolder.set_dx(inheritedDirX);
-            ifDecodedHolder.set_dy(0);
+            ifDecodedHolder.set_dy(inheritedDirY);
             ifDecodedHolder.set_btn_a_level(0);
             ifDecodedHolder.set_btn_b_level(0);
             ifDecodedHolder.set_btn_c_level(0);
             ifDecodedHolder.set_btn_d_level(0);
             ifDecodedHolder.set_btn_e_level(0);
             ifDecodedHolder.set_btn_f_level(0);
+            ifDecodedHolder.set_btn_l_level(0);
+            ifDecodedHolder.set_btn_r_level(0);
             break;
         }
     } else {
@@ -347,7 +401,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             if (currIsFlying) {
                 if (BaseBattleCollisionFilter::IsLengthNearZero(selfNpcPositionDiffForOppoChUd.GetX())) {
                     toMoveDirX = 0;
-                } else {    
+                } else {
                     if (TARGET_CH_REACTION_FLEE_OPPO == newVisionReaction) {
                         toMoveDirX = 0 < selfNpcPositionDiffForOppoChUd.GetX() ? -2 : +2;
                     } else {
@@ -387,11 +441,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             }
         } else {
             toMoveDirX = 0 < visionDirection.GetX() ? +2 : -2;
-            if (currIsFlying) {
-                if (!BaseBattleCollisionFilter::IsLengthNearZero(selfNpcPositionDiffForOppoChUd.GetY())) {
-                    toMoveDirY = 0 < selfNpcPositionDiffForOppoChUd.GetY() ? +1 : -1;
-                }
-            }
+            toMoveDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
         }
        
         // It's important to unset "BtnALevel" if no proactive jump is implied by vision reaction, otherwise its value will remain even after execution and sanitization
@@ -403,6 +453,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_d_level(0);
         ifDecodedHolder.set_btn_e_level(0);
         ifDecodedHolder.set_btn_f_level(0);
+        ifDecodedHolder.set_btn_l_level(0);
+        ifDecodedHolder.set_btn_r_level(0);
     }
 
     uint64_t newCachedCueCmd = BaseBattleCollisionFilter::encodeInput(ifDecodedHolder);
@@ -411,7 +463,6 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
 
 void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfNpcCollider, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionHitCollector, uint64_t& outToHandleAllyUd, Vec3& outSelfNpcPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfNpcPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfNpcPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
     if (!visionHitCollector.HadHit()) return;
-    bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
     const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
 	const AABox& selfNpcAABB = selfNpcTransformedShape.GetWorldSpaceBounds();
@@ -444,7 +495,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
     for (int i = 0; i < hitsCnt; i++) {
         const CollideShapeCollector::ResultType hit = visionHitCollector.mHits.at(i);
         const BodyID rhsBodyID = hit.mBodyID2;
-        const float rhsVisionAlignmentFromNpcChdPosition = visionDirection.Dot(hit.mContactPointOn1 + effVisionOffsetFromNpcChd);
+        float rhsVisionAlignmentFromNpcChdPosition = visionDirection.Dot(hit.mContactPointOn1 + effVisionOffsetFromNpcChd);
         if (!rhsBodyID.IsInvalid() && rhsBodyID == selfNpcGroundBodyID) {
             // [WARNING] When "selfNpcGroundBody" is of complicated shape, it's too inefficient to traverse all its vertices and find the largest projected value on "visionDirection", instead we can just allow "selfNpcGroundBody" to collide with "effVisionShape" and use the immediately visible distance as "currGroundMvTolerance" to roughly decide whether or not we can move on.
             outCurrGroundMvTolerance.set_vision_alignment(rhsVisionAlignmentFromNpcChdPosition);
@@ -480,7 +531,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
                 rhsCurrChd = &(rhsCurrNpc->chd());
             }
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
-            const Vec3 selfNpcPositionDiff = rhsPos - lhsPos;
+            const Vec3 selfNpcPositionDiff = (rhsPos - lhsPos);
             if (rhsCurrChd->bullet_team_id() != currChd.bullet_team_id()) {
                 if (currChd.locking_on_ud() == udRhs) {
                     // [REMINDER] Lock on the same opponent whenever possible.
@@ -542,48 +593,63 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
                 // Not a "movement blocker candidate" 
                 continue;
             }
-            if (rhsVisionAlignmentFromNpcChdPosition > bestVisionAlignmentForMvBlocker) {
-                continue;
-            }
+
             float rhsAABBJumpingAxisAlignment1 = rhsAABB.mMax.Dot(antiGravityNorm);
             float rhsAABBJumpingAxisAlignment2 = rhsAABB.mMin.Dot(antiGravityNorm);
             float rhsAABBVisionAlignment1 = rhsAABB.mMax.Dot(visionDirection);
             float rhsAABBVisionAlignment2 = rhsAABB.mMin.Dot(visionDirection);
 
-            if (!isCharacterFlying) {
-                bool strictlyUp = false;
+            bool strictlyUp = false, strictlyDown = false;
+            if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                strictlyUp = (rhsAABBJumpingAxisAlignment2 + cCollisionTolerance >= selfNpcAABBJumpingAxisAlignment1); // the bottom of rhs is higher than selfNpc top
+                strictlyDown = (rhsAABBJumpingAxisAlignment1 <= selfNpcAABBJumpingAxisAlignment2 + cCollisionTolerance); // the top of rhs is lower than selfNpc bottom
+            } else {
+                // rhsAABBJumpingAxisAlignment1 <= rhsAABBJumpingAxisAlignment2
+                strictlyUp = (rhsAABBJumpingAxisAlignment1 + cCollisionTolerance >= selfNpcAABBJumpingAxisAlignment2); // the bottom of rhs is higher than selfNpc top
+                strictlyDown = (rhsAABBJumpingAxisAlignment2 <= selfNpcAABBJumpingAxisAlignment1 + cCollisionTolerance); // the top of rhs is lower than selfNpc bottom
+            }
 
-                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
-                    strictlyUp = (rhsAABBJumpingAxisAlignment2 >= selfNpcAABBJumpingAxisAlignment1);
-                } else {    
-                    strictlyUp = (rhsAABBJumpingAxisAlignment1 >= selfNpcAABBJumpingAxisAlignment2);
-                }
+            bool holdableBothForwardAndBackward = false;
+            if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
+                holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 >= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 <= selfNpcAABBVisionAlignment2);
+            } else {
+                holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 <= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 >= selfNpcAABBVisionAlignment2);
+            }
 
-                bool holdableBothForwardAndBackward = false;
-                if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
-                    holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 >= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 <= selfNpcAABBVisionAlignment2); 
-                } else {
-                    holdableBothForwardAndBackward = (rhsAABBVisionAlignment1 <= selfNpcAABBVisionAlignment1 && rhsAABBVisionAlignment2 >= selfNpcAABBVisionAlignment2);
-                }
+            if (!currIsFlying) {
                 if (strictlyUp && holdableBothForwardAndBackward) {
                     // Not a "movement blocker candidate" 
                     continue;
                 }
+            } else {
+                // For a flying NPC, "strictlyUp" might be a valid "movement blocker candidate"
+                if ((strictlyUp || strictlyDown) && holdableBothForwardAndBackward) {
+                    rhsVisionAlignmentFromNpcChdPosition = FLT_MAX * 0.5;
+                }
             }
+
+            if (rhsVisionAlignmentFromNpcChdPosition > bestVisionAlignmentForMvBlocker) {
+                continue;
+            }
+
             bool rayTestPassed = false, rayTestCanIgnoreSelfNpcGround = false;
 
-            if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2 && rhsAABBVisionAlignment1 > selfNpcGroundAABBVisionAlignment1) {
-                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2 ) {
-                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
-                } else {
-                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
+            if (!currIsFlying) {
+                if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2 && rhsAABBVisionAlignment1 > selfNpcGroundAABBVisionAlignment1) {
+                    if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                        rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
+                    } else {
+                        rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
+                    }
+                } else if (rhsAABBVisionAlignment2 > rhsAABBVisionAlignment1 && rhsAABBVisionAlignment2 > selfNpcGroundAABBVisionAlignment2) {
+                    if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
+                        rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
+                    } else {
+                        rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
+                    }
                 }
-            } else if (rhsAABBVisionAlignment2 > rhsAABBVisionAlignment1 && rhsAABBVisionAlignment2 > selfNpcGroundAABBVisionAlignment2) {
-                if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
-                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment1 <= selfNpcGroundAABBJumpingAxisAlignment2);
-                } else {
-                    rayTestCanIgnoreSelfNpcGround = (rhsAABBJumpingAxisAlignment2 <= selfNpcGroundAABBJumpingAxisAlignment1);
-                }
+            } else {
+                rayTestCanIgnoreSelfNpcGround = true;
             }
 
             VisionBodyFilter visionRayCastBodyFilter(currRdfId, ((const CharacterDownsync*)&currChd), (const CharacterDownsync*)nextChd, selfNpcBodyID, selfNpcUd, UDT_NPC, nullptr);
@@ -604,38 +670,53 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
                     continue;
                 }
             }
-            
+/*
+#ifndef NDEBUG
+            if (currIsFlying) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " about to update bestVisionAlignmentForMvBlocker from " << bestVisionAlignmentForMvBlocker << " to " << rhsVisionAlignmentFromNpcChdPosition << ", visionAABB = (minX = " << visionAABB.mMin.GetX() << ", maxX = " << visionAABB.mMax.GetX() << ", minY = " << visionAABB.mMin.GetY() << ", maxY = " << visionAABB.mMax.GetY() << "), visionDirection=(" << visionDirection.GetX() << "," << visionDirection.GetY() << "," << visionDirection.GetZ() << "), vision hit rhsBodyID = " << rhsBodyID.GetIndexAndSequenceNumber() << ", udRhs = " << udRhs << ": hit.mContactPointOn1 = (" << hit.mContactPointOn1.GetX() << ", " << hit.mContactPointOn1.GetY() << "), effVisionOffsetFromNpcChd=(" << effVisionOffsetFromNpcChd.GetX() << ", " << effVisionOffsetFromNpcChd.GetY() << "), strictlyUP=" << strictlyUp << ", strictlyDown=" << strictlyDown << ", holdableBothForwardAndBackward=" << holdableBothForwardAndBackward << ", rhsAABBJumpingAxisAlignment1=" << rhsAABBJumpingAxisAlignment1 << ", rhsAABBJumpingAxisAlignment2=" << rhsAABBJumpingAxisAlignment2 << ", selfNpcAABBJumpingAxisAlignment1=" << selfNpcAABBJumpingAxisAlignment1 << ", selfNpcAABBJumpingAxisAlignment2=" << selfNpcAABBJumpingAxisAlignment2;
+                Debug::Log(oss.str(), DColor::Blue);
+            }
+#endif
+*/
             bestVisionAlignmentForMvBlocker = rhsVisionAlignmentFromNpcChdPosition;
             outToHandleMvBlockerUd = udRhs;
             outToHandleMvBlockerBodyID = rhsBodyID;
 
-            // Calc "outCurrGapToJump"
+            // Calc "outCurrGapToJump", if "true == currIsFlying", these "xxxGapToJump" variables still provide useful information about the gaps.
             if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
                 outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment2 - selfNpcAABBVisionAlignment1);
-            } else {    
+            } else {
                 outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment1 - selfNpcAABBVisionAlignment2);
             }
 
             if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
                 outCurrGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment1 - selfNpcAABBJumpingAxisAlignment2);
-            } else {    
+            } else {
                 outCurrGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment2 - selfNpcAABBJumpingAxisAlignment1);
+            }
+
+            if (currIsFlying) {
+                if ((strictlyUp || strictlyDown) && holdableBothForwardAndBackward) {
+                    outCurrGapToJump.set_vision_alignment(0); // To avoid unexpected "hasEffectiveMvBlocker" 
+                }
             }
 
             if (!selfNpcGroundBodyID.IsInvalid()) {
                 // Calc "minGapToJump"
                 if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
                     outMinGapToJump.set_vision_alignment(rhsAABBVisionAlignment2 - selfNpcGroundAABBVisionAlignment1);
-                } else {    
+                } else {
                     outMinGapToJump.set_vision_alignment(rhsAABBVisionAlignment1 - selfNpcGroundAABBVisionAlignment2);
                 }
 
                 if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
                     outMinGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment1 - selfNpcGroundAABBJumpingAxisAlignment1);
-                } else {    
+                } else {
                     outMinGapToJump.set_anti_gravity_alignment(rhsAABBJumpingAxisAlignment2 - selfNpcGroundAABBJumpingAxisAlignment2);
                 }
             }
+
             break;
         }
         default:
@@ -694,9 +775,8 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
 
     const TransformedShape& selfNpcTransformedShape = selfNpcCollider->GetTransformedShape(false);
 	const AABox& selfNpcAABB = selfNpcTransformedShape.GetWorldSpaceBounds();
-    bool isCharacterFlying = (currChd.omit_gravity() || cc->omit_gravity());
     
-    bool temptingToMove = (temptingToMoveNpcGoalSet.count(inNpcGoal)) && (canJumpWithinInertia || isCharacterFlying);
+    bool temptingToMove = (temptingToMoveNpcGoalSet.count(inNpcGoal)) && (canJumpWithinInertia || currIsFlying);
 
     /*
     [WARNING] DON'T use "selfNpcCollider->GetLinearVelocity()" to evaluate "currGroundCanHoldMeIfWalkOn". 
@@ -709,13 +789,45 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     bool toHandleMvBlockerCanHoldMeIfWalkOn = false;
     const Vec3& chColliderVel = selfNpcCollider->GetLinearVelocity(false);
     const float constraintVelXDiff = chColliderVel.GetX() - nextChd->vel_x();
-    bool hasEffectiveMvBlocker = walkingSet.count(currChd.ch_state()) && 
-        (
-            (0 > constraintVelXDiff*nextChd->vel_x()) && !BaseBattleCollisionFilter::IsLengthNearZero(constraintVelXDiff * globalPrimitiveConsts->estimated_seconds_per_rdf())
+    const float constraintVelYDiff = chColliderVel.GetY() - nextChd->vel_y();
+    bool hasEffectiveMvBlocker = false;
+
+    bool inFleeingGracePeriod = (currRdfId < lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
+
+    if (!currIsFlying) {
+        hasEffectiveMvBlocker = (walkingSet.count(currChd.ch_state()) || temptingToMove) &&
+            (
+            (0 > constraintVelXDiff * nextChd->vel_x()) && !BaseBattleCollisionFilter::IsLengthNearZero(constraintVelXDiff * globalPrimitiveConsts->estimated_seconds_per_rdf())
             ||
             (0 > currGapToJump.vision_alignment())
         );
-    bool inFleeingGracePeriod = (currRdfId < lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
+    } else {
+        bool closeEnoughX = (0 > currGapToJump.vision_alignment());
+        float closeEnoughAbsY = 4*cc->capsule_half_height();
+        bool closeEnoughY = (0 < currGapToJump.anti_gravity_alignment() && closeEnoughAbsY > currGapToJump.anti_gravity_alignment()) || (0 > currGapToJump.anti_gravity_alignment() && -closeEnoughAbsY < currGapToJump.anti_gravity_alignment());
+        hasEffectiveMvBlocker = (walkingSet.count(currChd.ch_state()) || temptingToMove) &&
+            (
+                (0 > constraintVelXDiff * nextChd->vel_x()) && !BaseBattleCollisionFilter::IsLengthNearZero(constraintVelXDiff * globalPrimitiveConsts->estimated_seconds_per_rdf())
+                ||
+                (closeEnoughX)
+            )
+            || 
+            (
+                (0 > constraintVelYDiff * nextChd->vel_y()) && !BaseBattleCollisionFilter::IsLengthNearZero(constraintVelYDiff * globalPrimitiveConsts->estimated_seconds_per_rdf())
+                ||
+                (closeEnoughY)
+            );
+        /*
+#ifndef NDEBUG
+            if (inFleeingGracePeriod && !hasEffectiveMvBlocker && 0 == currChd.locking_on_ud()) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", flying selfNpcUd=" << selfNpcUd << " is inFleeingGracePeriod, is not hunting and lost effective movement blocker, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), temptingToMove=" << temptingToMove << ", inNpcGoal=" << inNpcGoal << ", currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(vis_alignment=" << currGapToJump.vision_alignment() << ", anti_g_alignment=" << currGapToJump.anti_gravity_alignment() << "), nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd;
+                Debug::Log(oss.str(), DColor::White);
+            }
+#endif
+*/
+    }
+
     if (cvSupported) {
         if (!currGroundCanHoldMeIfWalkOn || hasEffectiveMvBlocker) {
             /*
@@ -734,10 +846,26 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
             }
         }
     } else {
-        if (temptingToMove) {
-            newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
+        if (currIsFlying) {
+            if (hasEffectiveMvBlocker) {
+                if (temptingToMove && !inFleeingGracePeriod) {
+                    newVisionReaction = TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER;
+                } else {
+                    newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
+                }
+            } else {
+                if (temptingToMove) {
+                    newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
+                } else {
+                    newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
+                }
+            }
         } else {
-            newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
+            if (temptingToMove) {
+                newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
+            } else {
+                newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
+            }
         }
     }
 
@@ -757,16 +885,6 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     }
 
     if (currIsFlying) {
-        if (temptingToMove) {
-            if (!hasEffectiveMvBlocker) {
-                newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
-            } else {
-                newVisionReaction = TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER;
-            }
-        } else {
-            newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
-        }
-
         return newVisionReaction;
     }
 
