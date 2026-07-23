@@ -341,7 +341,7 @@ namespace JoltCSharp {
               FallstoppingChFriction = 90.0f, 
 
               DefaultBarrierFriction = 0.1f, 
-              DefaultBarrierRestitution = 0.1f,
+              DefaultBarrierRestitution = 0.0f,
 
               DefaultBulletFriction = 0.2f, 
               DefaultBulletRestitution = 0.1f, 

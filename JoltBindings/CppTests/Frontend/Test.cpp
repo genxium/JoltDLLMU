@@ -2470,6 +2470,56 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockStairsStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-130);
+    playerCh1->set_y(116);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -3278,6 +3328,31 @@ std::map<int, uint64_t> testCmds38 = {
     {499, 4},
     {500, 0},
     {2048, 0},
+};
+
+std::map<int, uint64_t> testCmds39 = {
+    {0, 0},
+    {3, 0},
+    {4, 3},
+    {99, 3},
+    {100, 516}, // Press F and walk back
+    {249, 516}, 
+    {250, 515}, // Hold F, then turn-around to walk up stairs
+    {449, 515},
+    {450, 4}, // Release F, turn-around to test n-type stairs
+    {599, 4}, 
+    {600, 3}, // Keep F released, turn-around to test n-type stairs again
+    {799, 3},
+    {800, 516}, // Hold F, then turn-around to walk down stairs
+    {1023, 516},
+    {1024, 4},
+    {1037, 4},
+    {1048, 3},
+    {1071, 3},
+    {1072, 2},
+    {1075, 2},
+    {1076, 0},
+    {1280, 0},
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -5845,6 +5920,30 @@ void initTest38Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
+void initTest39Data(WsReq* testInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    // See digram(s) in "JoltDLLMU/StairsMechanismProposal".
+    auto testStartRdf = mockStairsStartRdf(theAllocator);
+    std::vector<bool> slipJumpOptions(hulls.size(), false);
+    slipJumpOptions[2] = true;
+
+    std::vector<bool> parallelepipedOptions(hulls.size(), false);
+    parallelepipedOptions[4] = true;
+
+    std::vector<bool> boxOptions(hulls.size(), true);
+    boxOptions[4] = false;
+
+    std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
+
+    std::vector<bool> stairsPOptions(hulls.size(), false);
+    stairsPOptions[4] = true;
+
+    std::vector<bool> stairsNOptions(hulls.size(), false);
+    stairsNOptions[3] = true;
+
+    TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -7004,6 +7103,10 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0;
+
+    CharacterState p2OldChState = CharacterState::Dimmed;
+    int p2BlownUpByChargedCannonRdfId = 0, p2LayDownRdfId = 0, p2GetUpRdfId = 0, p2GetUpToIdleRdfId = 0;
+
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         if (incomingUpsyncSnapshotReqs14Intime.count(outerTimerRdfId)) {
@@ -7028,6 +7131,22 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& p1Chd = p1.chd();
         auto& p2 = outerTimerRdf->players(1);
         auto& p2Chd = p2.chd();
+
+        if (BlownUp1 == p2Chd.ch_state() && 0 == p2Chd.frames_in_ch_state()) {
+            p2BlownUpByChargedCannonRdfId = outerTimerRdfId;
+        }
+
+        if (LayDown1 == p2Chd.ch_state() && 0 == p2Chd.frames_in_ch_state()) {
+            p2LayDownRdfId = outerTimerRdfId;
+        }
+
+        if (GetUp1 == p2Chd.ch_state() && 0 == p2Chd.frames_in_ch_state()) {
+            p2GetUpRdfId = outerTimerRdfId;
+        }
+
+        if (GetUp1 == p2OldChState && Idle1 == p2Chd.ch_state() && 0 == p2Chd.frames_in_ch_state()) {
+            p2GetUpToIdleRdfId = outerTimerRdfId;
+        }
         
         auto& npc1 = outerTimerRdf->npcs(0);
         auto& npc1Chd = npc1.chd();
@@ -7070,21 +7189,27 @@ bool runTestCase14(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(1 == bulletCount);
             auto& bl1 = outerTimerRdf->bullets(0);
             JPH_ASSERT(BulletState::StartUp == bl1.bl_state());
-        } else if (960 == outerTimerRdfId) {
+        } else if (p2BlownUpByChargedCannonRdfId == outerTimerRdfId) {
             auto& bl1 = outerTimerRdf->bullets(0);
             JPH_ASSERT(BulletState::Vanishing == bl1.bl_state());
             JPH_ASSERT(CharacterState::BlownUp1 == p2Chd.ch_state());
             JPH_ASSERT(0 < p2Chd.vel_y());
-        } else if (990 == outerTimerRdfId) {
+        } else if (p2LayDownRdfId == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::LayDown1 == p2Chd.ch_state());
-        } else if (1000 == outerTimerRdfId) {
+        } else if (p2GetUpRdfId == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::GetUp1 == p2Chd.ch_state());
-        } else if (1024 == outerTimerRdfId) {
+        } else if (p2GetUpToIdleRdfId == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p2Chd.ch_state());
         }
 
+        p2OldChState = p2Chd.ch_state();
         outerTimerRdfId++;
     }
+
+    JPH_ASSERT(0 != p2BlownUpByChargedCannonRdfId);
+    JPH_ASSERT(0 != p2LayDownRdfId);
+    JPH_ASSERT(0 != p2GetUpRdfId);
+    JPH_ASSERT(0 != p2GetUpToIdleRdfId);
 
     std::cout << "Passed TestCase14: BountyHunter skill\n" << std::endl;
     theAllocator->Reset();
@@ -9129,6 +9254,153 @@ bool runTestCase38(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest39Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1440;
+    int printIntervalRdfCnt = (1 << 2);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+
+    int upstairsTransitRdfId = 0;
+    int upstairsToFlatTransitRdfId = 0;
+    int flatToNStairsTransitRdfId = 0;
+    int nStairsToSlipJumpableTransitRdfId = 0;
+    int slipJumpableToNStairsTransitRdfId = 0;
+    int nStairsToFlatTransitRdfId = 0;
+    int downstairsTransitRdfId = 0;
+    int downstairsToFlatTransitRdfId = 0;
+    uint64_t oldGroundUd = 0;
+
+    // Test terrain continuity.
+    while (loopRdfCnt > outerTimerRdfId) {
+        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
+
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds39, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = BaseBattleCollisionFilter::calcPlayerUserData(p1.join_index());
+
+        bool shouldPrint = false;
+
+        if (0 < outerTimerRdfId && 400 >= outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < downstairsToFlatTransitRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (0 != downstairsToFlatTransitRdfId && downstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase39/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << std::endl;
+        }
+        
+        if (1 == oldGroundUd && 5 == p1Chd.ground_ud()) {
+            upstairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (5 == oldGroundUd && 2 == p1Chd.ground_ud()) {
+            upstairsToFlatTransitRdfId = outerTimerRdfId;
+        }
+
+        if (2 == oldGroundUd && 4 == p1Chd.ground_ud()) {
+            flatToNStairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (4 == oldGroundUd && 3 == p1Chd.ground_ud()) {
+            nStairsToSlipJumpableTransitRdfId = outerTimerRdfId;
+        }
+
+        if (3 == oldGroundUd && 4 == p1Chd.ground_ud()) {
+            slipJumpableToNStairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (4 == oldGroundUd && 2 == p1Chd.ground_ud()) {
+            nStairsToFlatTransitRdfId = outerTimerRdfId;
+        }
+
+        if (2 == oldGroundUd && 5 == p1Chd.ground_ud()) {
+            downstairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (5 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            downstairsToFlatTransitRdfId = outerTimerRdfId;
+        }
+
+        if (110 == outerTimerRdfId) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+            JPH_ASSERT(90 < p1Chd.x());  // Walked past StairsP
+        } else if (220 == outerTimerRdfId) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+            JPH_ASSERT(-90 > p1Chd.x());  // Walked back to the left of StairsP
+        } else if (221 <= outerTimerRdfId && (0 == upstairsTransitRdfId || outerTimerRdfId < upstairsTransitRdfId)) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+        } else if (0 != upstairsTransitRdfId && upstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
+            // Walked up onto p-type stairs
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(5 == p1Chd.ground_ud());
+        } else if (0 != upstairsToFlatTransitRdfId && upstairsToFlatTransitRdfId <= outerTimerRdfId && (0 == flatToNStairsTransitRdfId || outerTimerRdfId < flatToNStairsTransitRdfId)) {
+            // Walked up to the regular barrier as top-right ceiling
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(2 == p1Chd.ground_ud());
+        } else if (0 != flatToNStairsTransitRdfId && flatToNStairsTransitRdfId <= outerTimerRdfId && (0 == nStairsToSlipJumpableTransitRdfId || outerTimerRdfId < nStairsToSlipJumpableTransitRdfId)) {
+            // Turned around and walked onto the n-type stairs
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(4 == p1Chd.ground_ud());
+        } else if (0 != nStairsToSlipJumpableTransitRdfId && nStairsToSlipJumpableTransitRdfId <= outerTimerRdfId && (0 == slipJumpableToNStairsTransitRdfId || outerTimerRdfId < slipJumpableToNStairsTransitRdfId)) {
+            // Walked onto to the regular slip-jumpable, including a turn-around
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(3 == p1Chd.ground_ud());
+        } else if (0 != slipJumpableToNStairsTransitRdfId && slipJumpableToNStairsTransitRdfId <= outerTimerRdfId && (0 == nStairsToFlatTransitRdfId || outerTimerRdfId < nStairsToFlatTransitRdfId)) {
+            // Walked back to the n-type stairs
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(4 == p1Chd.ground_ud());
+        } else if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && (0 == downstairsTransitRdfId || outerTimerRdfId < downstairsTransitRdfId)) {
+            // Walked back to the regular barrier as top-right ceiling
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(2 == p1Chd.ground_ud());
+        } else if (0 != downstairsTransitRdfId && downstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToFlatTransitRdfId || outerTimerRdfId < downstairsToFlatTransitRdfId)) {
+            // Walked onto the p-type stairs and preparing for going downstairs
+            JPH_ASSERT(5 == p1Chd.ground_ud());
+        } else if (0 != downstairsToFlatTransitRdfId && downstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < 1039) {
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+        }
+        oldGroundUd = p1Chd.ground_ud();
+        outerTimerRdfId++;
+    }
+
+    JPH_ASSERT(0 != upstairsTransitRdfId);
+    JPH_ASSERT(0 != upstairsToFlatTransitRdfId);
+    JPH_ASSERT(0 != flatToNStairsTransitRdfId);
+    JPH_ASSERT(0 != nStairsToSlipJumpableTransitRdfId);
+    JPH_ASSERT(0 != slipJumpableToNStairsTransitRdfId);
+    JPH_ASSERT(0 != nStairsToFlatTransitRdfId);
+    JPH_ASSERT(0 != downstairsTransitRdfId);
+    JPH_ASSERT(0 != downstairsToFlatTransitRdfId);
+
+    std::cout << "Passed TestCase39: Basic stairs mechanics\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+    return true;
+}
 
 // Program entry point
 int main(int argc, char** argv)
@@ -9340,8 +9612,8 @@ int main(int argc, char** argv)
         // Lower-right pillar
         300, 142,
         300, 206,
-        420, 206,
-        420, 142
+        480, 206,
+        480, 142
     };
 
     std::vector<float> trapMapHull5 = {
@@ -9424,6 +9696,46 @@ int main(int argc, char** argv)
         500, 500
     };
 
+    std::vector<float> stairsHull1 = {
+        // floor
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> stairsHull2 = {
+        // ceiling of regular barrier
+        140, 200,
+        140, 220,
+        500, 220,
+        500, 200
+    };
+
+    std::vector<float> stairsHull3 = {
+        // ceiling of regular slip-jumpable
+        -500, 200,
+        -500, 220,
+        -50, 220,
+        -50, 200
+    };
+
+    std::vector<float> stairsHull4 = {
+        // StairsN
+        -50, 200,
+        -50, 220,
+        140, 220,
+        140, 200
+    };
+
+    std::vector<float> stairsHull5 = {
+        // StairsP, should be thick enough such that the incoming character would not penetrate, and also low enough into the floor such that the incoming character would not simply be blocked.
+        -100, 80,
+        +0, 80,
+        +140, 220,
+        +40, 220
+    };
+
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
     std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
@@ -9438,6 +9750,8 @@ int main(int argc, char** argv)
         , crouchMapHull5};
 
     std::vector<std::vector<float>> flyingMapHulls = { flyingMapHull1, flyingMapHull2, flyingMapHull3, flyingMapHull4 };
+
+    std::vector<std::vector<float>> stairsMapHulls = { stairsHull1, stairsHull2, stairsHull3, stairsHull4, stairsHull5 };
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -9496,7 +9810,8 @@ int main(int argc, char** argv)
     runTestCase36(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase37(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase38(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    
+    runTestCase39(battle, stairsMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+
     // clean up
     // [REMINDER] "startRdf" and "startRdf" will be automatically deallocated by the destructor of "wsReq"
     bool destroyRes = APP_DestroyBattle(battle);

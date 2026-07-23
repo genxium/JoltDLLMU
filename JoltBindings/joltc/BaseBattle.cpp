@@ -1,6 +1,7 @@
 #include "BaseBattle.h"
 #include "NpcReactionConsts.h"
 
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -24,10 +25,6 @@
 #include <climits> // Required for "INT_MAX", "UINT_MAX" and "FLT_MAX"
 #include <cmath> // Required for "ceil()"
 #include <queue>
-
-#ifndef NDEBUG
-#include "DebugLog.h"
-#endif
 
 using namespace jtshared;
 using namespace JPH;
@@ -1064,6 +1061,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextChd->set_ground_vel_y(currChd.ground_vel_y());
                     nextChd->set_ground_vel_z(currChd.ground_vel_z());
 
+                    nextChd->set_ground_norm_x(currChd.ground_norm_x());
+                    nextChd->set_ground_norm_y(currChd.ground_norm_y());
+                    nextChd->set_ground_norm_z(currChd.ground_norm_z());
+
                     bool ivOverriddenByBattleSpecificConfigs = false; 
                     auto* ccOverride = getChOverride(ud);
                     FillInventoryFromConfig(cc, nextChd, ccOverride);
@@ -1775,8 +1776,12 @@ void BaseBattle::Clear() {
     trapConfigFromTileDict.clear();
     triggerConfigFromTileDict.clear();
     transientSlipJumpableUds.clear();
+    transientUdToStairsP.clear();
+    transientUdToStairsN.clear();
     transientWallGrabProhibitingUds.clear();
     transientPreparedTriggerUds.clear();
+
+    staticColliderUdToBodyID.clear();
 
     lcacIfdId = -1;
     rdfBuffer.Clear();
@@ -2099,6 +2104,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
     int staticColliderId = 1;
     staticColliderBodyIDs.clear();
+    staticColliderUdToBodyID.clear();
     for (int i = 0; i < initializerMapData->serialized_barriers_size(); i++) {
         SerializedBarrierCollider* barrier = initializerMapData->mutable_serialized_barriers(i);
         const BarrierColliderAttr& barrierAttr = barrier->attr(); 
@@ -2114,7 +2120,15 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         int pointsCnt = convexPolygon->points_size();
         double recalcAnchorX = 0, recalcAnchorY = 0;
         if (convexPolygon->is_box()) {
-            // TODO: Support rotation
+            JPH::Quat boxQ = cIdentityQ;
+            if (0 != convexPolygon->box_q_x()   
+            || 0 != convexPolygon->box_q_y()
+            || 0 != convexPolygon->box_q_z()
+            || 0 != convexPolygon->box_q_w()
+            ) {
+                boxQ = JPH::Quat(convexPolygon->box_q_x(), convexPolygon->box_q_y(), convexPolygon->box_q_z(), convexPolygon->box_q_w());
+            }
+
             float xExtent = 0.f, yExtent = 0.f;
             for (int i = 0; i < convexPolygon->points_size(); i++) {
                 auto& pi = convexPolygon->points(i);
@@ -2132,6 +2146,8 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                     fallenDeathHeight = pi.y();
                 }
             }
+            
+            // [REMINDER] When "is_box == true", the anchor (i.e. the mid-center) is rotational invariant 
             const double anchorX = (recalcAnchorX / pointsCnt);
             const double anchorY = (recalcAnchorY / pointsCnt);
             float xHalfExtent = 0.5f * xExtent, yHalfExtent = 0.5f * yExtent;
@@ -2150,9 +2166,15 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                 See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
             */
             const BoxShape* bodyShape = new BoxShape(bodyShapeSettings, shapeResult);
-            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), boxQ, EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
             bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
+            bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
+
+            if (barrierAttr.provides_stairs_n()) {
+                transientUdToStairsN[staticColliderUd] = boxQ*cYAxis;
+            }
+
             Body* body = biNoLock->CreateBody(bodyCreationSettings);
             newBodyID = &(body->GetID());
             staticColliderBodyIDs.push_back(*newBodyID);
@@ -2182,53 +2204,105 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                 }
             });
 
-            TriangleList triangles;
-            for (int pi = 0; pi < pointsCnt; pi++) {
-                auto fromI = pi;
-                auto toI = fromI + 1;
-                if (toI >= pointsCnt) {
-                    toI = 0;
+            if (convexPolygon->is_parallelepiped()) {
+                std::vector<JPH::Vec3> parsedPoints;
+                parsedPoints.reserve(2 * pointsCnt);
+                for (int pi = 0; pi < pointsCnt; pi++) {
+                    auto& p = effConvexPolygonPoints[pi];
+                    if (p.y() < fallenDeathHeight) {
+                        fallenDeathHeight = p.y();
+                    }
+                    Vec3 p1(p.x() - anchorX, p.y() - anchorY, -cDefaultBarrierHalfThickness);
+                    Vec3 p2(p.x() - anchorX, p.y() - anchorY, +cDefaultBarrierHalfThickness);
+                    parsedPoints.push_back(p1);
+                    parsedPoints.push_back(p2);
                 }
-                auto& p1 = effConvexPolygonPoints[fromI];
-                auto& p2 = effConvexPolygonPoints[toI];
 
-                auto x1 = p1.x() - anchorX;
-                auto y1 = p1.y() - anchorY;
-                auto x2 = p2.x() - anchorX;
-                auto y2 = p2.y() - anchorY;
+                ConvexHullShapeSettings bodyShapeSettings(parsedPoints.data(), parsedPoints.size());
+                ConvexHullShapeSettings::ShapeResult shapeResult;
+                const ConvexHullShape* bodyShape = new ConvexHullShape(bodyShapeSettings, shapeResult);
+                BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+                bodyCreationSettings.mUserData = staticColliderUd;
+                bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
+                bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
                 
-                // According to https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/MeshShape.cpp#L440, the surface normal (outward) of a "JPH::Triangle" is "(v3 - v2).Cross(v1 - v2).Normalized()".
-                {
-                    Float3 v1(x1, y1, -cDefaultBarrierHalfThickness);
-                    Float3 v2(x1, y1, +cDefaultBarrierHalfThickness);
-                    Float3 v3(x2, y2, +cDefaultBarrierHalfThickness);
-                    triangles.push_back(Triangle(v1, v2, v3));
-                }
-                {
-                    Float3 v1(x2, y2, +cDefaultBarrierHalfThickness);
-                    Float3 v2(x2, y2, -cDefaultBarrierHalfThickness);
-                    Float3 v3(x1, y1, -cDefaultBarrierHalfThickness);
-                    triangles.push_back(Triangle(v1, v2, v3));
+                if (barrierAttr.provides_stairs_p()) {
+                    Vec3 candidateVerticalEdge = Vec3(effConvexPolygonPoints[0].x() - effConvexPolygonPoints[pointsCnt - 1].x(), effConvexPolygonPoints[0].y() - effConvexPolygonPoints[pointsCnt - 1].y(), 0);
+                    Vec3 candidateOutwardNorm = (cTurn90DegsAroundZAxis * candidateVerticalEdge).Normalized();
+                    if (0 > candidateOutwardNorm.GetY()) {
+                        candidateOutwardNorm = -candidateOutwardNorm;
+                    }
+                    transientUdToStairsP[staticColliderUd] = candidateOutwardNorm;
+                    bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
+
+#ifndef NDEBUG
+                    std::ostringstream oss;
+                    oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isParallelePiped=" << convexPolygon->is_parallelepiped() << " provides p-type staris:\n\t";
+                    for (int pi = 0; pi < effConvexPolygonPoints.size(); pi ++) {
+                        auto& p = effConvexPolygonPoints[pi];
+                        auto x = p.x();
+                        auto y = p.y();
+                        oss << "(" << x << "," << y << ") ";
+                    }
+                    oss << ", candidateOutwardNorm=(" << candidateOutwardNorm.GetX() << "," << candidateOutwardNorm.GetY() << ")";
+                    Debug::Log(oss.str(), DColor::Orange);
+#endif
                 }
 
-                if (p1.y() < fallenDeathHeight) {
-                    fallenDeathHeight = p1.y();
+                Body* body = biNoLock->CreateBody(bodyCreationSettings);
+                newBodyID = &(body->GetID());
+                staticColliderBodyIDs.push_back(*newBodyID);
+            } else {
+                TriangleList triangles;
+                for (int pi = 0; pi < pointsCnt; pi++) {
+                    auto fromI = pi;
+                    auto toI = fromI + 1;
+                    if (toI >= pointsCnt) {
+                        toI = 0;
+                    }
+                    auto& p1 = effConvexPolygonPoints[fromI];
+                    auto& p2 = effConvexPolygonPoints[toI];
+
+                    auto x1 = p1.x() - anchorX;
+                    auto y1 = p1.y() - anchorY;
+                    auto x2 = p2.x() - anchorX;
+                    auto y2 = p2.y() - anchorY;
+                    
+                    // According to https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/MeshShape.cpp#L440, the surface normal (outward) of a "JPH::Triangle" is "(v3 - v2).Cross(v1 - v2).Normalized()".
+                    {
+                        Float3 v1(x1, y1, -cDefaultBarrierHalfThickness);
+                        Float3 v2(x1, y1, +cDefaultBarrierHalfThickness);
+                        Float3 v3(x2, y2, +cDefaultBarrierHalfThickness);
+                        triangles.push_back(Triangle(v1, v2, v3));
+                    }
+                    {
+                        Float3 v1(x2, y2, +cDefaultBarrierHalfThickness);
+                        Float3 v2(x2, y2, -cDefaultBarrierHalfThickness);
+                        Float3 v3(x1, y1, -cDefaultBarrierHalfThickness);
+                        triangles.push_back(Triangle(v1, v2, v3));
+                    }
+
+                    if (p1.y() < fallenDeathHeight) {
+                        fallenDeathHeight = p1.y();
+                    }
+                    if (p2.y() < fallenDeathHeight) {
+                        fallenDeathHeight = p2.y();
+                    }
                 }
-                if (p2.y() < fallenDeathHeight) {
-                    fallenDeathHeight = p2.y();
-                }
+                MeshShapeSettings bodyShapeSettings(triangles);
+                MeshShapeSettings::ShapeResult shapeResult;
+                const MeshShape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
+                BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+                bodyCreationSettings.mUserData = staticColliderUd;
+                bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
+                bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
+                Body* body = biNoLock->CreateBody(bodyCreationSettings);
+                newBodyID = &(body->GetID());
+                staticColliderBodyIDs.push_back(*newBodyID);
             }
-            MeshShapeSettings bodyShapeSettings(triangles);
-            MeshShapeSettings::ShapeResult shapeResult;
-            const MeshShape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
-            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-            bodyCreationSettings.mUserData = staticColliderUd;
-            bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
-            bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
-            Body* body = biNoLock->CreateBody(bodyCreationSettings);
-            newBodyID = &(body->GetID());
-            staticColliderBodyIDs.push_back(*newBodyID);
         }
+        staticColliderUdToBodyID[staticColliderUd] = newBodyID;
+
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
@@ -2628,6 +2702,13 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
             biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->anti_push_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
         }
+
+        if (transientUdToStairsP.count(currChd.ground_ud())) {
+            biNoLock->SetGravityFactor(chCollider->GetBodyID(), 0);
+            ioGravityDirty = true;
+            biNoLock->SetFriction(chCollider->GetBodyID(), 10.0f*globalPrimitiveConsts->walkstopping_ch_friction());
+            ioFrictionDirty = true;
+        }
     }
 
     if (currParalyzed) {
@@ -2695,22 +2776,19 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
     bool hasNonZeroSpeed = !(0 == cc->speed() && 0 == currChd.speed());
     if (0 != effDx && hasNonZeroSpeed) {
         int xfac = (0 < effDx ? 1 : -1);
-        float forceX = 0;   
+        float forceX = 0, forceY = 0;   
         if (!currParalyzed) {
             if (InAirIdle1ByWallJump == currChd.ch_state()) {
                 if (cc->wall_jump_frames_to_recover() < currChd.frames_in_ch_state()) {
                     const float wallJumpingFreeOpAccX = cc->wall_jump_acc_mag_x()*2;
                     forceX = xfac * (wallJumpingFreeOpAccX * massProps.mMass);
-                    ioInputInducedMotion->forceCOM.SetX(forceX);
                 }
             } else if (isCrouching(currChd.ch_state(), cc)) {
-                forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
-                ioInputInducedMotion->forceCOM.SetX(forceX); // [WARNING] Yet wouldn't be used by "BodyInterface::AddForceAndTorque" in "updateChColliderBeforePhysicsUpdate_ThreadSafe" -- this is only used for smooth "CrouchIdle1 -> Walking" transition.
+                forceX = xfac * (cc->acc_mag_x() * massProps.mMass); // [WARNING] Yet wouldn't be used by "BodyInterface::AddForceAndTorque" in "updateChColliderBeforePhysicsUpdate_ThreadSafe" -- this is only used for smooth "CrouchIdle1 -> Walking" transition.
                 biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
                 ioFrictionDirty = true;
             } else {
                 forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
-                ioInputInducedMotion->forceCOM.SetX(forceX);
                 if (exactTurningAround && cc->has_turn_around_anim()) {
                     if (currEffInAir && cc->has_in_air_turn_around_anim()) {
                         nextChd->set_ch_state(InAirTurnAround);
@@ -2729,7 +2807,59 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
             // e.g. "true == currParalyzed"
             biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
+        } else {
+            const Vec3 currChdGroundNorm(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
+            if (!currChdGroundNorm.IsNearZero()) {
+                Vec3 origForce(forceX, forceY, 0);  
+                const bool walkingDownSlope = (transientUdToStairsP.count(currChd.ground_ud()) && 0 < forceX * currChdGroundNorm.GetX());
+                const float toReduceComp = origForce.Dot(currChdGroundNorm);
+                const Vec3 candForce(origForce - toReduceComp * currChdGroundNorm);
+                float candForceLengthSq = candForce.LengthSq();
+                if (walkingDownSlope) {
+                    const Vec3 force = (origForce.Length() * InvSqrt32(candForceLengthSq)) * candForce;
+                    forceX = force.GetX();
+                    forceY = force.GetY();
+                    if (!IsLengthNearZero(currChdGroundNorm.GetX())) {
+                        const Vec3& origVelCOM = ioInputInducedMotion->velCOM;
+                        const Vec3 actualVelRelativeToGnd(origVelCOM.GetX() - currChd.ground_vel_x(), origVelCOM.GetY() - currChd.ground_vel_y(), origVelCOM.GetZ() - currChd.ground_vel_z());
+                        if (!actualVelRelativeToGnd.IsNearZero()) {
+                            const Vec3 actualVelRelativeToGndNorm = actualVelRelativeToGnd.Normalized();
+                            const Vec3 residueVel = actualVelRelativeToGnd - actualVelRelativeToGnd.Dot(currChdGroundNorm) * currChdGroundNorm;
+                            Vec3 residueVelNorm = residueVel.Normalized();
+                            if (0 < residueVelNorm.GetY()) {
+                                residueVelNorm.SetY(-residueVelNorm.GetY());
+                            }
+                            const float shrinkedFactor = residueVelNorm.Dot(actualVelRelativeToGndNorm);
+                            if (!IsLengthNearZero(shrinkedFactor)) {
+                                const float invShrinkedFactor = 1 / shrinkedFactor;
+                                float newSpeed = (actualVelRelativeToGnd.Length() * invShrinkedFactor);
+                                const Vec3 newVelRelativeToGndNorm = newSpeed * residueVelNorm;
+
+                                ioInputInducedMotion->velCOM.SetX(newVelRelativeToGndNorm.GetX() + currChd.ground_vel_x());
+                                ioInputInducedMotion->velCOM.SetY(newVelRelativeToGndNorm.GetY() + currChd.ground_vel_y());
+                                ioInputInducedMotion->velCOM.SetZ(newVelRelativeToGndNorm.GetZ() + currChd.ground_vel_z());
+
+                                float newForceMagnitude = (force.Length() * invShrinkedFactor);
+                                const Vec3 newForce = newForceMagnitude * residueVelNorm;
+                                forceX = newForce.GetX();
+                                forceY = newForce.GetY();
+                            }
+                        }
+                    }
+                    
+                } else {
+                    const Vec3& gravity = phySys->GetGravity();
+                    const float gravityNormComp = gravity.Dot(currChdGroundNorm);
+                    const Vec3 gravityDownwardDrag = (gravity - gravityNormComp * currChdGroundNorm) * massProps.mMass;
+                    const Vec3 force = (origForce.Length() * InvSqrt32(candForceLengthSq)) * candForce - gravityDownwardDrag;
+                    forceX = force.GetX();
+                    forceY = force.GetY();
+                }
+            }
         }
+
+        ioInputInducedMotion->forceCOM.SetX(forceX);
+        ioInputInducedMotion->forceCOM.SetY(forceY);
     } else {
         // 0 == effDx or speed is zero
         if (0 != effDx) {
@@ -3128,16 +3258,7 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     nextChd->set_q_z(qz);
     nextChd->set_q_w(qw);
 
-    nextChd->set_aiming_q_x(0);
-    nextChd->set_aiming_q_y(0);
-    nextChd->set_aiming_q_z(0);
-    nextChd->set_aiming_q_w(1);
-
     nextChd->set_bullet_team_id(teamId);
-
-    nextChd->set_ground_vel_x(0);
-    nextChd->set_ground_vel_y(0);
-    nextChd->set_ground_vel_z(0);
 
     nextChd->set_omit_gravity(false); // [TODO] Make this configurable
     nextChd->set_ch_state(InAirIdle1NoJump);
@@ -3185,7 +3306,6 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     }
 
     FillInventoryFromConfig(chConfig, nextChd, nullptr); // [TODO] There's currently no way to apply overrides to spawned NPCs. 
-    
     
     return true;
 }
@@ -4233,6 +4353,12 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         if (transientSlipJumpableUds.count(ud)) {
             transientSlipJumpableUds.erase(ud);
         }
+        if (transientUdToStairsP.count(ud)) {
+            transientUdToStairsP.erase(ud);
+        }
+        if (transientUdToStairsN.count(ud)) {
+            transientUdToStairsN.erase(ud);
+        }
         if (transientWallGrabProhibitingUds.count(ud)) {
             transientWallGrabProhibitingUds.erase(ud);
         }
@@ -4424,7 +4550,7 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
 
     updateBtnHoldingByInput(currChd, ifDecoded, nextChd);
 
-    // Jumping is partially allowed within "CapturedByInertia", but moving is only allowed when "0 == frames_to_recover()" (constrained later in "Step")
+    // Jumping is partially allowed within "CapturedByInertia", but moving is only allowed when "0 == frames_to_recover()" (constrained later in "stepSingleChdState")
     if (0 >= currChd.frames_to_recover()) {
         outEffDx = ifDecoded.dx();
         outEffDy = ifDecoded.dy();
@@ -4445,7 +4571,16 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
     bool canJumpWithinInertia = BaseBattleCollisionFilter::chCanJumpWithInertia(currChd, cc, notDashing, currInJumpStartup);
     if (0 < ifDecoded.btn_a_level()) {
         if (0 == currChd.btn_a_holding_rdf_cnt() && canJumpWithinInertia) {
-            if ((!currEffInAir && transientSlipJumpableUds.count(currChd.ground_ud())) && (0 > ifDecoded.dy() && 0 == ifDecoded.dx())) {
+            if ((!currEffInAir 
+                  && (
+                       transientSlipJumpableUds.count(currChd.ground_ud())
+                       ||
+                       transientUdToStairsP.count(currChd.ground_ud())
+                       ||
+                       transientUdToStairsN.count(currChd.ground_ud())
+                     )
+                ) 
+                && (0 > ifDecoded.dy() && 0 == ifDecoded.dx())) {
                 outSlipJumpedOrNot = true;
             } else if (((currEffInAir && currChd.omit_gravity() && !cc->omit_gravity())) && (0 > ifDecoded.dy() && 0 == ifDecoded.dx())) {
                 outSlipJumpedOrNot = true;
@@ -4698,6 +4833,11 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
 
         if (globalPrimitiveConsts->pattern_f() == patternId) {
             ioInputInducedMotion->patternFTriggered = true;
+        }
+
+        if (0 < currChd.btn_f_holding_rdf_cnt()) {
+            // [WARNING] Experimental.
+            ioInputInducedMotion->stairsIntended = true;
         }
     }
 }
@@ -5534,6 +5674,10 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
     chd->set_ground_vel_y(0);
     chd->set_ground_vel_z(0);
 
+    chd->set_ground_norm_x(0);
+    chd->set_ground_norm_y(0);
+    chd->set_ground_norm_z(0);
+
     chd->set_aiming_q_x(0);
     chd->set_aiming_q_y(0);
     chd->set_aiming_q_z(0);
@@ -5579,6 +5723,10 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
     chd->set_btn_c_holding_rdf_cnt(0);
     chd->set_btn_d_holding_rdf_cnt(0);
     chd->set_btn_e_holding_rdf_cnt(0);
+    chd->set_btn_f_holding_rdf_cnt(0);
+    chd->set_btn_l_holding_rdf_cnt(0);
+    chd->set_btn_r_holding_rdf_cnt(0);
+
     chd->set_parry_prep_rdf_cnt_down(0);
     chd->set_mp_regen_rdf_countdown(0);
 
@@ -5853,6 +6001,10 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     to->set_ground_vel_y(from->ground_vel_y());
     to->set_ground_vel_z(from->ground_vel_z());
 
+    to->set_ground_norm_x(from->ground_norm_x());
+    to->set_ground_norm_y(from->ground_norm_y());
+    to->set_ground_norm_z(from->ground_norm_z());
+
     to->set_aiming_q_x(from->aiming_q_x());
     to->set_aiming_q_y(from->aiming_q_y());
     to->set_aiming_q_z(from->aiming_q_z());
@@ -5900,6 +6052,10 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     to->set_btn_c_holding_rdf_cnt(from->btn_c_holding_rdf_cnt());
     to->set_btn_d_holding_rdf_cnt(from->btn_d_holding_rdf_cnt());
     to->set_btn_e_holding_rdf_cnt(from->btn_e_holding_rdf_cnt());
+    to->set_btn_f_holding_rdf_cnt(from->btn_f_holding_rdf_cnt());
+    to->set_btn_l_holding_rdf_cnt(from->btn_l_holding_rdf_cnt());
+    to->set_btn_r_holding_rdf_cnt(from->btn_r_holding_rdf_cnt());
+
     to->set_parry_prep_rdf_cnt_down(from->parry_prep_rdf_cnt_down());
     to->set_mp_regen_rdf_countdown(from->mp_regen_rdf_countdown());
 
@@ -6664,8 +6820,11 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     /*
     [TODO] For damage taking, calculate all "hurtboxUds (by BaseBattleCollisionFilter::calcXxxHurtboxUserData)" and "sheldboxUds (by BaseBattleCollisionFilter::calcXxxShieldboxUserData)", then traverse and aggregate over "transientUdToCollisionUdHolder[each hurtboxUd/shieldboxUd]".
     */
-    
-    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    JPH::Quat nextChdQ;
+    Vec3 nextChdFacing;
+    calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
+
+    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
     
     bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
     bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
@@ -6678,10 +6837,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     int                     newEffDef1QuotaReduction = 0;
     float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
     float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
-
-    JPH::Quat nextChdQ;
-    Vec3 nextChdFacing;
-    calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
 
     if (transientUdToCollisionUdHolder.count(ud)) {
         CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
@@ -6790,34 +6945,30 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             }
         }
     }
-
-    // Copy results
-    single->SetGroundBodyID(collector.mGroundBodyID, collector.mGroundBodySubShapeID);
-    single->SetGroundBodyPosition(collector.mGroundPosition, collector.mGroundNormal);
-
+   
     uint64_t newGroundUd = collector.mGroundUd;
     Vec3 newGroundVel = Vec3::sZero();
-    if (!collector.mGroundBodyID.IsInvalid()) {
-        newGroundVel = biNoLock->GetLinearVelocity(collector.mGroundBodyID);
+    Vec3 newGroundNormal = Vec3::sZero();
+    BodyID newGroundBodyID = collector.mGroundBodyID;
+
+    if (!newGroundBodyID.IsInvalid()) {
+        newGroundVel = biNoLock->GetLinearVelocity(newGroundBodyID);
+        newGroundNormal = collector.mGroundNormal;
+        newGroundNormal.SetZ(0);
         // Update ground state
         single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
-        // Copy other body properties
-        single->SetGroundBodyUd(biNoLock->GetMaterial(collector.mGroundBodyID, collector.mGroundBodySubShapeID), newGroundVel, newGroundUd);
     } else {
         single->SetGroundState(JPH::CharacterBase::EGroundState::InAir);
-        single->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, newGroundVel, newGroundUd);
     }
-    cvGroundState = single->GetGroundState();
 
-    auto newGroundBodyID = collector.mGroundBodyID;
     groundBodyIsChCollider = transientUdToChCollider.count(newGroundUd);
-    if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && !transientWallGrabProhibitingUds.count(collector.mWallUd)) {
+    if (!collector.mWallBodyID.IsInvalid() && !transientSlipJumpableUds.count(collector.mWallUd) && !transientUdToStairsP.count(collector.mWallUd) && !transientUdToStairsN.count(collector.mWallUd) && !transientWallGrabProhibitingUds.count(collector.mWallUd)) {
         // Possibly on wall
         float wallNormalAlignment = nextChdFacing.Dot(collector.mWallNormal);
         if (groundBodyIsChCollider) {
             cvOnWall = (0 > wallNormalAlignment);
         } else {
-            cvOnWall = (0 > wallNormalAlignment && collector.mGroundBodyID.IsInvalid());
+            cvOnWall = (0 > wallNormalAlignment && newGroundBodyID.IsInvalid());
         }
     }
 
@@ -6825,8 +6976,43 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         cvSupported = false; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
     } else {
         cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
+
+        if (!cvSupported) {
+            if (transientUdToStairsP.count(currChd.ground_ud()) && isFreeForGroundReattachment(nextChd->ch_state())) {
+                // Possibly unintended but rushed off the edge of a p-type stairs
+                newGroundUd = currChd.ground_ud();
+                if (transientUdToBodyID.count(newGroundUd)) {
+                    newGroundBodyID = *(transientUdToBodyID.at(newGroundUd));
+                } else if (staticColliderUdToBodyID.count(newGroundUd)) {
+                    newGroundBodyID = *(staticColliderUdToBodyID.at(newGroundUd));
+                }
+                if (!newGroundBodyID.IsInvalid()) {
+                    newGroundVel = biNoLock->GetLinearVelocity(newGroundBodyID);
+                } else {
+                    newGroundVel = Vec3::sZero();
+                }
+                const Vec3 currChdGroundNormal(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
+                const Vec3 slopeGroundNormal = transientUdToStairsP.at(newGroundUd);
+                const Vec3 stairsTopGroundNormal(0, 1, 0);
+
+                newGroundNormal = (currChdGroundNormal == slopeGroundNormal ? stairsTopGroundNormal : slopeGroundNormal); // In this case there must be a ground normal switch
+                single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
+                cvSupported = true;
+            }
+        }
     }
 
+    rectifyGroundNormal(newGroundUd, newGroundNormal);
+    
+    // Copy results
+    single->SetGroundBodyID(newGroundBodyID, collector.mGroundBodySubShapeID);
+    single->SetGroundBodyPosition(collector.mGroundPosition, newGroundNormal);
+    if (!newGroundBodyID.IsInvalid()) {
+        single->SetGroundBodyUd(biNoLock->GetMaterial(newGroundBodyID, collector.mGroundBodySubShapeID), newGroundVel, newGroundUd);
+    } else {
+        single->SetGroundBodyUd(JPH::PhysicsMaterial::sDefault, newGroundVel, newGroundUd);
+    }
+    cvGroundState = single->GetGroundState();
     nextChd->set_wall_ud(collector.mWallUd); // For "WallImpact" transition regardless of "cvOnWall" being true or false.
     
     /* [WARNING]
@@ -6871,6 +7057,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_ground_vel_x(newGroundVel.GetX());
         nextChd->set_ground_vel_y(newGroundVel.GetY());
         nextChd->set_ground_vel_z(0);
+        nextChd->set_ground_norm_x(newGroundNormal.GetX());
+        nextChd->set_ground_norm_y(newGroundNormal.GetY());
+        nextChd->set_ground_norm_z(newGroundNormal.GetZ());
         nextChd->set_ground_ud(newGroundUd);
 
         if (BlownUp1 == currChd.ch_state()) {
@@ -6897,11 +7086,17 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_ground_vel_x(0);
         nextChd->set_ground_vel_y(0);
         nextChd->set_ground_vel_z(0);
+        nextChd->set_ground_norm_x(0);
+        nextChd->set_ground_norm_y(0);
+        nextChd->set_ground_norm_z(0);
         nextChd->set_ground_ud(newGroundUd);
     } else {
         nextChd->set_ground_vel_x(0);
         nextChd->set_ground_vel_y(0);
         nextChd->set_ground_vel_z(0);
+        nextChd->set_ground_norm_x(0);
+        nextChd->set_ground_norm_y(0);
+        nextChd->set_ground_norm_z(0);
         nextChd->set_ground_ud(0);
     }
 
@@ -6971,9 +7166,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     isDead = (0 >= nextChd->hp());
     
     CharacterState oldNextChState = nextChd->ch_state();
+    const TransformedShape& chdTs = single->GetTransformedShape(false);
 
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
-        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying);
+        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing);
 
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());
@@ -6986,13 +7182,15 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
         Vec3 newPosIfNonCrouching = newPos + nonCrouchingInnerShapeOffset; // [REMINDER] The y-coordinate of "newPos" is the bottom of both "currInnerShape" and "nonCrouchingInnerShape", due to my choice of anchor in "getOrCreateCachedCharacterCollider_NotThreadSafe/createDefaultCharacterCollider".
         Mat44 chCOMTransformIfNonCrouching = Mat44::sRotationTranslation(newRot, newPosIfNonCrouching);
+        
+        const AABox& chdAABB = chdTs.GetWorldSpaceBounds();
 
         CollideShapeSettings chNarrowPhaseCollideShapeSettings;
         chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
         chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
-        ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&currChd, nextChd, bodyID, ud, udt, this);
+        ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&chdAABB, &currChd, nextChd, bodyID, ud, udt, this);
 
         narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransformIfNonCrouching, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
 
@@ -7023,10 +7221,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         /* 
         [WARNING] A character might've already been pushed away from its "groundUd" by [ghost-collisions](https://jrouwe.github.io/JoltPhysics/index.html#ghost-collisions) due to multiple-same-direction-impulses from position-&velocity-constraint-solving in the same RenderFrame. 
         */
-        const TransformedShape& chdTs = single->GetTransformedShape(false);
         const TransformedShape& groundTs = biNoLock->GetTransformedShape(newGroundBodyID);
 
-        const AABox& chdAABB = chdTs.GetWorldSpaceBounds();
         const AABox& groundAABB = groundTs.GetWorldSpaceBounds();
 
         AnyHitCollisionCollector<CollideShapeCollector> chdGroundCollector;
@@ -7037,7 +7233,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         chGroundCollideShapeSettings.mActiveEdgeMovementDirection = Vec3::sZero();
         chGroundCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
         
-        // 4. Perform the test
         CollisionDispatch::sCollideShapeVsShape(
             chdTs.mShape, groundTs.mShape,
             chdTs.GetShapeScale(), groundTs.GetShapeScale(),
@@ -7048,24 +7243,30 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             chdGroundCollector
         );
 
-        if (!chdGroundCollector.HadHit()) {
-            Vec3 correctionAlongGroundNormal = globalPrimitiveConsts->stick_to_ground_correction_length() * collector.mGroundNormal;
+        if (!chdGroundCollector.HadHit() || 0 > chdGroundCollector.mHit.mPenetrationDepth) {
+            Vec3 correctionAlongGroundNormal = globalPrimitiveConsts->stick_to_ground_correction_length() * newGroundNormal;
             newPos = newPos - correctionAlongGroundNormal;
             nextChd->set_x(newPos.GetX());
             nextChd->set_y(newPos.GetY());
             nextChd->set_z(0);
         }
         
-        if (!atkedSet.count(nextChd->ch_state()) && !noOpSet.count(nextChd->ch_state()) && !proactiveJumpingSet.count(nextChd->ch_state()) && !nextChd->omit_gravity() && !cc->omit_gravity()) {
-            float intendedVelGroundNormDot = inputInducedMotion->velCOM.IsNearZero() ? 0 : inputInducedMotion->velCOM.Normalized().Dot(collector.mGroundNormal);
-            Vec3 actualVel(nextChd->vel_x(), nextChd->vel_y(), nextChd->vel_z());
-            float actualVelGroundNormDot = actualVel.IsNearZero() ? 0 : actualVel.Normalized().Dot(collector.mGroundNormal);
-            if (IsLengthNearZero(intendedVelGroundNormDot) && !IsLengthNearZero(actualVelGroundNormDot)) {
-                float toReduceComp = actualVel.Dot(collector.mGroundNormal);
-                Vec3 reducedVel = actualVel - toReduceComp * collector.mGroundNormal;
-                nextChd->set_vel_x(reducedVel.GetX());
-                nextChd->set_vel_y(reducedVel.GetY());
-                nextChd->set_vel_z(reducedVel.GetZ());
+        if (isFreeForGroundReattachment(nextChd->ch_state())) {
+            const Vec3 actualVelRelativeToGnd(nextChd->vel_x() - nextChd->ground_vel_x(), nextChd->vel_y() - nextChd->ground_vel_y(), nextChd->vel_z() - nextChd->ground_vel_z());
+            if (!actualVelRelativeToGnd.IsNearZero()) {
+                const Vec3 actualVelRelativeToGndNorm = actualVelRelativeToGnd.Normalized();
+                const float actualVelNormGroundPerpComp = actualVelRelativeToGndNorm.Dot(newGroundNormal);
+                if (!IsLengthNearZero(actualVelNormGroundPerpComp)) {
+                    float toReduceComp = actualVelRelativeToGnd.Dot(newGroundNormal);
+                    const Vec3 residueVelRelativeToGnd = (actualVelRelativeToGnd - toReduceComp * newGroundNormal);
+                    if (!residueVelRelativeToGnd.IsNearZero()) {
+                        const Vec3 residueVelRelativeToGndNorm = residueVelRelativeToGnd.Normalized();
+                        const Vec3 newVelRelativeToGnd = actualVelRelativeToGnd.Length() * residueVelRelativeToGndNorm;
+                        nextChd->set_vel_x(newVelRelativeToGnd.GetX() + nextChd->ground_vel_x());
+                        nextChd->set_vel_y(newVelRelativeToGnd.GetY() + nextChd->ground_vel_y());
+                        nextChd->set_vel_z(newVelRelativeToGnd.GetZ() + nextChd->ground_vel_z());
+                    }
+                }
             }
         }
     }

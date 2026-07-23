@@ -461,10 +461,16 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         var inMapCollider = barrierChild.GetComponent<EdgeCollider2D>();
                         var tileProps = barrierChild.GetComponent<SuperCustomProperties>();
 
-                        CustomProperty providesSlipJump;
+                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped;
                         tileProps.TryGetCustomProperty("providesSlipJump", out providesSlipJump);
+                        tileProps.TryGetCustomProperty("providesStairsP", out providesStairsP);
+                        tileProps.TryGetCustomProperty("providesStairsN", out providesStairsN);
+                        tileProps.TryGetCustomProperty("isParallelePiped", out isParallelePiped);
 
                         bool providesSlipJumpVal = null == providesSlipJump || providesSlipJump.IsEmpty ? false : (0 < providesSlipJump.GetValueAsInt());
+                        bool providesStairsPVal = null == providesStairsP || providesStairsP.IsEmpty ? false : (0 < providesStairsP.GetValueAsInt());
+                        bool providesStairsNVal = null == providesStairsN || providesStairsN.IsEmpty ? false : (0 < providesStairsN.GetValueAsInt());
+                        bool isParallelePipedVal = null == isParallelePiped || isParallelePiped.IsEmpty ? false : (0 < isParallelePiped.GetValueAsInt());
 
                         if (null == inMapCollider || 0 >= inMapCollider.pointCount) {
                             var (tiledRectCenterX, tiledRectCenterY) = (barrierTileObj.m_X + barrierTileObj.m_Width * 0.5f, barrierTileObj.m_Y + barrierTileObj.m_Height * 0.5f);
@@ -512,7 +518,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                             var barrierCollider = new SerializedBarrierCollider {
                                 Polygon = srcPolygon,
                                 Attr = new BarrierColliderAttr {
-                                    ProvidesSlipJump = providesSlipJumpVal
+                                    ProvidesSlipJump = providesSlipJumpVal,
+                                    ProvidesStairsP = providesStairsPVal,
+                                    ProvidesStairsN = providesStairsNVal,
                                 }
                             };
                             result.SerializedBarriers.Add(barrierCollider);
@@ -530,14 +538,23 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                                 Anchor = new PbVec2 {
                                     X = anchorCx,
                                     Y = anchorCy
-                                }
+                                },
+                                IsParallelepiped = isParallelePipedVal
                             };
+                            if (isParallelePipedVal) {
+                                for (int i = 0; i < points2.Count; i++) {
+                                    points2[i].X = points2[i].X + anchorCx;
+                                    points2[i].Y = points2[i].Y + anchorCy;
+                                }
+                            }
                             srcPolygon.Points.Add(points2);
                             var barrierCollider = new SerializedBarrierCollider {
                                 Polygon = srcPolygon,
                                 Attr = new BarrierColliderAttr {
-                                    ProvidesSlipJump = providesSlipJumpVal
-                                }
+                                    ProvidesSlipJump = providesSlipJumpVal,
+                                    ProvidesStairsP = providesStairsPVal,
+                                    ProvidesStairsN = providesStairsNVal,
+                                },
                             };
                             result.SerializedBarriers.Add(barrierCollider);
                         }

@@ -351,6 +351,14 @@ namespace JoltCSharp {
             chd.VelX = 0; 
             chd.VelY = 0; 
             chd.VelZ = 0; 
+
+            chd.GroundVelX = 0; 
+            chd.GroundVelY = 0; 
+            chd.GroundVelZ = 0; 
+
+            chd.GroundNormX = 0; 
+            chd.GroundNormY = 0; 
+            chd.GroundNormZ = 0; 
     
             chd.Speed = 0;
             chd.SpeciesId = PbPrimitives.SPECIES_NONE_CH;
