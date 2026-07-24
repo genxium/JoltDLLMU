@@ -6,6 +6,10 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 using namespace jtshared;
 using namespace JPH;
 
@@ -43,14 +47,16 @@ public:
 class VisionBodyFilter : public BodyFilter {
 public:
     int mCurrRdfId;
+    const AABox* mSelfAABB;
     const CharacterDownsync* mSelfChd;
     const CharacterDownsync* mSelfNextChd;
     BodyID   mSelfBodyID;
+
     uint64_t mSelfUd;
     uint64_t mSelfUdt;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    VisionBodyFilter(const int currRdfId, const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mCurrRdfId(currRdfId), mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
+    VisionBodyFilter(const int currRdfId, const AABox* inSelfAABB, const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mCurrRdfId(currRdfId), mSelfAABB(inSelfAABB), mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -72,7 +78,7 @@ public:
             return mBaseBattleFilter->shouldCharacterSeeTrap(mSelfUd, mSelfUdt, mSelfChd, udRhs, inBody);
         }
 
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUdt, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUd, mSelfUdt, mSelfAABB, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -82,14 +88,16 @@ public:
 
 class ChdPostPhysicsNarrowPhaseBodyFilter : public BodyFilter {
 public:
+    const AABox* mSelfAABB;
     const CharacterDownsync* mSelfChd;
     const CharacterDownsync* mSelfNextChd;
     BodyID   mSelfBodyID;
+    
     uint64_t mSelfUd;
     uint64_t mSelfUdt;
     const BaseBattleCollisionFilter* mBaseBattleFilter;
 
-    ChdPostPhysicsNarrowPhaseBodyFilter(const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
+    ChdPostPhysicsNarrowPhaseBodyFilter(const AABox* inSelfAABB, const CharacterDownsync* inSelfChd, const CharacterDownsync* inSelfNextChd, const BodyID& inSelfBodyID, const uint64_t inSelfUd, const uint64_t inSelfUdt, const BaseBattleCollisionFilter* baseBattleFilter) : mSelfAABB(inSelfAABB), mSelfChd(inSelfChd), mSelfNextChd(inSelfNextChd), mSelfBodyID(inSelfBodyID), mSelfUd(inSelfUd), mSelfUdt(inSelfUdt), mBaseBattleFilter(baseBattleFilter) {
 
     }
 
@@ -103,7 +111,8 @@ public:
         }
         const uint64_t udRhs = inBody.GetUserData();
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUdt, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
+
+        auto res = mBaseBattleFilter->validateLhsCharacterContact(mSelfUd, mSelfUdt, mSelfAABB, mSelfChd, mSelfNextChd, udRhs, udtRhs, inBody);
         if (ValidateResult::AcceptContact != res && ValidateResult::AcceptAllContactsForThisBodyPair != res) {
             return false;
         }
@@ -225,12 +234,13 @@ public:
 
 class CharacterContactPushbackCollector : public JPH::CollideShapeCollector {
 private:
-    const JPH::BodyInterface* mBi;
+    const JPH::BodyInterface*     mBi;
     const uint64_t                mUd;
     const uint64_t                mUdt;
     const CharacterDownsync* mCurrChd;
     const CharacterConfig* mCc;
-    CharacterDownsync* mNextChd;
+    const CharacterDownsync* mNextChd;
+    const Vec3 mEffChdFacing;
 
     Vec3				          mUp;
     Vec3                          mBaseOffset;
@@ -239,8 +249,15 @@ private:
     float				          mGroundBestDot = 0;
     float				          mWallBestDot = FLT_MAX;
 
+    float                         mGroundVelAlignmentScore = -cDefaultAimingRayLength;
+    float                         mGroundRelativePositionScore = -cDefaultAimingRayLength;
+
+    Vec3 mInputInducedMotionVelCOMNorm;
+
 public:
-    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter, const InputInducedMotion* chdInputInducedMotion, const bool currIsFlying) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mCc(cc), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter), mChdInputInducedMotion(chdInputInducedMotion), mCurrIsFlying(currIsFlying) {}
+    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter, const InputInducedMotion* chdInputInducedMotion, const bool currIsFlying, JPH::Vec3Arg effChdFacing) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mCc(cc), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter), mChdInputInducedMotion(chdInputInducedMotion), mCurrIsFlying(currIsFlying), mEffChdFacing(effChdFacing) {
+        mInputInducedMotionVelCOMNorm = mChdInputInducedMotion->velCOM.IsNearZero() ? mEffChdFacing : mChdInputInducedMotion->velCOM.Normalized();
+    }
 
     int                     mCurrRdfId;
     RenderFrame*            mNextRdf;
@@ -252,16 +269,16 @@ public:
     JPH::BodyID				mGroundBodyID;
     JPH::SubShapeID         mGroundBodySubShapeID;
     JPH::Vec3               mGroundPosition = JPH::Vec3::sZero();
+    JPH::Vec3               mGroundRelativePosition = JPH::Vec3::sZero();
     JPH::Vec3				mGroundNormal = JPH::Vec3::sZero();
     uint64_t                mGroundUd = 0;
-
     bool                    mCrouchForced = false;
     bool                    mCurrIsFlying = false;
     
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
         const uint64_t udRhs = mBi->GetUserData(inResult.mBodyID2);
         const uint64_t udtRhs = mBaseBattleFilter->getUDT(udRhs);
-        AddHit(udRhs, udtRhs, inResult.mBodyID2, inResult.mSubShapeID2, mBaseOffset + inResult.mContactPointOn2, inResult.mPenetrationAxis.Normalized(), false, false);
+        AddHit(udRhs, udtRhs, inResult.mBodyID2, inResult.mSubShapeID2, mBaseOffset + inResult.mContactPointOn1, inResult.mPenetrationAxis.Normalized(), false, false);
     }
 
     void		AddHit(const uint64_t udRhs, const uint64_t udtRhs, const BodyID rhsBodyID, const SubShapeID rhsSubShapeID, const Vec3& worldContactPosition, const Vec3& worldSpaceNormalIntoBarrier, const bool shouldSkipGroundServing, const bool shouldSkipWallServing) {
@@ -271,11 +288,32 @@ public:
         auto normal = -worldSpaceNormalIntoBarrier;
         float dot = normal.Dot(mUp);
         if (!shouldSkipGroundServing && dot >= cDefaultWallDotThreshold) {
-            if (dot > mGroundBestDot || (dot == mGroundBestDot && udRhs < mGroundUd)) {
+            float incomingTerrainPriority = mBaseBattleFilter->calcTerrainPriority(udRhs);
+            float existingGroundTerrainPriority = mBaseBattleFilter->calcTerrainPriority(mGroundUd);
+            const Vec3 incomingRelativePosition = (worldContactPosition - mBaseOffset);
+            const float incomingRelativePositionScore = -(incomingRelativePosition.LengthSq()*0.001f);
+            const float incomingVelAlignmentScore = incomingRelativePosition.IsNearZero() ? 0 : mInputInducedMotionVelCOMNorm.Dot(incomingRelativePosition.Normalized());
+
+            // For determinism in multi-threading
+            float incomingScore = incomingTerrainPriority + dot + incomingRelativePositionScore /* + incomingVelAlignmentScore */;
+            float existingScore = existingGroundTerrainPriority + mGroundBestDot + mGroundRelativePositionScore /* + mGroundVelAlignmentScore */;
+/*
+#ifndef NDEBUG
+            if (0 != mGroundUd && incomingTerrainPriority != existingGroundTerrainPriority) {
+                std::ostringstream oss;
+                oss << "@currRdfId= " << mCurrRdfId << ", incoming (udRhs=" << udRhs << ", incomingTerrainPriority=" << incomingTerrainPriority << ", incomingGroundNorm=[" << normal.GetX() << "," << normal.GetY() << "], incomingDot=" << dot << ", incomingRelativePosition=[" << incomingRelativePosition.GetX() << "," << incomingRelativePosition.GetY() << "], incomingRelativePositionScore=" << incomingRelativePositionScore << ", incomingVelAlignmentScore=" << incomingVelAlignmentScore << ") v.s. existing (mGroundUd=" << mGroundUd << ", existingGroundTerrainPriority=" << existingGroundTerrainPriority << ", mGroundNormal=[" << mGroundNormal.GetX() << "," << mGroundNormal.GetY() << "], mGroundBestDot=" << mGroundBestDot << ", mGroundRelativePosition=[" << mGroundRelativePosition.GetX() << "," << mGroundRelativePosition.GetY() << "], mGroundRelativePositionScore=" << mGroundRelativePositionScore << ", mGroundVelAlignmentScore=" << mGroundVelAlignmentScore << ")";
+                Debug::Log(oss.str(), DColor::Yellow);
+            }
+#endif
+*/
+            if (incomingScore > existingScore) {
                 // Find the hit that is most aligned with the up vector
                 mGroundBodyID = rhsBodyID;
                 mGroundBodySubShapeID = rhsSubShapeID;
                 mGroundPosition = worldContactPosition;
+                mGroundRelativePosition = incomingRelativePosition;
+                mGroundRelativePositionScore = incomingRelativePositionScore;
+                mGroundVelAlignmentScore = incomingVelAlignmentScore;
                 mGroundNormal = normal;
                 mGroundBestDot = dot;
                 mGroundUd = udRhs;
@@ -307,6 +345,11 @@ public:
                         if (rhsPointVel.IsNearZero()) {
                             // The regular case
                             mCrouchForced = true;
+#ifndef NDEBUG
+                            std::ostringstream oss;
+                            oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a near-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "])";
+                            Debug::Log(oss.str(), DColor::Yellow);
+#endif
                         } else {
                             // float rhsPointVelDotPenetrationIntoSelf = rhsPointVel.Dot(worldSpaceNormalIntoBarrier);
                             bool rhsProactivelySqueezingDown1 = (0 > rhsPointVel.GetY() && 0 < worldSpaceNormalIntoBarrier.GetY());
@@ -315,6 +358,11 @@ public:
                                 bool rhsProactivelySqueezingDown2 = rhsPointVelNormDot > 0.5;
                                 if (rhsProactivelySqueezingDown2) {
                                     mCrouchForced = true;
+#ifndef NDEBUG
+                                    std::ostringstream oss;
+                                    oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a non-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "], worldSpaceNormalIntoBarrier=[" << worldSpaceNormalIntoBarrier.GetX() << "," << worldSpaceNormalIntoBarrier.GetY() << "])";
+                                    Debug::Log(oss.str(), DColor::Yellow);
+#endif
                                 }
                             } else {
                                 // bool chdRunningIntoBarrier = (0 < worldSpaceNormalIntoBarrier.Dot(lhsIntendedVel));

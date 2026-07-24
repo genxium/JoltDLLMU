@@ -528,29 +528,33 @@ message CharacterDownsync {
     int32 lower_part_rdf_cnt = 58;   
     uint64 locking_on_ud = 59;
 
+    float ground_norm_x = 60;
+    float ground_norm_y = 61;
+    float ground_norm_z = 62;
+
     /*
     [REMINDER] Repeated or collection fields of "CharacterDownsync" are not necessarily operated atomically, thus not necessary to preallocate.
 
     However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
     */
 
-    InventorySlot atk1_magazine = 60; 
-    InventorySlot super_atk_gauge = 61; 
+    InventorySlot atk1_magazine = 63; 
+    InventorySlot super_atk_gauge = 64; 
 
-    repeated Buff buff_list = 62; 
-    uint32 buff_count = 63;
+    repeated Buff buff_list = 65; 
+    uint32 buff_count = 66;
 
-    repeated Debuff debuff_list = 64; 
-    uint32 debuff_count = 65;
+    repeated Debuff debuff_list = 67; 
+    uint32 debuff_count = 68;
 
-    repeated InventorySlot inventory_slots = 66;
-    uint32 ivs_count = 67;
+    repeated InventorySlot inventory_slots = 69;
+    uint32 ivs_count = 70;
 
-    repeated BulletImmuneRecord bullet_immune_records = 68; 
-    uint32 bir_count = 69;
+    repeated BulletImmuneRecord bullet_immune_records = 71; 
+    uint32 bir_count = 72;
 
-    repeated float kinematic_knobs = 70; // including both forward-kinematics and inverse-kinematics   
-    uint32 kk_count = 71;
+    repeated float kinematic_knobs = 73; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 74;
 }
 
 message PlayerCharacterDownsync {
@@ -975,6 +979,9 @@ message BarrierColliderAttr {
     bool prohibits_wall_grabbing = 3;
     int32 only_allows_aligned_vel_x = 5;
     int32 only_allows_aligned_vel_y = 6;
+    
+    bool provides_stairs_p = 7; 
+    bool provides_stairs_n = 8; 
 }
 
 /*
@@ -1379,13 +1386,15 @@ message LevelStory {
 
 message SerializableConvexPolygon {
     PbVec2 anchor = 1;
-    repeated PbVec2 points = 2;
+    repeated PbVec2 points = 2; // When "is_box == true", the "points" should be set as if the box were rectilinear.  
     bool is_box = 3;
+    bool is_parallelepiped = 4;
+
     // The following fields are only meaningful when "is_box == true"
-    float box_q_x = 4;
-    float box_q_y = 5;
-    float box_q_z = 6;
-    float box_q_w = 7;
+    float box_q_x = 5;
+    float box_q_y = 6;
+    float box_q_z = 7;
+    float box_q_w = 8;
 }
 
 message SerializedBarrierCollider {

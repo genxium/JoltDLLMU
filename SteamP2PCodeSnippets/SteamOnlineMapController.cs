@@ -382,7 +382,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         shadowBattle = Bindings.BACKEND_CreateBattle(rdfBufferSize);
 
         characterSelectPanel.SetCallbacks(this, uiSoundSource, () => {
-            SceneManager.LoadScene("SteamLoginScene", LoadSceneMode.Single);
+            SceneManager.LoadScene(PlayerSettingsManager.Instance.GetLoginSceneName(), LoadSceneMode.Single);
         });
 
         battleState = PbPrimitivesOverride.ROOM_STATE_IMPOSSIBLE;

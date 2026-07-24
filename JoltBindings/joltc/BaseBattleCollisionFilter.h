@@ -28,8 +28,9 @@ typedef struct InputInducedMotion {
     bool slipJumpTriggered;
     bool patternFTriggered;
     bool crouchForcedWhileSupported;
+    bool stairsIntended;
 
-    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), patternFTriggered(false), crouchForcedWhileSupported(false) {
+    InputInducedMotion() : forceCOM(Vec3::sZero()), torqueCOM(Vec3::sZero()), velCOM(Vec3::sZero()), angVelCOM(Vec3::sZero()), jumpTriggered(false), slipJumpTriggered(false), patternFTriggered(false), crouchForcedWhileSupported(false), stairsIntended(false) {
     }
 } InputInducedMotion;
 
@@ -64,6 +65,7 @@ public:
         holder->slipJumpTriggered = false;
         holder->patternFTriggered = false;
         holder->crouchForcedWhileSupported = false;
+        holder->stairsIntended = false;
         return holder;
     }
 
@@ -308,7 +310,9 @@ public:
 
     virtual ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Bullet* rhsCurrBl) const = 0;
 
-    virtual ValidateResult validateLhsCharacterContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+    virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
+        const AABox* lhsAABB,
+        const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
@@ -325,6 +329,8 @@ public:
     virtual ~BaseBattleCollisionFilter() {
 
     }
+
+    virtual float calcTerrainPriority(const uint64_t ud) const = 0;
 
     inline const uint64_t calcPublishingToTriggerUd(const NpcCharacterDownsync& npcChd) {
         return calcTriggerUserData(npcChd.publishing_to_trigger_id_upon_exhausted());
@@ -613,7 +619,7 @@ public:
     }
 
     inline static void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) {
-        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state())) {
+        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state()) || !nonAttackingSet.count(nextChd->ch_state()) || !chIsNotDashing(*nextChd)) {
             return;
         }
 
@@ -649,7 +655,7 @@ public:
             ioVel.SetX(minVelX);
         }
 
-        const float maxVelY = cc->speed();
+        const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
         const float minVelY = -cc->speed();
         if (ioVel.GetY() >= maxVelY) {
             ioVel.SetY(maxVelY);

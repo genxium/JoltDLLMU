@@ -21,6 +21,10 @@ public:
     static RenderFrame* NewPreallocatedRdf(int roomCapacity, int preallocNpcCount, int preallocBulletCount, google::protobuf::Arena* theAllocator);
 
     static void AddHullsToWsReq(WsReq* wsReq, std::vector<std::vector<float>>& hulls, std::vector<bool> const& isBoxOptions, std::vector<bool> const& providesSlipJumpOptions) {
+        AddHullsToWsReq(wsReq, hulls, std::vector<bool>(hulls.size(), false), isBoxOptions, std::vector<JPH::Quat>(hulls.size(), JPH::Quat::sIdentity()), providesSlipJumpOptions, std::vector<bool>(hulls.size(), false), std::vector<bool>(hulls.size(), false));
+    }
+
+    static void AddHullsToWsReq(WsReq* wsReq, std::vector<std::vector<float>>& hulls, std::vector<bool> const& isParallelepipedOptions, std::vector<bool> const& isBoxOptions, std::vector<JPH::Quat> const& boxQs, std::vector<bool> const& providesSlipJumpOptions, std::vector<bool> const& providesStairsP, std::vector<bool> const& providesStairsN) {
         for (int i = 0; i < hulls.size(); i++) {
             auto& hull = hulls[i];
             auto srcBarrier = wsReq->add_serialized_barriers();
@@ -40,10 +44,26 @@ public:
             anchor->set_y(anchorY);
             if (i < isBoxOptions.size()) {
                 srcPolygon->set_is_box(isBoxOptions[i]);
+                if (i < boxQs.size()) {
+                    const JPH::Quat& boxQ = boxQs[i];
+                    srcPolygon->set_box_q_x(boxQ.GetX());
+                    srcPolygon->set_box_q_y(boxQ.GetY());
+                    srcPolygon->set_box_q_z(boxQ.GetZ());
+                    srcPolygon->set_box_q_w(boxQ.GetW());
+                }
+            }
+            if (i < isParallelepipedOptions.size()) {
+                srcPolygon->set_is_parallelepiped(isParallelepipedOptions[i]);
             }
             auto attr = srcBarrier->mutable_attr();
             if (i < providesSlipJumpOptions.size()) {
                 attr->set_provides_slip_jump(providesSlipJumpOptions[i]);
+            }
+            if (i < providesStairsP.size()) {
+                attr->set_provides_stairs_p(providesStairsP[i]);
+            }
+            if (i < providesStairsN.size()) {
+                attr->set_provides_stairs_n(providesStairsN[i]);
             }
         }
     }

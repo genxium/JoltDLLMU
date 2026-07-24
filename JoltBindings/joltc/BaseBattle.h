@@ -9,6 +9,8 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include "CharacterCollisionCollector.h"
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 #include <vector>
 #include <map>
@@ -208,6 +210,37 @@ public:
     static void FindTrapConfig(const uint32_t trapSpeciesId, const uint32_t trapId, const std::unordered_map<uint32_t, const TrapConfigFromTiled*> inTrapConfigFromTileDict, const TrapConfig*& outTpConfig, const TrapConfigFromTiled*& outTpConfigFromTiled);
 
     static void FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
+
+    virtual float calcTerrainPriority(const uint64_t ud) const {
+
+        if (transientUdToStairsP.count(ud)) {
+            return 0.5f;
+        }
+
+        return 0.0f;
+    }
+
+    inline void rectifyGroundNormal(const uint64_t ud, Vec3& groundNormal) {
+        if (0 == ud) {
+            return;
+        }
+        if (transientUdToStairsP.count(ud)) {
+            const Vec3& pStairsOutwardNorm = transientUdToStairsP.at(ud);
+            if (groundNormal != pStairsOutwardNorm && groundNormal.IsClose(pStairsOutwardNorm)) {
+                groundNormal = pStairsOutwardNorm;
+            }
+        } else {
+            if (groundNormal != cXAxis && groundNormal.IsClose(cXAxis)) {
+                groundNormal = cXAxis;
+            } else if (groundNormal != -cXAxis && groundNormal.IsClose(-cXAxis)) {
+                groundNormal = -cXAxis;
+            } else if (groundNormal != cYAxis && groundNormal.IsClose(cYAxis)) {
+                groundNormal = cYAxis;
+            } else if (groundNormal != -cYAxis && groundNormal.IsClose(-cYAxis)) {
+                groundNormal = -cYAxis;
+            }
+        }
+    }
 
     inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
         if (rdfId < delayRdfCnt) {
@@ -448,6 +481,8 @@ protected:
     float fallenDeathHeight = 0;
 
     BodyIDVector staticColliderBodyIDs;
+    std::unordered_map<uint64_t, const BodyID*> staticColliderUdToBodyID;
+
     BodyIDVector bodyIDsToClear;
     BodyIDVector bodyIDsToAdd;
     BodyIDVector bodyIDsToActivate;
@@ -496,6 +531,9 @@ protected:
     const google::protobuf::Map<uint64_t, CharacterBattleSpecificConfig>* characterOverrides = nullptr;
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
+    // The tricky terrain "StairsP/N" increases player control complexity, use with caution, recommended to use only in non-battle.
+    std::unordered_map<uint64_t, Vec3> transientUdToStairsP;
+    std::unordered_map<uint64_t, Vec3> transientUdToStairsN;
     std::unordered_set<uint64_t> transientWallGrabProhibitingUds;
     std::unordered_set<uint64_t> transientPreparedTriggerUds;
 
@@ -617,16 +655,20 @@ protected:
         return (Def1 == currChd.ch_state() && 0 < currChd.frames_to_recover());
     }
 
-    inline bool isStaticCrouching(CharacterState state) {
-        return (CrouchIdle1 == state || CrouchAtk1 == state || CrouchAtked1 == state);
+    inline bool isStaticCrouching(const CharacterState chState) {
+        return (CrouchIdle1 == chState || CrouchAtk1 == chState || CrouchAtked1 == chState);
     }
 
-    inline bool isCrouching(CharacterState state, const CharacterConfig* cc) {
-        return (CrouchIdle1 == state || CrouchAtk1 == state || CrouchAtked1 == state || (Sliding == state && cc->crouching_enabled()));
+    inline bool isCrouching(const CharacterState chState, const CharacterConfig* cc) {
+        return (CrouchIdle1 == chState || CrouchAtk1 == chState || CrouchAtked1 == chState || (Sliding == chState && cc->crouching_enabled()));
     }
 
     inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing) {
         return (inAirSet.count(chd.ch_state()) && notDashing);
+    }
+
+    inline bool isFreeForGroundReattachment(const CharacterState chState) {
+        return nonAttackingSet.count(chState) && !proactiveJumpingSet.count(chState) && !atkedSet.count(chState) && !noOpSet.count(chState);
     }
 
     void updateBtnHoldingByInput(const CharacterDownsync& currChd, const InputFrameDecoded& decodedInputHolder, CharacterDownsync* nextChd);
@@ -1060,24 +1102,77 @@ public:
         return JPH::ValidateResult::RejectContact;
     }
 
-    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
+    virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
+        const AABox* lhsAABB,
+        const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         auto* lhsCc = getCc(lhsCurrChd->species_id());
-        if (transientSlipJumpableUds.count(udRhs)) {
+        bool isRegularSlipJumpable = transientSlipJumpableUds.count(udRhs);
+        bool isStairsP = transientUdToStairsP.count(udRhs);
+        bool isStairsN = transientUdToStairsN.count(udRhs);
+        if (isRegularSlipJumpable || isStairsP || isStairsN) {
+            int gracePeriodRdfCnt = (isStairsP ? 10*globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt() : globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt());
             // Check early returns
             if (lhsCc->omit_gravity()) {
                 return JPH::ValidateResult::RejectContact;
             } else if (lhsCurrChd->omit_gravity()) {
                 return JPH::ValidateResult::RejectContact;
-            } else if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state() && lhsCurrChd->frames_in_ch_state() < globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
+            } else if (CharacterState::InAirIdle1BySlipJump == lhsCurrChd->ch_state() && lhsCurrChd->frames_in_ch_state() < gracePeriodRdfCnt) {
                 return JPH::ValidateResult::RejectContact;
-            } else if (CharacterState::InAirIdle1BySlipJump == lhsNextChd->ch_state() && lhsNextChd->frames_in_ch_state() <= globalPrimitiveConsts->default_slip_jump_grace_period_rdf_cnt()) {
+            } else if (CharacterState::InAirIdle1BySlipJump == lhsNextChd->ch_state() && lhsNextChd->frames_in_ch_state() <= gracePeriodRdfCnt) {
                 return JPH::ValidateResult::RejectContact;
-            } else if (0 < lhsCurrChd->vel_y()) {
-                return JPH::ValidateResult::RejectContact;
-            }  else {
-                const AABox& rhsAABB = rhs.GetWorldSpaceBounds();
-                if (lhsCurrChd->y() < rhsAABB.mMin.GetY()) {
-                    return JPH::ValidateResult::RejectContact;
+            } else {
+                // [REMINDER] When "inJumpStartupOrJustEnded" there's lifting force applied, hence a "RejectContact" returned here has no impact to the regular jumping functionality. 
+                if (isRegularSlipJumpable) {
+                    if (0 < lhsCurrChd->vel_y()) {
+                        return JPH::ValidateResult::RejectContact;
+                    }
+                } else if (isStairsP) {
+                        if (!lhsChdShouldCollideStairsPByChStateAndInputInducedMotion(udLhs, udtLhs, lhsAABB, *lhsCurrChd, udRhs, udtRhs, rhs)) {
+/*
+#ifndef NDEBUG
+                            std::ostringstream oss;
+                            auto bulletId = getUDPayload(udRhs);
+                            oss << "validateLhsCharacterContact/lhsChdShouldCollideStairsPByChStateAndInputInducedMotion returning false for udRhs=" << udRhs << "";
+                            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+                            return JPH::ValidateResult::RejectContact;
+                        }
+
+                    const AABox& rhsAABB = rhs.GetWorldSpaceBounds();
+                    bool lhsRoughlyOnTop = (lhsCurrChd->y() + 10*cCollisionTolerance) >= rhsAABB.mMax.GetY();
+                    if (!lhsRoughlyOnTop) {
+                        const Vec3& stairsNorm = transientUdToStairsP.at(udRhs);
+                        const float stairsVelC = lhsCurrChd->vel_x() * stairsNorm.GetX() + lhsCurrChd->vel_y() * stairsNorm.GetY() + lhsCurrChd->vel_z() * stairsNorm.GetZ();
+                        if (0 < stairsVelC) {
+/*
+#ifndef NDEBUG
+                            std::ostringstream oss;
+                            auto bulletId = getUDPayload(udRhs);
+                            oss << "validateLhsCharacterContact rejecting isStairsP udRhs=" << udRhs << " because (false == lhsRoughlyOnTop && 0 < stairsVelC)";
+                            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+                            return JPH::ValidateResult::RejectContact;
+/*
+#ifndef NDEBUG
+                        } else if (udRhs != lhsCurrChd->ground_ud()) {
+                            std::ostringstream oss;
+                            oss << "validateLhsCharacterContact accepting isStairsP udRhs=" << udRhs << " because (false == lhsRoughlyOnTop && 0 >= stairsVelC), lhsCurrChd->ground_ud=" << lhsCurrChd->ground_ud();
+                            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+                        }
+                    }
+                } else if (isStairsN) {
+                    if (!lhsChdShouldCollideStairsNByInputInducedMotion(udLhs, udtLhs, lhsAABB, *lhsCurrChd, udRhs, udtRhs, rhs)) {
+                        return JPH::ValidateResult::RejectContact;
+                    }
+                    const Vec3& stairsNorm = transientUdToStairsN.at(udRhs);
+                    const float stairsVelC = lhsCurrChd->vel_x() * stairsNorm.GetX() + lhsCurrChd->vel_y() * stairsNorm.GetY() + lhsCurrChd->vel_z() * stairsNorm.GetZ();
+                    if (0 < stairsVelC) {
+                        return JPH::ValidateResult::RejectContact;
+                    }
                 }
             }
         }
@@ -1168,25 +1263,147 @@ public:
         }
     }
 
+    virtual bool lhsChdShouldColliderStairsPByPositionRelation(const uint64_t udRhs, const AABox* eoiAABB, const ConvexHullShape* stairsCastedShape, const Mat44& stairsCOMTransform, const Vec3& stairOutwardNorm) const {
+        const Vec3& eoiCenter = eoiAABB->GetCenter();
+        const Vec3 eoiBottomCenter(eoiCenter.GetX(), eoiAABB->mMin.GetY(), eoiCenter.GetZ());
+        const float eoiC = eoiBottomCenter.Dot(stairOutwardNorm);
+        const Vec3 stairsP1 = stairsCOMTransform.GetTranslation() + stairsCastedShape->GetPoint(0);
+        const Vec3 stairsP2 = stairsCOMTransform.GetTranslation() + stairsCastedShape->GetPoint(1);
+        const Vec3 stairsP3 = stairsCOMTransform.GetTranslation() + stairsCastedShape->GetPoint(2);
+        const Vec3 stairsP4 = stairsCOMTransform.GetTranslation() + stairsCastedShape->GetPoint(3);
+        const float stairsC1 = stairsP1.Dot(stairOutwardNorm), stairsC2 = stairsP2.Dot(stairOutwardNorm), stairsC3 = stairsP3.Dot(stairOutwardNorm), stairsC4 = stairsP4.Dot(stairOutwardNorm);
+        const float stairsC = min(min(stairsC1, stairsC2), min(stairsC3, stairsC4));
+
+        if (eoiC >= stairsC) {
+/*
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "lhsChdShouldColliderStairsNByPositionRelation returning true for udRhs=" << udRhs << ", eoiC=" << eoiC << ", stairsC=" << stairsC << ", ([stairsC1=" << stairsC1 << "], [stairsC2=" << stairsC2 << "], [stairsC3=" << stairsC3 << "], [stairsC4=" << stairsC4 << "])";
+            Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+            return true;
+        }
+/*
+#ifndef NDEBUG
+        std::ostringstream oss;
+        auto bulletId = getUDPayload(udRhs);
+        oss << "lhsChdShouldColliderStairsNByPositionRelation returning false for udRhs=" << udRhs << ", eoiC=" << eoiC << ", stairsC=" << stairsC << ", ([stairsC1=" << stairsC1 << "], [stairsC2=" << stairsC2 << "], [stairsC3=" << stairsC3 << "], [stairsC4=" << stairsC4 << "])";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+        return false;
+    }
+
+    virtual bool lhsChdShouldColliderStairsNByPositionRelation(const AABox* eoiAABB, const BoxShape* stairsCastedShape, const Mat44& stairsCOMTransform, const Vec3& stairOutwardNorm) const {
+        const Vec3& eoiCenter = eoiAABB->GetCenter();
+        const Vec3 eoiBottomCenter(eoiCenter.GetX(), eoiAABB->mMin.GetY(), eoiCenter.GetZ());
+
+        const Vec3 origBottomLeft(-stairsCastedShape->GetHalfExtent().GetX(), -stairsCastedShape->GetHalfExtent().GetY(), 0);
+        const Vec3 origBottomRight(+stairsCastedShape->GetHalfExtent().GetX(), -stairsCastedShape->GetHalfExtent().GetY(), 0);
+        const Vec3 origTopLeft(-stairsCastedShape->GetHalfExtent().GetX(), +stairsCastedShape->GetHalfExtent().GetY(), 0);
+        const Vec3 origTopRight(+stairsCastedShape->GetHalfExtent().GetX(), +stairsCastedShape->GetHalfExtent().GetY(), 0);
+
+        const Vec3 bottomLeft = stairsCOMTransform * origBottomLeft;
+        const Vec3 bottomRight = stairsCOMTransform * origBottomRight;
+        const Vec3 topLeft = stairsCOMTransform * origTopLeft;
+        const Vec3 topRight = stairsCOMTransform * origTopRight;
+
+
+        const float eoiC = eoiBottomCenter.Dot(stairOutwardNorm);
+        const float stairsC1 = bottomLeft.Dot(stairOutwardNorm), stairsC2 = bottomRight.Dot(stairOutwardNorm), stairsC3 = topLeft.Dot(stairOutwardNorm), stairsC4 = topRight.Dot(stairOutwardNorm);
+        const float stairsC = min(min(stairsC1, stairsC2), min(stairsC3, stairsC4));
+
+        if (eoiC >= stairsC) {
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool lhsChdShouldColliderSlipJumpableByPositionRelation(const AABox* eoiAABB, const AABox& slipJumpableAABB) const {
+        if (eoiAABB->mMin.GetY() >= slipJumpableAABB.mMin.GetY()) {
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool lhsChdShouldCollideStairsPByChStateAndInputInducedMotion(const uint64_t udLhs, const uint64_t udtLhs, 
+        const AABox* eoiAABB,
+        const CharacterDownsync& lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
+        if (inAirSet.count(lhsCurrChd.ch_state())) {
+            return true;
+        }
+
+        if (lhsCurrChd.ground_ud() == udRhs) {
+            return true;
+        }
+
+        const Shape* stairsShape = rhs.GetShape();
+        const ConvexHullShape* stairsCastedShape = static_cast<const ConvexHullShape*>(stairsShape);
+        const Mat44& stairsCOMTransform = rhs.GetCenterOfMassTransform();
+        const Vec3& stairOutwardNorm = transientUdToStairsP.at(udRhs);
+
+        if (lhsChdShouldColliderStairsPByPositionRelation(udRhs, eoiAABB, stairsCastedShape, stairsCOMTransform, stairOutwardNorm)) {
+            if (transientUdToInputInducedMotion.count(udLhs)) {
+                const InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(udLhs);
+
+                if (inputInducedMotion->stairsIntended) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    virtual bool lhsChdShouldCollideStairsNByInputInducedMotion(const uint64_t udLhs, const uint64_t udtLhs, 
+        const AABox* eoiAABB,
+        const CharacterDownsync& lhsCurrChd, const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
+
+        if (!transientUdToInputInducedMotion.count(udLhs)) {
+            const Shape* stairsShape = rhs.GetShape();
+            const BoxShape* stairsCastedShape = static_cast<const BoxShape*>(stairsShape);
+            const Mat44& stairsCOMTransform = rhs.GetCenterOfMassTransform();
+            const Vec3& stairOutwardNorm = transientUdToStairsN.at(udRhs);
+            if (lhsChdShouldColliderStairsNByPositionRelation(eoiAABB, stairsCastedShape, stairsCOMTransform, stairOutwardNorm)) {
+                return true;
+            }
+        }
+
+        const InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(udLhs);
+        if (!inputInducedMotion->stairsIntended) {
+            const Shape* stairsShape = rhs.GetShape();
+            const BoxShape* stairsCastedShape = static_cast<const BoxShape*>(stairsShape);
+            const Mat44& stairsCOMTransform = rhs.GetCenterOfMassTransform();
+            const Vec3& stairOutwardNorm = transientUdToStairsN.at(udRhs);
+            if (lhsChdShouldColliderStairsNByPositionRelation(eoiAABB, stairsCastedShape, stairsCOMTransform, stairOutwardNorm)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const JPH::Body& lhs, // the "Character"
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
         switch (udtLhs) {
             case UDT_PLAYER: {
+                const AABox& lhsAABB = lhs.GetWorldSpaceBounds();
                 auto lhsCurrPlayer = transientUdToCurrPlayer.at(udLhs);
                 auto& lhsCurrChd = lhsCurrPlayer->chd();
                 auto lhsNextPlayer = transientUdToNextPlayer.at(udLhs);
                 auto& lhsNextChd = lhsNextPlayer->chd();
-                return validateLhsCharacterContact(udtLhs, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
-                break;
+                return validateLhsCharacterContact(udLhs, udtLhs, &lhsAABB, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
             }
             case UDT_NPC: {
+                const AABox& lhsAABB = lhs.GetWorldSpaceBounds();
                 auto lhsCurrNpc = transientUdToCurrNpc.at(udLhs);
                 auto& lhsCurrChd = lhsCurrNpc->chd();
                 auto lhsNextNpc = transientUdToNextNpc.at(udLhs);
                 auto& lhsNextChd = lhsNextNpc->chd();
-                return validateLhsCharacterContact(udtLhs, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
-                break;
+                return validateLhsCharacterContact(udLhs, udtLhs, &lhsAABB, &lhsCurrChd, &lhsNextChd, udRhs, udtRhs, rhs);
             }
             default:
                 return JPH::ValidateResult::AcceptContact;
@@ -1195,6 +1412,7 @@ public:
 
     virtual JPH::ValidateResult validateLhsCharacterAimingRayContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const {
         if (transientSlipJumpableUds.count(udRhs)) {
+            // [REMINDER] Intentionally NOT including "transientUdToStairsP" or "transientUdToStairsN" here, because they usually look impenetrable.
             return JPH::ValidateResult::RejectContact;
         }
 
@@ -1445,22 +1663,66 @@ public:
         uint64_t udt1 = getUDT(ud1);
         uint64_t udt2 = getUDT(ud2);
 
+        const JPH::Body* lhs = &inBody1;
+        const JPH::Body* rhs = &inBody2;
+        /*
+        [REMINDER]
+
+        It's thread-safe to read from "transientUdToXxx" in "OnContactValidate" due to synchronization provided by [prePhysicsUpdateMTBarrier](https://github.com/genxium/JoltDLLMU/blob/55f1ff9b6fc16299b5680543e4de5d0723a03f28/JoltBindings/joltc/BaseBattle.cpp#L982). 
+
+        */
         if (transientUdToConstraintHelperBodyID.count(ud2) && inBody2.IsSensor()) return JPH::ValidateResult::RejectContact;
         if (transientUdToConstraintHelperBodyID.count(ud1) && inBody1.IsSensor()) return JPH::ValidateResult::RejectContact;
 
+        bool origUdt1IsCharacter = (UDT_PLAYER == udt1 || UDT_NPC == udt1);
+        bool needCharacterSwap = (UDT_PLAYER == udt2 || UDT_NPC == udt2) && !origUdt1IsCharacter;
+        bool needBulletSwap = !needCharacterSwap && !origUdt1IsCharacter && (UDT_BL == udt2) && (UDT_BL != udt1);
+        if (
+            needCharacterSwap || needBulletSwap
+        ) {
+            std::swap(udt1, udt2);
+            std::swap(ud1, ud2);
+            lhs = &inBody2;
+            rhs = &inBody1;
+        }
+
+        bool lhsIsCharacter = (UDT_PLAYER == udt1 || UDT_NPC == udt1);
+
         if (transientSlipJumpableUds.count(ud2)) {
             // Check early returns
-            const AABox& lhsAABB = inBody1.GetWorldSpaceBounds(); 
-            const AABox& rhsAABB = inBody2.GetWorldSpaceBounds(); 
-            if (lhsAABB.mMin.GetY() < rhsAABB.mMin.GetY()) {    
+            const AABox* eoiAABB = &(lhs->GetWorldSpaceBounds()); // "eoi" = "Entity Of Interest" 
+            const AABox& slipJumpableAABB = rhs->GetWorldSpaceBounds(); 
+            if (!lhsChdShouldColliderSlipJumpableByPositionRelation(eoiAABB, slipJumpableAABB)) {
+                return JPH::ValidateResult::RejectContact;
+            }
+        } else if (transientUdToStairsP.count(ud2)) {
+            // Check early returns
+            if (!transientUdToCurrPlayer.count(ud1) && !transientUdToCurrNpc.count(ud1) && !transientUdToCurrBl.count(ud1) && !transientUdToCurrPickable.count(ud1)) {
+                // [WARNING] NOT every type of entity can collider with "P-type stair"
                 return JPH::ValidateResult::RejectContact;    
             }
-        } else if (transientSlipJumpableUds.count(ud1)) {
+
+            if (!lhsIsCharacter) {
+                const AABox* eoiAABB = &(lhs->GetWorldSpaceBounds());
+                const Shape* stairsShape = rhs->GetShape();
+                const ConvexHullShape* stairsCastedShape = static_cast<const ConvexHullShape*>(stairsShape);
+                const Mat44& stairsCOMTransform = rhs->GetCenterOfMassTransform();
+                const Vec3& stairOutwardNorm = transientUdToStairsP.at(ud2);
+                if (!lhsChdShouldColliderStairsPByPositionRelation(ud2, eoiAABB, stairsCastedShape, stairsCOMTransform, stairOutwardNorm)) {
+                    return JPH::ValidateResult::RejectContact;
+                }
+            }
+        } else if (transientUdToStairsN.count(ud2)) {
             // Check early returns
-            const AABox& lhsAABB = inBody1.GetWorldSpaceBounds(); 
-            const AABox& rhsAABB = inBody2.GetWorldSpaceBounds(); 
-            if (rhsAABB.mMin.GetY() < lhsAABB.mMin.GetY()) {    
-                return JPH::ValidateResult::RejectContact;    
+            if (!lhsIsCharacter) {
+                const AABox* eoiAABB = &(lhs->GetWorldSpaceBounds());
+                const Shape* stairsShape = rhs->GetShape();
+                const BoxShape* stairsCastedShape = static_cast<const BoxShape*>(stairsShape);
+                const Mat44& stairsCOMTransform = rhs->GetCenterOfMassTransform();
+                const Vec3& stairOutwardNorm = transientUdToStairsN.at(ud2);
+                if (!lhsChdShouldColliderStairsNByPositionRelation(eoiAABB, stairsCastedShape, stairsCOMTransform, stairOutwardNorm)) {
+                    return JPH::ValidateResult::RejectContact;
+                }
             }
         }
 
@@ -1468,21 +1730,12 @@ public:
         {
         case UDT_PLAYER:
         case UDT_NPC:
-            return validateLhsCharacterContact(ud1, udt1, inBody1, ud2, udt2, inBody2);
+            return validateLhsCharacterContact(ud1, udt1, *lhs, ud2, udt2, *rhs);
         case UDT_BL:
-            return validateLhsBulletContact(ud1, inBody1, ud2, udt2, inBody2);
+            return validateLhsBulletContact(ud1, *lhs, ud2, udt2, *rhs);
         default:
-            switch (udt2) {
-            case UDT_PLAYER:
-            case UDT_NPC:
-                return validateLhsCharacterContact(ud2, udt2, inBody2, ud1, udt1, inBody1);
-            case UDT_BL:
-                return validateLhsBulletContact(ud2, inBody2, ud1, udt1, inBody1);
-            default:
-                return JPH::ValidateResult::AcceptContact;
-            }
+            return JPH::ValidateResult::AcceptContact;
         }
-
     }
 };
 
