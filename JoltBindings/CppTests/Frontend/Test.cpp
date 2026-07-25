@@ -9706,8 +9706,8 @@ int main(int argc, char** argv)
 
     std::vector<float> stairsHull2 = {
         // ceiling of regular barrier
-        140, 200,
-        140, 220,
+        124, 200,
+        124, 220,
         500, 220,
         500, 200
     };
@@ -9724,8 +9724,8 @@ int main(int argc, char** argv)
         // StairsN
         -50, 200,
         -50, 220,
-        140, 220,
-        140, 200
+        124, 220,
+        124, 200
     };
 
     std::vector<float> stairsHull5 = {

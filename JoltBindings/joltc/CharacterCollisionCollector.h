@@ -345,11 +345,13 @@ public:
                         if (rhsPointVel.IsNearZero()) {
                             // The regular case
                             mCrouchForced = true;
+/*
 #ifndef NDEBUG
                             std::ostringstream oss;
                             oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a near-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "])";
                             Debug::Log(oss.str(), DColor::Yellow);
 #endif
+*/
                         } else {
                             // float rhsPointVelDotPenetrationIntoSelf = rhsPointVel.Dot(worldSpaceNormalIntoBarrier);
                             bool rhsProactivelySqueezingDown1 = (0 > rhsPointVel.GetY() && 0 < worldSpaceNormalIntoBarrier.GetY());
@@ -358,11 +360,13 @@ public:
                                 bool rhsProactivelySqueezingDown2 = rhsPointVelNormDot > 0.5;
                                 if (rhsProactivelySqueezingDown2) {
                                     mCrouchForced = true;
+/*
 #ifndef NDEBUG
                                     std::ostringstream oss;
                                     oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a non-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "], worldSpaceNormalIntoBarrier=[" << worldSpaceNormalIntoBarrier.GetX() << "," << worldSpaceNormalIntoBarrier.GetY() << "])";
                                     Debug::Log(oss.str(), DColor::Yellow);
 #endif
+*/
                                 }
                             } else {
                                 // bool chdRunningIntoBarrier = (0 < worldSpaceNormalIntoBarrier.Dot(lhsIntendedVel));

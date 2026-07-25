@@ -643,7 +643,7 @@ public:
     }
 
     inline static void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) {
-        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state())) {
+        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state()) || !nonAttackingSet.count(nextChd->ch_state()) || !chIsNotDashing(*nextChd)) {
             return;
         }
 

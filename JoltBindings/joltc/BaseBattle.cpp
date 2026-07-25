@@ -683,6 +683,8 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
         From the source codes of [JPH::Body](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/Body.h) and [MotionProperties](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/MotionProperties.h#L148) it seems like "accelerations" are only calculated during stepping, not cached.
         */
         auto bodyID = chCollider->GetBodyID();
+        bool currChdCrouching = isCrouching(currChd.ch_state(), cc);
+        Vec3 effForceCOM = (currChdCrouching ? Vec3::sZero() : inInputInducedMotion->forceCOM);
         if (!inGravityDirty) {
             if (onWallSet.count(currChd.ch_state())) {
                 bi->SetGravityFactor(bodyID, 0);
@@ -706,8 +708,6 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
                 }
             }
         }
-        bool currChdCrouching = isCrouching(currChd.ch_state(), cc);
-        Vec3 effForceCOM = (currChdCrouching ? Vec3::sZero() : inInputInducedMotion->forceCOM);
         bi->AddForceAndTorque(bodyID, effForceCOM, inInputInducedMotion->torqueCOM, EActivation::DontActivate);
         bi->SetLinearAndAngularVelocity(bodyID, inInputInducedMotion->velCOM, Vec3::sZero());
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
@@ -2640,6 +2640,7 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
                 } else {
                     nextChd->set_ch_state(InAirIdle1ByJump);
                     nextChd->set_frames_in_ch_state(0);
+                    ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
                 }
                 ioInputInducedMotion->jumpTriggered = true;
             }
@@ -2658,6 +2659,7 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_ch_state(InAirIdle1BySlipJump);
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
+        ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
     } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
         nextChd->set_frames_in_ch_state(0);
@@ -2873,6 +2875,10 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
         // [WARNING] This particular condition is set to favor a smooth "Sliding -> CrouchIdle1" & "CrouchAtk1 -> CrouchAtk1" transitions, we couldn't use "0 == nextChd->frames_to_recover()" for checking here because "CrouchAtk1 -> CrouchAtk1" transition would break by 1 frame. 
         if (1 >= currChd.frames_to_recover()) {
             nextChd->set_ch_state(CrouchIdle1);
+            ioInputInducedMotion->velCOM.SetX(currChd.ground_vel_x());
+            ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
+            biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction());
+            ioFrictionDirty = true;
         }
     }
 
@@ -5047,6 +5053,8 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case GetUp1:
             case TurnAround:
                 nextChd->set_ch_state(CrouchIdle1);
+                nextChd->set_vel_x(nextChd->ground_vel_x());
+                nextChd->set_vel_y(nextChd->ground_vel_y());
                 break;
             case Atk1:
                 if (cc->crouching_atk_enabled()) {
@@ -5054,10 +5062,14 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 } else {
                     nextChd->set_ch_state(CrouchIdle1);
                 }
+                nextChd->set_vel_x(nextChd->ground_vel_x());
+                nextChd->set_vel_y(nextChd->ground_vel_y());
                 break;
             case Atked1:
             case Def1Broken:
                 nextChd->set_ch_state(CrouchAtked1);
+                nextChd->set_vel_x(nextChd->ground_vel_x());
+                nextChd->set_vel_y(nextChd->ground_vel_y());
                 break;
             case BlownUp1:
             case LayDown1:

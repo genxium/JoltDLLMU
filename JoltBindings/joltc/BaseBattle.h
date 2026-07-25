@@ -1697,7 +1697,7 @@ public:
             }
         } else if (transientUdToStairsP.count(ud2)) {
             // Check early returns
-            if (!transientUdToCurrPlayer.count(ud1) && !transientUdToCurrNpc.count(ud1) && !transientUdToCurrBl.count(ud1) && !transientUdToCurrPickable.count(ud1)) {
+            if (!transientUdToCurrPlayer.count(ud1) && !transientUdToCurrNpc.count(ud1) && !transientUdToCurrPickable.count(ud1)) {
                 // [WARNING] NOT every type of entity can collider with "P-type stair"
                 return JPH::ValidateResult::RejectContact;    
             }
