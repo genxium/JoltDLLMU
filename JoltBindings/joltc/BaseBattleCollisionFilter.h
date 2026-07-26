@@ -280,6 +280,16 @@ static const JPH::Vec3  cNegativeZAxis = JPH::Vec3(0, 0, -1);
 static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
 static const JPH::Quat  cTurn180DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), JPH_PI);
 
+static const JPH::Quat  cTurn45DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.25f*JPH_PI);
+static const JPH::Quat  cTurnNegative45DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), -0.25f*JPH_PI);
+static const JPH::Quat  cTurn135DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.75f*JPH_PI);
+static const JPH::Quat  cTurnNegative135DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), -0.75f*JPH_PI);
+
+static const JPH::Vec3  yTurned45DegsAroundZAxis = cTurn45DegsAroundZAxis*cYAxis;
+static const JPH::Vec3  yTurnedNegative45DegsAroundZAxis = cTurnNegative45DegsAroundZAxis*cYAxis;
+static const JPH::Vec3  yTurned135DegsAroundZAxis = cTurn135DegsAroundZAxis*cYAxis;
+static const JPH::Vec3  yTurnedNegative135DegsAroundZAxis = cTurnNegative135DegsAroundZAxis*cYAxis;
+
 static const JPH::Mat44 cTurn90DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn90DegsAroundZAxis);
 static const JPH::Mat44 cTurn180DegsAroundZAxisMat = JPH::Mat44::sRotation(cTurn180DegsAroundZAxis);
 
@@ -618,8 +628,28 @@ public:
         }
     }
 
+    inline static bool isChdVelClampable(const CharacterDownsync* chd) {
+        if (atkedSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (noOpSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (!nonAttackingSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (!chIsNotDashing(*chd)) {
+            return false;
+        }
+
+        return true;
+    }
+
     inline static void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) {
-        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state()) || !nonAttackingSet.count(nextChd->ch_state()) || !chIsNotDashing(*nextChd)) {
+        if (!isChdVelClampable(nextChd)) {
             return;
         }
 
@@ -632,34 +662,44 @@ public:
                 ioVel.SetX(minVelX);
             }
         } else {
-            const float maxVelX = cc->speed() + groundVel.GetX();
-            const float minVelX = -cc->speed() + groundVel.GetX();
-            if (ioVel.GetX() >= maxVelX) {
-                ioVel.SetX(maxVelX);
-            } else if (ioVel.GetX() <= minVelX) {
-                ioVel.SetX(minVelX);
+            if (!inAirSet.count(nextChd->ch_state()) && 0 != nextChd->ground_ud()) {
+                const Vec3 origVelRelativeToGround = ioVel - groundVel;
+                const float origVelRelativeToGroundLengthSq = origVelRelativeToGround.LengthSq();
+                const float maxSpeedSq = cc->speed()*cc->speed();
+                if (origVelRelativeToGroundLengthSq > maxSpeedSq) {
+                    const float shrinkFactor = cc->speed() * InvSqrt32(origVelRelativeToGroundLengthSq);
+                    ioVel = origVelRelativeToGround * shrinkFactor + groundVel;
+                }
+            } else {
+                const float maxVelX = cc->speed() + groundVel.GetX();
+                const float minVelX = -cc->speed() + groundVel.GetX();
+                if (ioVel.GetX() > maxVelX) {
+                    ioVel.SetX(maxVelX);
+                } else if (ioVel.GetX() < minVelX) {
+                    ioVel.SetX(minVelX);
+                }
             }
         }
     }
 
     inline static void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) {
-        if (atkedSet.count(nextChd->ch_state()) || noOpSet.count(nextChd->ch_state()) || !nonAttackingSet.count(nextChd->ch_state()) || !chIsNotDashing(*nextChd)) {
+        if (!isChdVelClampable(nextChd)) {
             return;
         }
 
         const float maxVelX = cc->speed();
         const float minVelX = -cc->speed();
-        if (ioVel.GetX() >= maxVelX) {
+        if (ioVel.GetX() > maxVelX) {
             ioVel.SetX(maxVelX);
-        } else if (ioVel.GetX() <= minVelX) {
+        } else if (ioVel.GetX() < minVelX) {
             ioVel.SetX(minVelX);
         }
 
         const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
         const float minVelY = -cc->speed();
-        if (ioVel.GetY() >= maxVelY) {
+        if (ioVel.GetY() > maxVelY) {
             ioVel.SetY(maxVelY);
-        } else if (ioVel.GetY() <= minVelY) {
+        } else if (ioVel.GetY() < minVelY) {
             ioVel.SetY(minVelY);
         }
     }

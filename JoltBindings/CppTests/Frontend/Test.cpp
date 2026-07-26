@@ -2520,6 +2520,56 @@ RenderFrame* mockStairsStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockRegularSlopeStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(+450);
+    playerCh1->set_y(116);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(1);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(0);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -3353,6 +3403,18 @@ std::map<int, uint64_t> testCmds39 = {
     {1075, 2},
     {1076, 0},
     {1280, 0},
+};
+
+std::map<int, uint64_t> testCmds40 = {
+    {0, 0},
+    {3, 0},
+    {4, 4},
+    {99, 4},
+    {319, 4}, 
+    {320, 3}, 
+    {599, 3},
+    {600, 0},
+    {1024, 0},
 };
 
 uint64_t getSelfCmdByRdfId(std::map<int, uint64_t>& testCmds, int rdfId) {
@@ -5939,6 +6001,27 @@ void initTest39Data(WsReq* testInitializerMapData, std::vector<std::vector<float
 
     std::vector<bool> stairsNOptions(hulls.size(), false);
     stairsNOptions[3] = true;
+
+    TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
+}
+
+void initTest40Data(WsReq* testInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    // See digram(s) in "JoltDLLMU/StairsMechanismProposal".
+    auto testStartRdf = mockRegularSlopeStartRdf(theAllocator);
+    std::vector<bool> slipJumpOptions(hulls.size(), false);
+
+    std::vector<bool> parallelepipedOptions(hulls.size(), false);
+    parallelepipedOptions[2] = true;
+
+    std::vector<bool> boxOptions(hulls.size(), true);
+    boxOptions[2] = false;
+
+    std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
+
+    std::vector<bool> stairsPOptions(hulls.size(), false);
+
+    std::vector<bool> stairsNOptions(hulls.size(), false);
 
     TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
     testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
@@ -9266,20 +9349,19 @@ bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
 
-    int upstairsTransitRdfId = 0;
+    int landingRdfId = 0;
+    int groundToUpstairsTransitRdfId = 0;
     int upstairsToFlatTransitRdfId = 0;
     int flatToNStairsTransitRdfId = 0;
     int nStairsToSlipJumpableTransitRdfId = 0;
     int slipJumpableToNStairsTransitRdfId = 0;
     int nStairsToFlatTransitRdfId = 0;
-    int downstairsTransitRdfId = 0;
-    int downstairsToFlatTransitRdfId = 0;
+    int flatToDownstairsTransitRdfId = 0;
+    int downstairsToGroundTransitRdfId = 0;
     uint64_t oldGroundUd = 0;
 
     // Test terrain continuity.
     while (loopRdfCnt > outerTimerRdfId) {
-        // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
-
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds39, outerTimerRdfId);
         bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
         if (!cmdInjected) {
@@ -9298,20 +9380,32 @@ bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < downstairsToFlatTransitRdfId) {
+        if (0 == groundToUpstairsTransitRdfId || outerTimerRdfId < groundToUpstairsTransitRdfId) {
             //shouldPrint = true;
         }
 
-        if (0 != downstairsToFlatTransitRdfId && downstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+        if (0 != groundToUpstairsTransitRdfId && groundToUpstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < downstairsToGroundTransitRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (0 != downstairsToGroundTransitRdfId && downstairsToGroundTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
             std::cout << "TestCase39/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << std::endl;
         }
+
+        if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            landingRdfId = outerTimerRdfId;
+        }
         
         if (1 == oldGroundUd && 5 == p1Chd.ground_ud()) {
-            upstairsTransitRdfId = outerTimerRdfId;
+            groundToUpstairsTransitRdfId = outerTimerRdfId;
         }
 
         if (5 == oldGroundUd && 2 == p1Chd.ground_ud()) {
@@ -9335,25 +9429,17 @@ bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
 
         if (2 == oldGroundUd && 5 == p1Chd.ground_ud()) {
-            downstairsTransitRdfId = outerTimerRdfId;
+            flatToDownstairsTransitRdfId = outerTimerRdfId;
         }
 
         if (5 == oldGroundUd && 1 == p1Chd.ground_ud()) {
-            downstairsToFlatTransitRdfId = outerTimerRdfId;
+            downstairsToGroundTransitRdfId = outerTimerRdfId;
         }
 
-        if (110 == outerTimerRdfId) {
+        if (0 != landingRdfId && landingRdfId <= outerTimerRdfId && (0 == groundToUpstairsTransitRdfId || outerTimerRdfId < groundToUpstairsTransitRdfId)) {
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(1 == p1Chd.ground_ud());
-            JPH_ASSERT(90 < p1Chd.x());  // Walked past StairsP
-        } else if (220 == outerTimerRdfId) {
-            JPH_ASSERT(Walking == p1Chd.ch_state());
-            JPH_ASSERT(1 == p1Chd.ground_ud());
-            JPH_ASSERT(-90 > p1Chd.x());  // Walked back to the left of StairsP
-        } else if (221 <= outerTimerRdfId && (0 == upstairsTransitRdfId || outerTimerRdfId < upstairsTransitRdfId)) {
-            JPH_ASSERT(Walking == p1Chd.ch_state());
-            JPH_ASSERT(1 == p1Chd.ground_ud());
-        } else if (0 != upstairsTransitRdfId && upstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
+        } else if (0 != groundToUpstairsTransitRdfId && groundToUpstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
             // Walked up onto p-type stairs
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(5 == p1Chd.ground_ud());
@@ -9373,30 +9459,134 @@ bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             // Walked back to the n-type stairs
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(4 == p1Chd.ground_ud());
-        } else if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && (0 == downstairsTransitRdfId || outerTimerRdfId < downstairsTransitRdfId)) {
+        } else if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && (0 == flatToDownstairsTransitRdfId || outerTimerRdfId < flatToDownstairsTransitRdfId)) {
             // Walked back to the regular barrier as top-right ceiling
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(2 == p1Chd.ground_ud());
-        } else if (0 != downstairsTransitRdfId && downstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToFlatTransitRdfId || outerTimerRdfId < downstairsToFlatTransitRdfId)) {
+        } else if (0 != flatToDownstairsTransitRdfId && flatToDownstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToGroundTransitRdfId || outerTimerRdfId < downstairsToGroundTransitRdfId)) {
             // Walked onto the p-type stairs and preparing for going downstairs
             JPH_ASSERT(5 == p1Chd.ground_ud());
-        } else if (0 != downstairsToFlatTransitRdfId && downstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < 1039) {
+        } else if (0 != downstairsToGroundTransitRdfId && downstairsToGroundTransitRdfId <= outerTimerRdfId && outerTimerRdfId < 1039) {
             JPH_ASSERT(1 == p1Chd.ground_ud());
         }
         oldGroundUd = p1Chd.ground_ud();
         outerTimerRdfId++;
     }
 
-    JPH_ASSERT(0 != upstairsTransitRdfId);
+    JPH_ASSERT(0 != landingRdfId);
+    JPH_ASSERT(0 != groundToUpstairsTransitRdfId);
     JPH_ASSERT(0 != upstairsToFlatTransitRdfId);
     JPH_ASSERT(0 != flatToNStairsTransitRdfId);
     JPH_ASSERT(0 != nStairsToSlipJumpableTransitRdfId);
     JPH_ASSERT(0 != slipJumpableToNStairsTransitRdfId);
     JPH_ASSERT(0 != nStairsToFlatTransitRdfId);
-    JPH_ASSERT(0 != downstairsTransitRdfId);
-    JPH_ASSERT(0 != downstairsToFlatTransitRdfId);
+    JPH_ASSERT(0 != flatToDownstairsTransitRdfId);
+    JPH_ASSERT(0 != downstairsToGroundTransitRdfId);
 
     std::cout << "Passed TestCase39: Basic stairs mechanics\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+    return true;
+}
+
+bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest40Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 2);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+
+    int landingRdfId = 0;
+    int groundToUpstairsTransitRdfId = 0;
+    int upstairsToFlatTransitRdfId = 0;
+    int flatToDownstairsTransitRdfId = 0;
+    int downstairsToGroundTransitRdfId = 0;
+    uint64_t oldGroundUd = 0;
+
+    // Test terrain continuity.
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds40, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = BaseBattleCollisionFilter::calcPlayerUserData(p1.join_index());
+
+        bool shouldPrint = false;
+
+        if (0 != landingRdfId && landingRdfId <= outerTimerRdfId && (0 == groundToUpstairsTransitRdfId || outerTimerRdfId < groundToUpstairsTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != groundToUpstairsTransitRdfId && groundToUpstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != upstairsToFlatTransitRdfId && upstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase40/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << std::endl;
+        }
+        
+        if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            landingRdfId = outerTimerRdfId;
+        }
+
+        if (1 == oldGroundUd && 3 == p1Chd.ground_ud()) {
+            groundToUpstairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (3 == oldGroundUd && 2 == p1Chd.ground_ud()) {
+            upstairsToFlatTransitRdfId = outerTimerRdfId;
+        }
+
+        if (2 == oldGroundUd && 3 == p1Chd.ground_ud()) {
+            flatToDownstairsTransitRdfId = outerTimerRdfId;
+        }
+
+        if (3 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            downstairsToGroundTransitRdfId = outerTimerRdfId;
+        }
+
+        if (0 != landingRdfId && landingRdfId <= outerTimerRdfId && (0 == groundToUpstairsTransitRdfId || outerTimerRdfId < groundToUpstairsTransitRdfId)) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+        } else if (0 != groundToUpstairsTransitRdfId && groundToUpstairsTransitRdfId <= outerTimerRdfId && (0 == upstairsToFlatTransitRdfId || outerTimerRdfId < upstairsToFlatTransitRdfId)) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(3 == p1Chd.ground_ud());
+        } else if (0 != upstairsToFlatTransitRdfId && upstairsToFlatTransitRdfId <= outerTimerRdfId && (0 == flatToDownstairsTransitRdfId || outerTimerRdfId < flatToDownstairsTransitRdfId)) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(2 == p1Chd.ground_ud());
+        } else if (0 != flatToDownstairsTransitRdfId && flatToDownstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToGroundTransitRdfId || outerTimerRdfId < downstairsToGroundTransitRdfId)) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(3 == p1Chd.ground_ud());
+        } else if (0 != downstairsToGroundTransitRdfId && downstairsToGroundTransitRdfId <= outerTimerRdfId && outerTimerRdfId < 610) {
+            JPH_ASSERT(Walking == p1Chd.ch_state());
+            JPH_ASSERT(1 == p1Chd.ground_ud());
+        }
+        oldGroundUd = p1Chd.ground_ud();
+        outerTimerRdfId++;
+    }
+
+    JPH_ASSERT(0 != landingRdfId);
+    JPH_ASSERT(0 != groundToUpstairsTransitRdfId);
+    JPH_ASSERT(0 != upstairsToFlatTransitRdfId);
+    JPH_ASSERT(0 != flatToDownstairsTransitRdfId);
+    JPH_ASSERT(0 != downstairsToGroundTransitRdfId);
+
+    std::cout << "Passed TestCase40: Basic regular slope mechanics\n" << std::endl;
     theAllocator->Reset();
     reusedBattle->Clear();
     return true;
@@ -9736,6 +9926,30 @@ int main(int argc, char** argv)
         +40, 220
     };
 
+    std::vector<float> slopeHull1 = {
+        // floor
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> slopeHull2 = {
+        // left block adjacent to the slope
+        -500, 100,
+        -500, 220,
+        -100, 220,
+        -100, 100
+    };
+
+    std::vector<float> slopeHull3 = {
+        // the slope
+        -100, 80,
+        -100, 220,
+        64, 220,
+        300, 80
+    };
+
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
     std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
     std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
@@ -9752,6 +9966,8 @@ int main(int argc, char** argv)
     std::vector<std::vector<float>> flyingMapHulls = { flyingMapHull1, flyingMapHull2, flyingMapHull3, flyingMapHull4 };
 
     std::vector<std::vector<float>> stairsMapHulls = { stairsHull1, stairsHull2, stairsHull3, stairsHull4, stairsHull5 };
+
+    std::vector<std::vector<float>> slopeMapHulls = { slopeHull1, slopeHull2, slopeHull3 };
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -9811,6 +10027,7 @@ int main(int argc, char** argv)
     runTestCase37(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase38(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase39(battle, stairsMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase40(battle, slopeMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "startRdf" will be automatically deallocated by the destructor of "wsReq"

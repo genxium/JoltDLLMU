@@ -1776,6 +1776,7 @@ void BaseBattle::Clear() {
     trapConfigFromTileDict.clear();
     triggerConfigFromTileDict.clear();
     transientSlipJumpableUds.clear();
+    transientUdToSlope.clear();
     transientUdToStairsP.clear();
     transientUdToStairsN.clear();
     transientWallGrabProhibitingUds.clear();
@@ -2205,17 +2206,51 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             });
 
             if (convexPolygon->is_parallelepiped()) {
+                Vec3 slopeEdgeNorm;
+                float slopeEdgeBestDot = FLT_MIN;
+
                 std::vector<JPH::Vec3> parsedPoints;
                 parsedPoints.reserve(2 * pointsCnt);
                 for (int pi = 0; pi < pointsCnt; pi++) {
-                    auto& p = effConvexPolygonPoints[pi];
-                    if (p.y() < fallenDeathHeight) {
-                        fallenDeathHeight = p.y();
+                    auto fromI = pi;
+                    auto toI = fromI + 1;
+                    if (toI >= pointsCnt) {
+                        toI = 0;
                     }
-                    Vec3 p1(p.x() - anchorX, p.y() - anchorY, -cDefaultBarrierHalfThickness);
-                    Vec3 p2(p.x() - anchorX, p.y() - anchorY, +cDefaultBarrierHalfThickness);
-                    parsedPoints.push_back(p1);
-                    parsedPoints.push_back(p2);
+
+                    auto& p1 = effConvexPolygonPoints[fromI];
+                    if (p1.y() < fallenDeathHeight) {
+                        fallenDeathHeight = p1.y();
+                    }
+
+                    auto& p2 = effConvexPolygonPoints[toI];
+
+                    auto x1 = p1.x() - anchorX;
+                    auto y1 = p1.y() - anchorY;
+                    auto x2 = p2.x() - anchorX;
+                    auto y2 = p2.y() - anchorY;
+
+                    Vec3 candidateSlopeEdge(x2-x1, y2-y1, 0);
+                    Vec3 candidateSlopeEdgeNorm = candidateSlopeEdge.Normalized();
+            
+                    float dot1 = candidateSlopeEdgeNorm.Dot(yTurned45DegsAroundZAxis);
+                    float dot2 = candidateSlopeEdgeNorm.Dot(yTurnedNegative45DegsAroundZAxis);
+                    float dot3 = candidateSlopeEdgeNorm.Dot(yTurned135DegsAroundZAxis);
+                    float dot4 = candidateSlopeEdgeNorm.Dot(yTurnedNegative135DegsAroundZAxis);
+
+                    float candidateDot = max(max(dot1, dot2), max(dot3, dot4));
+                    if (candidateDot > slopeEdgeBestDot) {
+                        slopeEdgeNorm = candidateSlopeEdgeNorm;
+                        slopeEdgeBestDot = candidateDot;
+                    }
+
+                    parsedPoints.push_back(Vec3(x1, y1, +cDefaultBarrierHalfThickness));
+                    parsedPoints.push_back(Vec3(x1, y1, -cDefaultBarrierHalfThickness));
+                }
+
+                Vec3 slopeEdgeOutwardNorm = (cTurn90DegsAroundZAxis * slopeEdgeNorm);
+                if (0 > slopeEdgeOutwardNorm.GetY()) {
+                    slopeEdgeOutwardNorm = -slopeEdgeOutwardNorm;
                 }
 
                 ConvexHullShapeSettings bodyShapeSettings(parsedPoints.data(), parsedPoints.size());
@@ -2223,18 +2258,11 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                 const ConvexHullShape* bodyShape = new ConvexHullShape(bodyShapeSettings, shapeResult);
                 BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
                 bodyCreationSettings.mUserData = staticColliderUd;
-                bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
                 bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
+                bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
                 
                 if (barrierAttr.provides_stairs_p()) {
-                    Vec3 candidateVerticalEdge = Vec3(effConvexPolygonPoints[0].x() - effConvexPolygonPoints[pointsCnt - 1].x(), effConvexPolygonPoints[0].y() - effConvexPolygonPoints[pointsCnt - 1].y(), 0);
-                    Vec3 candidateOutwardNorm = (cTurn90DegsAroundZAxis * candidateVerticalEdge).Normalized();
-                    if (0 > candidateOutwardNorm.GetY()) {
-                        candidateOutwardNorm = -candidateOutwardNorm;
-                    }
-                    transientUdToStairsP[staticColliderUd] = candidateOutwardNorm;
-                    bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
-
+                    transientUdToStairsP[staticColliderUd] = slopeEdgeOutwardNorm;
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isParallelePiped=" << convexPolygon->is_parallelepiped() << " provides p-type staris:\n\t";
@@ -2244,9 +2272,11 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                         auto y = p.y();
                         oss << "(" << x << "," << y << ") ";
                     }
-                    oss << ", candidateOutwardNorm=(" << candidateOutwardNorm.GetX() << "," << candidateOutwardNorm.GetY() << ")";
+                    oss << ", slopeEdgeOutwardNorm=(" << slopeEdgeOutwardNorm.GetX() << "," << slopeEdgeOutwardNorm.GetY() << ")";
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
+                } else {
+                    transientUdToSlope[staticColliderUd] = slopeEdgeOutwardNorm;
                 }
 
                 Body* body = biNoLock->CreateBody(bodyCreationSettings);
@@ -2705,7 +2735,9 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
             ioFrictionDirty = true;
         }
 
-        if (transientUdToStairsP.count(currChd.ground_ud())) {
+        const bool isOnRegularSlopeOrPStairs = (transientUdToStairsP.count(currChd.ground_ud()) || transientUdToSlope.count(currChd.ground_ud()));
+        const Vec3 currChdGroundNorm(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
+        if (isOnRegularSlopeOrPStairs && 0 != currChdGroundNorm.GetX()) {
             biNoLock->SetGravityFactor(chCollider->GetBodyID(), 0);
             ioGravityDirty = true;
             biNoLock->SetFriction(chCollider->GetBodyID(), 10.0f*globalPrimitiveConsts->walkstopping_ch_friction());
@@ -2810,53 +2842,39 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
             biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
         } else {
+            const bool isOnRegularSlopeOrPStairs = (transientUdToStairsP.count(currChd.ground_ud()) || transientUdToSlope.count(currChd.ground_ud()));
             const Vec3 currChdGroundNorm(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
-            if (!currChdGroundNorm.IsNearZero()) {
-                Vec3 origForce(forceX, forceY, 0);  
-                const bool walkingDownSlope = (transientUdToStairsP.count(currChd.ground_ud()) && 0 < forceX * currChdGroundNorm.GetX());
-                const float toReduceComp = origForce.Dot(currChdGroundNorm);
-                const Vec3 candForce(origForce - toReduceComp * currChdGroundNorm);
-                float candForceLengthSq = candForce.LengthSq();
-                if (walkingDownSlope) {
-                    const Vec3 force = (origForce.Length() * InvSqrt32(candForceLengthSq)) * candForce;
-                    forceX = force.GetX();
-                    forceY = force.GetY();
-                    if (!IsLengthNearZero(currChdGroundNorm.GetX())) {
-                        const Vec3& origVelCOM = ioInputInducedMotion->velCOM;
-                        const Vec3 actualVelRelativeToGnd(origVelCOM.GetX() - currChd.ground_vel_x(), origVelCOM.GetY() - currChd.ground_vel_y(), origVelCOM.GetZ() - currChd.ground_vel_z());
-                        if (!actualVelRelativeToGnd.IsNearZero()) {
-                            const Vec3 actualVelRelativeToGndNorm = actualVelRelativeToGnd.Normalized();
-                            const Vec3 residueVel = actualVelRelativeToGnd - actualVelRelativeToGnd.Dot(currChdGroundNorm) * currChdGroundNorm;
-                            Vec3 residueVelNorm = residueVel.Normalized();
-                            if (0 < residueVelNorm.GetY()) {
-                                residueVelNorm.SetY(-residueVelNorm.GetY());
-                            }
-                            const float shrinkedFactor = residueVelNorm.Dot(actualVelRelativeToGndNorm);
-                            if (!IsLengthNearZero(shrinkedFactor)) {
-                                const float invShrinkedFactor = 1 / shrinkedFactor;
-                                float newSpeed = (actualVelRelativeToGnd.Length() * invShrinkedFactor);
-                                const Vec3 newVelRelativeToGndNorm = newSpeed * residueVelNorm;
 
-                                ioInputInducedMotion->velCOM.SetX(newVelRelativeToGndNorm.GetX() + currChd.ground_vel_x());
-                                ioInputInducedMotion->velCOM.SetY(newVelRelativeToGndNorm.GetY() + currChd.ground_vel_y());
-                                ioInputInducedMotion->velCOM.SetZ(newVelRelativeToGndNorm.GetZ() + currChd.ground_vel_z());
+            if (isOnRegularSlopeOrPStairs && 0 < currChdGroundNorm.GetY() && 0 != currChdGroundNorm.GetX()) {
+                const bool walkingUpSlope = (0 > forceX * currChdGroundNorm.GetX());
+                const bool walkingDownSlope = (0 < forceX * currChdGroundNorm.GetX());
+                if (walkingUpSlope || walkingDownSlope) {
+                    biNoLock->SetGravityFactor(chCollider->GetBodyID(), 0);
+                    ioGravityDirty = true;
 
-                                float newForceMagnitude = (force.Length() * invShrinkedFactor);
-                                const Vec3 newForce = newForceMagnitude * residueVelNorm;
-                                forceX = newForce.GetX();
-                                forceY = newForce.GetY();
-                            }
-                        }
+                    const Vec3& origVelCOM = ioInputInducedMotion->velCOM;
+                    const Vec3 origVelRelativeToGround(origVelCOM.GetX() - currChd.ground_vel_x(), origVelCOM.GetY() - currChd.ground_vel_y(), origVelCOM.GetZ() - currChd.ground_vel_z());
+
+                    if (!origVelRelativeToGround.IsNearZero()) {
+                        const Vec3 normOfOrigVelRelativeToGround = origVelRelativeToGround.Normalized();
+                        const Vec3 residueVel = origVelRelativeToGround - origVelRelativeToGround.Dot(currChdGroundNorm) * currChdGroundNorm;
+                        const Vec3 residueVelNorm = residueVel.Normalized();
+                        float newSpeed = origVelRelativeToGround.Length();
+                        const Vec3 newVelRelativeToGround = newSpeed * residueVelNorm;
+                        ioInputInducedMotion->velCOM.SetX(newVelRelativeToGround.GetX() + currChd.ground_vel_x());
+                        ioInputInducedMotion->velCOM.SetY(newVelRelativeToGround.GetY() + currChd.ground_vel_y());
+                        ioInputInducedMotion->velCOM.SetZ(newVelRelativeToGround.GetZ() + currChd.ground_vel_z());
                     }
-                    
-                } else {
-                    const Vec3& gravity = phySys->GetGravity();
-                    const float gravityNormComp = gravity.Dot(currChdGroundNorm);
-                    const Vec3 gravityDownwardDrag = (gravity - gravityNormComp * currChdGroundNorm) * massProps.mMass;
-                    const Vec3 force = (origForce.Length() * InvSqrt32(candForceLengthSq)) * candForce - gravityDownwardDrag;
-                    forceX = force.GetX();
-                    forceY = force.GetY();
-                }
+
+                    Vec3 origForce(forceX, forceY, 0);
+                    if (!origForce.IsNearZero()) {
+                        const Vec3 residueForce = origForce - origForce.Dot(currChdGroundNorm) * currChdGroundNorm;
+                        const Vec3 normOfResidueForce = residueForce.Normalized();
+                        const Vec3 newForce = origForce.Length()*normOfResidueForce;
+                        forceX = newForce.GetX();
+                        forceY = newForce.GetY();
+                    }
+                } 
             }
         }
 
@@ -4358,6 +4376,9 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
         JPH_ASSERT(0 < transientUdToCurrTrap.count(ud));
         if (transientSlipJumpableUds.count(ud)) {
             transientSlipJumpableUds.erase(ud);
+        }
+        if (transientUdToSlope.count(ud)) {
+            transientUdToSlope.erase(ud);
         }
         if (transientUdToStairsP.count(ud)) {
             transientUdToStairsP.erase(ud);
@@ -6990,7 +7011,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
 
         if (!cvSupported) {
-            if (transientUdToStairsP.count(currChd.ground_ud()) && isFreeForGroundReattachment(nextChd->ch_state())) {
+            bool isOnStairsP = transientUdToStairsP.count(currChd.ground_ud());
+            bool isOnRegularSlope = transientUdToSlope.count(currChd.ground_ud());
+            if ((isOnStairsP || isOnRegularSlope) && isFreeForGroundReattachment(nextChd->ch_state())) {
                 // Possibly unintended but rushed off the edge of a p-type stairs
                 newGroundUd = currChd.ground_ud();
                 if (transientUdToBodyID.count(newGroundUd)) {
@@ -6998,18 +7021,23 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 } else if (staticColliderUdToBodyID.count(newGroundUd)) {
                     newGroundBodyID = *(staticColliderUdToBodyID.at(newGroundUd));
                 }
+
                 if (!newGroundBodyID.IsInvalid()) {
                     newGroundVel = biNoLock->GetLinearVelocity(newGroundBodyID);
+                    const Vec3 slopeOutwardNorm = (isOnStairsP ? transientUdToStairsP.at(newGroundUd) : transientUdToSlope.at(newGroundUd));
+                    const Vec3 stairsTopGroundNormal(0, 1, 0);
+
+                    const TransformedShape& slopeTs = biNoLock->GetTransformedShape(newGroundBodyID);
+                    const AABox& slopeAABB = slopeTs.GetWorldSpaceBounds();
+                    bool roughlyOnTop = (currChd.y() + 10 * cCollisionTolerance) >= slopeAABB.mMax.GetY();
+
+                    newGroundNormal = (roughlyOnTop ? stairsTopGroundNormal : slopeOutwardNorm);
+                    single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
+                    cvSupported = true;
                 } else {
                     newGroundVel = Vec3::sZero();
+                    newGroundNormal = Vec3::sZero();
                 }
-                const Vec3 currChdGroundNormal(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
-                const Vec3 slopeGroundNormal = transientUdToStairsP.at(newGroundUd);
-                const Vec3 stairsTopGroundNormal(0, 1, 0);
-
-                newGroundNormal = (currChdGroundNormal == slopeGroundNormal ? stairsTopGroundNormal : slopeGroundNormal); // In this case there must be a ground normal switch
-                single->SetGroundState(JPH::CharacterBase::EGroundState::OnGround);
-                cvSupported = true;
             }
         }
     }
@@ -7264,16 +7292,16 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
         
         if (isFreeForGroundReattachment(nextChd->ch_state())) {
-            const Vec3 actualVelRelativeToGnd(nextChd->vel_x() - nextChd->ground_vel_x(), nextChd->vel_y() - nextChd->ground_vel_y(), nextChd->vel_z() - nextChd->ground_vel_z());
-            if (!actualVelRelativeToGnd.IsNearZero()) {
-                const Vec3 actualVelRelativeToGndNorm = actualVelRelativeToGnd.Normalized();
-                const float actualVelNormGroundPerpComp = actualVelRelativeToGndNorm.Dot(newGroundNormal);
-                if (!IsLengthNearZero(actualVelNormGroundPerpComp)) {
-                    float toReduceComp = actualVelRelativeToGnd.Dot(newGroundNormal);
-                    const Vec3 residueVelRelativeToGnd = (actualVelRelativeToGnd - toReduceComp * newGroundNormal);
+            const Vec3 origVelRelativeToGround(nextChd->vel_x() - nextChd->ground_vel_x(), nextChd->vel_y() - nextChd->ground_vel_y(), nextChd->vel_z() - nextChd->ground_vel_z());
+            if (!origVelRelativeToGround.IsNearZero()) {
+                const Vec3 normOfOrigVelRelativeToGround = origVelRelativeToGround.Normalized();
+                const float normOfOrigVelDotGroundNorm = normOfOrigVelRelativeToGround.Dot(newGroundNormal);
+                if (!IsLengthNearZero(normOfOrigVelDotGroundNorm)) {
+                    float toReduceComp = origVelRelativeToGround.Dot(newGroundNormal);
+                    const Vec3 residueVelRelativeToGnd = (origVelRelativeToGround - toReduceComp * newGroundNormal);
                     if (!residueVelRelativeToGnd.IsNearZero()) {
-                        const Vec3 residueVelRelativeToGndNorm = residueVelRelativeToGnd.Normalized();
-                        const Vec3 newVelRelativeToGnd = actualVelRelativeToGnd.Length() * residueVelRelativeToGndNorm;
+                        const Vec3 normOfResidueVelRelativeToGndNorm = residueVelRelativeToGnd.Normalized();
+                        const Vec3 newVelRelativeToGnd = origVelRelativeToGround.Length() * normOfResidueVelRelativeToGndNorm;
                         nextChd->set_vel_x(newVelRelativeToGnd.GetX() + nextChd->ground_vel_x());
                         nextChd->set_vel_y(newVelRelativeToGnd.GetY() + nextChd->ground_vel_y());
                         nextChd->set_vel_z(newVelRelativeToGnd.GetZ() + nextChd->ground_vel_z());

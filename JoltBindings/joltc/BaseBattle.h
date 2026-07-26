@@ -214,7 +214,11 @@ public:
     virtual float calcTerrainPriority(const uint64_t ud) const {
 
         if (transientUdToStairsP.count(ud)) {
-            return 0.5f;
+            return 0.55f;
+        }
+
+        if (transientUdToSlope.count(ud)) {
+            return 0.50f;
         }
 
         return 0.0f;
@@ -224,10 +228,12 @@ public:
         if (0 == ud) {
             return;
         }
-        if (transientUdToStairsP.count(ud)) {
-            const Vec3& pStairsOutwardNorm = transientUdToStairsP.at(ud);
-            if (groundNormal != pStairsOutwardNorm && groundNormal.IsClose(pStairsOutwardNorm)) {
-                groundNormal = pStairsOutwardNorm;
+        bool isStairsP = transientUdToStairsP.count(ud);
+        bool isRegularSlope = transientUdToSlope.count(ud);
+        if (isRegularSlope || isStairsP) {
+            const Vec3& slopeOutwardNorm = (isRegularSlope ? transientUdToSlope.at(ud) : transientUdToStairsP.at(ud));
+            if (groundNormal != slopeOutwardNorm && groundNormal.IsClose(slopeOutwardNorm)) {
+                groundNormal = slopeOutwardNorm;
             }
         } else {
             if (groundNormal != cXAxis && groundNormal.IsClose(cXAxis)) {
@@ -532,6 +538,7 @@ protected:
 
     std::unordered_set<uint64_t> transientSlipJumpableUds;
     // The tricky terrain "StairsP/N" increases player control complexity, use with caution, recommended to use only in non-battle.
+    std::unordered_map<uint64_t, Vec3> transientUdToSlope;
     std::unordered_map<uint64_t, Vec3> transientUdToStairsP;
     std::unordered_map<uint64_t, Vec3> transientUdToStairsN;
     std::unordered_set<uint64_t> transientWallGrabProhibitingUds;
