@@ -7341,7 +7341,7 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
         }
         nextTrigger->set_frames_in_state(0);
     } else if (mainCycleFulfilled) {
-        int newQuota = currTrigger.quota() - 1;
+        int newQuota = globalPrimitiveConsts->magic_quota_infinite() == currTrigger.quota() ? globalPrimitiveConsts->magic_quota_infinite() : currTrigger.quota() - 1;
         if (0 > newQuota) {
             newQuota = 0;
         }

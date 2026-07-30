@@ -71,7 +71,6 @@ protected:
         phySys = new PhysicsSystem();
         phySys->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, bpLayerInterface, ovbLayerFilter, ovoLayerFilter);
         phySys->SetBodyActivationListener(&bodyActivationListener);
-        phySys->SetContactListener(&contactListener);
         phySys->SetGravity(Vec3(0, globalPrimitiveConsts->gravity_y(), 0));
         phySys->SetContactListener(this);
 
@@ -86,6 +85,10 @@ protected:
 
         clonedPhySettings.mConstraintWarmStart = false; 
         clonedPhySettings.mUseBodyPairContactCache = false;
+
+        if (0.0f != globalPrimitiveConsts->baumgarte_factor()) {
+            clonedPhySettings.mBaumgarte = globalPrimitiveConsts->baumgarte_factor(); 
+        }
 
         phySys->SetPhysicsSettings(clonedPhySettings);
         antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();

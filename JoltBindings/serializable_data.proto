@@ -1835,6 +1835,10 @@ message PrimitiveConsts {
 
     float default_air_linear_damping = 149;
 
+    float baumgarte_factor = 150;
+    float stairs_p_terrain_priority = 151;
+    float regular_slope_terrain_priority = 152;
+
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;
 

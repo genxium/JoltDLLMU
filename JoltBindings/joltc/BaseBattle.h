@@ -135,7 +135,6 @@ public:
     ObjectVsBroadPhaseLayerFilterImpl ovbLayerFilter;
     ObjectLayerPairFilterImpl ovoLayerFilter;
     MyBodyActivationListener bodyActivationListener;
-    MyContactListener contactListener;
     PhysicsSystem* phySys;
     Vec3 antiGravityNorm;
     float gravityMagnitude;
@@ -214,11 +213,11 @@ public:
     virtual float calcTerrainPriority(const uint64_t ud) const {
 
         if (transientUdToStairsP.count(ud)) {
-            return 0.55f;
+            return globalPrimitiveConsts->stairs_p_terrain_priority();
         }
 
         if (transientUdToSlope.count(ud)) {
-            return 0.50f;
+            return globalPrimitiveConsts->regular_slope_terrain_priority();
         }
 
         return 0.0f;
@@ -1134,17 +1133,17 @@ public:
                         return JPH::ValidateResult::RejectContact;
                     }
                 } else if (isStairsP) {
-                        if (!lhsChdShouldCollideStairsPByChStateAndInputInducedMotion(udLhs, udtLhs, lhsAABB, *lhsCurrChd, udRhs, udtRhs, rhs)) {
+                    if (!lhsChdShouldCollideStairsPByChStateAndInputInducedMotion(udLhs, udtLhs, lhsAABB, *lhsCurrChd, udRhs, udtRhs, rhs)) {
 /*
 #ifndef NDEBUG
-                            std::ostringstream oss;
-                            auto bulletId = getUDPayload(udRhs);
-                            oss << "validateLhsCharacterContact/lhsChdShouldCollideStairsPByChStateAndInputInducedMotion returning false for udRhs=" << udRhs << "";
-                            Debug::Log(oss.str(), DColor::Orange);
+                        std::ostringstream oss;
+                        auto bulletId = getUDPayload(udRhs);
+                        oss << "validateLhsCharacterContact/lhsChdShouldCollideStairsPByChStateAndInputInducedMotion returning false for udRhs=" << udRhs << "";
+                        Debug::Log(oss.str(), DColor::Orange);
 #endif
 */
-                            return JPH::ValidateResult::RejectContact;
-                        }
+                        return JPH::ValidateResult::RejectContact;
+                    }
 
                     const AABox& rhsAABB = rhs.GetWorldSpaceBounds();
                     bool lhsRoughlyOnTop = (lhsCurrChd->y() + 10*cCollisionTolerance) >= rhsAABB.mMax.GetY();

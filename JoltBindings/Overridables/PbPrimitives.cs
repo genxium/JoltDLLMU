@@ -183,7 +183,7 @@ namespace JoltCSharp {
 
               MagicJoinIndexInvalid = 0xFFFFFFFF,
               MagicJoinIndexSrvUdpTunnel = 0,
-              MagicQuotaInfinite = -1,
+              MagicQuotaInfinite = 65535,
 
               MagicLastSentInputFrameIdNormalAdded = -1,
               MagicLastSentInputFrameIdReadded = -2,
@@ -301,6 +301,9 @@ namespace JoltCSharp {
               PatternR = 1031,
 
               DefaultAirLinearDamping = 0.2f,
+              BaumgarteFactor = 0.5f, // If not set, the JoltPhysics default is 0.2, and value range is [0, 1]
+              StairsPTerrainPriority = 0.35f,
+              RegularSlopeTerrainPriority = 0.30f,
 
               EleWeaknessDefaultYield = 1.5f,
               EleResistanceDefaultYield = 0.5f,
