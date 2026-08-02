@@ -90,6 +90,14 @@ protected:
             clonedPhySettings.mBaumgarte = globalPrimitiveConsts->baumgarte_factor(); 
         }
 
+        if (0.0f != globalPrimitiveConsts->penetration_slop()) {
+            clonedPhySettings.mPenetrationSlop = globalPrimitiveConsts->penetration_slop(); 
+        }
+
+        if (0.0f != globalPrimitiveConsts->max_penetration_distance()) {
+            clonedPhySettings.mMaxPenetrationDistance = globalPrimitiveConsts->max_penetration_distance(); 
+        }
+
         phySys->SetPhysicsSettings(clonedPhySettings);
         antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();
         gravityMagnitude = phySys->GetGravity().Length();

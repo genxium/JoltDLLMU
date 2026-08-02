@@ -223,16 +223,62 @@ public:
         return 0.0f;
     }
 
-    inline void rectifyGroundNormal(const uint64_t ud, Vec3& groundNormal) {
+    inline void checkWalkingOnSlope(const CharacterDownsync& chd, const float forceX, bool& outIsOnStairsP, bool& outIsOnRegularSlope, bool& outWalkingDownSlope, bool&     outWalkingUpSlope, Vec3& outSlopeOutwardNorm) {
+        outIsOnStairsP = transientUdToStairsP.count(chd.ground_ud());
+        outIsOnRegularSlope = transientUdToSlope.count(chd.ground_ud());
+        if (outIsOnStairsP || outIsOnRegularSlope) {
+            outSlopeOutwardNorm = (outIsOnStairsP ? transientUdToStairsP.at(chd.ground_ud()) : transientUdToSlope.at(chd.ground_ud()));
+            outWalkingUpSlope = (0 < chd.ground_norm_y() && 0 != outSlopeOutwardNorm.GetX()) && (0 > forceX * outSlopeOutwardNorm.GetX());
+            outWalkingDownSlope = (0 < forceX * outSlopeOutwardNorm.GetX());
+        } else {
+            outSlopeOutwardNorm.Set(0, 0, 0);
+            outWalkingUpSlope = false;
+            outWalkingDownSlope = false;
+        }
+    }
+
+    inline bool isLhsCharacterRoughlyOnRhsTop(const CharacterDownsync& lhsChd, const AABox& rhsAABB) const {
+        return (lhsChd.y() + phySys->GetPhysicsSettings().mPenetrationSlop) >= rhsAABB.mMax.GetY();
+    }
+
+    inline void rectifyGroundNormal(const uint64_t ud, const bool isOnStairsP, const bool isOnRegularSlope, const bool roughlyOnGroundTop, const Vec3& slopeOutwardNorm, Vec3& groundNormal) {
         if (0 == ud) {
             return;
         }
-        bool isStairsP = transientUdToStairsP.count(ud);
-        bool isRegularSlope = transientUdToSlope.count(ud);
-        if (isRegularSlope || isStairsP) {
-            const Vec3& slopeOutwardNorm = (isRegularSlope ? transientUdToSlope.at(ud) : transientUdToStairsP.at(ud));
-            if (groundNormal != slopeOutwardNorm && groundNormal.IsClose(slopeOutwardNorm)) {
-                groundNormal = slopeOutwardNorm;
+        if (isOnStairsP || isOnRegularSlope) {
+            // [REMINDER] This is an important fix for the seemingly trivial assertion "0 != stairsPToFlatTransitRdfId" in "runTestCase40".
+            if (roughlyOnGroundTop) {
+                groundNormal = cYAxis;
+            } else {
+                float bestDot = FLT_MIN;
+                const float dot0 = groundNormal.Dot(slopeOutwardNorm);
+                const float dot1 = groundNormal.Dot(cXAxis);
+                const float dot2 = -dot1;
+                const float dot3 = groundNormal.Dot(cYAxis);
+                const float dot4 = -dot3;
+                if (dot0 > bestDot) {
+                    groundNormal = slopeOutwardNorm;
+                    bestDot = dot0;
+                }
+                if (!isOnStairsP) {
+                    // By design a p-stairs COULDN'T provide "x-axis only" pushback!
+                    if (dot1 > bestDot) {
+                        groundNormal = cXAxis;
+                        bestDot = dot1;
+                    }
+                    if (dot2 > bestDot) {
+                        groundNormal = -cXAxis;
+                        bestDot = dot2;
+                    }
+                }
+                if (dot3 > bestDot) {
+                    groundNormal = cYAxis;
+                    bestDot = dot3;
+                }
+                if (dot4 > bestDot) {
+                    groundNormal = -cYAxis;
+                    bestDot = dot4;
+                }
             }
         } else {
             if (groundNormal != cXAxis && groundNormal.IsClose(cXAxis)) {
@@ -245,6 +291,22 @@ public:
                 groundNormal = -cYAxis;
             }
         }
+    }
+
+    inline void calcResidueWrtGroundNormal(const Vec3& groundNormal, Vec3& ioVec) {
+        const float origLengthSq = ioVec.LengthSq();
+        if (IsLengthSquaredNearZero(origLengthSq)) {
+            return;
+        }
+        const float invOrigLength = InvSqrt32(origLengthSq);
+        const float toReduceLength = ioVec.Dot(groundNormal);
+        const Vec3 residue = (ioVec - toReduceLength * groundNormal);
+
+        const float residueLengthSq = residue.LengthSq();
+        const float invResidueLength = InvSqrt32(residueLengthSq);
+
+        const Vec3 residueNorm = invResidueLength*residue;
+        ioVec = ioVec.Length()*residueNorm;
     }
 
     inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
@@ -715,7 +777,7 @@ protected:
     void handleLhsCharacterCollisionWithRhsBullet(
         const int currRdfId,
         RenderFrame* nextRdf,
-        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
+        const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, const bool currIsFlying, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
@@ -1146,7 +1208,7 @@ public:
                     }
 
                     const AABox& rhsAABB = rhs.GetWorldSpaceBounds();
-                    bool lhsRoughlyOnTop = (lhsCurrChd->y() + 10*cCollisionTolerance) >= rhsAABB.mMax.GetY();
+                    bool lhsRoughlyOnTop = isLhsCharacterRoughlyOnRhsTop(*lhsCurrChd, rhsAABB);
                     if (!lhsRoughlyOnTop) {
                         const Vec3& stairsNorm = transientUdToStairsP.at(udRhs);
                         const float stairsVelC = lhsCurrChd->vel_x() * stairsNorm.GetX() + lhsCurrChd->vel_y() * stairsNorm.GetY() + lhsCurrChd->vel_z() * stairsNorm.GetZ();

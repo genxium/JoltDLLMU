@@ -1836,8 +1836,8 @@ message PrimitiveConsts {
     float default_air_linear_damping = 149;
 
     float baumgarte_factor = 150;
-    float stairs_p_terrain_priority = 151;
-    float regular_slope_terrain_priority = 152;
+    float penetration_slop = 151;
+    float max_penetration_distance = 152;
 
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;
@@ -1857,6 +1857,9 @@ message PrimitiveConsts {
 
     float default_bullet_friction = 166; 
     float default_bullet_restitution = 167; 
+
+    float stairs_p_terrain_priority = 168;
+    float regular_slope_terrain_priority = 169;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;

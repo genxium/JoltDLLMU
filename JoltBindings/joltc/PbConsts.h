@@ -52,6 +52,7 @@ const std::unordered_set<CharacterState> atkedSet = {
     Atked1,
     InAirAtked1,
     CrouchAtked1,
+    Def1Broken,
 };
 
 const std::unordered_set<CharacterState> noOpSet = {

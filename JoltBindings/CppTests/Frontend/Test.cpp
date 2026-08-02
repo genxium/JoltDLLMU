@@ -3194,7 +3194,8 @@ std::map<int, uint64_t> testCmds28 = {
     {0, 0},
     {199, 0},
     {200, 3}, // Follow the fled npc1
-    {360, 3},
+    {259, 3},
+    {260, 0},
     {361, 0},
     {2048, 0},
 };
@@ -3413,7 +3414,17 @@ std::map<int, uint64_t> testCmds40 = {
     {319, 4}, 
     {320, 3}, 
     {599, 3},
-    {600, 0},
+    {600, 515},
+    {799, 515},
+    {800, 0},
+    {803, 0},
+    {804, 16},
+    {807, 16},
+    {808, 0},
+    {839, 0},
+    {840, 3},
+    {999, 3},
+    {1000, 0},
     {1024, 0},
 };
 
@@ -6013,13 +6024,16 @@ void initTest40Data(WsReq* testInitializerMapData, std::vector<std::vector<float
 
     std::vector<bool> parallelepipedOptions(hulls.size(), false);
     parallelepipedOptions[2] = true;
+    parallelepipedOptions[4] = true;
 
     std::vector<bool> boxOptions(hulls.size(), true);
     boxOptions[2] = false;
+    boxOptions[4] = false;
 
     std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
 
     std::vector<bool> stairsPOptions(hulls.size(), false);
+    stairsPOptions[4] = true;
 
     std::vector<bool> stairsNOptions(hulls.size(), false);
 
@@ -7722,7 +7736,7 @@ bool runTestCase20(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto* stepResult = reusedBattle->stepResultBuffer.GetByFrameId(outerTimerRdfId);
 
         if (180 > outerTimerRdfId) {
-            // shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (shouldPrint) {
@@ -7753,7 +7767,8 @@ bool runTestCase20(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         } else if (250 <= outerTimerRdfId) {
             if (1 == stepResult->fulfilled_triggers_size()) {
                 victoryTriggered = true;
-                JPH_ASSERT(44 == stepResult->fulfilled_triggers(0).id());
+                auto fulfilledTrigger = stepResult->fulfilled_triggers(0);
+                JPH_ASSERT(44 == fulfilledTrigger.id());
                 JPH_ASSERT(0 == tr3.quota());
                 JPH_ASSERT(TriggerState::TrExhausted == tr3.state());
             }
@@ -8356,6 +8371,10 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
+        if (200 <= outerTimerRdfId && outerTimerRdfId < 320) {
+            //shouldPrint = true;
+        }
+
         if (367 <= outerTimerRdfId && outerTimerRdfId < 480) {
             //shouldPrint = true;
         }
@@ -8379,7 +8398,7 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 < npc1Chd.vel_x());
             JPH_ASSERT(0 == npc1Chd.locking_on_ud());
             JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
-        } else if (310 == outerTimerRdfId) {
+        } else if (260 == outerTimerRdfId) {
             // Stopped by MvBlocker due to fleeing grace period.
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(0 < npc1.last_fled_rdf_id());
@@ -8624,7 +8643,7 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         int npcCount = outerTimerRdf->npc_count();
 
         if (180 > outerTimerRdfId) {
-            // shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (shouldPrint) {
@@ -9103,6 +9122,23 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0;
 
+    int firstDef1StartedRdfId = 0;
+    int firstDef1AtkedStartedRdfId = 0;
+    int firstDef1BrokenRdfId = 0;
+    int firstDef1BrokenExtendedRdfId = 0;
+    int firstDef1BrokenRecoveredRdfId = 0;
+
+    int secondDef1StartedRdfId = 0;
+    int backAtked1StartedRdfId = 0;
+
+    int thirdDef1StartedRdfId = 0;
+    int thirdDef1EndedRdfId = 0;
+
+    CharacterState oldP1ChdState = Idle1;
+    int oldP1ChdHp = 0;
+    int oldP1ChdFramesToRecover = 0;
+    uint64_t oldGroundUd = 0;
+
     auto characterConfigs = globalConfigConsts->character_configs();
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
@@ -9128,8 +9164,58 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& p1Cc = characterConfigs.at(p1Chd.species_id());
         auto& p2 = outerTimerRdf->players(1);
         auto& p2Chd = p2.chd();
-        
-        if (326 <= outerTimerRdfId && outerTimerRdfId <= 328) {    
+
+        if (Idle1 == oldP1ChdState && Def1 == p1Chd.ch_state()) {
+            firstDef1StartedRdfId = outerTimerRdfId;
+        }
+    
+        if (0 != firstDef1StartedRdfId && firstDef1StartedRdfId <= outerTimerRdfId && Def1 == oldP1ChdState) {
+            if (0 == firstDef1AtkedStartedRdfId && oldP1ChdHp > p1Chd.hp()) {
+                firstDef1AtkedStartedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (Def1 == oldP1ChdState && Def1Broken == p1Chd.ch_state()) {
+            firstDef1BrokenRdfId = outerTimerRdfId;
+        }
+
+        if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && Def1Broken == oldP1ChdState) {
+            if (0 == firstDef1BrokenExtendedRdfId && oldP1ChdFramesToRecover < p1Chd.frames_to_recover()) {
+                firstDef1BrokenExtendedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 != firstDef1BrokenExtendedRdfId && firstDef1BrokenExtendedRdfId <= outerTimerRdfId && Def1Broken == oldP1ChdState) {
+            if (0 == firstDef1BrokenRecoveredRdfId && !atkedSet.count(p1Chd.ch_state()) && !noOpSet.count(p1Chd.ch_state())) {
+                firstDef1BrokenRecoveredRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 != firstDef1BrokenRecoveredRdfId && firstDef1BrokenRecoveredRdfId <= outerTimerRdfId) {
+            if (0 == secondDef1StartedRdfId && Def1 == p1Chd.ch_state()) {
+                secondDef1StartedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 != secondDef1StartedRdfId && secondDef1StartedRdfId <= outerTimerRdfId && Def1 == oldP1ChdState) {
+            if (0 == backAtked1StartedRdfId && Atked1 == p1Chd.ch_state()) {
+                backAtked1StartedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 != backAtked1StartedRdfId && backAtked1StartedRdfId <= outerTimerRdfId && Atked1 == oldP1ChdState) {
+            if (0 == thirdDef1StartedRdfId && Def1 == p1Chd.ch_state()) {
+                thirdDef1StartedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 != thirdDef1StartedRdfId && thirdDef1StartedRdfId <= outerTimerRdfId && Def1 == oldP1ChdState) {
+            if (0 == thirdDef1EndedRdfId && Def1 != p1Chd.ch_state()) {
+                thirdDef1EndedRdfId = outerTimerRdfId;
+            }
+        }
+ 
+        if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && (0 == firstDef1BrokenExtendedRdfId || outerTimerRdfId < firstDef1BrokenExtendedRdfId)) {
             //shouldPrint = true;
         }
 
@@ -9137,71 +9223,66 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             std::cout << "TestCase37/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
-        if (70 <= outerTimerRdfId && outerTimerRdfId <= 101) {
+        if (0 != firstDef1StartedRdfId && firstDef1StartedRdfId <= outerTimerRdfId && (0 == firstDef1AtkedStartedRdfId || outerTimerRdfId < firstDef1AtkedStartedRdfId)) {
             JPH_ASSERT(CharacterState::Def1 == p1Chd.ch_state());
             JPH_ASSERT(0 >= p1Chd.frames_to_recover());
             JPH_ASSERT(p1Cc.default_def1_quota() == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() == p1Chd.hp());
             JPH_ASSERT(0 >= p1Chd.damaged_hint_rdf_countdown());
-        } else if (105 == outerTimerRdfId) {
+        } else if (0 != firstDef1AtkedStartedRdfId && firstDef1AtkedStartedRdfId <= outerTimerRdfId && (0 == firstDef1BrokenRdfId || outerTimerRdfId < firstDef1BrokenRdfId)) {
             // i.e. "Def1Atked1" for animation
             JPH_ASSERT(CharacterState::Def1 == p1Chd.ch_state());
-            JPH_ASSERT(0 < p1Chd.frames_to_recover());
+            if (firstDef1AtkedStartedRdfId == outerTimerRdfId) {
+                JPH_ASSERT(0 < p1Chd.frames_to_recover());
+                JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
+            }
             JPH_ASSERT(p1Cc.default_def1_quota() == p1Chd.remaining_def1_quota()+1);
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-            JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
-        } else if (220 == outerTimerRdfId) {
+        } else if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && (0 == firstDef1BrokenExtendedRdfId || outerTimerRdfId < firstDef1BrokenExtendedRdfId)) {
             // i.e. "Def1Broken"
             JPH_ASSERT(CharacterState::Def1Broken == p1Chd.ch_state());
-            JPH_ASSERT(50 == p1Chd.frames_to_recover());
+            if (firstDef1BrokenRdfId == outerTimerRdfId) {
+                JPH_ASSERT(50 == p1Chd.frames_to_recover());
+                JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
+            }
             JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-            JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
-        } else if (265 == outerTimerRdfId) {
-            // i.e. "Def1Broken" to be extended 
-            JPH_ASSERT(CharacterState::Def1Broken == p1Chd.ch_state());
-            JPH_ASSERT(5 == p1Chd.frames_to_recover());
-            JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
-            JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-            JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
-        } else if (266 == outerTimerRdfId) {
+        } else if (0 != firstDef1BrokenExtendedRdfId && firstDef1BrokenExtendedRdfId <= outerTimerRdfId && (0 == firstDef1BrokenRecoveredRdfId || outerTimerRdfId < firstDef1BrokenRecoveredRdfId)) {
             // i.e. "Def1Broken" extended due to being hit
             JPH_ASSERT(CharacterState::Def1Broken == p1Chd.ch_state());
-            JPH_ASSERT(8 == p1Chd.frames_to_recover());
+            if (firstDef1BrokenExtendedRdfId == outerTimerRdfId) {
+                JPH_ASSERT(oldP1ChdFramesToRecover < p1Chd.frames_to_recover());
+                JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
+            }
             JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-            JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
-        } else if (280 == outerTimerRdfId) {
+        } else if (0 != firstDef1BrokenRecoveredRdfId && firstDef1BrokenRecoveredRdfId <= outerTimerRdfId && (0 == secondDef1StartedRdfId || outerTimerRdfId < secondDef1StartedRdfId)) {
             // i.e. "Def1Broken" ended
-            JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
+            JPH_ASSERT(Walking == p1Chd.ch_state() || Idle1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_to_recover());
             JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-        } else if (291 == outerTimerRdfId) {
+        } else if (0 != secondDef1StartedRdfId && secondDef1StartedRdfId <= outerTimerRdfId && (0 == backAtked1StartedRdfId || outerTimerRdfId < backAtked1StartedRdfId)) {
             // i.e. "Def1" started again
             JPH_ASSERT(CharacterState::Def1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_to_recover());
             JPH_ASSERT(p1Cc.default_def1_quota() == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-        } else if (320 == outerTimerRdfId) {
+        } else if (0 != backAtked1StartedRdfId && backAtked1StartedRdfId <= outerTimerRdfId && (0 == thirdDef1StartedRdfId || outerTimerRdfId < thirdDef1StartedRdfId)) {
             // In "Def1" but hit from behind
             JPH_ASSERT(CharacterState::Atked1 == p1Chd.ch_state());
-            JPH_ASSERT(0 < p1Chd.frames_to_recover());
+            if (backAtked1StartedRdfId == outerTimerRdfId) {
+                JPH_ASSERT(0 < p1Chd.frames_to_recover());
+            }
             JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-        } else if (326 == outerTimerRdfId) {
-            // Last rdf of "Atked1"
-            JPH_ASSERT(CharacterState::Atked1 == p1Chd.ch_state());
-            JPH_ASSERT(0 == p1Chd.frames_to_recover());
-            JPH_ASSERT(0 == p1Chd.remaining_def1_quota());
-            JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-        } else if (327 == outerTimerRdfId) {
+        } else if (0 != thirdDef1StartedRdfId && thirdDef1StartedRdfId <= outerTimerRdfId && (0 == thirdDef1EndedRdfId || outerTimerRdfId < thirdDef1EndedRdfId)) {
             // Smooth transition back to "Def1"
             JPH_ASSERT(CharacterState::Def1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_to_recover());
             JPH_ASSERT(p1Cc.default_def1_quota() == p1Chd.remaining_def1_quota());
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
-        } else if (500 == outerTimerRdfId) {
+        } else if (0 != thirdDef1EndedRdfId && thirdDef1EndedRdfId <= outerTimerRdfId) {
             // i.e. "Def1" down again
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
             JPH_ASSERT(0 == p1Chd.frames_to_recover());
@@ -9209,8 +9290,25 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
         }
         
+        oldGroundUd = p1Chd.ground_ud();
+        oldP1ChdState = p1Chd.ch_state();
+        oldP1ChdHp = p1Chd.hp();
+        oldP1ChdFramesToRecover = p1Chd.frames_to_recover();
+
         outerTimerRdfId++;
     }
+
+    JPH_ASSERT(0 != firstDef1StartedRdfId);
+    JPH_ASSERT(0 != firstDef1AtkedStartedRdfId);
+    JPH_ASSERT(0 != firstDef1BrokenRdfId);
+    JPH_ASSERT(0 != firstDef1BrokenExtendedRdfId);
+    JPH_ASSERT(0 != firstDef1BrokenRecoveredRdfId);
+
+    JPH_ASSERT(0 != secondDef1StartedRdfId);
+    JPH_ASSERT(0 != backAtked1StartedRdfId);
+
+    JPH_ASSERT(0 != thirdDef1StartedRdfId);
+    JPH_ASSERT(0 != thirdDef1EndedRdfId);
     
     std::cout << "Passed TestCase37: Def1 till broken, broken extended and bullet from behind\n" << std::endl;
     theAllocator->Reset();
@@ -9388,7 +9486,15 @@ bool runTestCase39(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < downstairsToGroundTransitRdfId) {
+        if (0 != flatToNStairsTransitRdfId && flatToNStairsTransitRdfId <= outerTimerRdfId && (0 == nStairsToSlipJumpableTransitRdfId || outerTimerRdfId < nStairsToSlipJumpableTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != nStairsToFlatTransitRdfId && nStairsToFlatTransitRdfId <= outerTimerRdfId && (0 == flatToDownstairsTransitRdfId || outerTimerRdfId < flatToDownstairsTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != flatToDownstairsTransitRdfId && flatToDownstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToGroundTransitRdfId || outerTimerRdfId < downstairsToGroundTransitRdfId)) {
             //shouldPrint = true;
         }
 
@@ -9494,7 +9600,7 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     initTest40Data(initializerMapData, hulls, theAllocator);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
+    int loopRdfCnt = 1440;
     int printIntervalRdfCnt = (1 << 2);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
@@ -9506,6 +9612,9 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int upstairsToFlatTransitRdfId = 0;
     int flatToDownstairsTransitRdfId = 0;
     int downstairsToGroundTransitRdfId = 0;
+    int groundToStairsPTransitRdfId = 0;
+    int starisPJumpRdfId = 0;
+    int stairsPToFlatTransitRdfId = 0;
     uint64_t oldGroundUd = 0;
 
     // Test terrain continuity.
@@ -9532,7 +9641,11 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (0 != upstairsToFlatTransitRdfId && upstairsToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+        if (0 != upstairsToFlatTransitRdfId && upstairsToFlatTransitRdfId <= outerTimerRdfId && (0 == groundToStairsPTransitRdfId || outerTimerRdfId < groundToStairsPTransitRdfId)) {
+            //shouldPrint = true;
+        }
+
+        if (0 != groundToStairsPTransitRdfId && groundToStairsPTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
             //shouldPrint = true;
         }
 
@@ -9560,6 +9673,14 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             downstairsToGroundTransitRdfId = outerTimerRdfId;
         }
 
+        if (1 == oldGroundUd && 5 == p1Chd.ground_ud()) {
+            groundToStairsPTransitRdfId = outerTimerRdfId;
+        }
+
+        if (5 == oldGroundUd && 4 == p1Chd.ground_ud()) {
+            stairsPToFlatTransitRdfId = outerTimerRdfId;
+        }
+
         if (0 != landingRdfId && landingRdfId <= outerTimerRdfId && (0 == groundToUpstairsTransitRdfId || outerTimerRdfId < groundToUpstairsTransitRdfId)) {
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(1 == p1Chd.ground_ud());
@@ -9572,9 +9693,15 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         } else if (0 != flatToDownstairsTransitRdfId && flatToDownstairsTransitRdfId <= outerTimerRdfId && (0 == downstairsToGroundTransitRdfId || outerTimerRdfId < downstairsToGroundTransitRdfId)) {
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(3 == p1Chd.ground_ud());
-        } else if (0 != downstairsToGroundTransitRdfId && downstairsToGroundTransitRdfId <= outerTimerRdfId && outerTimerRdfId < 610) {
+        } else if (0 != downstairsToGroundTransitRdfId && downstairsToGroundTransitRdfId <= outerTimerRdfId && (0 == groundToStairsPTransitRdfId || outerTimerRdfId < groundToStairsPTransitRdfId)) {
             JPH_ASSERT(Walking == p1Chd.ch_state());
             JPH_ASSERT(1 == p1Chd.ground_ud());
+        } else if (0 != groundToStairsPTransitRdfId && groundToStairsPTransitRdfId <= outerTimerRdfId && (0 == stairsPToFlatTransitRdfId || outerTimerRdfId < stairsPToFlatTransitRdfId)) {
+            bool continuityCondition1 = (5 == p1Chd.ground_ud());
+            bool continuityCondition2 = (InAirIdle1ByJump == p1Chd.ch_state());
+            JPH_ASSERT(continuityCondition1 || continuityCondition2);
+        } else if (0 != stairsPToFlatTransitRdfId && stairsPToFlatTransitRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+            JPH_ASSERT(4 == p1Chd.ground_ud());
         }
         oldGroundUd = p1Chd.ground_ud();
         outerTimerRdfId++;
@@ -9585,6 +9712,8 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     JPH_ASSERT(0 != upstairsToFlatTransitRdfId);
     JPH_ASSERT(0 != flatToDownstairsTransitRdfId);
     JPH_ASSERT(0 != downstairsToGroundTransitRdfId);
+    JPH_ASSERT(0 != groundToStairsPTransitRdfId);
+    JPH_ASSERT(0 != stairsPToFlatTransitRdfId); // [REMINDER] Before the fix of "BaseBattle::rectifyGroundNormal", this seemingly trivial assertion would fail.
 
     std::cout << "Passed TestCase40: Basic regular slope mechanics\n" << std::endl;
     theAllocator->Reset();
@@ -9928,10 +10057,10 @@ int main(int argc, char** argv)
 
     std::vector<float> slopeHull1 = {
         // floor
-        -500, 0,
-        -500, 100,
-        500, 100,
-        500, 0
+        -1500, 0,
+        -1500, 100,
+        1500, 100,
+        1500, 0
     };
 
     std::vector<float> slopeHull2 = {
@@ -9943,11 +10072,27 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> slopeHull3 = {
-        // the slope
+        // the slope towards left
         -100, 80,
         -100, 220,
         64, 220,
         300, 80
+    };
+    
+    std::vector<float> slopeHull4 = {
+        // right block adjacent to the slope
+        752, 100,
+        752, 220,
+        1200, 220,
+        1200, 100
+    };
+
+    std::vector<float> slopeHull5 = {
+        // the slope towards right, and being a p-type stairs
+        500, 80,
+        736, 220,
+        768, 220,
+        532, 80
     };
 
     std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
@@ -9967,7 +10112,7 @@ int main(int argc, char** argv)
 
     std::vector<std::vector<float>> stairsMapHulls = { stairsHull1, stairsHull2, stairsHull3, stairsHull4, stairsHull5 };
 
-    std::vector<std::vector<float>> slopeMapHulls = { slopeHull1, slopeHull2, slopeHull3 };
+    std::vector<std::vector<float>> slopeMapHulls = { slopeHull1, slopeHull2, slopeHull3, slopeHull4, slopeHull5 };
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
