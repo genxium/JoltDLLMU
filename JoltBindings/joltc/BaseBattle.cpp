@@ -7290,7 +7290,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         );
 
         if (!chdGroundCollector.HadHit() || 0 > chdGroundCollector.mHit.mPenetrationDepth) {
-            Vec3 correctionAlongGroundNormal = (!chdGroundCollector.HadHit() ? globalPrimitiveConsts->stick_to_ground_correction_length() : (-chdGroundCollector.mHit.mPenetrationDepth + globalPrimitiveConsts->penetration_slop())) * newGroundNormal;
+            Vec3 correctionAlongGroundNormal = (!chdGroundCollector.HadHit() ? globalPrimitiveConsts->stick_to_ground_correction_length() : (-chdGroundCollector.mHit.mPenetrationDepth + phySys->GetPhysicsSettings().mPenetrationSlop)) * newGroundNormal;
             newPos = newPos - correctionAlongGroundNormal;
             nextChd->set_x(newPos.GetX());
             nextChd->set_y(newPos.GetY());
