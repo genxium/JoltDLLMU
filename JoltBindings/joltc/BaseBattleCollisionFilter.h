@@ -637,7 +637,7 @@ public:
             return false;
         }
 
-        if (!nonAttackingSet.count(chd->ch_state())) {
+        if (!nonAttackingSet.count(chd->ch_state()) && !walkingAtkSet.count(chd->ch_state())) {
             return false;
         }
 
