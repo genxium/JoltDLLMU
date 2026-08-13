@@ -4841,6 +4841,8 @@ void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto startRdf = mockRollbackChasingAlignTestStartRdf2(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
 
+    // [REMINDER] For simplicity in "multi-threaded rollback-chasing", the two sliding-platforms shouldn't overlap along their trajectories
+
     auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
     Vec3 initVel1(-2.f * globalPrimitiveConsts->battle_dynamics_fps(), 0.f * globalPrimitiveConsts->battle_dynamics_fps(), 0);
     trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
@@ -4890,7 +4892,7 @@ void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled2->set_slider_axis_z(0);
 
     trapConfigFromTiled2->set_init_x(+40);
-    trapConfigFromTiled2->set_init_y(105);
+    trapConfigFromTiled2->set_init_y(150);
     trapConfigFromTiled2->set_init_z(0);
 
     trapConfigFromTiled2->set_cooldown_rdf_count(120);
