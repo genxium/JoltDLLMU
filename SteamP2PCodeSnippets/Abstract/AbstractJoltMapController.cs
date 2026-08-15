@@ -854,7 +854,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         startRdf.DynamicTraps.Add(trap);
                         result.TrapConfigFromTileList.Add(trapConfigFromTiled);
                         dynamicTrapCount++;
-                        Destroy(trapChild.gameObject); // [WARNING] It'll be animated by "TrapPrefab" in "applyRoomDownsyncFrame" instead!
+                        Destroy(trapChild.gameObject); // [WARNING] It'll be animated by "TrapPrefab" in "applyRdf" instead!
                     }
                     Destroy(child.gameObject); // Delete the whole "ObjectLayer"
                     break;

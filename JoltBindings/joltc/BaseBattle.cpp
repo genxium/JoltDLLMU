@@ -3477,9 +3477,9 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, Charac
     } else {
         cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
         cd->set_frames_in_ch_state(cd->frames_in_ch_state() + 1);
-    }
-    if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
-        cd->set_lower_part_rdf_cnt(cd->lower_part_rdf_cnt() + 1);
+        if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
+            cd->set_lower_part_rdf_cnt(cd->lower_part_rdf_cnt() + 1);
+        }
     }
     cd->set_walkstopping_rdf_countdown(0 < cd->walkstopping_rdf_countdown() ? cd->walkstopping_rdf_countdown() - 1 : 0);
     cd->set_fallstopping_rdf_countdown(0 < cd->fallstopping_rdf_countdown() ? cd->fallstopping_rdf_countdown() - 1 : 0);
@@ -5104,12 +5104,16 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         nextChd->set_frames_in_ch_state(0);
     }
     if (lowerPartForwardTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
-        nextChd->set_lower_part_rdf_cnt(currChd.ch_state() + 1);
+        nextChd->set_lower_part_rdf_cnt(currChd.frames_in_ch_state() + 1);
     } else if (lowerPartReverseTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
         nextChd->set_frames_in_ch_state(currChd.lower_part_rdf_cnt() + 1);
         nextChd->set_lower_part_rdf_cnt(globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
-    } else if (lowerPartInheritTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state()))) {
-        nextChd->set_lower_part_rdf_cnt(currChd.lower_part_rdf_cnt() + 1);
+    } else if (
+              lowerPartInheritTransitionSet.count(std::make_pair<CharacterState, CharacterState>(currChd.ch_state(), nextChd->ch_state())) 
+                || 
+              (currChd.ch_state() == nextChd->ch_state() && walkingAtkSet.count(currChd.ch_state()))
+              ) {
+        // [REMINDER] Already handled by "elapse1RdfForChd".
     } else {
         nextChd->set_lower_part_rdf_cnt(globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
     }

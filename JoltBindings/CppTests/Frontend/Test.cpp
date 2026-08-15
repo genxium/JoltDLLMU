@@ -6186,6 +6186,19 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
     int newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+
+    CharacterState oldP1ChdState = Idle1;
+    int oldP1FramesInChState = 0;
+    int oldP1LowerPartRdfCnt = 0;
+
+    int inheritedWalkingStarterRdfCnt1st = 0;
+    int walkingToWalkingAtk1TransitionRdfId1st = 0;
+    int walkingAtk1ToIdleTransitionRdfId1St = 0;
+
+    int inheritedWalkingStarterRdfCnt2nd = 0;
+    int walkingToWalkingAtk1TransitionRdfId2nd = 0;
+    int walkingAtk1ToWalkingTransitionRdfId2nd = 0;
+
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
         // Handling TCP packets first, and then UDP packets, the same as C# side behavior.
@@ -6250,6 +6263,27 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         auto& p2Chd = p2.chd();
         auto ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
+        if (Walking == oldP1ChdState && WalkingAtk1 == p1Chd.ch_state()) {
+            if (0 == walkingToWalkingAtk1TransitionRdfId1st) {
+                walkingToWalkingAtk1TransitionRdfId1st = outerTimerRdfId;
+                inheritedWalkingStarterRdfCnt1st = oldP1FramesInChState;
+            } else if (0 == walkingToWalkingAtk1TransitionRdfId2nd) {
+                walkingToWalkingAtk1TransitionRdfId2nd = outerTimerRdfId;
+                inheritedWalkingStarterRdfCnt2nd = oldP1FramesInChState;
+            }
+            
+            shouldPrint = true;
+        }
+
+        if (WalkingAtk1 == oldP1ChdState && WalkingAtk1 != p1Chd.ch_state()) {
+            if (0 == walkingAtk1ToIdleTransitionRdfId1St && Idle1 == p1Chd.ch_state()) {
+                walkingAtk1ToIdleTransitionRdfId1St = outerTimerRdfId;
+            } else if (0 == walkingAtk1ToWalkingTransitionRdfId2nd && Walking == p1Chd.ch_state()) {
+                walkingAtk1ToWalkingTransitionRdfId2nd = outerTimerRdfId;
+            }
+            shouldPrint = true;
+        }
+
         if (outerTimerRdfId <= 100) {
             //shouldPrint = true;
         }
@@ -6276,11 +6310,61 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         } else if (326 <= outerTimerRdfId && outerTimerRdfId <= 340) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
         }
-        
+
+        if (0 != walkingToWalkingAtk1TransitionRdfId1st && walkingToWalkingAtk1TransitionRdfId1st < outerTimerRdfId && WalkingAtk1 == p1Chd.ch_state() 
+            && 
+            (
+                (0 == walkingAtk1ToIdleTransitionRdfId1St || walkingAtk1ToIdleTransitionRdfId1St > outerTimerRdfId)
+                && 
+                (0 == walkingToWalkingAtk1TransitionRdfId2nd)
+                && 
+                (0 == walkingAtk1ToWalkingTransitionRdfId2nd)
+            )
+            ) {
+            // [Continuity] Forward transition and normal elapsing during "WalkingAtk1"
+            JPH_ASSERT(p1Chd.frames_in_ch_state() == (outerTimerRdfId-walkingToWalkingAtk1TransitionRdfId1st));
+            JPH_ASSERT(p1Chd.lower_part_rdf_cnt() == (outerTimerRdfId-walkingToWalkingAtk1TransitionRdfId1st) + inheritedWalkingStarterRdfCnt1st + 1);
+        }
+
+        if (0 != walkingAtk1ToIdleTransitionRdfId1St && walkingAtk1ToIdleTransitionRdfId1St < outerTimerRdfId && Idle1 == p1Chd.ch_state()
+            &&
+            (
+                (0 == walkingToWalkingAtk1TransitionRdfId2nd)
+                &&
+                (0 == walkingAtk1ToWalkingTransitionRdfId2nd)
+            )) {
+            // Abrupt "WalkingAtk1->Idle1" transition and normal elapsing during "Idle1"
+            JPH_ASSERT(p1Chd.lower_part_rdf_cnt() == globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
+        }
+
+        if (0 != walkingToWalkingAtk1TransitionRdfId2nd && walkingToWalkingAtk1TransitionRdfId2nd < outerTimerRdfId && WalkingAtk1 == p1Chd.ch_state() && (0 == walkingAtk1ToWalkingTransitionRdfId2nd || walkingAtk1ToWalkingTransitionRdfId2nd > outerTimerRdfId)) {
+            // [Continuity] Forward transition and normal elapsing during "WalkingAtk1"
+            JPH_ASSERT(p1Chd.frames_in_ch_state() == (outerTimerRdfId - walkingToWalkingAtk1TransitionRdfId2nd));
+            JPH_ASSERT(p1Chd.lower_part_rdf_cnt() == (outerTimerRdfId - walkingToWalkingAtk1TransitionRdfId2nd) + inheritedWalkingStarterRdfCnt2nd + 1);
+        }
+
+        if (0 != walkingAtk1ToWalkingTransitionRdfId2nd && walkingAtk1ToWalkingTransitionRdfId2nd < outerTimerRdfId && Walking == p1Chd.ch_state()) {
+            // [Continuity] Reverse transition and normal elapsing during "Walking"
+            JPH_ASSERT(p1Chd.frames_in_ch_state() == (outerTimerRdfId - walkingToWalkingAtk1TransitionRdfId2nd) + inheritedWalkingStarterRdfCnt2nd + 1);
+            JPH_ASSERT(p1Chd.lower_part_rdf_cnt() == globalPrimitiveConsts->terminating_lower_part_rdf_cnt());
+        }
+
+        oldP1ChdState = p1Chd.ch_state();
+        oldP1FramesInChState = p1Chd.frames_in_ch_state();
+        oldP1LowerPartRdfCnt = p1Chd.lower_part_rdf_cnt();
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase2\n" << std::endl;
+    JPH_ASSERT(0 != inheritedWalkingStarterRdfCnt1st);
+    JPH_ASSERT(0 != walkingToWalkingAtk1TransitionRdfId1st);
+    JPH_ASSERT(0 != walkingAtk1ToIdleTransitionRdfId1St);
+
+    JPH_ASSERT(0 != inheritedWalkingStarterRdfCnt2nd);
+    JPH_ASSERT(0 != walkingToWalkingAtk1TransitionRdfId2nd);
+    JPH_ASSERT(0 != walkingAtk1ToWalkingTransitionRdfId2nd);
+
+    std::cout << "Passed TestCase2: WalkingAtk1 state transitions with inheritedWalkingStarterRdfCnt1st=" << inheritedWalkingStarterRdfCnt1st << ", walkingToWalkingAtk1TransitionRdfId1st=" << walkingToWalkingAtk1TransitionRdfId1st << ", walkingAtk1ToIdleTransitionRdfId1St=" << walkingAtk1ToIdleTransitionRdfId1St << "; inheritedWalkingStarterRdfCnt2nd=" << inheritedWalkingStarterRdfCnt2nd << ", walkingToWalkingAtk1TransitionRdfId2nd=" << walkingToWalkingAtk1TransitionRdfId2nd << ", walkingAtk1ToWalkingTransitionRdfId2nd=" << walkingAtk1ToWalkingTransitionRdfId2nd << "\n" << std::endl;
+
     theAllocator->Reset();
     reusedBattle->Clear();   
     return true;

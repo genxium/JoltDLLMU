@@ -65,8 +65,6 @@ namespace JoltCSharp {
         public const uint TRT_INDI_WAVE_PICKABLE_SPAWNER = 6;
         public const uint TRT_SYNC_WAVE_GROUP = 7;
         public const uint TRT_SAVE_POINT_ONLY = 8;
-        public const uint TRT_STORY_POINT_ONLY = 9;
-        public const uint TRT_SAVE_AND_STORY_POINT = 10;
         public const uint TRT_VICTORY = 11;
 
         public const uint TPT_NONE = 0;
@@ -302,6 +300,9 @@ namespace JoltCSharp {
 
               DefaultAirLinearDamping = 0.2f,
               BaumgarteFactor = 0.5f, // If not set, the JoltPhysics default is 0.2, and value range is [0, 1]
+              PenetrationSlop = 0.02f, // If not set, the JoltPhysics default is 0.02 (unit: meter)
+              MaxPenetrationDistance = 0.2f, // If not set, the JoltPhysics default is 0.2 (unit: meter)
+
               StairsPTerrainPriority = 0.35f,
               RegularSlopeTerrainPriority = 0.30f,
 
@@ -371,9 +372,7 @@ namespace JoltCSharp {
                   IndiWavePickableSpawner = TRT_INDI_WAVE_PICKABLE_SPAWNER,
                   SyncWaveGroup = TRT_SYNC_WAVE_GROUP,
 
-                  SavePointOnly = TRT_SAVE_POINT_ONLY,
-                  StoryPointOnly = TRT_STORY_POINT_ONLY,
-                  SaveAndStoryPoint = TRT_SAVE_AND_STORY_POINT,
+                  SavePoint = TRT_SAVE_POINT_ONLY,
               },
 
               Tpts = new TrapTypes {

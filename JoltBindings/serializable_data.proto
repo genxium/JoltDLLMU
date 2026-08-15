@@ -1353,6 +1353,10 @@ message PlayerStoryProgress {
 
     uint32 coin_count = 8;
     uint32 dragon_crystal_count = 9;
+
+    CharacterDownsync player_lounge_position = 10;
+
+    map<string, bool> finished_story_points = 11;
 }
 
 message PlayerOnlineArenaProgress {
@@ -1377,11 +1381,8 @@ message StoryPointStep {
 message StoryPoint {
     repeated StoryPointStep steps = 1;
     bool nonctrl = 2; // not taking over control if true
-    string cutscene_name = 3; // null for no cut scene
-}
-
-message LevelStory {
-    map<int32, StoryPoint> points = 1;
+    bool once_only = 3;
+    string cutscene_name = 4; // null for no cut scene
 }
 
 message SerializableConvexPolygon {
@@ -1494,11 +1495,10 @@ message TriggerConfigFromTiled {
 
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
 
-    int32 story_point_id = 512;
+    bool is_story_ready_go = 512; 
     int32 bgm_id = 513;
     bool is_boss_savepoint = 514; 
     map<uint32, bool> boss_species_set = 515;   
-    bool is_story_ready_go = 516; 
 
     repeated CharacterSpawnerConfig character_spawner_time_seq = 1024; // MUST Be configured by increasing "cutoff_rdf_id"!
     repeated PickableSpawnerConfig pickable_spawner_time_seq = 1025; // MUST Be configured by increasing "cutoff_rdf_id"!
@@ -1605,9 +1605,7 @@ message TriggerTypes {
 
     uint32 sync_wave_group = 8;
 
-    uint32 save_point_only = 9;
-    uint32 story_point_only = 10;
-    uint32 save_and_story_point = 11;
+    uint32 save_point = 9;
 
     uint32 none = 2048;
 }

@@ -244,13 +244,6 @@ namespace jtshared {
         }
     }
 
-    public sealed partial class LevelStory {
-        public LevelStory UpdatePoint(int k, StoryPoint val) {
-            Points[k] = val;
-            return this;
-        }
-    }
-
     public sealed partial class BuffConfig {
         public BuffConfig AddAssociatedDebuff(uint val) {
             AssociatedDebuffs.Add(val);

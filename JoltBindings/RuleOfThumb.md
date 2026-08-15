@@ -1,6 +1,6 @@
 # Cross-runtime Alloc/Dealloc
 
-1. If an unmanaged heap object is created from C#, it must be destroyed by C#, e.g. reusable Colliders/Bodies, Constraints created from RoomDownsyncFrame; 
+1. If an unmanaged heap object is created from C#, it must be destroyed by C#, e.g. reusable Colliders/Bodies, Constraints created from RenderFrame; 
 2. If an unmanaged heap object is created from C++, it must be destroyed by C++, e.g. transient Contacts/ContactManifold instances created from "Step(...)" for collision callback. 
 
 # About lost of zero-alloc/dealloc from DLLMU-v2.3.4

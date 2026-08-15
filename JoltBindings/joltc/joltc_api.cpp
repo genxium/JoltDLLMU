@@ -60,9 +60,7 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
 
     mixedMainAndSubCycleTrtSet = {
         globalPrimitiveConsts->trts().victory(),
-        globalPrimitiveConsts->trts().save_point_only(),
-        globalPrimitiveConsts->trts().story_point_only(),
-        globalPrimitiveConsts->trts().save_and_story_point(),
+        globalPrimitiveConsts->trts().save_point(),
         globalPrimitiveConsts->trts().by_pattern_f(),
     };
 
