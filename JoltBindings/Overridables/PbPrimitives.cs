@@ -32,6 +32,8 @@ namespace JoltCSharp {
         public static uint BlackShooter2CannonId = 1033;
         public static float BlackShooter2CannonOffsetY = 20f;
 
+        public static uint Wolverine1GroundSlash1Id = 1034, Wolverine1GroundSlash2Id = 1035, Wolverine1GroundSlash3Id = 1036, Wolverine1AirSlash1Id = 1037, Wolverine1BackDashingId = 1038;
+
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
         public const uint SPECIES_BOUNTYHUNTER = 7;
@@ -52,6 +54,11 @@ namespace JoltCSharp {
         public const uint SPECIES_BAT1 = 22;
         public const uint SPECIES_WOLF1 = 23;
         public const uint SPECIES_WOLVERINE1 = 24;
+
+        public const uint SPECIES_PARIS_POLICE_CHIEF = 25;
+        public const uint SPECIES_POLICEMAN1 = 26;
+        public const uint SPECIES_POLICEMAN2 = 27;
+        public const uint SPECIES_POLICEWOMAN1 = 28;
 
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
@@ -416,6 +423,11 @@ namespace JoltCSharp {
                   Bat1 = SPECIES_BAT1,
                   Wolf1 = SPECIES_WOLF1,
                   Wolverine1 = SPECIES_WOLVERINE1,
+
+                  ParisPoliceChief = SPECIES_PARIS_POLICE_CHIEF,
+                  Policeman1 = SPECIES_POLICEMAN1,
+                  Policeman2 = SPECIES_POLICEMAN2,
+                  Policewoman1 = SPECIES_POLICEWOMAN1,
               },
 
               DebuffSpecies = new DebuffSpecies {

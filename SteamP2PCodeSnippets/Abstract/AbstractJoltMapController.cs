@@ -4,6 +4,7 @@ using Google.Protobuf.Collections;
 using JoltCSharp;
 using jtshared;
 using SuperTiled2Unity;
+using SuperTiled2Unity.Editor.LibTessDotNet;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -13,6 +14,7 @@ using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
 
 public abstract class AbstractJoltMapController : MonoBehaviour {
+    protected Quaternion cTurnbackAroundYAxis = new Quaternion(0, 1, 0, 0);
 
     protected const uint KV_PREFIX_SFX_FT = (1 << 7); // 128; // Footstep, jumping, landing, pickable
     protected const uint KV_PREFIX_SFX_CH_EMIT = (KV_PREFIX_SFX_FT << 1);
@@ -36,7 +38,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     public GameObject gameplayBtnsHintPrefab;
     public GameObject errStackLogPanelPrefab;
     public GameObject teamRibbonPrefab;
-    public GameObject keyChPointerPrefab;
     
     public GameObject sfxSourcePrefab;
     public GameObject loadSfxSourcePrefab() {
@@ -92,10 +93,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected Dictionary<ulong, TriggerConfigFromTiled> triggerUdToConfigFromTiled;
     protected Dictionary<ulong, int> characterUdToColorSwapRuleLock;
     protected Dictionary<uint, int> playerSpeciesIdOccurrenceCnt;
-    protected Vector3[] debugDrawPositionsHolder = new Vector3[4]; // Currently only rectangles are drawn
 
     protected JoltCharacterAnimPool playerAnimPool = null;
     protected JoltCharacterAnimPool npcAnimPool = null;
+    protected Dictionary<ulong, CharacterDownsync> activeChdDictionary = new Dictionary<ulong, CharacterDownsync>();
     protected JoltBulletAnimPool bulletAnimPool = null;
     protected JoltTrapAnimPool trapAnimPool = null;
     protected JoltTriggerAnimPool triggerAnimPool = null;
@@ -107,6 +108,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected KeyChLightSourceAnimPool keyChLightSourceAnimPool = null;
     protected SfxSourceAnimPool sfxSourceAnimPool = null;
 
+    protected bool allowSelfEmittingLight = true;
     protected bool shouldDetectRealtimeRenderHistoryCorrection = false; // Not recommended to enable in production, it might have some memory performance impact.
     protected bool frameLogEnabled = false;
 
@@ -246,7 +248,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         Debug.Log($"Jolt infra shutdown result = {shutdownRes}");
     }
 
-    protected void preallocateFrontendOnlyHolders(int specifiedLayer = -1) {
+    protected virtual void preallocateFrontendOnlyHolders(int specifiedLayer = -1) {
         //---------------------------------------------FRONTEND USE ONLY SEPERARTION---------------------------------------------
         triggerUdToConfigFromTiled = new Dictionary<ulong, TriggerConfigFromTiled>();
         characterUdToColorSwapRuleLock = new Dictionary<ulong, int>();
@@ -275,6 +277,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         gameplayBtnsHintAnimPool.ResetUponBattlePreparation();
         keyChLightSourceAnimPool.ResetUponBattlePreparation();
         sfxSourceAnimPool.ResetUponBattlePreparation();
+
+        if (debugDrawingEnabled && null != debugColliderPrefab) {
+            debugColliderAnimPool = new JoltDebugColliderAnimPool(this);
+            debugColliderAnimPool.ResetUponBattlePreparation();
+        }
     }
 
     protected int camFovW, camFovH, camPaddingX, camPaddingY;
@@ -341,7 +348,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         gameplayBtnsHintAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
         keyChLightSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
         sfxSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
-
+        if (debugDrawingEnabled && null != debugColliderPrefab) {
+            debugColliderAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
+        }
         selfBattleHeading.ResetSelf();
     }
 
@@ -461,7 +470,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         var inMapCollider = barrierChild.GetComponent<EdgeCollider2D>();
                         var tileProps = barrierChild.GetComponent<SuperCustomProperties>();
 
-                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped;
+                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped, prohibitsWallGrabbing;
+                        tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
                         tileProps.TryGetCustomProperty("providesSlipJump", out providesSlipJump);
                         tileProps.TryGetCustomProperty("providesStairsP", out providesStairsP);
                         tileProps.TryGetCustomProperty("providesStairsN", out providesStairsN);
@@ -471,6 +481,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         bool providesStairsPVal = null == providesStairsP || providesStairsP.IsEmpty ? false : (0 < providesStairsP.GetValueAsInt());
                         bool providesStairsNVal = null == providesStairsN || providesStairsN.IsEmpty ? false : (0 < providesStairsN.GetValueAsInt());
                         bool isParallelePipedVal = null == isParallelePiped || isParallelePiped.IsEmpty ? false : (0 < isParallelePiped.GetValueAsInt());
+                        bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
 
                         if (null == inMapCollider || 0 >= inMapCollider.pointCount) {
                             var (tiledRectCenterX, tiledRectCenterY) = (barrierTileObj.m_X + barrierTileObj.m_Width * 0.5f, barrierTileObj.m_Y + barrierTileObj.m_Height * 0.5f);
@@ -521,6 +532,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                                     ProvidesSlipJump = providesSlipJumpVal,
                                     ProvidesStairsP = providesStairsPVal,
                                     ProvidesStairsN = providesStairsNVal,
+                                    ProhibitsWallGrabbing = prohibitsWallGrabbingVal,
                                 }
                             };
                             result.SerializedBarriers.Add(barrierCollider);
@@ -854,176 +866,19 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         startRdf.DynamicTraps.Add(trap);
                         result.TrapConfigFromTileList.Add(trapConfigFromTiled);
                         dynamicTrapCount++;
-                        Destroy(trapChild.gameObject); // [WARNING] It'll be animated by "TrapPrefab" in "applyRdf" instead!
+                        Destroy(trapChild.gameObject);
                     }
                     Destroy(child.gameObject); // Delete the whole "ObjectLayer"
                     break;
                 case "TriggerPos":
                     foreach (Transform triggerChild in child) {
-                        var tileObj = triggerChild.GetComponent<SuperObject>();
-                        var tileProps = triggerChild.GetComponent<SuperCustomProperties>();
-                        CustomProperty id, bulletTeamId, delayedFrames, quota, recoveryFrames, trt, subCycleTriggerFrames, subCycleQuota, newRevivalX, newRevivalY, storyPointId, bgmId, publishingToTriggerIdUponExhausted, isBossSavepoint, bossSpeciesIds, forceCtrlRdfCount, forceCtrlCmd;
-                        CustomProperty characterSpawnerTimeSeq, pickableSpawnerTimeSeq;
-                        tileProps.TryGetCustomProperty("id", out id);
-                        tileProps.TryGetCustomProperty("trt", out trt);
-                        tileProps.TryGetCustomProperty("bulletTeamId", out bulletTeamId);
-                        tileProps.TryGetCustomProperty("delayedFrames", out delayedFrames);
-                        tileProps.TryGetCustomProperty("quota", out quota);
-                        tileProps.TryGetCustomProperty("recoveryFrames", out recoveryFrames);
-                        tileProps.TryGetCustomProperty("subCycleTriggerFrames", out subCycleTriggerFrames);
-                        tileProps.TryGetCustomProperty("subCycleQuota", out subCycleQuota);
-                        tileProps.TryGetCustomProperty("characterSpawnerTimeSeq", out characterSpawnerTimeSeq);
-                        tileProps.TryGetCustomProperty("pickableSpawnerTimeSeq", out pickableSpawnerTimeSeq);
-                        tileProps.TryGetCustomProperty("newRevivalX", out newRevivalX);
-                        tileProps.TryGetCustomProperty("newRevivalY", out newRevivalY);
-                        tileProps.TryGetCustomProperty("storyPointId", out storyPointId);
-                        tileProps.TryGetCustomProperty("bgmId", out bgmId);
-                        tileProps.TryGetCustomProperty("publishingToTriggerIdUponExhausted", out publishingToTriggerIdUponExhausted);
-                        tileProps.TryGetCustomProperty("isBossSavepoint", out isBossSavepoint);
-                        tileProps.TryGetCustomProperty("bossSpeciesIds", out bossSpeciesIds);
-                        tileProps.TryGetCustomProperty("forceCtrlRdfCount", out forceCtrlRdfCount);
-                        tileProps.TryGetCustomProperty("forceCtrlCmd", out forceCtrlCmd);
-
-                        if (null == id || id.IsEmpty) {
-                            throw new ArgumentNullException("Property id MUST be set for child in TriggerPos");
-                        }
-
-                        if (null == trt || trt.IsEmpty) {
-                            throw new ArgumentNullException("Property trt MUST be set for child in TriggerPos");
-                        }
-
-                        uint trtVal = (uint)trt.GetValueAsInt(); // must have  
-                        uint triggerId = (uint)id.GetValueAsInt(); // must have 
-                        
-                        int bulletTeamIdVal = (null != bulletTeamId && !bulletTeamId.IsEmpty ? bulletTeamId.GetValueAsInt() : 0);
-                        int delayedFramesVal = (null != delayedFrames && !delayedFrames.IsEmpty ? delayedFrames.GetValueAsInt() : 0);
-                        int quotaVal = (null != quota && !quota.IsEmpty ? quota.GetValueAsInt() : 1);
-                        int recoveryFramesVal = (null != recoveryFrames && !recoveryFrames.IsEmpty ? recoveryFrames.GetValueAsInt() : delayedFramesVal + 1); // By default we must have "recoveryFramesVal > delayedFramesVal"
-                        int subCycleTriggerFramesVal = (null != subCycleTriggerFrames && !subCycleTriggerFrames.IsEmpty ? subCycleTriggerFrames.GetValueAsInt() : 0);
-                        int subCycleQuotaVal = (null != subCycleQuota && !subCycleQuota.IsEmpty ? subCycleQuota.GetValueAsInt() : 0);
-                        var characterSpawnerTimeSeqStr = (null != characterSpawnerTimeSeq && !characterSpawnerTimeSeq.IsEmpty ? characterSpawnerTimeSeq.GetValueAsString() : "");
-                        var pickableSpawnerTimeSeqStr = (null != pickableSpawnerTimeSeq && !pickableSpawnerTimeSeq.IsEmpty ? pickableSpawnerTimeSeq.GetValueAsString() : "");
-                        bool isBossSavepointVal = (null != isBossSavepoint && !isBossSavepoint.IsEmpty && 1 == isBossSavepoint.GetValueAsInt()) ? true : false;
-                        var bossSpeciesIdsStr = (null != bossSpeciesIds && !bossSpeciesIds.IsEmpty ? bossSpeciesIds.GetValueAsString() : "");
-
-                        float newRevivalCx = 0, newRevivalCy = 0;
-                        int newRevivalXVal = 0, newRevivalYVal = 0;
-                        if (null != newRevivalX && !newRevivalX.IsEmpty && null != newRevivalY && !newRevivalY.IsEmpty) {
-                            float newRevivalXTiled = newRevivalX.GetValueAsFloat();
-                            float newRevivalYTiled = newRevivalY.GetValueAsFloat();
-                            (newRevivalCx, newRevivalCy) = TiledLayerPositionToCollisionSpacePosition(newRevivalXTiled, newRevivalYTiled, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
-                        }
-
-                        uint publishingToTriggerIdUponExhaustedVal = (null != publishingToTriggerIdUponExhausted && !publishingToTriggerIdUponExhausted.IsEmpty ? (uint)publishingToTriggerIdUponExhausted.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId);
-
-                        int storyPointIdVal = (null != storyPointId && !storyPointId.IsEmpty ? storyPointId.GetValueAsInt() : 0);
-                        int bgmIdVal = (null != bgmId && !bgmId.IsEmpty ? bgmId.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().BgmNoChange);
-
-                        bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
-                        var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
-
-                        var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
-
-                        var trigger = new Trigger {
-                            Id = triggerId,
-                            Trt = trtVal,
-                            BulletTeamId = bulletTeamIdVal,
-                            State = TriggerState.TrReady,
-                            X = rectCx,
-                            Y = rectCy,
-                            Z = 0,
-                        };
-
-                        var forceCtrlRdfCountVal = (null != forceCtrlRdfCount && !forceCtrlRdfCount.IsEmpty ? forceCtrlRdfCount.GetValueAsInt() : 0);
-                        var forceCtrlCmdVal = (null != forceCtrlCmd && !forceCtrlCmd.IsEmpty ? (ulong)forceCtrlCmd.GetValueAsInt() : 0u);
-                        var configFromTiled = new TriggerConfigFromTiled {
-                            Id = triggerId,
-                            Trt = trtVal,
-                            BulletTeamId = bulletTeamIdVal,
-                            DelayedFrames = delayedFramesVal,
-                            RecoveryFrames = recoveryFramesVal,
-                            SubCycleTriggerFrames = subCycleTriggerFramesVal,
-                            SubCycleQuota = subCycleQuotaVal,
-                            Quota= quotaVal,
-                            NewRevivalX = newRevivalXVal,
-                            NewRevivalY = newRevivalYVal,
-                            StoryPointId = storyPointIdVal,
-                            PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
-                            BgmId = bgmIdVal,
-                            IsBossSavepoint = isBossSavepointVal,
-                            ForceCtrlRdfCount = forceCtrlRdfCountVal,
-                            ForceCtrlCmd = forceCtrlCmdVal,
-                        };
-                        bool xFlipped = isXFlipped(tileObj.m_TileId);
-
-                        if (!xFlipped) {
-                            configFromTiled.InitQX = 0;
-                            configFromTiled.InitQY = 0;
-                            configFromTiled.InitQZ = 0;
-                            configFromTiled.InitQW = 1;
-                        } else {
-                            configFromTiled.InitQX = 0;
-                            configFromTiled.InitQY = 1;
-                            configFromTiled.InitQZ = 0;
-                            configFromTiled.InitQW = 0;
-                        }
-
-                        if (PbPrimitivesOverride.Instance.getUnderlying().Trts.ByMovement == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByAttack == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByPatternF == trtVal) {
-                            configFromTiled.BoxHalfSizeX = .5f * tileObj.m_Width;
-                            configFromTiled.BoxHalfSizeY = .5f * tileObj.m_Height;
-                        }
-
-                        string[] characterSpawnerTimeSeqStrParts = characterSpawnerTimeSeqStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var part in characterSpawnerTimeSeqStrParts) {
-                            if (String.IsNullOrEmpty(part)) continue;
-                            string[] subParts = part.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                            if (2 != subParts.Length) continue;
-                            if (String.IsNullOrEmpty(subParts[0])) continue;
-                            if (String.IsNullOrEmpty(subParts[1])) continue;
-                            int cutoffRdfFrameId = subParts[0].ToInt();
-                            var chSpawnerConfig = new CharacterSpawnerConfig {
-                                CutoffRdfId = cutoffRdfFrameId
-                            };
-                            string[] speciesIdAndOpParts = subParts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var speciesIdAndOpPart in speciesIdAndOpParts) {
-                                string[] speciesIdAndOpSplitted = speciesIdAndOpPart.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                                chSpawnerConfig.SpeciesIdList.Add((uint)speciesIdAndOpSplitted[0].ToInt());
-                                if (2 <= speciesIdAndOpSplitted.Length) {
-                                    chSpawnerConfig.InitOpList.Add(Convert.ToUInt64(speciesIdAndOpSplitted[1]));
-                                } else {
-                                    chSpawnerConfig.InitOpList.Add(0);
-                                }
-                            }
-                            configFromTiled.CharacterSpawnerTimeSeq.Add(chSpawnerConfig);
-                        }
-
-                        string[] pickableSpawnerTimeSeqStrParts = pickableSpawnerTimeSeqStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var part in pickableSpawnerTimeSeqStrParts) {
-                            if (String.IsNullOrEmpty(part)) continue;
-                            string[] subParts = part.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                            if (2 != subParts.Length) continue;
-                            if (String.IsNullOrEmpty(subParts[0])) continue;
-                            if (String.IsNullOrEmpty(subParts[1])) continue;
-                            int cutoffRdfFrameId = subParts[0].ToInt();
-                            var pkSpawnerConfig = new PickableSpawnerConfig {
-                                CutoffRdfId = cutoffRdfFrameId
-                            };
-                            string[] speciesIdAndOpParts = subParts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var speciesIdAndOpPart in speciesIdAndOpParts) {
-                                string[] pktAndOpSplitted = speciesIdAndOpPart.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                                pkSpawnerConfig.PickupTypeList.Add((uint)pktAndOpSplitted[0].ToInt());
-                                if (2 <= pktAndOpSplitted.Length) {
-                                    pkSpawnerConfig.InitOpList.Add(Convert.ToUInt64(pktAndOpSplitted[1]));
-                                } else {
-                                    pkSpawnerConfig.InitOpList.Add(0);
-                                }
-                            }
-                            configFromTiled.PickableSpawnerTimeSeq.Add(pkSpawnerConfig);
-                        }
-                        triggerUdToConfigFromTiled[APP_CalcTriggerUserData(triggerId)] = configFromTiled;
-                        trigger.Quota = quotaVal;
+                        SuperObject tileObj = triggerChild.GetComponent<SuperObject>();
+                        SuperCustomProperties tileProps = triggerChild.GetComponent<SuperCustomProperties>();
+                        var (trigger, configFromTiled) = parseTrigger(tileObj, tileProps);
                         startRdf.Triggers.Add(trigger);
                         result.TriggerConfigFromTileList.Add(configFromTiled);
+                        var ud = APP_CalcTriggerUserData(trigger.Id);
+                        triggerUdToConfigFromTiled[ud] = configFromTiled;
                         ++triggerCount;
                     }
                     Destroy(child.gameObject); // Delete the whole "ObjectLayer"
@@ -1045,6 +900,168 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         result.SelfParsedRdf = startRdf;
         
         return result;
+    }
+
+    protected virtual (Trigger, TriggerConfigFromTiled) parseTrigger(SuperObject tileObj, SuperCustomProperties tileProps) {
+        CustomProperty id, bulletTeamId, delayedFrames, quota, recoveryFrames, trt, subCycleTriggerFrames, subCycleQuota, newRevivalX, newRevivalY, bgmId, publishingToTriggerIdUponExhausted, isBossSavepoint, bossSpeciesIds, forceCtrlRdfCount, forceCtrlCmd;
+        CustomProperty characterSpawnerTimeSeq, pickableSpawnerTimeSeq;
+
+        tileProps.TryGetCustomProperty("id", out id);
+        tileProps.TryGetCustomProperty("trt", out trt);
+        tileProps.TryGetCustomProperty("bulletTeamId", out bulletTeamId);
+        tileProps.TryGetCustomProperty("delayedFrames", out delayedFrames);
+        tileProps.TryGetCustomProperty("quota", out quota);
+        tileProps.TryGetCustomProperty("recoveryFrames", out recoveryFrames);
+        tileProps.TryGetCustomProperty("subCycleTriggerFrames", out subCycleTriggerFrames);
+        tileProps.TryGetCustomProperty("subCycleQuota", out subCycleQuota);
+        tileProps.TryGetCustomProperty("characterSpawnerTimeSeq", out characterSpawnerTimeSeq);
+        tileProps.TryGetCustomProperty("pickableSpawnerTimeSeq", out pickableSpawnerTimeSeq);
+        tileProps.TryGetCustomProperty("newRevivalX", out newRevivalX);
+        tileProps.TryGetCustomProperty("newRevivalY", out newRevivalY);
+        tileProps.TryGetCustomProperty("bgmId", out bgmId);
+        tileProps.TryGetCustomProperty("publishingToTriggerIdUponExhausted", out publishingToTriggerIdUponExhausted);
+        tileProps.TryGetCustomProperty("isBossSavepoint", out isBossSavepoint);
+        tileProps.TryGetCustomProperty("bossSpeciesIds", out bossSpeciesIds);
+        tileProps.TryGetCustomProperty("forceCtrlRdfCount", out forceCtrlRdfCount);
+        tileProps.TryGetCustomProperty("forceCtrlCmd", out forceCtrlCmd);
+
+        if (null == id || id.IsEmpty) {
+            throw new ArgumentNullException("Property id MUST be set for child in TriggerPos");
+        }
+
+        if (null == trt || trt.IsEmpty) {
+            throw new ArgumentNullException("Property trt MUST be set for child in TriggerPos");
+        }
+
+        uint trtVal = (uint)trt.GetValueAsInt(); // must have  
+        uint triggerId = (uint)id.GetValueAsInt(); // must have 
+        
+        int bulletTeamIdVal = (null != bulletTeamId && !bulletTeamId.IsEmpty ? bulletTeamId.GetValueAsInt() : 0);
+        int delayedFramesVal = (null != delayedFrames && !delayedFrames.IsEmpty ? delayedFrames.GetValueAsInt() : 0);
+        int quotaVal = (null != quota && !quota.IsEmpty ? quota.GetValueAsInt() : 1);
+        int recoveryFramesVal = (null != recoveryFrames && !recoveryFrames.IsEmpty ? recoveryFrames.GetValueAsInt() : delayedFramesVal + 1); // By default we must have "recoveryFramesVal > delayedFramesVal"
+        int subCycleTriggerFramesVal = (null != subCycleTriggerFrames && !subCycleTriggerFrames.IsEmpty ? subCycleTriggerFrames.GetValueAsInt() : 0);
+        int subCycleQuotaVal = (null != subCycleQuota && !subCycleQuota.IsEmpty ? subCycleQuota.GetValueAsInt() : 0);
+        var characterSpawnerTimeSeqStr = (null != characterSpawnerTimeSeq && !characterSpawnerTimeSeq.IsEmpty ? characterSpawnerTimeSeq.GetValueAsString() : "");
+        var pickableSpawnerTimeSeqStr = (null != pickableSpawnerTimeSeq && !pickableSpawnerTimeSeq.IsEmpty ? pickableSpawnerTimeSeq.GetValueAsString() : "");
+        bool isBossSavepointVal = (null != isBossSavepoint && !isBossSavepoint.IsEmpty && 1 == isBossSavepoint.GetValueAsInt()) ? true : false;
+        var bossSpeciesIdsStr = (null != bossSpeciesIds && !bossSpeciesIds.IsEmpty ? bossSpeciesIds.GetValueAsString() : "");
+
+        float newRevivalCx = 0, newRevivalCy = 0;
+        int newRevivalXVal = 0, newRevivalYVal = 0;
+        if (null != newRevivalX && !newRevivalX.IsEmpty && null != newRevivalY && !newRevivalY.IsEmpty) {
+            float newRevivalXTiled = newRevivalX.GetValueAsFloat();
+            float newRevivalYTiled = newRevivalY.GetValueAsFloat();
+            (newRevivalCx, newRevivalCy) = TiledLayerPositionToCollisionSpacePosition(newRevivalXTiled, newRevivalYTiled, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+        }
+
+        uint publishingToTriggerIdUponExhaustedVal = (null != publishingToTriggerIdUponExhausted && !publishingToTriggerIdUponExhausted.IsEmpty ? (uint)publishingToTriggerIdUponExhausted.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId);
+
+        int bgmIdVal = (null != bgmId && !bgmId.IsEmpty ? bgmId.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().BgmNoChange);
+
+        bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
+        var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
+
+        var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+
+        var trigger = new Trigger {
+            Id = triggerId,
+            Trt = trtVal,
+            BulletTeamId = bulletTeamIdVal,
+            State = TriggerState.TrReady,
+            X = rectCx,
+            Y = rectCy,
+            Z = 0,
+        };
+
+        var forceCtrlRdfCountVal = (null != forceCtrlRdfCount && !forceCtrlRdfCount.IsEmpty ? forceCtrlRdfCount.GetValueAsInt() : 0);
+        var forceCtrlCmdVal = (null != forceCtrlCmd && !forceCtrlCmd.IsEmpty ? (ulong)forceCtrlCmd.GetValueAsInt() : 0u);
+        var configFromTiled = new TriggerConfigFromTiled {
+            Id = triggerId,
+            Trt = trtVal,
+            BulletTeamId = bulletTeamIdVal,
+            DelayedFrames = delayedFramesVal,
+            RecoveryFrames = recoveryFramesVal,
+            SubCycleTriggerFrames = subCycleTriggerFramesVal,
+            SubCycleQuota = subCycleQuotaVal,
+            Quota= quotaVal,
+            NewRevivalX = newRevivalXVal,
+            NewRevivalY = newRevivalYVal,
+            PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
+            BgmId = bgmIdVal,
+            IsBossSavepoint = isBossSavepointVal,
+            ForceCtrlRdfCount = forceCtrlRdfCountVal,
+            ForceCtrlCmd = forceCtrlCmdVal,
+        };
+        bool xFlipped = isXFlipped(tileObj.m_TileId);
+
+        if (!xFlipped) {
+            configFromTiled.InitQX = 0;
+            configFromTiled.InitQY = 0;
+            configFromTiled.InitQZ = 0;
+            configFromTiled.InitQW = 1;
+        } else {
+            configFromTiled.InitQX = 0;
+            configFromTiled.InitQY = 1;
+            configFromTiled.InitQZ = 0;
+            configFromTiled.InitQW = 0;
+        }
+
+        if (PbPrimitivesOverride.Instance.getUnderlying().Trts.ByMovement == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByAttack == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByPatternF == trtVal) {
+            configFromTiled.BoxHalfSizeX = .5f * tileObj.m_Width;
+            configFromTiled.BoxHalfSizeY = .5f * tileObj.m_Height;
+        }
+
+        string[] characterSpawnerTimeSeqStrParts = characterSpawnerTimeSeqStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in characterSpawnerTimeSeqStrParts) {
+            if (String.IsNullOrEmpty(part)) continue;
+            string[] subParts = part.Split(':', StringSplitOptions.RemoveEmptyEntries);
+            if (2 != subParts.Length) continue;
+            if (String.IsNullOrEmpty(subParts[0])) continue;
+            if (String.IsNullOrEmpty(subParts[1])) continue;
+            int cutoffRdfFrameId = subParts[0].ToInt();
+            var chSpawnerConfig = new CharacterSpawnerConfig {
+                CutoffRdfId = cutoffRdfFrameId
+            };
+            string[] speciesIdAndOpParts = subParts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var speciesIdAndOpPart in speciesIdAndOpParts) {
+                string[] speciesIdAndOpSplitted = speciesIdAndOpPart.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                chSpawnerConfig.SpeciesIdList.Add((uint)speciesIdAndOpSplitted[0].ToInt());
+                if (2 <= speciesIdAndOpSplitted.Length) {
+                    chSpawnerConfig.InitOpList.Add(Convert.ToUInt64(speciesIdAndOpSplitted[1]));
+                } else {
+                    chSpawnerConfig.InitOpList.Add(0);
+                }
+            }
+            configFromTiled.CharacterSpawnerTimeSeq.Add(chSpawnerConfig);
+        }
+
+        string[] pickableSpawnerTimeSeqStrParts = pickableSpawnerTimeSeqStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in pickableSpawnerTimeSeqStrParts) {
+            if (String.IsNullOrEmpty(part)) continue;
+            string[] subParts = part.Split(':', StringSplitOptions.RemoveEmptyEntries);
+            if (2 != subParts.Length) continue;
+            if (String.IsNullOrEmpty(subParts[0])) continue;
+            if (String.IsNullOrEmpty(subParts[1])) continue;
+            int cutoffRdfFrameId = subParts[0].ToInt();
+            var pkSpawnerConfig = new PickableSpawnerConfig {
+                CutoffRdfId = cutoffRdfFrameId
+            };
+            string[] speciesIdAndOpParts = subParts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var speciesIdAndOpPart in speciesIdAndOpParts) {
+                string[] pktAndOpSplitted = speciesIdAndOpPart.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                pkSpawnerConfig.PickupTypeList.Add((uint)pktAndOpSplitted[0].ToInt());
+                if (2 <= pktAndOpSplitted.Length) {
+                    pkSpawnerConfig.InitOpList.Add(Convert.ToUInt64(pktAndOpSplitted[1]));
+                } else {
+                    pkSpawnerConfig.InitOpList.Add(0);
+                }
+            }
+            configFromTiled.PickableSpawnerTimeSeq.Add(pkSpawnerConfig);
+        }
+        trigger.Quota = quotaVal;
+
+        return (trigger, configFromTiled);
     }
 
     protected Vector3 newPosHolder = new Vector3();
@@ -1079,7 +1096,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var (chGameObj, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, chd.SpeciesId, chConfig, underlyingMap.transform);
 
         if (forceTeleport) {
-            newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
+            var (wx, wy) = CollisionSpacePositionToWorldPosition(chd.X, chd.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+            newPosHolder.Set(wx, wy, chGameObj.transform.position.z);
+            chGameObj.transform.position = newPosHolder;
+
+            newPosHolder.Set(wx, wy, defaultGameplayCamZ);
             clampToMapBoundary(ref newPosHolder);
             gameplayCamera.transform.position = newPosHolder;
             return;
@@ -1158,6 +1179,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected void applyRdf(RenderFrame rdf, StepResult? stepResult, float dtSeconds) {
         int rdfId = rdf.Id;
         float selfPlayerWx = 0f, selfPlayerWy = 0f;
+        activeChdDictionary.Clear();
         activeTriggerDictionary.Clear();
 
         for (int k = 0; k < roomCapacity; k++) {
@@ -1165,7 +1187,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             ulong playerUd = Bindings.APP_CalcPlayerUserData(player.JoinIndex);
             var currCharacterDownsync = player.Chd;
             var chConfig = characters[currCharacterDownsync.SpeciesId];
-            
+            activeChdDictionary.Add(playerUd, currCharacterDownsync);
+
             var (wx, wy) = CollisionSpacePositionToWorldPosition(currCharacterDownsync.X, currCharacterDownsync.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
             bool shouldAttachLightSource = false;
@@ -1218,7 +1241,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     iptmgr.btnD.gameObject.SetActive(false);
                 }
 
-                shouldAttachLightSource = true;
+                if (allowSelfEmittingLight && null != keyChLightSource2DPrefab) {
+                    shouldAttachLightSource = true;
+                }
             }
 
             var (chAnimCtrl, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform);
@@ -1270,7 +1295,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             ulong npcUd = Bindings.APP_CalcNpcUserData(npc.Id);
             var currCharacterDownsync = npc.Chd;
             var chConfig = characters[currCharacterDownsync.SpeciesId];
-            
+            activeChdDictionary.Add(npcUd, currCharacterDownsync);
+
             var (wx, wy) = CollisionSpacePositionToWorldPosition(currCharacterDownsync.X, currCharacterDownsync.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
             var (chAnimCtrl, oldUd) = npcAnimPool.GetOrCreateAnimNode(npcUd, currCharacterDownsync.SpeciesId, chConfig, underlyingMap.transform);
@@ -1312,9 +1338,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             (newTrPosHolder.x, newTrPosHolder.y) = CollisionSpacePositionToWorldPosition(bullet.X + bulletConfig.HitboxHalfSizeX, bullet.Y + bulletConfig.HitboxHalfSizeY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom); // Top-right
 
-            (newBlPosHolder.x, newBlPosHolder.y) = CollisionSpacePositionToWorldPosition(bullet.X - bulletConfig.HitboxHalfSizeX, bullet.Y - bulletConfig.HitboxHalfSizeY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom); // bottom-left
-
             (newBrPosHolder.x, newBrPosHolder.y) = CollisionSpacePositionToWorldPosition(bullet.X + bulletConfig.HitboxHalfSizeX, bullet.Y - bulletConfig.HitboxHalfSizeY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom); // bottom-right
+
+            (newBlPosHolder.x, newBlPosHolder.y) = CollisionSpacePositionToWorldPosition(bullet.X - bulletConfig.HitboxHalfSizeX, bullet.Y - bulletConfig.HitboxHalfSizeY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom); // bottom-left
 
             if (!bulletConfig.BeamCollision && !bulletConfig.BeamRendering) {
                 if (!isGameObjPositionWithinCamera(newTlPosHolder) && !isGameObjPositionWithinCamera(newTrPosHolder) && !isGameObjPositionWithinCamera(newBlPosHolder) && !isGameObjPositionWithinCamera(newBrPosHolder)) continue;
@@ -1335,6 +1361,19 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                 playBulletSfx(bullet, bulletConfig, isExploding, wx, wy, rdf.Id, distanceAttenuationZ);
                 playBulletVfx(bullet, bulletConfig, isStartup, isExploding, wx, wy, rdf);
                 */
+            }
+
+            if (debugDrawingEnabled && null != debugColliderPrefab) {
+                if (BulletState.Active == bullet.BlState) {
+                    var (animCtrl, oldUd) = debugColliderAnimPool.GetOrCreateAnimNode(bulletUd, 0, this, underlyingMap.transform);
+                    RepeatedField<PbVec2> points = new RepeatedField<PbVec2> {
+                                new PbVec2 { X = newBlPosHolder.x, Y = newBlPosHolder.y },
+                                new PbVec2 { X = newBrPosHolder.x, Y = newBrPosHolder.y },
+                                new PbVec2 { X = newTrPosHolder.x, Y = newTrPosHolder.y },
+                                new PbVec2 { X = newTlPosHolder.x, Y = newTlPosHolder.y },  
+                            };
+                    animCtrl.updateAnim(rdfId, bulletUd, points, CharacterState.Idle1, this, 0);
+                }
             }
         }
 
@@ -1434,6 +1473,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         gameplayBtnsHintAnimPool.HideInactiveAnimNodes(rdfId);
         keyChLightSourceAnimPool.HideInactiveAnimNodes(rdfId);
         sfxSourceAnimPool.HideInactiveAnimNodes(rdfId);
+
+        if (debugDrawingEnabled && null != debugColliderPrefab) {
+            debugColliderAnimPool.HideInactiveAnimNodes(rdfId);
+        }
 
         cameraTrack(rdf, null, false);
     }
@@ -1643,4 +1686,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             parallaxEffect.SetParallaxAmount(layer.m_ParallaxX, gameplayCamera);
         }
     }
+
+    protected bool debugDrawingEnabled = false;
+    public GameObject debugColliderPrefab;
+    public GameObject loadDebugColliderPrefab() {
+        return debugColliderPrefab;
+    }
+
+    protected JoltDebugColliderAnimPool debugColliderAnimPool = null;
 }

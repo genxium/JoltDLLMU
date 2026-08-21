@@ -3133,8 +3133,8 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
             blEffOffset = blEffQ*blInitOffset; 
         }
         if (bulletConfig.has_init_q()) {
-            auto& init_q = bulletConfig.init_q();
-            blEffQ = JPH::Quat(init_q.x(), init_q.y(), init_q.z(), init_q.w()) * blEffQ;
+            auto& initQ = bulletConfig.init_q();
+            blEffQ = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * blEffQ;
         }
     } else {
         JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
@@ -3144,8 +3144,8 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
         JPH::Quat offenderEffAimingQ = JPH::Quat(currChd->aiming_q_x(), currChd->aiming_q_y(), currChd->aiming_q_z(), currChd->aiming_q_w()) * offenderEffQ;
         blEffOffset = offenderEffAimingQ*blInitOffset; 
         if (bulletConfig.has_init_q()) {
-            auto& init_q = bulletConfig.init_q();
-            blEffQ = JPH::Quat(init_q.x(), init_q.y(), init_q.z(), init_q.w()) * offenderEffAimingQ;
+            auto& initQ = bulletConfig.init_q();
+            blEffQ = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
         } else {
             blEffQ = offenderEffAimingQ;
         }
@@ -3821,6 +3821,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
         if (BulletState::Active == currBl.bl_state()) {
             Vec3 newPos(currBl.x(), currBl.y(), currBl.z());
+            Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
             if (Melee == bulletConfig->b_type()) {
                 const CharacterDownsync& currChd = immutableCurrChdFromUd(currBl.offender_ud());
                 Quat currChdQ;
@@ -3835,8 +3836,13 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
                 newPos.SetX(currChd.x() + blEffOffset.GetX());
                 newPos.SetY(currChd.y() + blEffOffset.GetY());
+                if (bulletConfig->has_init_q()) {
+                    auto& initQ = bulletConfig->init_q();
+                    newRot = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
+                } else {
+                    newRot = offenderEffAimingQ;
+                }
             }
-            Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
             auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->b_type(), bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), newPos, newRot);
             transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
             auto bodyID = blCollider->GetID();

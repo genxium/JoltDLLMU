@@ -11,7 +11,7 @@ namespace JoltCSharp {
             this.primitiveConsts = primitiveConsts;
         }
 
-        MapField<uint, CharacterConfig>? underlying;
+        protected MapField<uint, CharacterConfig>? underlying;
 
         protected virtual bool lazyInit() {
             if (null != underlying) return true;
@@ -134,9 +134,9 @@ namespace JoltCSharp {
                 Ifc = IfaceCat.Flesh,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
                 TrailingRdfChargeableChStates = {
-                {(int)CharacterState.InAirIdle2ByJump, 25},
-                {(int)CharacterState.InAirIdle1ByWallJump, 25},
-            }
+                    {(int)CharacterState.InAirIdle2ByJump, 25},
+                    {(int)CharacterState.InAirIdle1ByWallJump, 25},
+                }
             };
 
             CharacterConfig BLACKSABER1 = new CharacterConfig {
@@ -451,6 +451,76 @@ namespace JoltCSharp {
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
             };
 
+            CharacterConfig WOLF1 = new CharacterConfig {
+                SpeciesId = SPECIES_WOLF1,
+                SpeciesName = "Wolf1",
+                Hp = 60,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 2.4f * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (32.0f),
+                VisionOffsetY = (10.0f),
+                VisionHalfHeight = (96.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                AccMagX = 0.16f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 4.9f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                CapsuleRadius = (12.0f),
+                CapsuleHalfHeight = (8.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (8.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 4,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
+            };
+
+            CharacterConfig WOLVERINE1 = new CharacterConfig {
+                SpeciesId = SPECIES_WOLVERINE1,
+                SpeciesName = "Wolverine1",
+                Hp = 360,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 2.5f * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (24.0f),
+                VisionOffsetY = (0.0f),
+                VisionHalfHeight = (96.0f),
+                VisionTopRadius = (48.0f), // [WARNING] This is a tall character, if "VisionTopRadius" is not big enough it might fail to see a downslope it's currently standing on.
+                VisionBottomRadius = (64.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                AccMagX = 0.16f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = 0.5f * StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 5.0f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleHalfHeight = (20.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (16.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (20.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (18.0f),
+                HasTurnAroundAnim = true,
+                Hardness = 6,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
+            };
+
             CharacterConfig BLACKSABER2 = new CharacterConfig {
                 SpeciesId = SPECIES_BLACKSABER2,
                 SpeciesName = "BlackSaber2",
@@ -527,6 +597,136 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 90,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+            };
+
+            CharacterConfig PARIS_POLICE_CHIEF = new CharacterConfig {
+                SpeciesId = SPECIES_PARIS_POLICE_CHIEF,
+                SpeciesName = "ParisPoliceChief",
+                Hp = 1,
+                Mp = 0,
+                MpRegenPerInterval = 0,
+                MpRegenInterval = 0,
+                LayDownFramesToRecover = 0,
+                GetUpInvinsibleFrames = 0,
+                GetUpFramesToRecover = 0,
+                Speed = 0f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 0,
+                JumpStartupFrames = 0,
+                AccMagX = 0.0f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                OmitGravity = true,
+                CapsuleRadius = (4.0f), 
+                CapsuleHalfHeight = (3.0f),
+                ShrinkedCapsuleRadius = (4.0f),
+                ShrinkedCapsuleHalfHeight = (3.0f),
+                LayDownCapsuleRadius = (4.0f),
+                LayDownCapsuleHalfHeight = (3.0f),
+                DyingCapsuleRadius = (4.0f),
+                DyingCapsuleHalfHeight = (3.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 1, // Basically a touch to die species
+                ColliderDensity = 12.0f,
+                HasDimmedAnim = false,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                MaxAscendingVelY = -DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                Ifc = IfaceCat.Flesh,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+            };
+
+            CharacterConfig POLICEMAN1 = new CharacterConfig {
+                SpeciesId = SPECIES_POLICEMAN1,
+                SpeciesName = "Policeman1",
+                Hp = 150,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 2.0f * BATTLE_DYNAMICS_FPS,
+                AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                CapsuleRadius = (8.0f),
+                CapsuleHalfHeight = (16.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (10.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 5,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                Atk1UsesMagazine = true,
+                Atk1Magazine = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.TimedMagazineIv,
+                    Quota = 16,
+                    FramesToRecover = 25,
+                    BadgeName = "Pistol"
+                },
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
+            };
+
+            CharacterConfig POLICEMAN2 = new CharacterConfig {
+                SpeciesId = SPECIES_POLICEMAN2,
+                SpeciesName = "Policeman2",
+                Hp = 180,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 1.8f * BATTLE_DYNAMICS_FPS,
+                AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                CapsuleRadius = (8.0f),
+                CapsuleHalfHeight = (16.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (10.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 5,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                Atk1UsesMagazine = true,
+                Atk1Magazine = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.TimedMagazineIv,
+                    Quota = 16,
+                    FramesToRecover = 25,
+                    BadgeName = "Pistol"
+                },
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
+            };
+
+            CharacterConfig POLICEWOMAN1 = new CharacterConfig {
+                SpeciesId = SPECIES_POLICEWOMAN1,
+                SpeciesName = "Policewoman1",
+                Hp = 150,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 1.8f * BATTLE_DYNAMICS_FPS,
+                AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                CapsuleRadius = (8.0f),
+                CapsuleHalfHeight = (16.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (10.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 5,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                Atk1UsesMagazine = true,
+                Atk1Magazine = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.TimedMagazineIv,
+                    Quota = 20,
+                    FramesToRecover = 25,
+                    BadgeName = "Pistol"
+                },
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
             };
 
             // BLADEGIRL
@@ -647,6 +847,20 @@ namespace JoltCSharp {
             BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Bat1BiteId);
             BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Bat1BiteId);
             underlying.Add(BAT1.SpeciesId, BAT1);
+
+            // Wolf and Wolverine 
+            underlying.Add(WOLF1.SpeciesId, WOLF1);
+
+            WOLVERINE1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), Wolverine1GroundSlash1Id);
+            WOLVERINE1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Wolverine1GroundSlash1Id);
+            WOLVERINE1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Wolverine1AirSlash1Id);
+            underlying.Add(WOLVERINE1.SpeciesId, WOLVERINE1);
+
+            // POLICE characters
+            underlying.Add(PARIS_POLICE_CHIEF.SpeciesId, PARIS_POLICE_CHIEF);
+            underlying.Add(POLICEMAN1.SpeciesId, POLICEMAN1);
+            underlying.Add(POLICEMAN2.SpeciesId, POLICEMAN2);
+            underlying.Add(POLICEWOMAN1.SpeciesId, POLICEWOMAN1);
 
             // BLACKSABER_TEST
             underlying.Add(BLACKSABER_TEST_NO_VISION.SpeciesId, BLACKSABER_TEST_NO_VISION);

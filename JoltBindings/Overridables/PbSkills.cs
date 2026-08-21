@@ -782,6 +782,63 @@ namespace JoltCSharp {
                    BoundChState = CharacterState.Atk1
             }.AddHit(new BulletConfig(SlowBladeHit1).SetDamage(15));
 
+             BulletConfig SlowButPowerfulBladeHit1 = new BulletConfig {
+                StartupFrames = 50,
+                              StartupInvinsibleFrames = 5,
+                              ActiveFrames = 10,
+                              HitStunFrames = 56,
+                              BlockStunFrames = 40,
+                              CooldownFrames = 20,
+                              Damage = 30,
+                              PushbackVelX = 0.7f * BATTLE_DYNAMICS_FPS,
+                              PushbackVelY = primitiveConsts.NoLockVel,
+                              SelfLockVelX = 0,
+                              SelfLockVelY = primitiveConsts.NoLockVel,
+                              SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
+                              HitboxOffsetX = 18f,
+                              HitboxOffsetY = 17f,
+                              HitboxHalfSizeX = 32f,
+                              HitboxHalfSizeY = 20f,
+                              AnimName = "MeleeSlash2",
+                              HitAnimRdfCnt = 45,
+                              VanishingAnimRdfCnt = 25,
+                              BType = BulletType.Melee,
+                              Hardness = 5,
+                              GuardBreakerExtraHitCnt = 1,
+                              ReflectFireballXIfNotHarder = true,
+                              CharacterEmitSfxName = "SlashEmitSpd1",
+                              HitSfxName="Melee_Vanishing2",
+                              RemainsUponHit = true,
+                              CollisionTypeMask = 0, // TODO
+            };
+
+            BulletConfig SlowButPowerfulBladeAirHit1 = new BulletConfig(SlowButPowerfulBladeHit1)
+                .SetStartupFrames(30)
+                .SetActiveFrames(8)
+                .SetCooldownFrames(22)
+                .SetCancellableFrames(0, 0)
+                .SetRemainsUponHit(false)
+                .SetMeleeHitSelfStunFrames(PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES)
+                .SetSelfLockVel(primitiveConsts.NoLockVel, primitiveConsts.NoLockVel, primitiveConsts.NoLockVel);
+
+             Skill WolverineAirSlash1 = new Skill {
+                Id = Wolverine1AirSlash1Id,
+                   RecoveryFrames = SlowButPowerfulBladeAirHit1.StartupFrames+SlowButPowerfulBladeAirHit1.ActiveFrames+SlowButPowerfulBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowButPowerfulBladeAirHit1.StartupFrames+SlowButPowerfulBladeAirHit1.ActiveFrames+SlowButPowerfulBladeAirHit1.CooldownFrames,
+                   RecoveryFramesOnHit = SlowButPowerfulBladeAirHit1.StartupFrames+SlowButPowerfulBladeAirHit1.ActiveFrames+SlowButPowerfulBladeAirHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.InAirAtk1
+            }.AddHit(SlowButPowerfulBladeAirHit1);
+
+             Skill WolverineGroundSlash1 = new Skill {
+                Id = Wolverine1GroundSlash1Id,
+                   RecoveryFrames = SlowButPowerfulBladeHit1.StartupFrames+SlowButPowerfulBladeHit1.ActiveFrames+SlowButPowerfulBladeHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = SlowButPowerfulBladeHit1.StartupFrames+SlowButPowerfulBladeHit1.ActiveFrames+SlowButPowerfulBladeHit1.CooldownFrames,
+                   RecoveryFramesOnHit = SlowButPowerfulBladeHit1.StartupFrames+SlowButPowerfulBladeHit1.ActiveFrames+SlowButPowerfulBladeHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk1
+            }.AddHit(SlowButPowerfulBladeHit1);
+
             underlying = new MapField<uint, Skill> {
                 { BladeGirlAirSlash1Id, BladeGirlAirSlash1 },
                 { BladeGirlGroundSlash1Id, BladeGirlGroundSlash1 },
@@ -813,6 +870,9 @@ namespace JoltCSharp {
                 { BlackShooter2CannonId, BlackShooter2Cannon },
                 { BlackSaber2GroundSlash1Id, BlackSaber2GroundSlash1 },
                 { BlackSaber2AirSlash1Id, BlackSaber2AirSlash1 },
+
+                { Wolverine1GroundSlash1Id, WolverineGroundSlash1 },
+                { Wolverine1AirSlash1Id, WolverineAirSlash1 },
             };
 
             return true;

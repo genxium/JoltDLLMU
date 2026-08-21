@@ -781,7 +781,7 @@ message BulletConfig {
     bool wall_impact_melee_collision = 68; // Only applicable to "b_type == Melee"
 
     bool mh_inherits_spin = 69;
-    PbQuat init_q = 70;
+    optional PbQuat init_q = 70;
 
     optional float friction = 71;
     optional float restitution = 72; 
@@ -1380,7 +1380,7 @@ message StoryPointStep {
 
 message StoryPoint {
     repeated StoryPointStep steps = 1;
-    bool nonctrl = 2; // not taking over control if true
+    bool nonctrl = 2;
     bool once_only = 3;
     string cutscene_name = 4; // null for no cut scene
 }
@@ -1575,6 +1575,11 @@ message ChSpeciesConsts {
     uint32 bat1 = 12;
     uint32 wolf1 = 13;
     uint32 wolverine1 = 14;
+
+    uint32 paris_police_chief = 15;
+    uint32 policeman1 = 16;
+    uint32 policeman2 = 17;
+    uint32 policewoman1 = 18;
 
     uint32 none = 2048;
     uint32 blacksaber_test_no_vision = 2049;
