@@ -489,7 +489,7 @@ namespace JoltCSharp {
             CharacterConfig WOLVERINE1 = new CharacterConfig {
                 SpeciesId = SPECIES_WOLVERINE1,
                 SpeciesName = "Wolverine1",
-                Hp = 360,
+                Hp = 220,
                 LayDownFramesToRecover = 16,
                 GetUpInvinsibleFrames = 34,
                 GetUpFramesToRecover = 30,
@@ -519,6 +519,9 @@ namespace JoltCSharp {
                 MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
+                LoopingChStates = {
+                    {(int)CharacterState.Walking, 10},
+                }
             };
 
             CharacterConfig BLACKSABER2 = new CharacterConfig {

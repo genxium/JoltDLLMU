@@ -86,6 +86,16 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     BodyID toHandleMvBlockerBodyID;
     extractKeyEntitiesInVision(currRdfId, antiGravityNorm, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, baseBattleFilter, selfNpcCollider, &selfNpcAABB, selfNpcBodyID, selfNpcUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfNpcPositionDiffForAllyUd, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, toHandleOppoBlUd, selfNpcPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
 
+/*
+#ifndef NDEBUG
+    if (cvSupported) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << ", groundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), currGroundMvTolerance=(" << currGroundMvTolerance.vision_alignment() << "," << currGroundMvTolerance.anti_gravity_alignment() << ")";
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
+
     bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     bool canJumpWithinInertia = BaseBattleCollisionFilter::chCanJumpWithInertia(currChd, cc, notDashing, inJumpStartupOrJustEnded);
     bool opponentBehindMe = false; 
@@ -868,7 +878,7 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
     if (0 == toHandleMvBlockerUd) {
 /*
 #ifndef NDEBUG
-        if (selfNpcUd == 8589934593 && TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
+        if (TARGET_CH_REACTION_UNCHANGED != newVisionReaction) {
             if (TARGET_CH_REACTION_WALK_ALONG != newVisionReaction || (currRdfId % 16 == 0)) {
                 std::ostringstream oss;
                 oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " has visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyID=" << selfNpcCollider->GetGroundBodyID().GetIndexAndSequenceNumber() << ", there's no toHandleMvBlockerBodyID, canJumpWithinInertia=" << canJumpWithinInertia << ", hasEffectiveMvBlocker=" << hasEffectiveMvBlocker << ", currGroundMvTolerance=" << currGroundMvTolerance.vision_alignment() << ", returning newVisionReaction = " << newVisionReaction;

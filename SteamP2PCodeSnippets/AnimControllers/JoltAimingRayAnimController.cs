@@ -1,12 +1,13 @@
 using jtshared;
 using UnityEngine;
 using JoltCSharp;
-using static FrontendOnlyGeometry;
 
-public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, CharacterState, AbstractJoltMapController, uint> {
-    public LineRenderer lineRenderer;
+public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, uint, uint, uint> {
+    public Material meshMaterial;
 
-    public JoltAimingRayAnimController() {
+    private BoxMeshRenderer lineRenderer;
+
+    public JoltAimingRayAnimController(in AbstractJoltMapController theJoltMap) {
         SetUd(PbPrimitivesOverride.Instance.getUnderlying().TerminatingCharacterId);
         SetCacheGroupId(PbPrimitivesOverride.Instance.getUnderlying().ChSpecies.None);
     }
@@ -21,27 +22,29 @@ public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, 
     }
 
     protected bool initialized = false;
+    private MeshFilter meshFilter = null;
+    private MeshRenderer meshRenderer = null;
     protected override bool lazyInit() {
         if (initialized) return true;
+        meshFilter = gameObject.AddComponent<MeshFilter>();
+        meshFilter.mesh = new Mesh { };
+        meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        meshRenderer.sortingLayerName = "EmittingBullet";
+        meshRenderer.sharedMaterial = meshMaterial;
         initialized = true;
-        lineRenderer.startWidth = 1.0f;
-        lineRenderer.endWidth = 1.0f;
-        lineRenderer.startColor = Color.red;
-        lineRenderer.endColor = Color.red;
-        lineRenderer.SetPositions(new Vector3[] { Vector3.zero, Vector3.zero });
         return true;
     }
     
-    protected override bool updateAnimUnderlying(in int rdfId, in AimingRay aimingRay, in CharacterState newCharacterState, in AbstractJoltMapController theMap, in int framesInNewState) {
+    protected override bool updateAnimUnderlying(in int rdfId, in AimingRay aimingRay, in uint ignored1, in uint ignored2, in int framesInNewState) {
         SetCacheGroupId(0);
-        var (wStX, wStY) = CollisionSpacePositionToWorldPosition(aimingRay.StX, aimingRay.StY, theMap.GetTilemapHalfHeight(), theMap.GetCollisionSpacePaddingLeft(), theMap.GetCollisionSpacePaddingBottom());
+        if (null == lineRenderer) {
+            lineRenderer = gameObject.AddComponent<BoxMeshRenderer>();
+        } else {
+            lineRenderer = gameObject.GetComponent<BoxMeshRenderer>();
+        }
 
-        var (wEdX, wEdY) = CollisionSpacePositionToWorldPosition(aimingRay.EdX, aimingRay.EdY, theMap.GetTilemapHalfHeight(), theMap.GetCollisionSpacePaddingLeft(), theMap.GetCollisionSpacePaddingBottom());
+        lineRenderer.SetHalfExtent(0.5f*(aimingRay.EdX - aimingRay.StX), 0.5f);
 
-        positionHolder.Set(wStX, wStY, 0);
-        scaleHolder.Set(wEdX, wEdY, 0);
-        lineRenderer.SetPosition(0, positionHolder);
-        lineRenderer.SetPosition(1, scaleHolder);
         return true;
     }
 }

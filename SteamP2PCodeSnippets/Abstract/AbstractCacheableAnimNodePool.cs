@@ -9,6 +9,10 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
     protected float defaultZ;
     protected AbstractJoltMapController joltMap;
 
+    public AbstractJoltMapController GetJoltMap() {
+        return joltMap;
+    }
+
     protected Vector3 positionHolder = new Vector3();
 
     public void SetGeometricConsts(in float theEffectivelyInfinitelyFar, in float theDefaultZ) {
@@ -88,6 +92,8 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
         }
         g.SetUd(terminatingUd);
         g.SetCacheGroupId(cacheGroupId);
+        g.SetJoltMap(joltMap);
+
         return g;
     }
 

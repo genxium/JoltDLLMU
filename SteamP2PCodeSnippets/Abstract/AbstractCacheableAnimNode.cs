@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour where G : IComparable {
+    protected AbstractJoltMapController joltMap;
+    public void SetJoltMap(in AbstractJoltMapController theJoltMap) {
+        joltMap = theJoltMap;
+    }
 
     protected Animator animator;
     protected SpriteRenderer spr;
