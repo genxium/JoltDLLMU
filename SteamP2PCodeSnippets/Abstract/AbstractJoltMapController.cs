@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
 
@@ -192,11 +191,14 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         x = x * (1.5 - xhalf * x * x);
         return x;
     }
-    
+
+    protected bool shouldInitJoltInfra = true;
     protected unsafe virtual void Start() {
-        JPH_Init(10 * 1024 * 1024);
-        RegisterDebugCallback(OnDebugCallback);
-        Debug.Log($"Initialized Jolt resource allocators");
+        if (shouldInitJoltInfra) {
+            JPH_Init(10 * 1024 * 1024);
+            RegisterDebugCallback(OnDebugCallback);
+            Debug.Log($"{this.GetType()}: Initialized Jolt resource allocators");
+        }
 
         var primitivesBytes = PbPrimitivesOverride.Instance.getUnderlying().ToByteArray();
         fixed (byte* primitivesBytesPtr = primitivesBytes) {
@@ -236,6 +238,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
     }
 
+    protected bool shouldShutdownJoltInfra = true;
     protected virtual void OnDestroy() {
         // clean up
         onBattleStopped();
@@ -243,9 +246,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             APP_DestroyBattle(battle);
             battle = UIntPtr.Zero;
         }
-        
-        bool shutdownRes = JPH_Shutdown();
-        Debug.Log($"Jolt infra shutdown result = {shutdownRes}");
+
+        // [WARNING] DON'T call "JPH_Shutdown()" if you're transitioning from one "AbstractJoltMapController" instance to another using "Addressables.LoadSceneAsync(...)".
+        if (shouldShutdownJoltInfra) {
+            bool shutdownRes = JPH_Shutdown();
+            Debug.Log($"{this.GetType()}: Jolt infra shutdown result = {shutdownRes}");
+        }
     }
 
     protected virtual void preallocateFrontendOnlyHolders(int specifiedLayer = -1) {
@@ -414,6 +420,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
         if (UIntPtr.Zero != battle) {
             APP_ClearBattle(battle);
+            battle = UIntPtr.Zero;
         }
         battleState = PbPrimitivesOverride.ROOM_STATE_STOPPED;
     }
@@ -1127,7 +1134,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var (offCameraCenterRadioSquaredX, offCameraCenterRadioSquaredY) = calcOffCameraCenterRatioSquared(newPosHolder);
         bool justDead = ((0 >= chd.Hp) || (0 < chd.NewBirthRdfCountdown));
         if (justDead || battleResultIsSet) {
-            newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, chGameObj.transform.position.z);
+            newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
             camEffAccPerSecond = CAM_FAST_ACC_PER_SECOND;
             camCurrSpeedPerSecond = Mathf.Lerp(camCurrSpeedPerSecond, camMaxSpeedPerSecond, camEffAccPerSecond * dt);
         } else {
