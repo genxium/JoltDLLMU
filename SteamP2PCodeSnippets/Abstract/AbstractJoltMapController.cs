@@ -420,7 +420,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
         if (UIntPtr.Zero != battle) {
             APP_ClearBattle(battle);
-            battle = UIntPtr.Zero;
+            // [REMINDER] Only call "battle = UIntPtr.Zero" after "APP_DestroyBattle(battle)". 
         }
         battleState = PbPrimitivesOverride.ROOM_STATE_STOPPED;
     }
