@@ -73,6 +73,7 @@ namespace JoltCSharp {
         public const uint TRT_SYNC_WAVE_GROUP = 7;
         public const uint TRT_SAVE_POINT_ONLY = 8;
         public const uint TRT_VICTORY = 11;
+        public const uint TRT_FLIP_FLOP = 12;
 
         public const uint TPT_NONE = 0;
         public const uint TPT_SLIDING_PLATFORM = 1;
@@ -380,6 +381,8 @@ namespace JoltCSharp {
                   SyncWaveGroup = TRT_SYNC_WAVE_GROUP,
 
                   SavePoint = TRT_SAVE_POINT_ONLY,
+
+                  FlipFlop = TRT_FLIP_FLOP,
               },
 
               Tpts = new TrapTypes {

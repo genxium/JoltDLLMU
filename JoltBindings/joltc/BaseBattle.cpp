@@ -1015,12 +1015,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
             uint64_t closestOffenderUd = 0;
+            int closestOffenderBulletTeamId = 0;
             float closestOffenderScore = FLT_MAX;
             Vec3 closestOffenderPosDiff = Vec3::sZero();
 
             const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderBulletTeamId, closestOffenderScore, closestOffenderPosDiff);
 
             postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
@@ -1100,12 +1101,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterBase::EGroundState cvGroundState = CharacterBase::EGroundState::InAir;
             InputInducedMotion* inputInducedMotion = transientUdToInputInducedMotion.at(ud);
             uint64_t closestOffenderUd = 0;
+            int closestOffenderBulletTeamId = 0;
             float closestOffenderScore = FLT_MAX;
             Vec3 closestOffenderPosDiff = Vec3::sZero();
 
             const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
-            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderScore, closestOffenderPosDiff);
+            stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderBulletTeamId, closestOffenderScore, closestOffenderPosDiff);
             postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             Quat currChdQ;
@@ -1129,7 +1131,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 #endif // ! NDEBUG
                     }
                 }
-            } else if (!noOpSet.count(nextChd->ch_state())) {
+            } else if (!noOpSet.count(nextChd->ch_state()) || BlownUp1 == nextChd->ch_state()) {
                 bool notTurningAround = (currChd.q_x() == nextChd->q_x() && currChd.q_y() == nextChd->q_y() && currChd.q_z() == nextChd->q_z() && currChd.q_w() == nextChd->q_w());
                 if (cc->has_vision_reaction() && notTurningAround) {
                     BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
@@ -1142,7 +1144,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         const MassProperties massProps = shape->GetMassProperties();
                         
                         uint64_t toRevengeOppoUd = closestOffenderUd;
-                        uint64_t toRevengeOppoUdt = getUDT(closestOffenderUd);
+                        uint64_t toRevengeOppoUdt = getUDT(toRevengeOppoUd);
                         
                         int newLastFledRdfId = nextNpc->last_fled_rdf_id();
                         if (0 >= newLastFledRdfId) {
@@ -2265,7 +2267,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                     transientUdToStairsP[staticColliderUd] = slopeEdgeOutwardNorm;
 #ifndef NDEBUG
                     std::ostringstream oss;
-                    oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isParallelePiped=" << convexPolygon->is_parallelepiped() << " provides p-type staris:\n\t";
+                    oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << " provides p-type staris:\n\t";
                     for (int pi = 0; pi < effConvexPolygonPoints.size(); pi ++) {
                         auto& p = effConvexPolygonPoints[pi];
                         auto x = p.x();
@@ -2335,7 +2337,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
+        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
         for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
             auto& p = convexPolygon->points(pi);
             auto x = p.x();
@@ -2416,6 +2418,9 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
         }
         tr->set_state(TriggerState::TrReady);
         tr->set_main_cycle_mask_to_fulfill(1UL); // Meets the need by far
+        if (globalPrimitiveConsts->trts().flip_flop() == tr->trt()) {
+            continue;
+        }
         if (triggerConfigFromTileDict.count(tr->id())) {
             auto* triggerConfigFromTile = triggerConfigFromTileDict.at(tr->id());
             if (!collectedDemandedMask.count(tr->id())) {
@@ -6848,7 +6853,7 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     }
 }
 
-void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
+void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
     auto bodyID = single->GetBodyID();
 
     RVec3 newPos;
@@ -6900,7 +6905,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 bool shouldSkipWallServing = true;
                 handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, currIsFlying, nextChd, nextChdFacing,
                     udRhs, udtRhs, contactPointsLhs,
-                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
+                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderBulletTeamId, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
                 if (!shouldSkipGroundServing || !shouldSkipWallServing) {
                     Vec3 peerPos(newPos);
                     if (0 < contactPointsLhs.size()) {
@@ -6983,6 +6988,14 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, false, false);
             }
         }
+    }
+
+    if (0 != outClosestOffenderUd) {
+        nextChd->set_last_damaged_by_ud(outClosestOffenderUd);
+    }
+
+    if (0 != outClosestOffenderBulletTeamId) {
+        nextChd->set_last_damaged_by_bullet_team_id(outClosestOffenderBulletTeamId);
     }
    
     uint64_t newGroundUd = collector.mGroundUd;
@@ -7717,7 +7730,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, const bool currIsFlying, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const ContactPoints& contactPointsLhs,
-    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
 
     if (!transientUdToCurrBl.count(udRhs)) {
 #ifndef NDEBUG
@@ -7819,12 +7832,10 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
             }
         }
 
-        // [REMINDER] Randomness comes from ordering of "transientUdToCollisionUdHolder".
         uint64_t rhsOffenderUd = rhsCurrBl->offender_ud();
         uint64_t rhsOffenderUdt = getUDT(rhsCurrBl->offender_ud());
-        nextChd->set_last_damaged_by_bullet_team_id(rhsCurrBl->team_id());
-        nextChd->set_last_damaged_by_ud(rhsOffenderUd);
-
+        int rhsOffenderBulletTeamId = rhsCurrBl->team_id();
+         
         switch (rhsOffenderUdt) {
             case UDT_PLAYER:
             case UDT_NPC: {
@@ -7836,10 +7847,12 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
                 if (newOffenderScore < outClosestOffenderScore) {
                     outClosestOffenderScore = newOffenderScore;
                     outClosestOffenderUd = rhsOffenderUd; 
+                    outClosestOffenderBulletTeamId = rhsOffenderBulletTeamId;
                     outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
                 } else if (newOffenderScore == outClosestOffenderScore && (0 == outClosestOffenderUd || rhsOffenderUd < outClosestOffenderUd)) {
                     outClosestOffenderScore = newOffenderScore;
                     outClosestOffenderUd = rhsOffenderUd; 
+                    outClosestOffenderBulletTeamId = rhsOffenderBulletTeamId;
                     outClosestOffenderPosDiff.Set(newDx, newDy, newDz);
                 }
                 break;

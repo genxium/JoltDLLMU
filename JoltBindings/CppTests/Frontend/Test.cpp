@@ -1620,6 +1620,7 @@ RenderFrame* mockBulletHitReactionTestStartRdf(google::protobuf::Arena* theAlloc
     playerCh1->set_hp(cc1.hp());
     playerCh1->set_species_id(playerCh1Species);
     playerCh1->set_bullet_team_id(1);
+    playerCh1->set_btn_b_holding_rdf_cnt(1);
     player1->set_join_index(1);
     player1->set_revival_x(playerCh1->x());
     player1->set_revival_y(playerCh1->y());
@@ -1649,7 +1650,7 @@ RenderFrame* mockBulletHitReactionTestStartRdf(google::protobuf::Arena* theAlloc
     npcCh1->set_aiming_q_w(1);
     npcCh1->set_vel_x(0);
     npcCh1->set_vel_y(0);
-    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_hp(100);
     npcCh1->set_species_id(npcCh1Species);
     npcCh1->set_bullet_team_id(3);
 
@@ -3181,11 +3182,11 @@ std::map<int, uint64_t> testCmds26 = {
 };
 
 std::map<int, uint64_t> testCmds27 = {
-    {0, 0},
-    {99, 0},
-    {100, 0},
-    {239, 0},
-    {240, 32},
+    {0, 32},
+    {99, 32},
+    {100, 32},
+    {239, 32},
+    {240, 0},
     {241, 0},
     {2048, 0},
 };
@@ -8400,7 +8401,7 @@ bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
 
         if (360 == outerTimerRdfId) {
-            JPH_ASSERT(30 == npc1Chd.hp());
+            JPH_ASSERT(72 == npc1Chd.hp());
             JPH_ASSERT(0 > npc1Chd.vel_x());
             JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.locking_on_ud());
@@ -8597,24 +8598,21 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(Active == bl1.bl_state());
             JPH_ASSERT(1 == bl1.team_id());
             JPH_ASSERT(1 == bl1.active_skill_hit());
-        } else if (730 == outerTimerRdfId) {
-            JPH_ASSERT(0 == npc1.cached_cue_cmd());
-            JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
-        } else if (800 == outerTimerRdfId) {
+        } else if (635 == outerTimerRdfId) {
             npc1NotEnoughMpX = npc1Chd.x();
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.vel_x());
-        } else if (960 == outerTimerRdfId) {
+        } else if (730 == outerTimerRdfId) {
             JPH_ASSERT(npc1NotEnoughMpX == npc1Chd.x());
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.vel_x());
-        } else if (966 == outerTimerRdfId) {
+        } else if (820 == outerTimerRdfId) {
             JPH_ASSERT(4 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NHuntThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 > npc1Chd.vel_x());
-        } else if (1038 == outerTimerRdfId) {
+        } else if (865 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atk1 == npc1Chd.ch_state());
             JPH_ASSERT(40 == npc1Chd.mp());
         }

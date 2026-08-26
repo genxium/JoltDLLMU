@@ -1612,6 +1612,8 @@ message TriggerTypes {
 
     uint32 save_point = 9;
 
+    uint32 flip_flop = 10;
+
     uint32 none = 2048;
 }
 

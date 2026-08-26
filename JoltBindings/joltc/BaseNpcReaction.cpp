@@ -205,6 +205,12 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         outLastFledRdfId = currRdfId;
     }
 
+    InputFrameDecoded ifDecodedHolder;
+    uint64_t inheritedCachedCueCmd = BaseBattleCollisionFilter::sanitizeCachedCueCmd(currNpcCachedCueCmd);
+    BaseBattleCollisionFilter::decodeInput(inheritedCachedCueCmd, &ifDecodedHolder);
+    int inheritedDirX = (0 == ifDecodedHolder.dx() ? (0 < visionDirection.GetX() ? +2 : -2) : ifDecodedHolder.dx());
+    int inheritedDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
+    
     switch (newVisionReaction) {
         case TARGET_CH_REACTION_NOT_ENOUGH_MP:
         case TARGET_CH_REACTION_DEF1:
@@ -226,15 +232,14 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
            break;
        }
        default: {
-           int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, antiGravityNorm, gravityMagnitude, biNoLock, selfNpcCollider, &selfNpcAABB, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, toHandleMvBlockerBodyID, toHandleMvBlockerUd, currGapToJump, minGapToJump, currGroundMvTolerance, newVisionReaction, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe, outLastFledRdfId);
-           newVisionReaction = groundAndMvBlockerReaction;
+           if (0 <= visionDirection.GetX() * inheritedDirX) {
+               int groundAndMvBlockerReaction = deriveReactionAgainstGroundAndMvBlocker(currRdfId, antiGravityNorm, gravityMagnitude, biNoLock, selfNpcCollider, &selfNpcAABB, selfNpcBodyID, selfNpcUd, outNextNpcGoal, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionAABB, visionNarrowPhaseInBaseOffset, visionDirection, toHandleMvBlockerBodyID, toHandleMvBlockerUd, currGapToJump, minGapToJump, currGroundMvTolerance, newVisionReaction, toHandleOppoChUd, selfNpcPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe, outLastFledRdfId);
+               newVisionReaction = groundAndMvBlockerReaction;
+           } // [REMINDER] If "0 > visionDirection.GetX() * inheritedDirX", the character is potentially turning around for revenge.
            break;
         }
     }
-    
-    InputFrameDecoded ifDecodedHolder;
-    uint64_t inheritedCachedCueCmd = BaseBattleCollisionFilter::sanitizeCachedCueCmd(currNpcCachedCueCmd);
-    BaseBattleCollisionFilter::decodeInput(inheritedCachedCueCmd, &ifDecodedHolder);
+
     if (TARGET_CH_REACTION_UNCHANGED == newVisionReaction) {
         // Intentionally left blank
     } else if (TARGET_CH_REACTION_USE_MELEE == newVisionReaction) {
@@ -376,8 +381,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_l_level(0);
         ifDecodedHolder.set_btn_r_level(0);
     } else if (TARGET_CH_REACTION_HUNTING_LOSS == newVisionReaction) {
-        int inheritedDirX = 0 < visionDirection.GetX() ? +2 : -2;
-        int inheritedDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
+        
         switch (outNextNpcGoal) {
         case NpcGoal::NIdle:
             ifDecodedHolder.set_dx(0);
@@ -452,8 +456,8 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
                 toMoveDirX = 0 < selfNpcPositionDiffForAllyUd.GetX() ? +2 : -2;
             }
         } else {
-            toMoveDirX = 0 < visionDirection.GetX() ? +2 : -2;
-            toMoveDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
+            toMoveDirX = inheritedDirX;
+            toMoveDirY = inheritedDirY;
         }
        
         // It's important to unset "BtnALevel" if no proactive jump is implied by vision reaction, otherwise its value will remain even after execution and sanitization

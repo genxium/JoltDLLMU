@@ -64,6 +64,7 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
         globalPrimitiveConsts->trts().victory(),
         globalPrimitiveConsts->trts().save_point(),
         globalPrimitiveConsts->trts().by_pattern_f(),
+        globalPrimitiveConsts->trts().flip_flop(),
     };
 
     directSpawnerTrtSet = {
