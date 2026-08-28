@@ -81,6 +81,7 @@ namespace JoltCSharp {
         public const uint TPT_CONVEYOR_BELT = 3;
         public const uint TPT_FALLING_ROCK = 4;
         public const uint TPT_BRICK = 5;
+        public const uint TPT_BOSS_DOOR = 6;
 
         public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (1 << INPUT_SCALE_FRAMES);
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
@@ -392,7 +393,9 @@ namespace JoltCSharp {
                   RotatingPlatform = TPT_ROTATING_PLATFORM,
                   ConveyorBelt = TPT_CONVEYOR_BELT,
                   FallingRock = TPT_FALLING_ROCK,
-                  Brick = TPT_BRICK
+                  Brick = TPT_BRICK,
+
+                  BossDoor = TPT_BOSS_DOOR,  
               },
 
               Pkts = new PickableTypes {

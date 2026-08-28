@@ -1118,6 +1118,8 @@ public:
             return true;
         } else if (globalPrimitiveConsts->tpts().spring() == tpt) {
             return true;
+        } else if (globalPrimitiveConsts->tpts().boss_door() == tpt) {
+            return (TrapState::TpIdle == currTp->trap_state() || TrapState::TpActivated == currTp->trap_state());
         } else {
             return false;
         }

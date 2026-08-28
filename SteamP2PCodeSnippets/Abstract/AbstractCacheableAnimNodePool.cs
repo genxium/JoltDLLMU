@@ -50,7 +50,7 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
         transientActiveAnimNodeKeysToRemove.Clear();
     }
 
-    public void ResetUponBattlePreparation(int specifiedLayer = -1) {
+    public void ResetUponBattlePreparation(int rdfId, int specifiedLayer = -1) {
         if (null == cachedAnimNodes) {
             cachedAnimNodes = new Dictionary<G, LinkedList<A>>();
         }
@@ -63,7 +63,7 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
             transientActiveAnimNodeKeysToRemove = new List<ulong>();
         }
 
-        HideInactiveAnimNodes(-1);
+        HideInactiveAnimNodes(rdfId);
 
         foreach (var (_, v) in cachedAnimNodes) {
             while (0 < v.Count) {

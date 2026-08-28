@@ -30,11 +30,17 @@ namespace JoltCSharp {
                 Trt = primitiveConsts.Trts.IndiWavePickableSpawner,
             };
 
+            TriggerConfig FlipFlopTrigger = new TriggerConfig {
+                Trt = primitiveConsts.Trts.FlipFlop,
+                Name = "FlipFlop"
+            };
+
             underlying  = new MapField<uint, TriggerConfig> {
                 { PatternFTrigger.Trt, PatternFTrigger },
                 { VictoryTrigger.Trt, VictoryTrigger },
                 { IndiWaveNpcSpawner.Trt, IndiWaveNpcSpawner },
-                { IndiWavePickableSpawner.Trt, IndiWavePickableSpawner }
+                { IndiWavePickableSpawner.Trt, IndiWavePickableSpawner },
+                { FlipFlopTrigger.Trt, FlipFlopTrigger }
             };
 
             return true;

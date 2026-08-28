@@ -56,8 +56,10 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
 
     trivialTrtSet = {
         globalPrimitiveConsts->trts().by_init_delay(),
+        globalPrimitiveConsts->trts().save_point(),
         globalPrimitiveConsts->trts().by_movement(),
         globalPrimitiveConsts->trts().by_attack(),
+        globalPrimitiveConsts->trts().flip_flop(),
     };
 
     mixedMainAndSubCycleTrtSet = {

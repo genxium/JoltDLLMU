@@ -42,6 +42,10 @@ public abstract partial class AbstractSingleSelectGroup : MonoBehaviour {
         initSelectedIndicesForCells();
     }
 
+    protected virtual void OnEnable() {
+
+    }
+
     protected Transform popupPanelParent;
     protected AbstractSingleSelectPanel holderPanel;
 

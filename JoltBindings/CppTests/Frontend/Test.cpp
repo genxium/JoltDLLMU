@@ -2571,6 +2571,159 @@ RenderFrame* mockRegularSlopeStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockBossRoomStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+    
+    int triggerCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-150);
+    playerCh1->set_y(105);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(1);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(0);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    uint32_t frontTriggerId = 1;
+    uint32_t backTriggerId = 2;
+    uint32_t flipflopTriggerId = 3;
+    uint32_t bossDeadTriggerId = 4;
+    uint32_t bossAwakingTriggerId = 5;
+
+    auto npc1 = startRdf->mutable_npcs(0);
+    npc1->set_id(npcIdCounter++);
+    npc1->set_goal_as_npc(NpcGoal::NPatrol);
+    npc1->set_subscribes_to_trigger_id(bossAwakingTriggerId);
+    npc1->set_publishing_to_trigger_id_upon_exhausted(bossDeadTriggerId);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = chSpecies.wolverine1();
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(200);
+    npcCh1->set_y(105);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::Dimmed);
+    npcCh1->set_frames_to_recover(0);
+    // Intentionally NOT facing player at the beginning to test turnaround logic
+    npcCh1->set_q_x(0);
+    npcCh1->set_q_y(1);
+    npcCh1->set_q_z(0);
+    npcCh1->set_q_w(0); 
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(1); // Touch to die
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+
+    float floorOffsetY = 100.f;
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpts().boss_door());
+    dynamicTrap1->set_x(0);
+    dynamicTrap1->set_y(32.f + floorOffsetY);
+    dynamicTrap1->set_trap_state(TrapState::TpIdle);
+    ++dynamicTrapCount;
+
+    auto dynamicTrap2 = startRdf->add_dynamic_traps();
+    dynamicTrap2->set_id(43);
+    dynamicTrap2->set_tpt(globalPrimitiveConsts->tpts().boss_door());
+    dynamicTrap2->set_x(256);
+    dynamicTrap2->set_y(32.f + floorOffsetY);
+    dynamicTrap2->set_trap_state(TrapState::TpIdle);
+    ++dynamicTrapCount;
+
+    auto tr1 = startRdf->add_triggers(); // Front door open-trigger
+    tr1->set_id(frontTriggerId);
+    tr1->set_trt(globalPrimitiveConsts->trts().by_movement());
+    tr1->set_x(-20);
+    tr1->set_y(+32 + floorOffsetY);
+    tr1->set_z(0);
+    tr1->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    auto tr2 = startRdf->add_triggers(); // Front door close-trigger
+    tr2->set_id(backTriggerId);
+    tr2->set_trt(globalPrimitiveConsts->trts().by_movement());
+    tr2->set_x(+40);
+    tr2->set_y(+32 + floorOffsetY);
+    tr2->set_z(0);
+    tr2->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    auto tr3 = startRdf->add_triggers(); // Front door flipflop trigger
+    tr3->set_id(flipflopTriggerId);
+    tr3->set_trt(globalPrimitiveConsts->trts().flip_flop());
+    tr3->set_x(0);
+    tr3->set_y(+32 + floorOffsetY);
+    tr3->set_z(0);
+    tr3->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    auto tr4 = startRdf->add_triggers(); // Back door trigger
+    tr4->set_id(bossDeadTriggerId);
+    tr4->set_trt(globalPrimitiveConsts->trts().save_point());
+    tr4->set_x(360);
+    tr4->set_y(+32 + floorOffsetY);
+    tr4->set_z(0);
+    tr4->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    auto tr5 = startRdf->add_triggers(); // Boss awakening trigger
+    tr5->set_id(bossAwakingTriggerId);
+    tr5->set_trt(globalPrimitiveConsts->trts().by_movement());
+    tr5->set_x(30);
+    tr5->set_y(+256 + floorOffsetY);
+    tr5->set_z(0);
+    tr5->set_state(TriggerState::TrReady);
+    ++triggerCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter - 1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_trigger_count(triggerCount);
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -3182,9 +3335,19 @@ std::map<int, uint64_t> testCmds26 = {
 };
 
 std::map<int, uint64_t> testCmds27 = {
-    {0, 32},
-    {99, 32},
-    {100, 32},
+    {0, 36},
+    {23, 36},
+    {24, 32},
+    {63, 36},
+    {64, 288},
+    {65, 35},
+    {79, 35},
+    {80, 35},
+    {83, 35},
+    {84, 35},
+    {149, 35},
+    {150, 35},
+    {151, 32},
     {239, 32},
     {240, 0},
     {241, 0},
@@ -3425,6 +3588,30 @@ std::map<int, uint64_t> testCmds40 = {
     {839, 0},
     {840, 3},
     {999, 3},
+    {1000, 0},
+    {1024, 0},
+};
+
+std::map<int, uint64_t> testCmds41 = {
+    {0, 0},
+    {3, 0},
+    {4, 0},
+    {99, 0},
+    {100, 3},
+    {199, 3},
+    {200, 0},
+    {203, 0},
+    {204, 4},
+    {229, 4},
+    {230, 20},
+    {231, 4},
+    {259, 4},
+    {260, 3},
+    {269, 3},
+    {270, 0},
+    {279, 0},
+    {280, 32},
+    {341, 0},
     {1000, 0},
     {1024, 0},
 };
@@ -5099,13 +5286,13 @@ void initTest18Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     }
 }
 
-void initTest19Data(WsReq* testInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto testStartRdf = mockSlipJumpStartRdf(theAllocator);
+void initTest19Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockSlipJumpStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
     slipJumpOptions[1] = true;
     slipJumpOptions[3] = true;
-    TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, std::vector<bool>(hulls.size(), true), slipJumpOptions);
-    testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), slipJumpOptions);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
 void initTest20Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
@@ -5996,9 +6183,9 @@ void initTest38Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
-void initTest39Data(WsReq* testInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+void initTest39Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     // See digram(s) in "JoltDLLMU/StairsMechanismProposal".
-    auto testStartRdf = mockStairsStartRdf(theAllocator);
+    auto startRdf = mockStairsStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
     slipJumpOptions[2] = true;
 
@@ -6016,13 +6203,13 @@ void initTest39Data(WsReq* testInitializerMapData, std::vector<std::vector<float
     std::vector<bool> stairsNOptions(hulls.size(), false);
     stairsNOptions[3] = true;
 
-    TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
-    testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
-void initTest40Data(WsReq* testInitializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+void initTest40Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
     // See digram(s) in "JoltDLLMU/StairsMechanismProposal".
-    auto testStartRdf = mockRegularSlopeStartRdf(theAllocator);
+    auto startRdf = mockRegularSlopeStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
 
     std::vector<bool> parallelepipedOptions(hulls.size(), false);
@@ -6040,8 +6227,117 @@ void initTest40Data(WsReq* testInitializerMapData, std::vector<std::vector<float
 
     std::vector<bool> stairsNOptions(hulls.size(), false);
 
-    TestHelper::AddHullsToWsReq(testInitializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
-    testInitializerMapData->set_allocated_self_parsed_rdf(testStartRdf);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+}
+
+void initTest41Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockBossRoomStartRdf(theAllocator);
+    std::vector<bool> slipJumpOptions(hulls.size(), false);
+
+    std::vector<bool> parallelepipedOptions(hulls.size(), false);
+    std::vector<bool> boxOptions(hulls.size(), true);
+    std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
+    std::vector<bool> stairsPOptions(hulls.size(), false);
+    std::vector<bool> stairsNOptions(hulls.size(), false);
+
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_box_half_size_x(10.f);
+    trapConfigFromTiled1->set_box_half_size_y(32.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+    trapConfigFromTiled1->set_quota(1);
+    trapConfigFromTiled1->set_init_not_moving(true);
+    trapConfigFromTiled1->set_subscribes_to_trigger_id(startRdf->triggers(2).id());
+
+    trapConfigFromTiled1->set_init_x(startRdf->dynamic_traps(0).x());
+    trapConfigFromTiled1->set_init_y(startRdf->dynamic_traps(0).y());
+    trapConfigFromTiled1->set_init_z(0);
+
+    auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(1).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(1).tpt());
+    trapConfigFromTiled2->set_box_half_size_x(10.f);
+    trapConfigFromTiled2->set_box_half_size_y(32.f);
+    trapConfigFromTiled2->set_init_q_x(0);
+    trapConfigFromTiled2->set_init_q_y(0);
+    trapConfigFromTiled2->set_init_q_z(0);
+    trapConfigFromTiled2->set_init_q_w(1);
+    trapConfigFromTiled2->set_quota(1);
+    trapConfigFromTiled2->set_init_not_moving(true);
+    trapConfigFromTiled2->set_subscribes_to_trigger_id(startRdf->triggers(3).id());
+
+    trapConfigFromTiled2->set_init_x(startRdf->dynamic_traps(1).x());
+    trapConfigFromTiled2->set_init_y(startRdf->dynamic_traps(1).y());
+    trapConfigFromTiled2->set_init_z(0);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    auto triggerConfigFromTiled1 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled1->set_id(startRdf->triggers(0).id());
+    triggerConfigFromTiled1->set_trt(startRdf->triggers(0).trt());
+    triggerConfigFromTiled1->set_box_half_size_x(10.f);
+    triggerConfigFromTiled1->set_box_half_size_y(32.f);
+    triggerConfigFromTiled1->set_init_q_x(0);
+    triggerConfigFromTiled1->set_init_q_y(0);
+    triggerConfigFromTiled1->set_init_q_z(0);
+    triggerConfigFromTiled1->set_init_q_w(1);
+    triggerConfigFromTiled1->set_quota(1);
+    triggerConfigFromTiled1->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(2).id());
+
+    auto triggerConfigFromTiled2 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled2->set_id(startRdf->triggers(1).id());
+    triggerConfigFromTiled2->set_trt(startRdf->triggers(1).trt());
+    triggerConfigFromTiled2->set_box_half_size_x(10.f);
+    triggerConfigFromTiled2->set_box_half_size_y(32.f);
+    triggerConfigFromTiled2->set_init_q_x(0);
+    triggerConfigFromTiled2->set_init_q_y(0);
+    triggerConfigFromTiled2->set_init_q_z(0);
+    triggerConfigFromTiled2->set_init_q_w(1);
+    triggerConfigFromTiled2->set_quota(1);
+    triggerConfigFromTiled2->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(2).id());
+
+    auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
+    triggerConfigFromTiled3->set_trt(startRdf->triggers(2).trt());
+    triggerConfigFromTiled3->set_box_half_size_x(5.f);
+    triggerConfigFromTiled3->set_box_half_size_y(5.f);
+    triggerConfigFromTiled3->set_init_q_x(0);
+    triggerConfigFromTiled3->set_init_q_y(0);
+    triggerConfigFromTiled3->set_init_q_z(0);
+    triggerConfigFromTiled3->set_init_q_w(1);
+    triggerConfigFromTiled3->set_recovery_frames(1);
+    triggerConfigFromTiled3->set_quota(globalPrimitiveConsts->magic_quota_infinite());
+
+    auto triggerConfigFromTiled4 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled4->set_id(startRdf->triggers(3).id());
+    triggerConfigFromTiled4->set_trt(startRdf->triggers(3).trt());
+    triggerConfigFromTiled4->set_box_half_size_x(5.f);
+    triggerConfigFromTiled4->set_box_half_size_y(5.f);
+    triggerConfigFromTiled4->set_init_q_x(0);
+    triggerConfigFromTiled4->set_init_q_y(0);
+    triggerConfigFromTiled4->set_init_q_z(0);
+    triggerConfigFromTiled4->set_init_q_w(1);
+    triggerConfigFromTiled4->set_quota(1);
+    triggerConfigFromTiled4->set_publishing_to_trigger_id_upon_exhausted(startRdf->triggers(2).id());
+
+    auto triggerConfigFromTiled5 = initializerMapData->add_trigger_config_from_tile_list();
+    triggerConfigFromTiled5->set_id(startRdf->triggers(4).id());
+    triggerConfigFromTiled5->set_trt(startRdf->triggers(4).trt());
+    triggerConfigFromTiled5->set_box_half_size_x(10.f);
+    triggerConfigFromTiled5->set_box_half_size_y(256.f);
+    triggerConfigFromTiled5->set_init_q_x(0);
+    triggerConfigFromTiled5->set_init_q_y(0);
+    triggerConfigFromTiled5->set_init_q_z(0);
+    triggerConfigFromTiled5->set_init_q_w(1);
+    triggerConfigFromTiled5->set_quota(1);
 }
 
 std::string outStr;
@@ -6170,7 +6466,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase1\n" << std::endl;
+    std::cout << "Passed TestCase1: Basic wall jumping\n" << std::endl;
     theAllocator->Reset();
     reusedBattle->Clear();   
     return true;
@@ -8369,6 +8665,14 @@ bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0;
     
+    int landingRdfId = 0;
+    int transitToSlidingRdfId = 0;
+    int transitOutsideSlidingRdfId = 0;
+    int transitToAtkRdfId = 0;
+
+    uint64_t oldGroundUd = 0;
+    CharacterState oldChState = CharacterState::InAirIdle1NoJump;
+
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
         uint64_t inSingleInput = getSelfCmdByRdfId(testCmds27, outerTimerRdfId);
@@ -8392,12 +8696,40 @@ bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         const NpcCharacterDownsync& npc1 = outerTimerRdf->npcs(0);
         const CharacterDownsync& npc1Chd = npc1.chd();
 
+        if (0 == transitToSlidingRdfId) {
+            if ((Idle1 == oldChState || Walking == oldChState) && Sliding == p1Chd.ch_state()) {
+                transitToSlidingRdfId = outerTimerRdfId;
+            }
+        } else {
+            if (0 == transitOutsideSlidingRdfId) {
+                if (Sliding == oldChState && (Idle1 == p1Chd.ch_state() || Walking == p1Chd.ch_state())) {
+                    transitOutsideSlidingRdfId = outerTimerRdfId;
+                }
+            }
+        }
+
+        if (0 == transitToAtkRdfId) {
+            if ((Idle1 == oldChState || Walking == oldChState) && Atk1 == p1Chd.ch_state()) {
+                transitToAtkRdfId = outerTimerRdfId;
+            }
+        }
+
         if (272 <= outerTimerRdfId && outerTimerRdfId < 380) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
             std::cout << "TestCase27/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << ")" << std::endl;
+        }
+
+        if (0 != transitToSlidingRdfId && transitToSlidingRdfId <= outerTimerRdfId && (0 == transitOutsideSlidingRdfId || outerTimerRdfId < transitOutsideSlidingRdfId)) {
+            JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
+            JPH_ASSERT((outerTimerRdfId - transitToSlidingRdfId)  == p1Chd.frames_in_ch_state());
+            JPH_ASSERT(0 < p1Chd.btn_b_holding_rdf_cnt());
+        }
+
+        if (0 == transitToAtkRdfId || outerTimerRdfId < transitToAtkRdfId) {
+            JPH_ASSERT(0 < p1Chd.btn_b_holding_rdf_cnt());
         }
 
         if (360 == outerTimerRdfId) {
@@ -8407,6 +8739,8 @@ bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == npc1Chd.locking_on_ud());
         }
 
+        oldGroundUd = p1Chd.ground_ud();
+        oldChState = p1Chd.ch_state();
         outerTimerRdfId++;
     }
 
@@ -9805,6 +10139,147 @@ bool runTestCase40(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase41(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest41Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 2);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+
+    int landingRdfId = 0;
+    uint64_t oldGroundUd = 0;
+
+    int npcAwakenedRdfId = 0;
+    CharacterState npcOldChState = CharacterState::Dimmed;
+
+    int frontDoorOpenRdfId = 0;
+    int frontDoorCloseRdfId = 0;
+    int frontDoorOpenAgainRdfId = 0;
+    TrapState frontDoorOldState = TrapState::TpIdle;
+
+    int backDoorOpenRdfId = 0;
+    TrapState backDoorOldState = TrapState::TpIdle;
+
+    // Test terrain continuity.
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds41, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto p1Ud = BaseBattleCollisionFilter::calcPlayerUserData(p1.join_index());
+
+        auto& npc1 = outerTimerRdf->npcs(0);
+        auto& npc1Chd = npc1.chd();
+        auto npc1Ud = BaseBattleCollisionFilter::calcPlayerUserData(npc1.id());
+
+        auto& trap1 = outerTimerRdf->dynamic_traps(0);
+        auto trap1Ud = BaseBattleCollisionFilter::calcPlayerUserData(trap1.id());
+        auto& trap2 = outerTimerRdf->dynamic_traps(1);
+        auto trap2Ud = BaseBattleCollisionFilter::calcPlayerUserData(trap2.id());
+
+        auto& tr1 = outerTimerRdf->triggers(0);
+        auto tr1Ud = BaseBattleCollisionFilter::calcPlayerUserData(tr1.id());
+        auto& tr2 = outerTimerRdf->triggers(1);
+        auto tr2Ud = BaseBattleCollisionFilter::calcPlayerUserData(tr2.id());
+        auto& tr3 = outerTimerRdf->triggers(2);
+        auto tr3Ud = BaseBattleCollisionFilter::calcPlayerUserData(tr3.id());
+        auto& tr4 = outerTimerRdf->triggers(3);
+        auto tr4Ud = BaseBattleCollisionFilter::calcPlayerUserData(tr4.id());
+        auto& tr5 = outerTimerRdf->triggers(4);
+        auto tr5Ud = BaseBattleCollisionFilter::calcPlayerUserData(tr5.id());
+        
+        if (0 == npcAwakenedRdfId) {
+            if (Dimmed == npcOldChState && Awaking == npc1Chd.ch_state()) {
+                npcAwakenedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 == frontDoorOpenRdfId) {
+            if (TpIdle == frontDoorOldState && TpDeactivated == trap1.trap_state()) {
+                frontDoorOpenRdfId = outerTimerRdfId;
+            }
+        } else if (0 == frontDoorCloseRdfId) {
+            if (TpDeactivated == frontDoorOldState && TpActivated == trap1.trap_state()) {
+                frontDoorCloseRdfId = outerTimerRdfId;
+            }
+        } else {
+            if (0 == backDoorOpenRdfId) {
+                if (TpIdle == backDoorOldState && TpDeactivated == trap2.trap_state()) {
+                    backDoorOpenRdfId = outerTimerRdfId;
+                }
+            }
+            
+            if (0 == frontDoorOpenAgainRdfId) {
+                if (TpActivated == frontDoorOldState && TpDeactivated == trap1.trap_state()) {
+                    frontDoorOpenAgainRdfId = outerTimerRdfId;
+                }
+            }
+        }
+
+        bool shouldPrint = false;
+        if (256 < outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase41/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")\n\tnpc1Chd ud=" << npc1Ud << ", hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ccmd=" << npc1.cached_cue_cmd() << std::endl;
+        }
+        
+        if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            landingRdfId = outerTimerRdfId;
+        }
+
+        if (npcAwakenedRdfId > outerTimerRdfId) {
+            JPH_ASSERT(Dimmed == npc1Chd.ch_state());
+        } else if (0 != npcAwakenedRdfId && npcAwakenedRdfId <= outerTimerRdfId && outerTimerRdfId < 190) {
+            JPH_ASSERT(Awaking == npc1Chd.ch_state());
+            JPH_ASSERT((outerTimerRdfId-npcAwakenedRdfId) == npc1Chd.frames_in_ch_state());
+        } else if (0 != npcAwakenedRdfId && 190 < outerTimerRdfId) {
+            JPH_ASSERT(Dimmed != npc1Chd.ch_state() && Awaking != npc1Chd.ch_state());
+        }
+
+        if (0 != frontDoorCloseRdfId && frontDoorCloseRdfId <= outerTimerRdfId && (0 == frontDoorOpenAgainRdfId || outerTimerRdfId < frontDoorOpenAgainRdfId)) {
+            JPH_ASSERT(TpActivated == trap1.trap_state());
+        }
+
+        oldGroundUd = p1Chd.ground_ud();
+
+        npcOldChState = npc1Chd.ch_state();
+
+        frontDoorOldState = trap1.trap_state();
+        backDoorOldState = trap2.trap_state();
+
+        outerTimerRdfId++;
+    }
+
+    JPH_ASSERT(0 != landingRdfId);
+    JPH_ASSERT(0 != npcAwakenedRdfId);
+    
+    JPH_ASSERT(0 != frontDoorOpenRdfId);
+    JPH_ASSERT(0 != frontDoorCloseRdfId);
+    JPH_ASSERT(0 != frontDoorOpenAgainRdfId);
+
+    JPH_ASSERT(0 != backDoorOpenRdfId);
+
+    JPH_ASSERT(frontDoorOpenAgainRdfId == backDoorOpenRdfId+1);
+
+    std::cout << "Passed TestCase41: Boss door transition\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -10257,6 +10732,7 @@ int main(int argc, char** argv)
     runTestCase38(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase39(battle, stairsMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase40(battle, slopeMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase41(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "startRdf" will be automatically deallocated by the destructor of "wsReq"

@@ -700,8 +700,16 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
             // Calc "outCurrGapToJump", if "true == currIsFlying", these "xxxGapToJump" variables still provide useful information about the gaps.
             if (rhsAABBVisionAlignment1 > rhsAABBVisionAlignment2) {
                 outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment2 - selfNpcAABBVisionAlignment1);
+                if (udtRhs == UDT_TRAP) {
+                    // [REMINDER] In fact this should apply whenever "udRhs" uses box collider
+                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment2);
+                }
             } else {
                 outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment1 - selfNpcAABBVisionAlignment2);
+                if (udtRhs == UDT_TRAP) {
+                    // [REMINDER] In fact this should apply whenever "udRhs" uses box collider
+                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignment1);
+                }
             }
 
             if (rhsAABBJumpingAxisAlignment1 > rhsAABBJumpingAxisAlignment2) {
