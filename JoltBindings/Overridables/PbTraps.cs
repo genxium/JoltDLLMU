@@ -52,6 +52,18 @@ namespace JoltCSharp {
                 DefaultCooldownRdfCount = 60
             };
 
+            TrapConfig BossDoorTrap = new TrapConfig {
+                Tpt = primitiveConsts.Tpts.BossDoor,
+                Name = "BossDoor",
+                NoXFlipRendering = false,
+                UseKinematic = false,
+                UseObstableInterfaceBody = false,
+                DefaultBoxHalfSizeX = 10.0f,
+                DefaultBoxHalfSizeY = 32.0f,
+                DefaultLinearSpeed = 0, 
+                DefaultCooldownRdfCount = 0
+            };
+
             TrapConfig FallingRockTrap = new TrapConfig {
                 Tpt = primitiveConsts.Tpts.FallingRock,
                 Name = "FallingRock",
@@ -77,6 +89,7 @@ namespace JoltCSharp {
                 { SlidingPlatformTrap.Tpt, SlidingPlatformTrap },
                 { RotatingPlatformTrap.Tpt, RotatingPlatformTrap },
                 { ConveyorBeltTrap.Tpt, ConveyorBeltTrap },
+                { BossDoorTrap.Tpt, BossDoorTrap },
                 { FallingRockTrap.Tpt, FallingRockTrap },
                 { BrickTrap.Tpt, BrickTrap }
             };

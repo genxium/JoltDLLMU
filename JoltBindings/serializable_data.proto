@@ -243,6 +243,7 @@ enum TrapState {
     TpAtked1 = 3;
     TpDeactivated = 4; // Wouldn't be left-shifted
     TpDead = 5;
+    TpActivated = 6;
 }
 
 enum TriggerState {
@@ -590,10 +591,10 @@ message NpcCharacterDownsync {
     int32 last_fled_rdf_id = 5;
     NpcGoal goal_as_npc = 6;
 
-    uint64 publishing_mask_upon_exhausted = 7; // [WARNING] NOT to be configured from UI/Story Editor.
-    uint32 publishing_to_trigger_id_upon_exhausted = 8; // Configured from UI/Story Editor for awakening
+    uint32 publishing_to_trigger_id_upon_exhausted = 7; // Configured from UI/Story Editor
+    uint32 subscribes_to_trigger_id = 8; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
 
-    uint32 subscribes_to_trigger_id = 9; // Configured from UI/Story Editor for awakening, not necessarily the same as "publishing_to_trigger_id_upon_exhausted" 
+    uint64 publishing_mask_upon_exhausted = 9; // [WARNING] NOT to be configured from UI/Story Editor.
 
     bool captured_by_patrol_cue = 11;
     int32 frames_in_patrol_cue = 12;
@@ -1593,6 +1594,7 @@ message TrapTypes {
     uint32 falling_rock = 4; 
     uint32 spring = 5; 
     uint32 brick = 6; 
+    uint32 boss_door = 7; 
 
     uint32 none = 2048;
 }

@@ -254,6 +254,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
     }
 
+    protected bool lazyInitDebugColliderAnimPool(int rdfId) {
+        if (null != debugColliderAnimPool) return true;
+        debugColliderAnimPool = new JoltDebugColliderAnimPool(this);
+        debugColliderAnimPool.ResetUponBattlePreparation(rdfId);
+        return true;
+    }
+
     protected virtual void preallocateFrontendOnlyHolders(int specifiedLayer = -1) {
         //---------------------------------------------FRONTEND USE ONLY SEPERARTION---------------------------------------------
         triggerUdToConfigFromTiled = new Dictionary<ulong, TriggerConfigFromTiled>();
@@ -272,21 +279,20 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         keyChLightSourceAnimPool = new KeyChLightSourceAnimPool(this);
         sfxSourceAnimPool = new SfxSourceAnimPool(this);
 
-        playerAnimPool.ResetUponBattlePreparation();
-        npcAnimPool.ResetUponBattlePreparation();
-        bulletAnimPool.ResetUponBattlePreparation();
-        trapAnimPool.ResetUponBattlePreparation();
-        triggerAnimPool.ResetUponBattlePreparation();
-        inplaceHpBarAnimPool.ResetUponBattlePreparation();
-        aimingRayAnimPool.ResetUponBattlePreparation();
-        pickableAnimPool.ResetUponBattlePreparation();
-        gameplayBtnsHintAnimPool.ResetUponBattlePreparation();
-        keyChLightSourceAnimPool.ResetUponBattlePreparation();
-        sfxSourceAnimPool.ResetUponBattlePreparation();
+        playerAnimPool.ResetUponBattlePreparation(-1);
+        npcAnimPool.ResetUponBattlePreparation(-1);
+        bulletAnimPool.ResetUponBattlePreparation(-1);
+        trapAnimPool.ResetUponBattlePreparation(-1);
+        triggerAnimPool.ResetUponBattlePreparation(-1);
+        inplaceHpBarAnimPool.ResetUponBattlePreparation(-1);
+        aimingRayAnimPool.ResetUponBattlePreparation(-1);
+        pickableAnimPool.ResetUponBattlePreparation(-1);
+        gameplayBtnsHintAnimPool.ResetUponBattlePreparation(-1);
+        keyChLightSourceAnimPool.ResetUponBattlePreparation(-1);
+        sfxSourceAnimPool.ResetUponBattlePreparation(-1);
 
         if (debugDrawingEnabled && null != debugColliderPrefab) {
-            debugColliderAnimPool = new JoltDebugColliderAnimPool(this);
-            debugColliderAnimPool.ResetUponBattlePreparation();
+            lazyInitDebugColliderAnimPool(-1);
         }
     }
 
@@ -355,6 +361,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         keyChLightSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
         sfxSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
         if (debugDrawingEnabled && null != debugColliderPrefab) {
+            lazyInitDebugColliderAnimPool(-1);
             debugColliderAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
         }
         selfBattleHeading.ResetSelf();
@@ -658,7 +665,15 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                             (cx, cy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                         }
 
-                        CustomProperty speciesId, teamId, initGoal, publishingToTriggerIdUponExhausted, subscribesToTriggerId, exhaustedToDropConsumableSpeciesId, exhaustedToDropBuffSpeciesId, exhaustedToDropPickupSkillId, isMainTowerOfTeam;
+                        CustomProperty dirX, speciesId, teamId, initGoal, publishingToTriggerIdUponExhausted, subscribesToTriggerId, exhaustedToDropConsumableSpeciesId, exhaustedToDropBuffSpeciesId, exhaustedToDropPickupSkillId, isMainTowerOfTeam;
+                        tileProps.TryGetCustomProperty("dirX", out dirX);
+                        int dirXVal = null == dirX || dirX.IsEmpty ? +2 : dirX.GetValueAsInt();
+                        if (0 < dirXVal) {
+                            dirXVal = +2;
+                        } else {
+                            dirXVal = -2;
+                        }
+
                         tileProps.TryGetCustomProperty("speciesId", out speciesId);
                         tileProps.TryGetCustomProperty("teamId", out teamId);
                         tileProps.TryGetCustomProperty("initGoal", out initGoal);
@@ -668,7 +683,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         tileProps.TryGetCustomProperty("exhaustedToDropBuffSpeciesId", out exhaustedToDropBuffSpeciesId);
                         tileProps.TryGetCustomProperty("exhaustedToDropPickupSkillId", out exhaustedToDropPickupSkillId);
                         tileProps.TryGetCustomProperty("isMainTowerOfTeam", out isMainTowerOfTeam);
-
+                        
                         uint speciesIdVal = null == speciesId || speciesId.IsEmpty ? primitives.ChSpecies.None : (uint)speciesId.GetValueAsInt();
                         bool isMainTowerOfTeamVal = null == isMainTowerOfTeam || isMainTowerOfTeam.IsEmpty ? false : (0 < isMainTowerOfTeam.GetValueAsInt());
 
@@ -679,6 +694,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         }
 
                         bool xFlipped = isXFlipped(tileObj.m_TileId);
+                        if (xFlipped) {
+                            dirXVal = -2;
+                        }
                         var teamIdVal = null == teamId || teamId.IsEmpty ? primitives.TerminatingBulletTeamId: teamId.GetValueAsInt();
 
                         var chConfig = characters[speciesIdVal];
@@ -698,8 +716,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         chd.RemainingAirJumpQuota = chConfig.DefaultAirJumpQuota;
                         chd.RemainingAirDashQuota = chConfig.DefaultAirDashQuota;
                         chd.ChState = CharacterState.InAirIdle1NoJump;
+                        if (primitives.TerminatingTriggerId != npc.SubscribesToTriggerId) {
+                            chd.ChState = CharacterState.Dimmed;
+                        }
                         chd.FramesToRecover = 0;
-                        if (!xFlipped) {
+                        if (0 < dirXVal) {
                             chd.QX = 0;
                             chd.QY = 0;
                             chd.QZ = 0;
@@ -750,7 +771,17 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         tileProps.TryGetCustomProperty("limit2", out limit2);
                         tileProps.TryGetCustomProperty("limit3", out limit3);
                         tileProps.TryGetCustomProperty("limit4", out limit4);
-                        uint trapId = (uint)id.GetValueAsInt(); 
+
+                        if (null == id || id.IsEmpty) {
+                            throw new ArgumentNullException("Property id MUST be set for child in TrapStartingPos");
+                        }
+
+                        uint trapId = (uint)id.GetValueAsInt();
+
+                        if (null == tpt || tpt.IsEmpty) {
+                            throw new ArgumentNullException($"Property tpt MUST be set for child in TrapStartingPos for trapId={trapId}");
+                        }
+
                         uint tptVal = (uint)tpt.GetValueAsInt(); // Not checking null or empty for this property because it shouldn't be, and in case it comes empty anyway, this automatically throws an error 
                         float initVelXVal = (null != initVelX && !initVelX.IsEmpty ? initVelX.GetValueAsFloat() : 0);
                         float initVelYVal = (null != initVelY && !initVelY.IsEmpty ? initVelY.GetValueAsFloat() : 0);
@@ -910,7 +941,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     }
 
     protected virtual (Trigger, TriggerConfigFromTiled) parseTrigger(SuperObject tileObj, SuperCustomProperties tileProps) {
-        CustomProperty id, bulletTeamId, delayedFrames, quota, recoveryFrames, trt, subCycleTriggerFrames, subCycleQuota, newRevivalX, newRevivalY, bgmId, publishingToTriggerIdUponExhausted, isBossSavepoint, bossSpeciesIds, forceCtrlRdfCount, forceCtrlCmd;
+        CustomProperty id, bulletTeamId, delayedFrames, quota, recoveryFrames, trt, subCycleTriggerFrames, subCycleQuota, newRevivalX, newRevivalY, bgmId, publishingToTriggerIdUponExhausted;
         CustomProperty characterSpawnerTimeSeq, pickableSpawnerTimeSeq;
 
         tileProps.TryGetCustomProperty("id", out id);
@@ -927,21 +958,18 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("newRevivalY", out newRevivalY);
         tileProps.TryGetCustomProperty("bgmId", out bgmId);
         tileProps.TryGetCustomProperty("publishingToTriggerIdUponExhausted", out publishingToTriggerIdUponExhausted);
-        tileProps.TryGetCustomProperty("isBossSavepoint", out isBossSavepoint);
-        tileProps.TryGetCustomProperty("bossSpeciesIds", out bossSpeciesIds);
-        tileProps.TryGetCustomProperty("forceCtrlRdfCount", out forceCtrlRdfCount);
-        tileProps.TryGetCustomProperty("forceCtrlCmd", out forceCtrlCmd);
 
         if (null == id || id.IsEmpty) {
             throw new ArgumentNullException("Property id MUST be set for child in TriggerPos");
         }
 
+        uint triggerId = (uint)id.GetValueAsInt(); // must have 
+
         if (null == trt || trt.IsEmpty) {
-            throw new ArgumentNullException("Property trt MUST be set for child in TriggerPos");
+            throw new ArgumentNullException($"Property trt MUST be set for child in TriggerPos for triggerId={triggerId}");
         }
 
         uint trtVal = (uint)trt.GetValueAsInt(); // must have  
-        uint triggerId = (uint)id.GetValueAsInt(); // must have 
         
         int bulletTeamIdVal = (null != bulletTeamId && !bulletTeamId.IsEmpty ? bulletTeamId.GetValueAsInt() : 0);
         int delayedFramesVal = (null != delayedFrames && !delayedFrames.IsEmpty ? delayedFrames.GetValueAsInt() : 0);
@@ -951,8 +979,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         int subCycleQuotaVal = (null != subCycleQuota && !subCycleQuota.IsEmpty ? subCycleQuota.GetValueAsInt() : 0);
         var characterSpawnerTimeSeqStr = (null != characterSpawnerTimeSeq && !characterSpawnerTimeSeq.IsEmpty ? characterSpawnerTimeSeq.GetValueAsString() : "");
         var pickableSpawnerTimeSeqStr = (null != pickableSpawnerTimeSeq && !pickableSpawnerTimeSeq.IsEmpty ? pickableSpawnerTimeSeq.GetValueAsString() : "");
-        bool isBossSavepointVal = (null != isBossSavepoint && !isBossSavepoint.IsEmpty && 1 == isBossSavepoint.GetValueAsInt()) ? true : false;
-        var bossSpeciesIdsStr = (null != bossSpeciesIds && !bossSpeciesIds.IsEmpty ? bossSpeciesIds.GetValueAsString() : "");
 
         float newRevivalCx = 0, newRevivalCy = 0;
         int newRevivalXVal = 0, newRevivalYVal = 0;
@@ -981,8 +1007,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             Z = 0,
         };
 
-        var forceCtrlRdfCountVal = (null != forceCtrlRdfCount && !forceCtrlRdfCount.IsEmpty ? forceCtrlRdfCount.GetValueAsInt() : 0);
-        var forceCtrlCmdVal = (null != forceCtrlCmd && !forceCtrlCmd.IsEmpty ? (ulong)forceCtrlCmd.GetValueAsInt() : 0u);
         var configFromTiled = new TriggerConfigFromTiled {
             Id = triggerId,
             Trt = trtVal,
@@ -996,9 +1020,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             NewRevivalY = newRevivalYVal,
             PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
             BgmId = bgmIdVal,
-            IsBossSavepoint = isBossSavepointVal,
-            ForceCtrlRdfCount = forceCtrlRdfCountVal,
-            ForceCtrlCmd = forceCtrlCmdVal,
         };
         bool xFlipped = isXFlipped(tileObj.m_TileId);
 
@@ -1285,6 +1306,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             chAnimCtrl.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
 
             if (debugDrawingEnabled && null != debugColliderPrefab) {
+                lazyInitDebugColliderAnimPool(rdfId);
                 var (animCtrl, oldAnimUd) = debugColliderAnimPool.GetOrCreateAnimNode(playerUd, 0, chConfig, underlyingMap.transform);
                 animCtrl.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, 0);
                 var cachedNewPosHolder = newPosHolder;
@@ -1341,6 +1363,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             chAnimCtrl.updateAnim(rdfId, npcUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
 
             if (debugDrawingEnabled && null != debugColliderPrefab) {
+                lazyInitDebugColliderAnimPool(rdfId);
                 var (animCtrl, oldAnimUd) = debugColliderAnimPool.GetOrCreateAnimNode(npcUd, 0, chConfig, underlyingMap.transform);
                 animCtrl.updateAnim(rdfId, npcUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, 0);
                 var cachedNewPosHolder = newPosHolder;
@@ -1395,6 +1418,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         shouldRenderDebugDraw = false;
                     }
                     if (shouldRenderDebugDraw) {
+                        lazyInitDebugColliderAnimPool(rdfId);
                         var (animCtrl, oldUd) = debugColliderAnimPool.GetOrCreateAnimNode(bulletUd, 0, bulletConfig, underlyingMap.transform);
                         animCtrl.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, 0);
                         newPosHolder.Set(newPosHolder.x, newPosHolder.y, newPosHolder.z - 1);
@@ -1508,6 +1532,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         sfxSourceAnimPool.HideInactiveAnimNodes(rdfId);
 
         if (debugDrawingEnabled && null != debugColliderPrefab) {
+            lazyInitDebugColliderAnimPool(rdfId);
+            debugColliderAnimPool.HideInactiveAnimNodes(rdfId);
+        } else if (null != debugColliderAnimPool) {
             debugColliderAnimPool.HideInactiveAnimNodes(rdfId);
         }
 

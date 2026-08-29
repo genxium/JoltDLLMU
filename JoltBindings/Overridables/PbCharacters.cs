@@ -783,6 +783,8 @@ namespace JoltCSharp {
 
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternE, false, false, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternE, false, false, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternEHoldB, false, false, false, false, true, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontE, false, false, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontE, false, false, false, false, true, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontEHoldB, false, false, false, false, false, false, false, false), HunterSlidingId);
@@ -794,6 +796,8 @@ namespace JoltCSharp {
 
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternE, false, true, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternE, false, true, false, false, true, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
+            BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternEHoldB, false, true, false, false, true, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontE, false, true, false, false, false, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontE, false, true, false, false, true, false, false, false), HunterSlidingId);
             BOUNTY_HUNTER.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontEHoldB, false, true, false, false, false, false, false, false), HunterSlidingId);
