@@ -525,6 +525,45 @@ namespace JoltCSharp {
                 }
             };
 
+            CharacterConfig WOLVERINE1_TEST_WITH_VISION = new CharacterConfig {
+                SpeciesId = SPECIES_WOLVERINE1_TEST_WITH_VISION,
+                SpeciesName = "Wolverine1",
+                Hp = 220,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 2.5f * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (24.0f),
+                VisionOffsetY = (20.0f),
+                VisionHalfHeight = (96.0f),
+                // [WARNING] This is a tall character, if "VisionXxxRadius" is not big enough it might fail to see a downslope it's currently standing on.
+                VisionTopRadius = (16.0f), 
+                VisionBottomRadius = (64.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                AccMagX = 0.16f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = 0.5f * StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 5.0f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                CapsuleRadius = (12.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleHalfHeight = (18.0f),
+                ShrinkedCapsuleRadius = (12.0f),
+                ShrinkedCapsuleHalfHeight = (10.0f),
+                LayDownCapsuleRadius = (12.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (12.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = true,
+                Hardness = 6,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 80,
+                Ifc = IfaceCat.Flesh,
+                LoopingChStates = {
+                    {(int)CharacterState.Walking, 10},
+                }
+            };
+
             CharacterConfig BLACKSABER2 = new CharacterConfig {
                 SpeciesId = SPECIES_BLACKSABER2,
                 SpeciesName = "BlackSaber2",
@@ -863,6 +902,11 @@ namespace JoltCSharp {
             WOLVERINE1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Wolverine1GroundSlash1Id);
             WOLVERINE1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Wolverine1AirSlash1Id);
             underlying.Add(WOLVERINE1.SpeciesId, WOLVERINE1);
+
+            WOLVERINE1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), Wolverine1GroundSlash1Id);
+            WOLVERINE1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Wolverine1GroundSlash1Id);
+            WOLVERINE1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Wolverine1AirSlash1Id);
+            underlying.Add(WOLVERINE1_TEST_WITH_VISION.SpeciesId, WOLVERINE1_TEST_WITH_VISION);
 
             // POLICE characters
             underlying.Add(PARIS_POLICE_CHIEF.SpeciesId, PARIS_POLICE_CHIEF);

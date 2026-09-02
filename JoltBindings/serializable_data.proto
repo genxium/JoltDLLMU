@@ -742,6 +742,7 @@ message BulletConfig {
     float speed_if_not_hit = 31;
 
     int32 hardness = 32;
+    int32 self_extra_hardness = 33;
     int32 hit_invinsible_frames = 35;
 
     int32 perp_acc_mag = 37; // acceleration magnitude perpendicular to instantaneous velocity per second
@@ -1585,6 +1586,7 @@ message ChSpeciesConsts {
     uint32 none = 2048;
     uint32 blacksaber_test_no_vision = 2049;
     uint32 blacksaber_test_with_vision = 2050;
+    uint32 wolverine1_test_with_vision = 2051;
 }
 
 message TrapTypes {

@@ -20,6 +20,11 @@
 	#include <Jolt/Physics/Body/BodyFilter.h>
 #endif // JPH_DEBUG_RENDERER
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#include <unordered_set>
+#endif
+
 JPH_NAMESPACE_BEGIN
 
 #ifdef JPH_ENABLE_ASSERTS
@@ -904,6 +909,33 @@ void BodyManager::RestoreBodyState(Body &ioBody, StateRecorder &inStream)
 }
 
 void BodyManager::ClearFreeList() {
+#ifndef NDEBUG
+    if (0 != mNumBodies) {
+        std::ostringstream oss;
+        std::unordered_set<uintptr_t> freedSet;
+        // [REMINDER] For a freed "mBodies[currFreedIdx]", it essentially stores "nextFreedIdx" but the author makes it "mBodies[currFreedIdx] = ((nextFreedIdx << cFreedBodyIndexShift) | cIsFreedBody)" such that the last bit can be used for checking whether "(uintptr_t)mBodies[anyIdx]" is freed or not.
+        for (uintptr_t start = mBodyIDFreeListStart; start != cBodyIDFreeListEnd; start = uintptr_t(mBodies[start >> cFreedBodyIndexShift])) {
+            freedSet.insert(start);
+        }
+
+        oss << "mNumBodies=" << mNumBodies << " upon being cleared, and mBodies.size()=" << mBodies.size() << ", there're " << freedSet.size() << " already removed(freed):\n";
+        Debug::Log(oss.str(), DColor::Yellow);
+
+		int freedCnt = 0;
+        for (int idx = mBodies.size()-1; idx >= 0; idx--) {
+            Body* body = mBodies[idx];
+            if (!sIsValidBodyPointer(body)) {
+				freedCnt++;
+                continue;
+            }
+			std::ostringstream oss2;
+            BodyID bodyID = body->GetID();
+            uint64_t ud = body->GetUserData();
+            oss2 << "freedCnt=" << freedCnt << ", idx=" << idx << ", ud=" << ud << ", bodyID=" << bodyID.GetIndexAndSequenceNumber() << "\n";
+			Debug::Log(oss2.str(), DColor::Yellow);
+        }
+    }
+#endif
 	JPH_ASSERT(0 == mNumBodies);
 	JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::SoftBody]);
 	JPH_ASSERT(0 == mNumActiveBodies[(int)EBodyType::RigidBody]);

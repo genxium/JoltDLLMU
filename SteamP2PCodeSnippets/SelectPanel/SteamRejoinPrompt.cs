@@ -80,7 +80,7 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
 
     protected void triggerRejoinTimer() {
         disposeRejoinTimer("SteamRejoinPrompt.triggerRejoinTimer");
-        long timeoutMillis = 3000;
+        long timeoutMillis = 10000;
         rejoinTimer = new Timer(new TimerCallback((object s) => {
             long battleState = map.GetBattleState();
             if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {

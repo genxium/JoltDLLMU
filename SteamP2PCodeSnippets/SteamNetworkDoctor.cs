@@ -97,6 +97,10 @@ public class SteamNetworkDoctor {
         localRequiredIfdId = val;
     }
 
+    public int GetLocalRequiredIfdId() {
+        return localRequiredIfdId;
+    }
+
     public void LogSending(int i, int j) {
         if (i > j) return; 
         int oldEd = sendingQ.EdFrameId;

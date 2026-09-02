@@ -472,7 +472,15 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         ifDecodedHolder.set_btn_l_level(0);
         ifDecodedHolder.set_btn_r_level(0);
     }
-
+/*
+#ifndef NDEBUG
+    if (0 < ifDecodedHolder.btn_a_level()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", selfNpcUd=" << selfNpcUd << " attempts jumping because newVisionReaction=" << newVisionReaction << ", has visionDir=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), visionAABB=(minX=" << visionAABB.mMin.GetX() << ", maxX=" << visionAABB.mMax.GetX() << ", minY=" << visionAABB.mMin.GetY() << ", maxY=" << visionAABB.mMax.GetY() << "), curr_ch_state=" << currChd.ch_state() << ", curr_frames_in_ch_state=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", selfNpcGroundBodyUd=" << currChd.ground_ud() << ", toHandleMvBlockerUd=" << toHandleMvBlockerUd << ", canJumpWithinInertia=" << canJumpWithinInertia << "; currGroundMvTolerance=" << currGroundMvTolerance.vision_alignment() << ", minGapToJump=(" << minGapToJump.vision_alignment() << ", " << minGapToJump.anti_gravity_alignment() << "), currGapToJump=(" <<  currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << ")";
+        Debug::Log(oss.str(), DColor::Orange);
+    }
+#endif
+*/
     uint64_t newCachedCueCmd = BaseBattleCollisionFilter::encodeInput(ifDecodedHolder);
     outCmd = newCachedCueCmd;
 }
@@ -601,6 +609,11 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& anti
         }
         case UDT_TRAP: 
         case UDT_OBSTACLE: {
+            bool isGround = (udRhs == nextChd->ground_ud());
+            if (isGround) {
+                continue;
+            }
+
             bool isAlongForwardMv = (0 < rhsVisionAlignmentFromNpcChdPosition);
 
             if (!isAlongForwardMv) {

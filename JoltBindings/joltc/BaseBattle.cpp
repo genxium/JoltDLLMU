@@ -662,7 +662,7 @@ bool BaseBattle::transitToDying(const int currRdfId, const PlayerCharacterDownsy
     auto nextChd = nextPlayer->mutable_chd();
 #ifndef NDEBUG
     std::ostringstream oss;
-    oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead due to fallen death with nextChd->position=(" << nextChd->x() << "," << nextChd->y() << "), orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state() << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
+    oss << "@currRdfId=" << currRdfId << ", player joinIndex=" << currPlayer.join_index() << " is dead with nextChd->position=(" << nextChd->x() << "," << nextChd->y() << "), orig next_ch_state=" << nextChd->ch_state() << ", orig next_frames_in_ch_state=" << nextChd->frames_in_ch_state() << ", fallenDeathHeight=" << fallenDeathHeight << ", will transit into Dying";
     Debug::Log(oss.str(), DColor::Orange);
 #endif
     bool res = transitToDying(currRdfId, currChd, cvInAir, nextChd);
@@ -1656,6 +1656,11 @@ void BaseBattle::Clear() {
         }
     }
 
+#ifndef NDEBUG
+    std::ostringstream oss;
+    oss << "BaseBattle::Clear, staticColliderBodyIDs.size()=" << staticColliderBodyIDs.size();
+    Debug::Log(oss.str(), DColor::Orange);
+#endif
     if (!staticColliderBodyIDs.empty()) {
         biNoLock->RemoveBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
         biNoLock->DestroyBodies(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
@@ -1847,7 +1852,6 @@ void BaseBattle::Clear() {
     frameLogBuffer.Clear();
 
     playersCnt = 0;
-
     phySys->ClearBodyManagerFreeList();
     phySys->ValidateBodyManagerContactCacheForAllBodies();
 
@@ -2375,7 +2379,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ":\n\t";
+        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ", staticColliderBodyIDs.size()=" << staticColliderBodyIDs.size() << ":\n\t";
         for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
             auto& p = convexPolygon->points(pi);
             auto x = p.x();
@@ -3140,7 +3144,6 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
 
     return true;
 }
-
 
 bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
     JPH_ASSERT(nullptr != currChd || nullptr != referenceBullet);
@@ -7683,11 +7686,13 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
 
         nextTrigger->set_frames_in_state(0);
     } else if (subCycleTicked) {
+/*
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "stepSingleIndiWaveNpcSpawner/@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << " sub-cycle ticking at oldSubCycleIdx=" << oldSubCycleIdx << ", spawnerConfigIdx=" << spawnerConfigIdx << ", oldQuota=" << oldQuota << ", curr trigger_state=" << (int)currTrigger.state() << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
         int newSubCycleIdx = oldSubCycleIdx + 1;
         nextTrigger->set_sub_cycle_index(newSubCycleIdx);
         nextTrigger->set_frames_in_state(0);
