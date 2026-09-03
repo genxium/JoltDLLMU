@@ -22,7 +22,6 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
                     ToggleUIInteractability(false);
                     TogglePlayerInput(false);
                     map.AttemptToRejoinBattle();
-                    triggerRejoinTimer();
                     break;
                 case 1:
                     map.OnBattleStopped("Exit from rejoinPrompt");
@@ -49,7 +48,7 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
 
     /////////////////////////////////////////////////////////////////////////////////////////
     protected SteamOnlineMapController map;
-    private Timer rejoinTimer = null;
+    
 
     protected override void Start() {
         base.Start();
@@ -67,28 +66,6 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
 
     protected override void OnDisable() {
         base.OnDisable();
-        disposeRejoinTimer("SteamRejoinPrompt.OnDisable");
-    }
-
-    protected void disposeRejoinTimer(in string motivation) {
-        Debug.Log($"{motivation}: disposeRejoinTimer");
-        if (null != rejoinTimer) {
-            rejoinTimer.Dispose();
-            rejoinTimer = null;
-        }
-    }
-
-    protected void triggerRejoinTimer() {
-        disposeRejoinTimer("SteamRejoinPrompt.triggerRejoinTimer");
-        long timeoutMillis = 10000;
-        rejoinTimer = new Timer(new TimerCallback((object s) => {
-            long battleState = map.GetBattleState();
-            if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
-                Debug.Log($"rejoinTimer ticked with battleState=ROOM_STATE_IN_BATTLE");
-                OnCancel(null);
-            } else {
-                map.OnRejoinFailed(battleState);
-            }
-        }), this, timeoutMillis, Timeout.Infinite);
+        map.DisposeRejoinTimer("SteamRejoinPrompt.OnDisable");
     }
 }

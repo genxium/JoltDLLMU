@@ -491,7 +491,7 @@ public class SteamP2PSessionManager {
         byte[] copiedDownsyncSnapshot = new byte[nBytes];
         Buffer.BlockCopy(chatRecvBuff, 0, copiedDownsyncSnapshot, 0, copiedDownsyncSnapshot.Length);
 
-        Debug.Log($"Received LobbyChatMsg_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}, nBytes={nBytes}, chatEntryType={chatEntryType}");
+        //Debug.Log($"Received LobbyChatMsg_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}, nBytes={nBytes}, chatEntryType={chatEntryType}");
 
         localDownsyncSnapshotBytesBuffer.Enqueue(copiedDownsyncSnapshot);
     }
@@ -665,19 +665,15 @@ public class SteamP2PSessionManager {
         try {
             while (!sessionCancellationToken.IsCancellationRequested) {
                 if (ownerSignalSenderBuffer.TryTake(out toSendBuffer, sendBufferReadTimeoutMillis, sessionCancellationToken)) {
+                    SteamMatchmaking.SendLobbyChatMsg(m_currentLobbyId, toSendBuffer, toSendBuffer.Length);
+                    /*
                     unsafe {
                         fixed (byte* pArray = toSendBuffer) {
                             //Debug.Log($"In 'ownerSignalSend' loop, sending to {lockedLobbyMemberBindings.Length} recipients including self.");
-                            for (int i = lockedLobbyMemberBindings.Length-1; i >= 0; i--) {
+                            for (int i = lockedLobbyMemberBindings.Length - 1; i >= 0; i--) {
                                 SteamNetworkingIdentity memberSteamId = lockedMemberIdentities[i];
                                 if (SteamUser.GetSteamID() == memberSteamId.GetSteamID()) {
-                                    /*
-                                     [WARNING] DON'T apply "SteamNetworkingMessages.SendMessageToUser" to self, in practice I got the following exception and crashed.
-
-                                    ```
-                                    src\steamnetworkingsockets\clientlib\steamnetworkingsockets_p2p_ice.cpp (823) : Assertion Failed: We gathered candidate type 0x400, but 0x202 is allowed
-                                    ```
-                                    */
+                                    // [WARNING] DON'T apply "SteamNetworkingMessages.SendMessageToUser" to self, in practice I got the following exception and crashed (i.e. "src\steamnetworkingsockets\clientlib\steamnetworkingsockets_p2p_ice.cpp (823) : Assertion Failed: We gathered candidate type 0x400, but 0x202 is allowed").
                                     localDownsyncSnapshotBytesBuffer.Enqueue(toSendBuffer);
                                 } else {
                                     //Debug.Log($"Sending DOWNSYNC_SNAPSHOT_IO_CHANNEL message from steamId={SteamUser.GetSteamID()}, to memberSteamId={memberSteamId.GetSteamID()}...");
@@ -693,8 +689,10 @@ public class SteamP2PSessionManager {
                                     //Debug.Log($"Sent DOWNSYNC_SNAPSHOT_IO_CHANNEL message from steamId={SteamUser.GetSteamID()}, to memberSteamId={memberSteamId.GetSteamID()}");
                                 }
                             }
+
                         }
                     }
+                    */
                 }
             }
         } catch (ObjectDisposedException ex1) {

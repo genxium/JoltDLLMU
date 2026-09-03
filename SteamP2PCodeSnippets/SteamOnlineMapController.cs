@@ -99,12 +99,30 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         characterSelectPanel.TogglePlayerInput(true);
     }
 
+    private Timer rejoinTimer = null;
+    public bool DisposeRejoinTimer(in string motivation) {
+        if (null == rejoinTimer) {     
+            return false;
+        }
+        rejoinTimer.Dispose();
+        rejoinTimer = null;
+        Debug.Log($"{motivation}: DisposeRejoinTimer");
+        return true;
+    }
+
     public void OnLobbyEntered() {
-        if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState
-            || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN == battleState
-            || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN == battleState
-            ) {
-            Debug.LogWarning($"Potentially self-rejoining battleState={battleState}, awaiting RefRdf in DownsyncSnapshot...");
+        if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState) {
+            Debug.LogWarning($"Self-rejoining battleState={battleState}, awaiting RefRdf in DownsyncSnapshot...");
+            DisposeRejoinTimer("OnLobbyEntered/PotentialRejoin");
+            long timeoutMillis = 10000;
+            rejoinTimer = new Timer(new TimerCallback((object s) => {
+                if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
+                    Debug.Log($"rejoinTimer ticked with battleState=ROOM_STATE_IN_BATTLE");
+                    rejoinPrompt.OnCancel(null);
+                } else {
+                    OnRejoinFailed(battleState);
+                }
+            }), this, timeoutMillis, Timeout.Infinite);
 
             bool startedp2pSessionTask = startP2PSessionTaskIfNotYet();
             if (startedp2pSessionTask) {
@@ -279,9 +297,13 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState
                         || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN == battleState
                         || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN == battleState) {
-                        Debug.LogWarning($"Potentially self-rejoining battleState={battleState}, RefRdf.Id={downsyncSnapshotHolder.RefRdfId}, about to recover autoRejoinQuota and cancel rejoinPrompt");
                         autoRejoinQuota = DEFAULT_AUTO_REJOIN_QUOTA;
                         rejoinPrompt.OnCancel(null);
+                        var prevCsharpTimerRdfId = csharpTimerRdfId; 
+                        if (FRONTEND_DirectSnatch(battle)) {
+                            csharpTimerRdfId = downsyncSnapshotHolder.RefRdfId;
+                            Debug.LogWarning($"@csharpTimerRdfId={prevCsharpTimerRdfId}->{csharpTimerRdfId}, chaserRdfIdLowerBound={downsyncSnapshotHolder.RefRdfId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, udpLcacIfdId={newUdpLcacIfdId}: `FRONTEND_DirectSnatch` called for quick snatching#1");
+                        }
                     }
                     battleState = PbPrimitivesOverride.ROOM_STATE_IN_BATTLE;
                     enableBattleInput(true);
@@ -835,9 +857,10 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
                         , hence no slowing down would occur.
                         */
+                        var prevCsharpTimerRdfId = csharpTimerRdfId; 
                         snatched = FRONTEND_DirectSnatch(battle);
                         csharpTimerRdfId = chaserRdfIdLowerBound;
-                        Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}: `FRONTEND_DirectSnatch` called for quick snatching");
+                        Debug.LogWarning($"@csharpTimerRdfId={prevCsharpTimerRdfId}->{csharpTimerRdfId}, toGenIfdId={toGenIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, udpLcacIfdId={newUdpLcacIfdId}: `FRONTEND_DirectSnatch` called for quick snatching#2");
                         int chaserRdfIdLowerBoundToUseIfdId = APP_ConvertToDelayedInputFrameId(chaserRdfIdLowerBound);
                         if (toGenIfdId >= chaserRdfIdLowerBoundToUseIfdId) {
                             *outBytesCntPtr = pbBufferSizeLimit;
