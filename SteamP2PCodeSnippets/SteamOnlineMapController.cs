@@ -15,39 +15,40 @@ using static JoltCSharp.Bindings;
 public class SteamOnlineMapController : AbstractJoltMapController {
     public UISoundSource uiSoundSource;
 
-    Task p2pSessionTask;
+    protected const int DEFAULT_AUTO_REJOIN_QUOTA = 1; 
+    protected Task p2pSessionTask;
     protected int upsyncSeqNo = 0;
-    protected int autoRejoinQuota = 1;
+    protected int autoRejoinQuota = DEFAULT_AUTO_REJOIN_QUOTA;
 
-    CancellationTokenSource p2pSessionCancellationTokenSource;
-    CancellationToken p2pSessionCancellationToken;
+    protected CancellationTokenSource p2pSessionCancellationTokenSource;
+    protected CancellationToken p2pSessionCancellationToken;
 
-    private const float freezeIfdLagMilliseconds = 300.0f;
-    private const int freezeRdfLagThresHold = (int)(PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * freezeIfdLagMilliseconds/1000.0f);
-    private const int freezeIfdLagThresHold = (freezeRdfLagThresHold >> PbPrimitivesOverride.INPUT_SCALE_FRAMES);
+    protected const float freezeIfdLagMilliseconds = 300.0f;
+    protected const int freezeRdfLagThresHold = (int)(PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * freezeIfdLagMilliseconds/1000.0f);
+    protected const int freezeIfdLagThresHold = (freezeRdfLagThresHold >> PbPrimitivesOverride.INPUT_SCALE_FRAMES);
 
-    private const float slowDownIfdLagMilliseconds = 130.0f;
-    private const int slowDownRdfLagThreshold = (int)(PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * slowDownIfdLagMilliseconds/1000.0f);
-    private const int slowDownIfdLagThreshold = (slowDownRdfLagThreshold >> PbPrimitivesOverride.INPUT_SCALE_FRAMES); 
+    protected const float slowDownIfdLagMilliseconds = 130.0f;
+    protected const int slowDownRdfLagThreshold = (int)(PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * slowDownIfdLagMilliseconds/1000.0f);
+    protected const int slowDownIfdLagThreshold = (slowDownRdfLagThreshold >> PbPrimitivesOverride.INPUT_SCALE_FRAMES); 
 
-    private int frozenRdfCount = 0;
-    private int frozenGracingRdfCnt = 0;
-    private const int frozenRdfCountLimit = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS);
-    private const int frozenRdfCountDaRegularBroadcastingThreshold = (frozenRdfCountLimit * 1/2);
-    private const int frozenGracePeriodRdfCount = (int)(1.5f*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS);
+    protected int frozenRdfCount = 0;
+    protected int frozenGracingRdfCnt = 0;
+    protected const int frozenRdfCountLimit = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS);
+    protected const int frozenRdfCountDaRegularBroadcastingThreshold = (frozenRdfCountLimit * 1/2);
+    protected const int frozenGracePeriodRdfCount = (int)(1.5f*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS);
 
-    private const int acIfdLagThresHold = (PbPrimitivesOverride.FRONTEND_WS_RECV_BYTE_LENGTH / 5);
-    bool acLagShouldLockStep = false;
+    protected const int acIfdLagThresHold = (PbPrimitivesOverride.FRONTEND_WS_RECV_BYTE_LENGTH / 5);
+    protected bool acLagShouldLockStep = false;
 
     public bool useFreezingLockStep = true; // [WARNING] If set to "false", expect more teleports due to "FRONTEND_ChaseRolledBackRdfs" but less frozen graphics when your device has above average network among all peers in the same battle -- yet "useFreezingLockStep" could NOT completely rule out teleports as long as potential floating point mismatch between devices exists (especially between backend .NET 7.0 and frontend .NET 2.1).
     public SteamNetworkDoctorInfo networkInfoPanel;
-    bool ifdFrontShouldLockStep = false;
-    bool ifdFrontShouldFreeze = false;
-    bool localTimerEnded = false;
-    bool timerEndedRdfDerivedFromAllConfirmedInputFrameDownsync = false;
+    protected bool ifdFrontShouldLockStep = false;
+    protected bool ifdFrontShouldFreeze = false;
+    protected bool localTimerEnded = false;
+    protected bool timerEndedRdfDerivedFromAllConfirmedInputFrameDownsync = false;
 
     public const int DEFAULT_TIMEOUT_FOR_LAST_ALL_CONFIRMED_IFD = 10000; // in milliseconds;
-    int timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync = DEFAULT_TIMEOUT_FOR_LAST_ALL_CONFIRMED_IFD;
+    protected int timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync = DEFAULT_TIMEOUT_FOR_LAST_ALL_CONFIRMED_IFD;
 
     public SteamPlayerWaitingPanel playerWaitingPanel;
     public SteamArenaCharacterSelectPanel characterSelectPanel;
@@ -63,23 +64,30 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
     protected byte[] upsyncSnapshotReqBuffer;
     protected long upsyncSnapshotReqBufferBytesCnt = 0;
-    private int lastSentIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    protected int lastSentIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
 
     public bool stepShadowBattleAlongWithMainBattle = false;
     public bool broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle = false;
-    private byte[] shadowBattleDownsyncSnapshotBytes;
-    long shadowBattleDownsyncSnapshotByteCnt = 0;
-    private int shadowBattleEvictedStCnt = 0, shadowBattleOldLcacIfdId = -1, shadowBattleNewLcacIfdId = -1, shadowBattleOldDynamicsRdfId = 0, shadowBattleNewDynamicsRdfId = 0, shadowBattleMaxPlayerInputFrontId = 0, shadowBattleMinPlayerInputFrontId = 0;
+    protected byte[] shadowBattleDownsyncSnapshotBytes;
+    protected long shadowBattleDownsyncSnapshotByteCnt = 0;
+    protected int shadowBattleEvictedStCnt = 0, shadowBattleOldLcacIfdId = -1, shadowBattleNewLcacIfdId = -1, shadowBattleOldDynamicsRdfId = 0, shadowBattleNewDynamicsRdfId = 0, shadowBattleMaxPlayerInputFrontId = 0, shadowBattleMinPlayerInputFrontId = 0;
 
-    private int lastSentRefRdfIdAsOwner = -1, lastSentRefRdfAtTimerRdfIdAsOwner = -1;
-    private int REF_RDF_ID_INTERVAL_RDF_CNT = 5*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+    protected int lastSentRefRdfIdAsOwner = -1, lastSentRefRdfAtTimerRdfIdAsOwner = -1;
+    protected int REF_RDF_ID_INTERVAL_RDF_CNT = 5*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
 
-    private ulong allConfirmedMask = 0UL;
+    protected ulong allConfirmedMask = 0UL;
 
-    private UIntPtr shadowBattle = UIntPtr.Zero; // No rollback, only used for "broadcastDaRegularAsOwner(...)"
+    protected UIntPtr shadowBattle = UIntPtr.Zero; // No rollback, only used for "broadcastDaRegularAsOwner(...)"
+
     public SteamOnlineMapController() : base() {
         upsyncSnapshotReqBuffer = new byte[pbBufferSizeLimit];
         shadowBattleDownsyncSnapshotBytes = new byte[pbBufferSizeLimit];
+        bindP2PSessionManager();
+    }
+
+    protected SteamP2PSessionManager p2pSessionManager;
+    protected virtual void bindP2PSessionManager() {
+        p2pSessionManager = SteamP2PSessionManager.Instance;
     }
 
     public void OnLobbyCreated() {
@@ -92,16 +100,28 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     public void OnLobbyEntered() {
-        characterSelectPanel.ToggleUIInteractability(false);
-        characterSelectPanel.gameObject.SetActive(false);
+        if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState
+            || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN == battleState
+            || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN == battleState
+            ) {
+            Debug.LogWarning($"Potentially self-rejoining battleState={battleState}, awaiting RefRdf in DownsyncSnapshot...");
 
-        playerWaitingPanel.ToggleUIInteractability(true);
-        playerWaitingPanel.gameObject.SetActive(true);
-        battleState = PbPrimitivesOverride.ROOM_STATE_WAITING;
+            bool startedp2pSessionTask = startP2PSessionTaskIfNotYet();
+            if (startedp2pSessionTask) {
+                Debug.Log($"Started new p2pSessionTask in OnLobbyEntered at battleState={battleState} (rejoined), currentLobbyId={p2pSessionManager.GetCurrentLobbyId()}");
+            }
+        } else {
+            characterSelectPanel.ToggleUIInteractability(false);
+            characterSelectPanel.gameObject.SetActive(false);
 
-        bool startedp2pSessionTask = startP2PSessionTaskIfNotYet();
-        if (startedp2pSessionTask) {
-            Debug.Log($"Started new p2pSessionTask in readyGoPanel.OnComplete");
+            playerWaitingPanel.ToggleUIInteractability(true);
+            playerWaitingPanel.gameObject.SetActive(true);
+            battleState = PbPrimitivesOverride.ROOM_STATE_WAITING;
+
+            bool startedp2pSessionTask = startP2PSessionTaskIfNotYet();
+            if (startedp2pSessionTask) {
+                Debug.Log($"Started new p2pSessionTask in OnLobbyEntered at battleState={battleState}, currentLobbyId={p2pSessionManager.GetCurrentLobbyId()}");
+            }
         }
     }
 
@@ -110,14 +130,30 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         characterSelectPanel.TogglePlayerInput(true);
     }
 
-    public void OnLobbyMembersUpdated(SteamBinding[] newMemberList) {
-        Debug.Log($"Lobby members updated:\n");
+    public void OnLobbyMembersUpdatedWhenWaiting(in SteamBinding[] newMemberList, in string callStackHint) {
+        Debug.Log($"{callStackHint} Lobby members updated when waiting, battleState={battleState}:\n");
         for (int i = 0; i < newMemberList.Length; i++) {
             var member = newMemberList[i];
             if (CSteamID.Nil.m_SteamID == member.UlSteamId || PbPrimitivesOverride.SPECIES_NONE_CH == member.ChSpeciesId) {
                 break;
             }
-            Debug.Log($"joinIndex={i+1}: memberSteamID={member.UlSteamId}, chSpeciesId={member.ChSpeciesId}");
+            var selfSteamID = SteamUser.GetSteamID();
+            var selfUlSteamID = selfSteamID.m_SteamID;
+            if (member.UlSteamId == selfUlSteamID) {
+                selfJoinIndexArrIdx = i;
+                selfJoinIndexInt = selfJoinIndexArrIdx+1;
+                selfJoinIndex = (uint)selfJoinIndexInt;
+                selfJoinIndexMask = (1UL << selfJoinIndexArrIdx);
+                selfPlayerId = $"steam_{selfUlSteamID}";
+                selfPlayerInfo = new PlayerMetaInfo {
+                    PlayerId = selfPlayerId,
+                    JoinIndex = selfJoinIndex,
+                    BulletTeamId = downsyncSnapshotHolder.PeerBulletTeamId
+                };
+                Debug.Log($"selfJoinIndex={i + 1}: memberSteamID={member.UlSteamId}, chSpeciesId={member.ChSpeciesId}");
+            } else {
+                Debug.Log($"joinIndex={i + 1}: memberSteamID={member.UlSteamId}, chSpeciesId={member.ChSpeciesId}");
+            }
         }
 
         if (null != playerWaitingPanel && playerWaitingPanel.gameObject.activeSelf) {
@@ -132,31 +168,53 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
     }
 
-    public void OnLobbyMemberLeft(in uint joinIndex, in string motivation) {
-        if (joinIndex == selfJoinIndex) {
-            Debug.Log($"{motivation}: OnLobbyMemberLeft with selfJoinIndex={joinIndex}, battleState={battleState}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
-            if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
-                battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN;
-            }
-        } else {
-            Debug.Log($"{motivation}: OnLobbyMemberLeft with peer joinIndex={joinIndex}, battleState={battleState}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
-            if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
-                int joinIndexArrIdx = ((int)joinIndex) - 1;
-                ulong joinIndexMask = (1UL << joinIndexArrIdx);
-                {
-                    ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(battle);
-                    APP_SetInactiveJoinMask(battle, (existingInactiveJoinIndexMask | joinIndexMask));
-                }
-                {
-                    ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(shadowBattle);
-                    APP_SetInactiveJoinMask(shadowBattle, (existingInactiveJoinIndexMask | joinIndexMask));
+    public void OnLobbySelfLeft(in string motivation) {
+        if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
+            int localRequiredIfdId = SteamNetworkDoctor.Instance.GetLocalRequiredIfdId();
+            int roughIfdIdLag = (localRequiredIfdId - newUdpLcacIfdId);
+            if (roughIfdIdLag < slowDownIfdLagThreshold) {
+                // [REMINDER] It's usually the case that by the time "SteamMatchMaking SDK“ calls "OnLobbyMemberLeft", P2P packet transmission still works via "SteamNetworkingMessages SDK" -- in this case we shouldn't rejoin or it'll cause lagging noise.
+                Debug.Log($"{motivation}: OnLobbySelfLeft with selfJoinIndex={selfJoinIndex}, battleState={battleState}, autoRejoinQuota={autoRejoinQuota} but no need to rejoin either automatically or manually because `roughIfdIdLag:{roughIfdIdLag} = localRequiredIfdId:{localRequiredIfdId} - slowDownIfdLagThreshold:{slowDownIfdLagThreshold}`, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+            } else {
+                if (0 < autoRejoinQuota) {
+                    Debug.Log($"{motivation}: OnLobbySelfLeft with selfJoinIndex={selfJoinIndex}, battleState={battleState}, autoRejoinQuota={autoRejoinQuota} need auto rejoin because `roughIfdIdLag:{roughIfdIdLag} = localRequiredIfdId:{localRequiredIfdId} - slowDownIfdLagThreshold:{slowDownIfdLagThreshold}`, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+                    --autoRejoinQuota;
+                    AttemptToRejoinBattle();
+                } else {
+                    Debug.Log($"{motivation}: OnLobbySelfLeft with selfJoinIndex={selfJoinIndex}, battleState={battleState}, autoRejoinQuota={autoRejoinQuota} need manual rejoin because `roughIfdIdLag:{roughIfdIdLag} = localRequiredIfdId:{localRequiredIfdId} - slowDownIfdLagThreshold:{slowDownIfdLagThreshold}`, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+                    battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN;
                 }
             }
         }
     }
 
+    public void OnLobbyPeerLeft(in uint joinIndex, in string motivation) {
+        Debug.Log($"{motivation}: OnLobbyPeerLeft with peerJoinIndex={joinIndex}, battleState={battleState}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
+            int joinIndexArrIdx = ((int)joinIndex) - 1;
+            ulong joinIndexMask = (1UL << joinIndexArrIdx);
+            {
+                ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(battle);
+                APP_SetInactiveJoinMask(battle, (existingInactiveJoinIndexMask | joinIndexMask));
+            }
+            {
+                ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(shadowBattle);
+                APP_SetInactiveJoinMask(shadowBattle, (existingInactiveJoinIndexMask | joinIndexMask));
+            }
+        }
+    }
+
+    public void OnSessionWithPeerFailed(in ulong peerUlSteamID, in uint peerJoinIndex) {
+        Debug.Log($"OnSessionWithPeerFailed with peerUlSteamID={peerUlSteamID}, peerJoinIndex ={peerJoinIndex}, battleState={battleState}, currentLobbyId={p2pSessionManager.GetCurrentLobbyId()}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        if (CSteamID.Nil == p2pSessionManager.GetCurrentLobbyId()) {
+            autoRejoinQuota = 0;
+            battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN;
+        }
+    }
+
     public void OnLobbyMemberRejoined(uint joinIndex) {
-        Debug.Log($"OnLobbyMemberRejoined with joinIndex={joinIndex}, battleState={battleState}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        bool isCurrentLobbyOwner = p2pSessionManager.GetIsCurrentLobbyOwner();
+        Debug.Log($"OnLobbyMemberRejoined with joinIndex={joinIndex}, battleState={battleState}, thread ud={Thread.CurrentThread.ManagedThreadId}, isCurrentLobbyOwner={isCurrentLobbyOwner}.");
 
         int joinIndexArrIdx = ((int)joinIndex) - 1;
         ulong joinIndexMask = (1UL << joinIndexArrIdx);
@@ -173,14 +231,16 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
         }
 
-        if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
-            forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"LobbyMember joinIndex={joinIndex} rejoined"); 
+        if (isCurrentLobbyOwner) {
+            if (forceConfirmAllPeersAndBroadcastDaRegularAsOwner("")) {
+                Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, about to broadcast DaRegular from owner [lastSentIfdId={lastSentIfdId}, newLcacIfdId={newLcacIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, shadowBattleOldDynamicsRdfId={shadowBattleOldDynamicsRdfId}, shadowBattleNewDynamicsRdfId={shadowBattleNewDynamicsRdfId}]: LobbyMember joinIndex={joinIndex} rejoined");
+            }
         }
     }
 
-    private byte[] downsyncSnapshotRecvBuff = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
+    protected byte[] downsyncSnapshotRecvBuff = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
 
-    private unsafe void handleSingleDownsyncSnapshotBytes(in IntPtr pData, in int bytesCnt) {
+    protected unsafe void handleSingleDownsyncSnapshotBytes(in IntPtr pData, in int bytesCnt) {
         Marshal.Copy(pData, downsyncSnapshotRecvBuff, 0, bytesCnt);
 
         Bindings.PreemptDownsyncSnapshotBeforeMerge(downsyncSnapshotHolder, PbPrimitivesOverride.Instance.getUnderlying());
@@ -219,7 +279,8 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState
                         || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_AUTO_REJOIN == battleState
                         || PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN == battleState) {
-                        Debug.LogWarning($"Potentially rejoining battleState={battleState}, about to cancel rejoinPrompt");
+                        Debug.LogWarning($"Potentially self-rejoining battleState={battleState}, RefRdf.Id={downsyncSnapshotHolder.RefRdfId}, about to recover autoRejoinQuota and cancel rejoinPrompt");
+                        autoRejoinQuota = DEFAULT_AUTO_REJOIN_QUOTA;
                         rejoinPrompt.OnCancel(null);
                     }
                     battleState = PbPrimitivesOverride.ROOM_STATE_IN_BATTLE;
@@ -229,21 +290,21 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
     }
 
-    bool startP2PSessionTaskIfNotYet() {
+    protected bool startP2PSessionTaskIfNotYet() {
         if (null != p2pSessionTask) return false;
         p2pSessionCancellationTokenSource = new CancellationTokenSource();
         p2pSessionCancellationToken = p2pSessionCancellationTokenSource.Token;
         p2pSessionTask = Task.Run(async () => {
-            await SteamP2PSessionManager.Instance.OpenSession(p2pSessionCancellationToken);
+            await p2pSessionManager.OpenSession(p2pSessionCancellationToken);
         });
         return true;
     }
 
-    private const int MAX_MSG_COUNT_PER_POLL = 8;
-    private static IntPtr[] messagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL]; // [WARNING] Using "static" intentionally such that "SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messagePointers, MAX_MSG_COUNT_PER_POLL)" would NOT crash due to "messagePointers" being deallocated by another thread (e.g. when application quits).
-    private byte[] localRecvBytes = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
+    protected const int MAX_MSG_COUNT_PER_POLL = 8;
+    protected static IntPtr[] messagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL]; // [WARNING] Using "static" intentionally such that "SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messagePointers, MAX_MSG_COUNT_PER_POLL)" would NOT crash due to "messagePointers" being deallocated by another thread (e.g. when application quits).
+    protected byte[] localRecvBytes = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
 
-    private unsafe void pollAndHandleFromOwnerRecvBuffer(int* pTimerRdfId, int* pNewChaserRdfId, int* pChaserRdfIdLowerBound, int* pToGenIfdId, int* pLocalRequiredIfdId) {
+    protected unsafe void pollAndHandleFromOwnerRecvBuffer(int* pTimerRdfId, int* pNewChaserRdfId, int* pChaserRdfIdLowerBound, int* pToGenIfdId, int* pLocalRequiredIfdId) {
         int messageCount = 0;
         do {
             // [REMINDER] Mostly native-method wrappers, no need to use try-catch-finally or try-finally
@@ -256,7 +317,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             for (int i = 0; i < messageCount; i++) {
                 SteamNetworkingMessage_t netMessage = Marshal.PtrToStructure<SteamNetworkingMessage_t>(messagePointers[i]);
                 CSteamID fromSteamID = netMessage.m_identityPeer.GetSteamID();
-                if (fromSteamID == SteamP2PSessionManager.Instance.GetCurrentLobbyOwnerId()) {
+                if (fromSteamID == p2pSessionManager.GetCurrentLobbyOwnerId()) {
                     handleSingleDownsyncSnapshotBytes(netMessage.m_pData, netMessage.m_cbSize);
                 } // else check why it's coming here
                 SteamNetworkingMessage_t.Release(messagePointers[i]);
@@ -265,7 +326,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
         } while (messageCount >= MAX_MSG_COUNT_PER_POLL);
 
-        while (SteamP2PSessionManager.Instance.localDownsyncSnapshotBytesBuffer.TryDequeue(out localRecvBytes)) {
+        while (p2pSessionManager.DequeLocalDownsyncSnapshotBytesBuffer(out localRecvBytes)) {
             fixed (byte* pData = localRecvBytes) {
                 handleSingleDownsyncSnapshotBytes((IntPtr)pData, localRecvBytes.Length);
             }
@@ -274,12 +335,12 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         int oldLcacIfdId = -1, oldUdpLcacIfdId = -1;
         bool ok1 = Bindings.FRONTEND_GetRdfAndIfdIds(battle, pTimerRdfId, pNewChaserRdfId, pChaserRdfIdLowerBound, &oldLcacIfdId, &oldUdpLcacIfdId, pToGenIfdId, pLocalRequiredIfdId);
 
-        if (ok1 && 0 < messageCount && !SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
+        if (ok1 && 0 < messageCount && !p2pSessionManager.GetIsCurrentLobbyOwner()) {
             //Debug.Log($"pollAndHandleFromOwnerRecvBuffer, @csharpTimerRdfId={csharpTimerRdfId}, timerRdfId={*pTimerRdfId}, newChaserRdfId={*pNewChaserRdfId}, chaserRdfIdLowerBound={*pChaserRdfIdLowerBound}, toGenIfdId={*pToGenIfdId}, localRequiredIfdId={*pLocalRequiredIfdId}, newLcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
         }
     }
 
-    private unsafe void handleSingleUpsyncSnapshotBytes(in IntPtr pData, in int bytesCnt) {
+    protected unsafe void handleSingleUpsyncSnapshotBytes(in IntPtr pData, in int bytesCnt) {
         fixed (int* newChaserRdfIdPtr = &newChaserRdfId, newUdpLcacIfdIdPtr = &newUdpLcacIfdId, maxPlayerInputFrontIdPtr = &maxPlayerInputFrontId, minPlayerInputFrontIdPtr = &minPlayerInputFrontId) {
             Bindings.FRONTEND_OnUpsyncSnapshotReqReceived(battle, (char*)pData, bytesCnt, newChaserRdfIdPtr, newUdpLcacIfdIdPtr, maxPlayerInputFrontIdPtr, minPlayerInputFrontIdPtr);
         }
@@ -289,9 +350,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         fixed (long* shadowBattleDownsyncSnapshotByteCntPtr = &shadowBattleDownsyncSnapshotByteCnt) 
         fixed (int* shadowBattleOldLcacIfdIdPtr = &shadowBattleOldLcacIfdId, shadowBattleNewLcacIfdIdPtr = &shadowBattleNewLcacIfdId, shadowBattleOldDynamicsRdfIdPtr = &shadowBattleOldDynamicsRdfId, shadowBattleNewDynamicsRdfIdPtr = &shadowBattleNewDynamicsRdfId, shadowBattleEvictedStCntPtr = &shadowBattleEvictedStCnt, shadowBattleMaxPlayerInputFrontIdPtr = &shadowBattleMaxPlayerInputFrontId, shadowBattleMinPlayerInputFrontIdPtr = &shadowBattleMinPlayerInputFrontId) {
             Bindings.BACKEND_OnUpsyncSnapshotReqReceived(shadowBattle, (char*)pData, bytesCnt, true, false, (char*)shadowBattleDownsyncSnapshotBytesPtr, shadowBattleDownsyncSnapshotByteCntPtr, shadowBattleEvictedStCntPtr, shadowBattleOldLcacIfdIdPtr, shadowBattleNewLcacIfdIdPtr, shadowBattleOldDynamicsRdfIdPtr, shadowBattleNewDynamicsRdfIdPtr, shadowBattleMaxPlayerInputFrontIdPtr, shadowBattleMinPlayerInputFrontIdPtr);
-            if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
+            if (p2pSessionManager.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
                 if (0 < *shadowBattleDownsyncSnapshotByteCntPtr) {
-                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
                         byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                         Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
                         /*
@@ -308,7 +369,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
     }
 
-    private unsafe void pollAndHandleUdpRecvBuffer(in int oldUdpLcacIfdId) {
+    protected unsafe void pollAndHandleUdpRecvBuffer(in int oldUdpLcacIfdId) {
         int messageCount = 0;
         int realtimeUdpLcacIfdId = oldUdpLcacIfdId;
         do {
@@ -322,9 +383,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             for (int i = 0; i < messageCount; i++) {
                 SteamNetworkingMessage_t netMessage = Marshal.PtrToStructure<SteamNetworkingMessage_t>(messagePointers[i]);
                 ulong fromUllSteamID = netMessage.m_identityPeer.GetSteamID64();
-                uint fromJoinIndex = SteamP2PSessionManager.Instance.GetJoinIndexInLobby(fromUllSteamID);
+                uint fromJoinIndex = p2pSessionManager.GetJoinIndexInLobby(fromUllSteamID);
                 if (PbPrimitivesOverride.Instance.getUnderlying().MagicJoinIndexInvalid != fromJoinIndex) {
-                    SteamP2PSessionManager.Instance.RemoveDisconnectedRecord(fromJoinIndex);
+                    p2pSessionManager.RemoveDisconnectedRecord(fromJoinIndex);
                     handleSingleUpsyncSnapshotBytes(netMessage.m_pData, netMessage.m_cbSize);
                 }
                 SteamNetworkDoctor.Instance.LogUpsyncSnapshot(i: realtimeUdpLcacIfdId, j: newUdpLcacIfdId);
@@ -334,7 +395,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
         } while (messageCount >= MAX_MSG_COUNT_PER_POLL);
 
-        while (SteamP2PSessionManager.Instance.localUpsyncSnapshotBytesBuffer.TryDequeue(out localRecvBytes)) {
+        while (p2pSessionManager.DequeLocalUpsyncSnapshotBytesBuffer(out localRecvBytes)) {
             fixed (byte* pData = localRecvBytes) {
                 handleSingleUpsyncSnapshotBytes((IntPtr)pData, localRecvBytes.Length);
             }
@@ -342,30 +403,29 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     public void OnWaitingInterrupted() {
-        Debug.Log("SteamOnlineMapController.onWaitingInterrupted, calling cleanupNetworkSessionsReentrantSafe");
+        Debug.Log($"{GetType()}.onWaitingInterrupted, calling cleanupNetworkSessionsReentrantSafe");
         cleanupNetworkSessionsReentrantSafe(); // Make sure that all resources are properly deallocated        
         Debug.Log($"Replaying from character-select due to onWaitingInterrupted at battleState={battleState}.");
         battleState = PbPrimitivesOverride.ROOM_STATE_STOPPED;
         showCharacterSelection();
     }
 
-
     public void onCharacterSelectGoAction(uint speciesId) {
-        Debug.Log($"Executing SteamOnlineMapController.onCharacterSelectGoAction with selectedSpeciesId={speciesId}, battleState={battleState}");
+        Debug.Log($"Executing {GetType()}.onCharacterSelectGoAction with selectedSpeciesId={speciesId}, battleState={battleState}");
         
         // [WARNING] Deliberately NOT declaring this method as "async" to make tests related to `<proj-root>/GOROUTINE_TO_ASYNC_TASK.md` more meaningful.
         battleState = PbPrimitivesOverride.ROOM_STATE_IDLE;
 
         JoltWsSessionManager.Instance.SetSpeciesId(speciesId);
-        SteamP2PSessionManager.Instance.FindAvailableLobbies();
+        p2pSessionManager.FindAvailableLobbies();
     }
 
-    protected unsafe override void Start() {
+    protected override void Start() {
         base.Start();
         roomCapacity = 2; // [TODO] Don't hardcode!
         allConfirmedMask = ((1UL << roomCapacity) - 1); 
         playerWaitingPanel.InitPlayerSlots(this, roomCapacity);
-        SteamP2PSessionManager.Instance.ResetP2PSession(this, "SteamOnlineMapController init");
+        p2pSessionManager.ResetP2PSession(this, "SteamOnlineMapController init");
         selfPlayerInfo = new PlayerMetaInfo();
         
         enableBattleInput(false);
@@ -388,24 +448,12 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         battleState = PbPrimitivesOverride.ROOM_STATE_IMPOSSIBLE;
     }
 
-    unsafe void prepareForBattle(DownsyncSnapshot prepareSignal) {
-        upsyncSeqNo = 0;
-        if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
-            selfJoinIndex = 1;
-        } else {
-            selfJoinIndex = prepareSignal.PeerJoinIndex;
-            SteamP2PSessionManager.Instance.SetLockedLobbyMemberBindings(prepareSignal.PeerSteamBindingList);
+    protected unsafe void prepareForBattle(DownsyncSnapshot prepareSignal) {
+        if (PbPrimitivesOverride.ROOM_STATE_WAITING != battleState) {
+            return;
         }
 
-        selfJoinIndexInt = (int)selfJoinIndex;
-        selfJoinIndexArrIdx = selfJoinIndexInt - 1;
-        selfJoinIndexMask = (1UL << selfJoinIndexArrIdx);
-        selfPlayerId = $"steam_{SteamUser.GetSteamID()}";
-        selfPlayerInfo = new PlayerMetaInfo {
-            PlayerId = selfPlayerId,
-            JoinIndex = selfJoinIndex,
-            BulletTeamId = downsyncSnapshotHolder.PeerBulletTeamId
-        };
+        p2pSessionManager.SetLockedLobbyMemberBindingsWhenWaiting(prepareSignal.PeerSteamBindingList);
 
         var speciesIdList = new uint[roomCapacity];
         for (int i = 0; i < roomCapacity; i++) {
@@ -462,11 +510,11 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
             int shadowBattleBeforeStRdfId = 0, shadowBattleBeforeEdRdfId = 0;
             Bindings.APP_GetRdfBufferBounds(shadowBattle, &shadowBattleBeforeStRdfId, &shadowBattleBeforeEdRdfId);
-            Debug.Log($"[DaBattlePrepare] Now shadowBattleBeforeStRdfId={shadowBattleBeforeStRdfId}, shadowBattleBeforeEdRdfId={shadowBattleBeforeEdRdfId}");
+            //Debug.Log($"[DaBattlePrepare] Now shadowBattleBeforeStRdfId={shadowBattleBeforeStRdfId}, shadowBattleBeforeEdRdfId={shadowBattleBeforeEdRdfId}");
             BACKEND_ResetStartRdf(shadowBattle, (char*)bufferPtr, buffer.Length);
             int shadowBattleAfterStRdfId = 0, shadowBattleAfterEdRdfId = 0;
             Bindings.APP_GetRdfBufferBounds(shadowBattle, &shadowBattleAfterStRdfId, &shadowBattleAfterEdRdfId);
-            Debug.Log($"[DaBattlePrepare] Now shadowBattleAfterStRdfId={shadowBattleAfterStRdfId}, shadowBattleAfterEdRdfId={shadowBattleAfterEdRdfId}");
+            //Debug.Log($"[DaBattlePrepare] Now shadowBattleAfterStRdfId={shadowBattleAfterStRdfId}, shadowBattleAfterEdRdfId={shadowBattleAfterEdRdfId}");
 
             shadowBattleEvictedStCnt = 0;
             shadowBattleOldLcacIfdId = -1;
@@ -508,27 +556,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         return battleState;
     }
 
-    public unsafe void AttemptToRejoinBattle() {
+    public void AttemptToRejoinBattle() {
         battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING;
-        if (newLcacIfdId > lastSentIfdId) {
-            lastSentIfdId = newLcacIfdId;
-        }
-        upsyncSnapshotReqBufferBytesCnt = pbBufferSizeLimit;
-        fixed (byte* upsyncSnapshotPtr = upsyncSnapshotReqBuffer)
-        fixed (long* outBytesCntPtr = &upsyncSnapshotReqBufferBytesCnt) {
-            int proposedBatchIfdIdSt = lastSentIfdId;
-            int proposedBatchIfdIdEd = lastSentIfdId + 1;
-            int actualLastIfdInBatch = -1;
-            FRONTEND_ProduceUpsyncSnapshotRequest(battle, upsyncSeqNo++, proposedBatchIfdIdSt, proposedBatchIfdIdEd, &actualLastIfdInBatch, (char*)upsyncSnapshotPtr, outBytesCntPtr);
-            if (0 < upsyncSnapshotReqBufferBytesCnt) {
-                byte[] copiedBytes = new byte[(int)upsyncSnapshotReqBufferBytesCnt];
-                Buffer.BlockCopy(upsyncSnapshotReqBuffer, 0, copiedBytes, 0, copiedBytes.Length);
-                SteamP2PSessionManager.Instance.senderBuffer.Add(copiedBytes);
-                Debug.Log($"Attempt to rejoin battle with upsyncSnapshotReqBufferBytesCnt={upsyncSnapshotReqBufferBytesCnt}.");
-            } else {
-                Debug.Log($"Failed to attempt a rejoin with upsyncSnapshotReqBufferBytesCnt=0.");
-            }
-        }
+        p2pSessionManager.JoinTargetLobby(p2pSessionManager.GetCurrentLobbyId(), "AttemptToRejoinBattle");
     }
 
     public void OnRejoinFailed(in long expectedOldBattleState) {
@@ -539,7 +569,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     public unsafe void OnBattleStopped(in string motivation) {
-        Debug.LogWarning($"Beginning SteamSteamOnlineMapController.OnBattleStopped: {motivation}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        Debug.LogWarning($"Beginning Steam{GetType()}.OnBattleStopped: {motivation}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
         // Reference https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html
         if (frameLogEnabled && UIntPtr.Zero != battle) {
             try {
@@ -555,7 +585,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }   
         }
         
-        autoRejoinQuota = 1;
+        autoRejoinQuota = DEFAULT_AUTO_REJOIN_QUOTA;
         cleanupNetworkSessionsReentrantSafe(); // Make sure that all resources are properly deallocated
         base.onBattleStopped();
         if (UIntPtr.Zero != shadowBattle) {
@@ -568,10 +598,10 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         if (null != bgmSource) {
             bgmSource.Stop();
         }
-        Debug.LogWarning($"Ending SteamSteamOnlineMapController.OnBattleStopped: thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        Debug.LogWarning($"Ending {GetType()}.OnBattleStopped: thread ud={Thread.CurrentThread.ManagedThreadId}.");
     }
 
-    private unsafe bool forceConfirmAllPeersAndBroadcastDaRegularAsOwner(in string motivation) {
+    protected unsafe bool forceConfirmAllPeersAndBroadcastDaRegularAsOwner(in string motivation) {
         shadowBattleDownsyncSnapshotByteCnt = pbBufferSizeLimit;
         fixed (byte* shadowBattleDownsyncSnapshotBytesPtr = shadowBattleDownsyncSnapshotBytes)
         fixed (long* shadowBattleDownsyncSnapshotByteCntPtr = &shadowBattleDownsyncSnapshotByteCnt)
@@ -585,7 +615,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                 Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
 
-                Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, about to broadcast DaRegular from owner [lastSentIfdId={lastSentIfdId}, newLcacIfdId={newLcacIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, shadowBattleOldDynamicsRdfId={shadowBattleOldDynamicsRdfId}, shadowBattleNewDynamicsRdfId={shadowBattleNewDynamicsRdfId}]: {motivation}");
+                //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, about to broadcast DaRegular from owner [lastSentIfdId={lastSentIfdId}, newLcacIfdId={newLcacIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, shadowBattleOldDynamicsRdfId={shadowBattleOldDynamicsRdfId}, shadowBattleNewDynamicsRdfId={shadowBattleNewDynamicsRdfId}]: {motivation}");
 
                 broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId);
                 return true;
@@ -596,12 +626,12 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
     }
 
-    private unsafe bool broadcastDaRegularAsOwner(in byte[] toSendBytes, in int refRdfId) {
+    protected unsafe bool broadcastDaRegularAsOwner(in byte[] toSendBytes, in int refRdfId) {
         if (refRdfId < lastSentRefRdfIdAsOwner) {
             return false;
         }
         fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer, ifdFetchBufferPtr = ifdFetchBuffer) {
-            SteamP2PSessionManager.Instance.ownerSignalSenderBuffer.Add(toSendBytes);
+            p2pSessionManager.EnqueOwnerSignalSenderBuffer(toSendBytes);
 
             if (refRdfId > lastSentRefRdfIdAsOwner) {
                 // [REMINDER] In case "false == stepShadowBattleAlongWithMainBattle && true == broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle", we shouldn't block regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
@@ -615,9 +645,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     // Update is called once per frame
-    unsafe void Update() {
+    protected unsafe void Update() {
         try {
-            var disconnectedPeerJoinIndices = SteamP2PSessionManager.Instance.GetDisconnectedPeerJoinIndices();
+            var disconnectedPeerJoinIndices = p2pSessionManager.GetDisconnectedPeerJoinIndices();
 
             if (PbPrimitivesOverride.ROOM_STATE_IMPOSSIBLE == battleState) {
                 return;
@@ -716,7 +746,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         frozenGracingRdfCnt = 0;
                     }
                     ++frozenRdfCount;
-                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner() && frozenRdfCountDaRegularBroadcastingThreshold == frozenRdfCount) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner() && frozenRdfCountDaRegularBroadcastingThreshold == frozenRdfCount) {
                         if (-1 != lastSentRefRdfAtTimerRdfIdAsOwner) {
                             forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"frozenRdfCount={frozenRdfCount}"); // For breaking "lag-induced-freezing avalanche across all players"
                         }
@@ -764,16 +794,16 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     ulong effSelfInput = ifdHolder.InputList[selfJoinIndexArrIdx];
                     toGenIfdSelfConfirmed = (0 < (ifdHolder.ConfirmedList & selfJoinIndexMask) || 0 < (ifdHolder.UdpConfirmedList & selfJoinIndexMask));
                     if (effSelfInput != currSelfInput && toGenIfdSelfConfirmed) {
-                        //Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, effSelfInput={effSelfInput} conflicting currSelfInput={currSelfInput} with selfJoinIndex={selfJoinIndex}, confirmedList={ifdHolder.ConfirmedList}, udpConfirmedList={ifdHolder.UdpConfirmedList}");
+                        //Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, effSelfInput={effSelfInput} conflicting currSelfInput={currSelfInput} with selfJoinIndex={selfJoinIndex}, confirmedList={ifdHolder.ConfirmedList}, udpConfirmedList={ifdHolder.UdpConfirmedList}, lastSentIfdId={lastSentIfdId}");
                     }
                 }
                 FRONTEND_Step(battle);
                 
                 if (stepShadowBattleAlongWithMainBattle) {
                     BACKEND_MoveForwardLcacIfdIdAndStep(shadowBattle, withRefRdf: true, shadowBattleOldLcacIfdIdPtr, shadowBattleNewLcacIfdIdPtr, shadowBattleOldDynamicsRdfIdPtr, shadowBattleNewDynamicsRdfIdPtr, (char*)shadowBattleDownsyncSnapshotBytesPtr, shadowBattleDownsyncSnapshotByteCntPtr);
-                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
                         if (0 < *shadowBattleDownsyncSnapshotByteCntPtr && shadowBattleOldDynamicsRdfId < shadowBattleNewDynamicsRdfId) {
-                            if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
+                            if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
                                 byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                                 Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
                                 broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId);
@@ -781,7 +811,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         }
                     }
                 } else {
-                    if (SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner()) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
                         if (-1 == lastSentRefRdfAtTimerRdfIdAsOwner && csharpTimerRdfId > (REF_RDF_ID_INTERVAL_RDF_CNT << 1)) {
                             forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId}, {lastSentRefRdfAtTimerRdfIdAsOwner}=-1, initial force-confirmation to all peers");
                         } else if (csharpTimerRdfId > (lastSentRefRdfAtTimerRdfIdAsOwner + REF_RDF_ID_INTERVAL_RDF_CNT)) {
@@ -792,32 +822,38 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
                 csharpTimerRdfId = timerRdfId+1;
                 bool snatched = (csharpTimerRdfId == chaserRdfIdLowerBound);
+                if (!snatched) {
+                    if (csharpTimerRdfId + slowDownRdfLagThreshold < chaserRdfIdLowerBound) {
+                        /*
+                        [REMINDER]
+        
+                        In this case
+                        
+                        ``` 
+                        localRequiredIfdId = APP_ConvertToDelayedInputFrameId(csharpTimerRdfId) < APP_ConvertToDelayedInputFrameId(chaserRdfIdLowerBound) <= newLcacIfdId <= newUdpLcacIfdId 
+                        ```
+
+                        , hence no slowing down would occur.
+                        */
+                        snatched = FRONTEND_DirectSnatch(battle);
+                        csharpTimerRdfId = chaserRdfIdLowerBound;
+                        Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}: `FRONTEND_DirectSnatch` called for quick snatching");
+                        int chaserRdfIdLowerBoundToUseIfdId = APP_ConvertToDelayedInputFrameId(chaserRdfIdLowerBound);
+                        if (toGenIfdId >= chaserRdfIdLowerBoundToUseIfdId) {
+                            *outBytesCntPtr = pbBufferSizeLimit;
+                            if (FRONTEND_UpsertSelfCmd_With_Ifd_Output(battle, currSelfInput, newChaserRdfIdPtr, (char*)ifdFetchBufferPtr, outBytesCntPtr)) {
+                                PreemptInputFrameDownsyncBeforeMerge(ifdHolder, PbPrimitivesOverride.Instance.getUnderlying());
+                                ifdHolder.MergeFrom(ifdFetchBuffer, 0, (int)(*outBytesCntPtr));
+                                toGenIfdSelfConfirmed = (0 < (ifdHolder.ConfirmedList & selfJoinIndexMask) || 0 < (ifdHolder.UdpConfirmedList & selfJoinIndexMask));
+                            }
+                        }
+                    }
+                }
+
                 if (snatched) {
                     SteamNetworkDoctor.Instance.LogForceResyncFutureApplied();
-                } else if (csharpTimerRdfId + slowDownRdfLagThreshold < chaserRdfIdLowerBound) {
-                    /*
-                    [REMINDER]
-    
-                    In this case
-                    
-                    ``` 
-                    localRequiredIfdId = APP_ConvertToDelayedInputFrameId(csharpTimerRdfId) < APP_ConvertToDelayedInputFrameId(chaserRdfIdLowerBound) <= newLcacIfdId <= newUdpLcacIfdId 
-                    ```
+                }                
 
-                    , hence no slowing down would occur.
-                    */
-                    *outBytesCntPtr = pbBufferSizeLimit;
-                    bool extraSteppingCmdInjected = FRONTEND_UpsertSelfCmd_With_Ifd_Output(battle, currSelfInput, newChaserRdfIdPtr, (char*)ifdFetchBufferPtr, outBytesCntPtr); // [WARNING] Don't forget to call "FRONTEND_UpsertSelfCmd_With_Ifd_Output(...)" for extra stepping, otherwise some "FrontendBattle.ifdBuffer" would lack "self-confirmed bitmask" and thus blocking "FRONTEND_ProduceUpsyncSnapshotRequest(...)" from setting "actualLastIfdInBatch" correctly. 
-                    if (extraSteppingCmdInjected) {
-                        PreemptInputFrameDownsyncBeforeMerge(ifdHolder, PbPrimitivesOverride.Instance.getUnderlying());
-                        ifdHolder.MergeFrom(ifdFetchBuffer, 0, (int)(*outBytesCntPtr));
-                        toGenIfdSelfConfirmed = (0 < (ifdHolder.ConfirmedList & selfJoinIndexMask) || 0 < (ifdHolder.UdpConfirmedList & selfJoinIndexMask));
-                    }
-                    FRONTEND_Step(battle);
-                    Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}: 1 extra FRONTEND_Step for quicker snatching");
-                    csharpTimerRdfId++;
-                }
-                
                 *outBytesCntPtr = pbBufferSizeLimit;
                 bool rdfFetched = APP_GetRdf(battle, csharpTimerRdfId, (char*)rdfFetchBufferPtr, outBytesCntPtr);
                 Bindings.APP_GetRdfBufferBounds(battle, &rdfBufferStRdfId, &rdfBufferEdRdfId);
@@ -857,7 +893,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         if (newLcacIfdId < actualLastIfdInBatch) {
                             byte[] copiedBytes = new byte[(int)upsyncSnapshotReqBufferBytesCnt];
                             Buffer.BlockCopy(upsyncSnapshotReqBuffer, 0, copiedBytes, 0, copiedBytes.Length);
-                            SteamP2PSessionManager.Instance.senderBuffer.Add(copiedBytes);
+                            p2pSessionManager.EnqueSenderBuffer(copiedBytes);
                         } else {
                             // else no need to waste bandwidth in sending an already all-confirmed "UpsyncSnapshot".
                             Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, lastSentIfdId={lastSentIfdId}, toGenIfdId={toGenIfdId}, newLcacIfdId={newLcacIfdId}, actualLastIfdInBatch={actualLastIfdInBatch}, newUdpLcacIfdId={newUdpLcacIfdId}: skip sending (but still log sending rate for reference)");
@@ -876,9 +912,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
                 ifdFrontShouldLockStep = tooFastOrNot;
                 if (inFrozenGracePeriod && ifdFrontShouldLockStep) {
-                    if (!SteamP2PSessionManager.Instance.GetIsCurrentLobbyOwner() && (csharpTimerRdfId > chaserRdfIdLowerBound + (freezeRdfLagThresHold << 1))) {
+                    if (!p2pSessionManager.GetIsCurrentLobbyOwner() && (csharpTimerRdfId > chaserRdfIdLowerBound + (freezeRdfLagThresHold << 1))) {
                         // [REMINDER] This is the "P2P analogy" of "acLagShouldLockStep".
-                        Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound} inFrozenGracePeriod but too advanced as Lobby non-owner, will disable frozenGracePeriod: localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
+                        //Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound} inFrozenGracePeriod but too advanced as Lobby non-owner, will disable frozenGracePeriod: localRequiredIfdId={localRequiredIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
                     } else {
                         ifdFrontShouldLockStep = false;
                     }
@@ -923,7 +959,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             Destroy(underlyingMap);
         }
         string path = $"Tiled/{theme}/map";
-        var underlyingMapPrefab = Resources.Load(path) as GameObject;
+        var underlyingMapPrefab = Resources.Load(path) as GameObject; // [TODO] Use "Addressables.LoadAssetAsync(...)" and display a "Loading" overlay
         if (null == underlyingMapPrefab) {
             Debug.LogError($"underlyingMapPrefab is null for theme={theme}");
         }
@@ -944,6 +980,10 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         frozenGracingRdfCnt = 0;
         localTimerEnded = false;
         lastSentIfdId = -1;
+        newLcacIfdId = -1;
+        newUdpLcacIfdId = -1;
+        maxPlayerInputFrontId = 0; 
+        minPlayerInputFrontId = 0;
         lastSentRefRdfIdAsOwner = -1;
         lastSentRefRdfAtTimerRdfIdAsOwner = -1;
         timerEndedRdfDerivedFromAllConfirmedInputFrameDownsync = false;
@@ -958,16 +998,16 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         if (null != p2pSessionCancellationTokenSource) {
             try {
                 if (!p2pSessionCancellationTokenSource.IsCancellationRequested) {
-                    //Debug.Log(String.Format("SteamOnlineMapController.cleanupNetworkSessions, cancelling udp session"));
+                    //Debug.Log($"{GetType()}.cleanupNetworkSessions, cancelling udp session");
                     p2pSessionCancellationTokenSource.Cancel();
                 } else {
-                    //Debug.LogWarning(String.Format("SteamOnlineMapController.cleanupNetworkSessions, udpCancellationTokenSource is already cancelled!"));
+                    //Debug.LogWarning($"{GetType()}.cleanupNetworkSessions, udpCancellationTokenSource is already cancelled!");
                 }
                 p2pSessionCancellationTokenSource.Dispose();
             } catch (ObjectDisposedException ex) {
-                //Debug.LogWarning(String.Format("SteamOnlineMapController.cleanupNetworkSessions, udpCancellationTokenSource is already disposed: {0}", ex));
+                //Debug.LogWarning($"{GetType()}.cleanupNetworkSessions, udpCancellationTokenSource is already disposed: {0}", ex);
             } finally {
-                Debug.Log("SteamOnlineMapController.cleanupNetworkSessionsReentrantSafe, udpCancellationTokenSource disposed");
+                Debug.Log($"{GetType()}.cleanupNetworkSessionsReentrantSafe, udpCancellationTokenSource disposed");
             }
             p2pSessionCancellationTokenSource = null;
         }
@@ -975,18 +1015,18 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         if (null != p2pSessionTask) {
             if (TaskStatus.Canceled != p2pSessionTask.Status && TaskStatus.Faulted != p2pSessionTask.Status) {
                 try {
-                    //Debug.Log($"SteamOnlineMapController.cleanupNetworkSessions, about to wait for p2pSessionTask with status={p2pSessionTask.Status}");
+                    //Debug.Log($"{GetType()}.cleanupNetworkSessions, about to wait for p2pSessionTask with status={p2pSessionTask.Status}");
                     var waitingSuccess = p2pSessionTask.Wait(3000);
-                    //Debug.Log($"SteamOnlineMapController.cleanupNetworkSessions, p2pSessionTask returns with waitingSuccess={waitingSuccess}, status={p2pSessionTask.Status}");
+                    //Debug.Log($"{GetType()}.cleanupNetworkSessions, p2pSessionTask returns with waitingSuccess={waitingSuccess}, status={p2pSessionTask.Status}");
                 } catch (Exception ex) {
-                    //Debug.LogWarning(String.Format("SteamOnlineMapController.cleanupNetworkSessions, p2pSessionTask is already cancelled: {0}", ex));
+                    //Debug.LogWarning($"{GetType()}.cleanupNetworkSessions, p2pSessionTask is already cancelled: {0}", ex);
                 } finally {
                     try {
                         p2pSessionTask.Dispose(); // frontend of this project targets ".NET Standard 2.1", thus calling "Task.Dispose()" explicitly, reference, reference https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.dispose?view=net-7.0
                     } catch (ObjectDisposedException ex) {
-                        //Debug.LogWarning(String.Format("SteamOnlineMapController.cleanupNetworkSessions, p2pSessionTask is already disposed: {0}", ex));
+                        //Debug.LogWarning($"{GetType()}.cleanupNetworkSessions, p2pSessionTask is already disposed: {0}", ex);
                     } finally {
-                        Debug.Log(String.Format("SteamOnlineMapController.cleanupNetworkSessionsReentrantSafe, p2pSessionTask disposed"));
+                        Debug.Log($"{GetType()}.cleanupNetworkSessionsReentrantSafe, p2pSessionTask disposed");
                     }
                 }
             }
@@ -1000,29 +1040,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
         }
 
-        SteamP2PSessionManager.Instance.LeaveCurrentLobbyReentrantSafe();
-    }
-
-    protected override void OnDestroy() {
-        OnBattleStopped($"SteamOnlineMapController.OnDestroy#1, about to clean up network sessions");
-        if (UIntPtr.Zero != battle) {
-            APP_DestroyBattle(battle);
-            battle = UIntPtr.Zero;
-        }
-
-        if (UIntPtr.Zero != shadowBattle) {
-            APP_DestroyBattle(shadowBattle);
-            shadowBattle = UIntPtr.Zero;
-        }
-        bool shutdownRes = JPH_Shutdown();
-        Debug.Log($"SteamOnlineMapController.OnDestroy#2, Jolt infra shutdown result = {shutdownRes}");
-        
-        cleanupNetworkSessionsReentrantSafe();
-        Debug.LogWarning($"SteamOnlineMapController.OnDestroy#3, cleaned network sessions");
-    }
-
-    void OnApplicationQuit() {
-        Debug.LogWarning(String.Format("SteamOnlineMapController.OnApplicationQuit"));
+        p2pSessionManager.LeaveCurrentLobbyReentrantSafe();
     }
 
     protected void showCharacterSelection() {
@@ -1068,7 +1086,29 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         arenaModeSettings.gameObject.SetActive(true);
     }
 
-    void OnApplicationFocus(bool hasFocus) {
+    protected override void OnDestroy() {
+        OnBattleStopped($"{GetType()}.OnDestroy#1, about to clean up network sessions");
+        if (UIntPtr.Zero != battle) {
+            APP_DestroyBattle(battle);
+            battle = UIntPtr.Zero;
+        }
+
+        if (UIntPtr.Zero != shadowBattle) {
+            APP_DestroyBattle(shadowBattle);
+            shadowBattle = UIntPtr.Zero;
+        }
+        bool shutdownRes = JPH_Shutdown();
+        Debug.Log($"{GetType()}.OnDestroy#2, Jolt infra shutdown result = {shutdownRes}");
+
+        cleanupNetworkSessionsReentrantSafe();
+        Debug.LogWarning($"{GetType()}.OnDestroy#3, cleaned network sessions");
+    }
+
+    protected void OnApplicationQuit() {
+        Debug.LogWarning($"{GetType()}.OnApplicationQuit");
+    }
+
+    protected void OnApplicationFocus(bool hasFocus) {
         if (!hasFocus) {
             Debug.Log("Application lost focus at: " + Time.time);
             if (null != focusLossPrompt) {

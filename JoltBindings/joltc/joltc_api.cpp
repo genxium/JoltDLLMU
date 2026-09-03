@@ -53,6 +53,7 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     globalNpcReactionMap[chSpecies.bat1()] = new Bat1NpcReaction();
 
     globalNpcReactionMap[chSpecies.wolverine1()] = new Wolverine1NpcReaction();
+    globalNpcReactionMap[chSpecies.wolverine1_test_with_vision()] = new Wolverine1TestWithVisionNpcReaction();
 
     trivialTrtSet = {
         globalPrimitiveConsts->trts().by_init_delay(),
@@ -425,6 +426,12 @@ bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaser
     auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
     if (nullptr == frontendBattle) return false;
     return frontendBattle->GetRdfAndIfdIds(outTimerRdfId, outChaserRdfId, outChaserRdfIdLowerBound, outLcacIfdId, outUdpLcacIfdId, outTimerRdfIdGenIfdId, outTimerRdfIdToUseIfdId);
+}
+
+bool FRONTEND_DirectSnatch(void* inBattle) {
+    auto frontendBattle = static_cast<FrontendBattle*>(inBattle);
+    if (nullptr == frontendBattle) return false;
+    return frontendBattle->DirectSnatch();
 }
 
 JPH_SUPPRESS_WARNING_POP

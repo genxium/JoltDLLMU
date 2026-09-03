@@ -87,6 +87,15 @@ public:
         return true;
     }
 
+    inline bool DirectSnatch() {
+        if (timerRdfId > chaserRdfIdLowerBound) {
+            return false;
+        }
+        chaserRdfId = chaserRdfIdLowerBound;
+        timerRdfId = chaserRdfIdLowerBound;
+        return true;
+    }
+
     virtual void Clear();
 
     bool ResetStartRdf(char* inBytes, int inBytesCnt, const uint32_t inSelfJoinIndex, const char * const inSelfPlayerId, const int inSelfCmdAuthKey);

@@ -2627,7 +2627,7 @@ RenderFrame* mockBossRoomStartRdf(google::protobuf::Arena* theAllocator) {
     npc1->set_subscribes_to_trigger_id(bossAwakingTriggerId);
     npc1->set_publishing_to_trigger_id_upon_exhausted(bossDeadTriggerId);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.wolverine1();
+    auto npcCh1Species = chSpecies.wolverine1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(200);
     npcCh1->set_y(105);

@@ -62,6 +62,7 @@ namespace JoltCSharp {
 
         public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
+        public const uint SPECIES_WOLVERINE1_TEST_WITH_VISION = 2051;
 
         public const uint TRT_NONE = 0;
         public const uint TRT_BY_INIT_DELAY = 1;
@@ -420,6 +421,7 @@ namespace JoltCSharp {
 
                   BlacksaberTestNoVision = SPECIES_BLACKSABER_TEST_NO_VISION,
                   BlacksaberTestWithVision = SPECIES_BLACKSABER_TEST_WITH_VISION,
+                  Wolverine1TestWithVision = SPECIES_WOLVERINE1_TEST_WITH_VISION,
 
                   Headquarter1 = SPECIES_HEADQUARTER1,
                   Shieldguard1 = SPECIES_SHIELDGUARD1,

@@ -97,5 +97,6 @@ JPH_CAPI bool FRONTEND_OnDownsyncSnapshotReceived(void* inBattle, char* inBytes,
 JPH_CAPI bool FRONTEND_Step(void* inBattle);
 JPH_CAPI bool FRONTEND_ChaseRolledBackRdfs(void* inBattle, int* outNewChaserRdfId, bool toTimerRdfId = false);
 JPH_CAPI bool FRONTEND_GetRdfAndIfdIds(void* inBattle, int* outTimerRdfId, int* outChaserRdfId, int* outChaserRdfIdLowerBound, int* outLcacIfdId, int* outUdpLcacIfdId, int* outTimerRdfIdGenIfdId, int* outTimerRdfIdToUseIfdId);
+JPH_CAPI bool FRONTEND_DirectSnatch(void* inBattle);
 
 #endif /* JOLT_C_H_ */
