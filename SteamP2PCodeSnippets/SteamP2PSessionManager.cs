@@ -57,26 +57,33 @@ public class SteamP2PSessionManager {
         m_LobbyMatchList.Set(steamCall);
     }
 
-    public void JoinTargetLobby(CSteamID targetLobbyId, in string motivation) {
+    public bool JoinTargetLobby(CSteamID targetLobbyId, in string motivation) {
+        int lobbyMembersCnt = SteamMatchmaking.GetNumLobbyMembers(targetLobbyId);
+        bool isArealdyInTargetLobby = false;
+        for (int i = 0; i < lobbyMembersCnt; i++) {
+            CSteamID memberSteamID = SteamMatchmaking.GetLobbyMemberByIndex(m_currentLobbyId, i);
+            if (CSteamID.Nil == memberSteamID) {
+                break;
+            }
+            if (memberSteamID == SteamUser.GetSteamID()) {
+                isArealdyInTargetLobby = true;
+                break;
+            }
+        }
+
+        if (isArealdyInTargetLobby) {
+            Debug.Log($"Self is already in targetLobbyId={targetLobbyId} with existingNumLobbyMembers={lobbyMembersCnt}, motivation ={motivation}...");
+            return false;
+        }
+
         Debug.Log($"Joining targetLobbyId={targetLobbyId} with motivation={motivation}...");
         SteamMatchmaking.JoinLobby(targetLobbyId);
+        return true;
     }
 
     public void LeaveCurrentLobbyReentrantSafe() {
         if (CSteamID.Nil == m_currentLobbyId) {
             return;
-        }
-
-        if (null != lockedMemberIdentities) {
-            for (int i = 0; i < lockedMemberIdentities.Length; i++) {
-                SteamNetworkingIdentity remoteUser = lockedMemberIdentities[i];
-                if (remoteUser.GetSteamID() == SteamUser.GetSteamID()) {
-                    continue;
-                }
-                if (SteamNetworkingMessages.CloseSessionWithUser(ref remoteUser)) {
-                    Debug.Log($"LeaveCurrentLobbyReentrantSafe, closed session with remoteUser={remoteUser.GetSteamID()}.");
-                }
-            }
         }
 
         SteamMatchmaking.LeaveLobby(m_currentLobbyId);
@@ -125,6 +132,7 @@ public class SteamP2PSessionManager {
         map = theMap;
         localSeqNo = 0;
 
+        closeSessionsWithLockedLobbyMembers($"ResetP2PSession/{motivation}"); // [REMINDER] Such that there's no backlogged messages upon network switch
         clearPassiveCallbacks();
         m_currentLobbyId = CSteamID.Nil;
         m_currentLobbyOwnerId = CSteamID.Nil;
@@ -185,12 +193,28 @@ public class SteamP2PSessionManager {
         return disconnectedPeerJoinIndices;
     }
 
-    public bool RemoveDisconnectedRecord(uint joinIndex) {
+    public bool AddDisconnectedRecord(in uint peerJoinIndex, in string motivation) {
+        if (!disconnectedPeerJoinIndices.Contains(peerJoinIndex)) {
+            disconnectedPeerJoinIndices.Add(peerJoinIndex);
+            var single = lockedMemberIdentities[peerJoinIndex - 1];
+            SteamNetworkingMessages.CloseSessionWithUser(ref single);
+            Debug.Log($"Closed SteamNetworkingMessages session with {single.GetSteamID()}, peerJoinIndex={peerJoinIndex}: AddDisconnectedRecord/{motivation}");
+            if (null != map) {
+                map.ToggleInactiveJoinIndexMask(peerJoinIndex);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool RemoveDisconnectedRecord(in uint joinIndex, in string motivation) {
         if (disconnectedPeerJoinIndices.Contains(joinIndex)) {
             disconnectedPeerJoinIndices.Remove(joinIndex);
             if (null != map) {
-                map.OnLobbyMemberRejoined(joinIndex);
+                map.ToggleInactiveJoinIndexMask(joinIndex);
             }
+            Debug.Log($"Peer joinIndex={joinIndex} is removed from disconnectedPeerJoinIndices: {motivation}");
             return true;
         }
         return false;
@@ -271,7 +295,7 @@ public class SteamP2PSessionManager {
 
     protected void onLobbyEntered(LobbyEnter_t callback) {
         EChatRoomEnterResponse resp = (EChatRoomEnterResponse)((int)callback.m_EChatRoomEnterResponse);
-
+        var battleState = map.GetBattleState();
         CSteamID targetLobbyId = new CSteamID(callback.m_ulSteamIDLobby);
         if (EChatRoomEnterResponse.k_EChatRoomEnterResponseSuccess == resp) {
             m_currentLobbyId = targetLobbyId;
@@ -284,21 +308,28 @@ public class SteamP2PSessionManager {
             int lobbyMembersCnt = SteamMatchmaking.GetNumLobbyMembers(targetLobbyId);
 
             if (m_isCurrentLobbyOwner) {
-                Debug.Log($"[I am OWNER] Entered as Owner of lobby: {m_currentLobbyId}, now lobbyMembersCnt={lobbyMembersCnt}");
+                Debug.Log($"[I am OWNER] Entered as Owner of lobby: {m_currentLobbyId}, now battleState={battleState}, lobbyMembersCnt={lobbyMembersCnt}");
             } else {
-                Debug.Log($"Entered as a Participant of lobby: {m_currentLobbyId} owned by {m_currentLobbyOwnerId}, now lobbyMembersCnt={lobbyMembersCnt}");
+                Debug.Log($"Entered as a Participant of lobby: {m_currentLobbyId} owned by {m_currentLobbyOwnerId}, now battleState={battleState}, lobbyMembersCnt={lobbyMembersCnt}");
             }
 
             SteamMatchmaking.SetLobbyMemberData(m_currentLobbyId, GDK_CH_SPECIES, JoltWsSessionManager.Instance.GetSpeciesId().ToString());
-            if (null != map) {
-                map.OnLobbyEntered();
+            disconnectedPeerJoinIndices.Clear();
+            map.OnLobbyEntered();
+        } else if (EChatRoomEnterResponse.k_EChatRoomEnterResponseFull == resp) {
+            if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState) {
+                map.OnRejoinFailed(PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING);
+            } else if (PbPrimitivesOverride.ROOM_STATE_IDLE < battleState) {
+                Debug.LogWarning($"###Failed to enter targetLobbyId={targetLobbyId} at battleState={battleState} due to {resp}###");
+            } else {
+                CreateLobby(ELobbyType.k_ELobbyTypePublic, lobbyCapacity, $"###Failed to enter targetLobbyId={targetLobbyId} at battleState={battleState} due to {resp}###");
             }
         } else {
-            CreateLobby(ELobbyType.k_ELobbyTypePublic, lobbyCapacity, $"###Failed to enter targetLobbyId={targetLobbyId} due to {resp}###");
+            CreateLobby(ELobbyType.k_ELobbyTypePublic, lobbyCapacity, $"###Failed to enter targetLobbyId={targetLobbyId} at battleState={battleState} due to {resp}###");
         }
     }
 
-    protected bool shouldRejectAsOwner(in ulong fromUllSteamID, in CSteamID fromMemberSteamID, in long battleState, in string callStackHint) {
+    protected bool shouldRejectAsOwner(in uint fromJoinIndex, in CSteamID fromMemberSteamID, in long battleState, in string callStackHint) {
         if (m_isCurrentLobbyOwner
             &&
             (
@@ -307,7 +338,6 @@ public class SteamP2PSessionManager {
             PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState
             )
         ) {
-            uint fromJoinIndex = GetJoinIndexInLobby(fromUllSteamID);
             if (PbPrimitivesOverride.Instance.getUnderlying().MagicJoinIndexInvalid == fromJoinIndex) {
                 Debug.LogWarning($"[I am OWNER] {callStackHint} incoming {fromMemberSteamID} is not a valid rejoin member in lobby {m_currentLobbyId} at battleState={battleState}, will ignore");
                 return true;
@@ -327,6 +357,7 @@ public class SteamP2PSessionManager {
 
         ulong fromUllSteamID = callback.m_ulSteamIDMember;
         CSteamID fromMemberSteamID = new CSteamID(fromUllSteamID);
+        uint fromPeerJoinIndex = GetJoinIndexInLobby(fromUllSteamID);
         var battleState = map.GetBattleState();
 
         bool notFromLobby = (callback.m_ulSteamIDLobby != fromUllSteamID);
@@ -358,7 +389,7 @@ public class SteamP2PSessionManager {
                         lockedMemberIdentities[i] = new SteamNetworkingIdentity();
                         lockedMemberIdentities[i].SetSteamID64(lockedLobbyMemberBindings[i].UlSteamId);
                         lockedLobbyMemberUlSteamIdToJoinIndex[lockedLobbyMemberBindings[i].UlSteamId] = (uint)i + 1u;
-                        Debug.Log($"\t`lockedLobbyMemberBindings` joinIndex={i+1}, chSpeciesId={lockedLobbyMemberBindings[i].ChSpeciesId}");
+                        Debug.Log($"\t`lockedLobbyMemberBindings` peerJoinIndex={i+1}, chSpeciesId={lockedLobbyMemberBindings[i].ChSpeciesId}");
                     }
                     Debug.Log($"[I am OWNER] Updated `lockedLobbyMemberBindings`, will start the match in LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId}, now lobbyMembersCnt={lobbyMembersCnt}");
                 }
@@ -381,7 +412,7 @@ public class SteamP2PSessionManager {
             } else {
                 if (notFromLobby) {
                     string memberPersonaName = SteamFriends.GetFriendPersonaName(fromMemberSteamID);
-                    Debug.Log($"Received member-type LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, memberPersonaName={memberPersonaName}, now lobbyMembersCnt={lobbyMembersCnt}");
+                    //Debug.Log($"Received member-type LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, memberPersonaName={memberPersonaName}, now lobbyMembersCnt={lobbyMembersCnt}");
                     int effLobbyMemberCnt = updateMemberBindings();
                     if (null != map) {
                         map.OnLobbyMembersUpdatedWhenWaiting(m_lobbyMemberBindings, $"onLobbyDataUpdated@Case2");
@@ -392,10 +423,13 @@ public class SteamP2PSessionManager {
             }
         } else {
             if (notFromLobby) {
-                if (!shouldRejectAsOwner(fromUllSteamID, fromMemberSteamID, battleState, "onLobbyDataUpdated")) {
-                    Debug.Log($"Received member-type LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, isCurrentLobbyOwner={m_isCurrentLobbyOwner}, at battleState={battleState}");
-                    var fromJoinIndex = GetJoinIndexInLobby(fromUllSteamID);
-                    RemoveDisconnectedRecord(fromJoinIndex);
+                if (!shouldRejectAsOwner(fromPeerJoinIndex, fromMemberSteamID, battleState, "onLobbyDataUpdated")) {
+                    //Debug.Log($"Received member-type LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, isCurrentLobbyOwner={m_isCurrentLobbyOwner}, at battleState={battleState}");
+                    if (
+                        RemoveDisconnectedRecord(fromPeerJoinIndex, $"onLobbyDataUpdated/battleState={battleState}") // [REMINDER] To stop the current owner from force-confirming inputs for this just rejoined peer
+                    ) {
+                        map.OnLobbyMemberRejoined(fromPeerJoinIndex);
+                    }
                 }
             } else {
                 //Debug.Log($"Received lobby-type LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId}, at battleState={battleState}");
@@ -428,8 +462,9 @@ public class SteamP2PSessionManager {
 
         ulong fromUllSteamID = callback.m_ulSteamIDUserChanged;
         CSteamID fromMemberSteamID = new CSteamID(fromUllSteamID);
+        uint fromPeerJoinIndex = GetJoinIndexInLobby(fromUllSteamID);
         var battleState = map.GetBattleState();
-        if (shouldRejectAsOwner(fromUllSteamID, fromMemberSteamID, battleState, "onLobbyChatUpdated")) {
+        if (shouldRejectAsOwner(fromPeerJoinIndex, fromMemberSteamID, battleState, "onLobbyChatUpdated")) {
             return;
         }
 
@@ -437,7 +472,7 @@ public class SteamP2PSessionManager {
         CSteamID makingChangeUserSteamID = new CSteamID(callback.m_ulSteamIDMakingChange);
         EChatMemberStateChange memberStateChange = (EChatMemberStateChange)((int)callback.m_rgfChatMemberStateChange);
 
-        Debug.Log($"Received LobbyChatUpdate_t from incomingLobbyId={incomingLobbyId} of changedUserSteamID={fromMemberSteamID}, makingChangeUserSteamID={makingChangeUserSteamID}, memberStateChange={memberStateChange}, now lobbyMembersCnt={lobbyMembersCnt}, battleState={battleState}");
+        //Debug.Log($"Received LobbyChatUpdate_t from incomingLobbyId={incomingLobbyId} of changedUserSteamID={fromMemberSteamID}, makingChangeUserSteamID={makingChangeUserSteamID}, memberStateChange={memberStateChange}, now lobbyMembersCnt={lobbyMembersCnt}, battleState={battleState}");
 
         if (EChatMemberStateChange.k_EChatMemberStateChangeLeft == memberStateChange ||
             EChatMemberStateChange.k_EChatMemberStateChangeDisconnected == memberStateChange) {
@@ -457,17 +492,15 @@ public class SteamP2PSessionManager {
                 }
             }
 
-            if (null != lockedLobbyMemberUlSteamIdToJoinIndex && lockedLobbyMemberUlSteamIdToJoinIndex.ContainsKey(fromUllSteamID) && null != map) {
-                uint joinIndex = lockedLobbyMemberUlSteamIdToJoinIndex[fromUllSteamID];
-                if (joinIndex != map.GetSelfJoinIndex()) {
-                    disconnectedPeerJoinIndices.Add(joinIndex);
-                    map.OnLobbyPeerLeft(joinIndex, $"onLobbyChatUpdated/{memberStateChange}");
-                } else {
-                    map.OnLobbySelfLeft($"onLobbyChatUpdated/{memberStateChange}");
+            if (fromPeerJoinIndex == map.GetSelfJoinIndex()) {
+                map.OnLobbySelfLeft($"onLobbyChatUpdated/{memberStateChange}");
+            } else {
+                if (AddDisconnectedRecord(fromPeerJoinIndex, $"onLobbyChatUpdated/{memberStateChange}")) {
+                    map.OnLobbyPeerLeft(fromPeerJoinIndex, $"onLobbyChatUpdated/{memberStateChange}");
                 }
             }
         } else if (EChatMemberStateChange.k_EChatMemberStateChangeEntered == memberStateChange) {
-
+            // Intentionally left blank, relevant logic is in "onLobbyEntered".
         }
     }
 
@@ -481,25 +514,40 @@ public class SteamP2PSessionManager {
 
         ulong fromUllSteamID = callback.m_ulSteamIDUser;
         CSteamID fromMemberSteamID = new CSteamID(fromUllSteamID);
-        var battleState = map.GetBattleState();
-        if (shouldRejectAsOwner(fromUllSteamID, fromMemberSteamID, battleState, "onLobbyChatMsg")) {
+        if (m_currentLobbyOwnerId != fromMemberSteamID) {
+            //Debug.Log($"Rejected LobbyChatMsg_t in incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}");
             return;
         }
-
         EChatEntryType chatEntryType;
         int nBytes = SteamMatchmaking.GetLobbyChatEntry(incomingLobbyId, (int)callback.m_iChatID, out CSteamID pSteamIDUser, chatRecvBuff, PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength, out chatEntryType);
         byte[] copiedDownsyncSnapshot = new byte[nBytes];
         Buffer.BlockCopy(chatRecvBuff, 0, copiedDownsyncSnapshot, 0, copiedDownsyncSnapshot.Length);
 
-        //Debug.Log($"Received LobbyChatMsg_t from incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}, nBytes={nBytes}, chatEntryType={chatEntryType}");
+        //Debug.Log($"Received LobbyChatMsg_t in incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}, nBytes={nBytes}, chatEntryType={chatEntryType}");
 
         localDownsyncSnapshotBytesBuffer.Enqueue(copiedDownsyncSnapshot);
+    }
+
+    protected void closeSessionsWithLockedLobbyMembers(in string motivation) {
+        if (null == lockedMemberIdentities) {
+            return;
+        }
+        for (int i = 0; i < lockedMemberIdentities.Length; i++) {
+            var single = lockedMemberIdentities[i];
+            if (single.GetSteamID() == SteamUser.GetSteamID()) {
+                continue;
+            }
+            if (single.GetSteamID() == CSteamID.Nil) {
+                continue;
+            }
+            SteamNetworkingMessages.CloseSessionWithUser(ref single);
+            Debug.Log($"Closed SteamNetworkingMessages session with {single.GetSteamID()}: {motivation}");
+        }
     }
 
     protected void onSessionRequest(SteamNetworkingMessagesSessionRequest_t callback) {
         SteamNetworkingIdentity remoteUser = callback.m_identityRemote;
         ulong peerUlSteamID = remoteUser.GetSteamID64();
-
         bool shouldAccept = false;
         var battleState = map.GetBattleState();
         if (
@@ -525,8 +573,9 @@ public class SteamP2PSessionManager {
         }
         
         if (shouldAccept && SteamNetworkingMessages.AcceptSessionWithUser(ref remoteUser)) {
-            // Accepted the session. This accepts ALL incoming packet types from this user.
-            Debug.Log($"Accepted network session with: {peerUlSteamID} at battleState={battleState}");
+            // Accepted the session. This accepts ALL incoming packet types from this user.         
+            uint peerJoinIndex = GetJoinIndexInLobby(peerUlSteamID);
+            RemoveDisconnectedRecord(peerJoinIndex, $"onSessionRequest/peerUlSteamID={peerUlSteamID}&battleState={battleState}");
         } else {
             Debug.Log($"Rejected network session with: {peerUlSteamID} at battleState={battleState}");
         }
@@ -545,14 +594,18 @@ public class SteamP2PSessionManager {
     }
 
     protected void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t callback) {
+        var conn = callback.m_hConn;
         var connInfo = callback.m_info;
-        var disconnectedFromPeerUlSteamID = connInfo.m_identityRemote.GetSteamID64();
-        if (null != lockedLobbyMemberUlSteamIdToJoinIndex && lockedLobbyMemberUlSteamIdToJoinIndex.ContainsKey(disconnectedFromPeerUlSteamID) && null != map) {
-            uint joinIndex = lockedLobbyMemberUlSteamIdToJoinIndex[disconnectedFromPeerUlSteamID];
+        var oldEState = callback.m_eOldState;
+        var newEState = connInfo.m_eState;
+        var fromPeerUlSteamID = connInfo.m_identityRemote.GetSteamID64();
+        if (null != lockedLobbyMemberUlSteamIdToJoinIndex && lockedLobbyMemberUlSteamIdToJoinIndex.ContainsKey(fromPeerUlSteamID) && null != map) {
+            uint peerJoinIndex = lockedLobbyMemberUlSteamIdToJoinIndex[fromPeerUlSteamID];
             var battleState = map.GetBattleState();
-            //Debug.Log($"onConnectionStatusChanged: remoteUser={disconnectedFromPeerUlSteamID}, joinIndex={joinIndex}, battleState={battleState}, newEState={connInfo.m_eState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
+           
+            Debug.Log($"onConnectionStatusChanged: fromPeerUlSteamID={fromPeerUlSteamID}, peerJoinIndex={peerJoinIndex}, battleState={battleState}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
         } else {
-            //Debug.Log($"onConnectionStatusChanged: remoteUser={disconnectedFromPeerUlSteamID}, newEState={connInfo.m_eState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
+            Debug.Log($"onConnectionStatusChanged: remoteUser={fromPeerUlSteamID}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
         }
     }
 
@@ -665,8 +718,6 @@ public class SteamP2PSessionManager {
         try {
             while (!sessionCancellationToken.IsCancellationRequested) {
                 if (ownerSignalSenderBuffer.TryTake(out toSendBuffer, sendBufferReadTimeoutMillis, sessionCancellationToken)) {
-                    SteamMatchmaking.SendLobbyChatMsg(m_currentLobbyId, toSendBuffer, toSendBuffer.Length);
-                    /*
                     unsafe {
                         fixed (byte* pArray = toSendBuffer) {
                             //Debug.Log($"In 'ownerSignalSend' loop, sending to {lockedLobbyMemberBindings.Length} recipients including self.");
@@ -676,8 +727,11 @@ public class SteamP2PSessionManager {
                                     // [WARNING] DON'T apply "SteamNetworkingMessages.SendMessageToUser" to self, in practice I got the following exception and crashed (i.e. "src\steamnetworkingsockets\clientlib\steamnetworkingsockets_p2p_ice.cpp (823) : Assertion Failed: We gathered candidate type 0x400, but 0x202 is allowed").
                                     localDownsyncSnapshotBytesBuffer.Enqueue(toSendBuffer);
                                 } else {
+                                    uint joinIndex = (uint)i + 1;
+                                    if (disconnectedPeerJoinIndices.Contains(joinIndex)) {
+                                        continue;
+                                    }
                                     //Debug.Log($"Sending DOWNSYNC_SNAPSHOT_IO_CHANNEL message from steamId={SteamUser.GetSteamID()}, to memberSteamId={memberSteamId.GetSteamID()}...");
-
                                     SteamNetworkingMessages.SendMessageToUser(
                                         ref memberSteamId,
                                         (IntPtr)pArray,
@@ -689,10 +743,8 @@ public class SteamP2PSessionManager {
                                     //Debug.Log($"Sent DOWNSYNC_SNAPSHOT_IO_CHANNEL message from steamId={SteamUser.GetSteamID()}, to memberSteamId={memberSteamId.GetSteamID()}");
                                 }
                             }
-
                         }
                     }
-                    */
                 }
             }
         } catch (ObjectDisposedException ex1) {
@@ -718,6 +770,10 @@ public class SteamP2PSessionManager {
                                 if (memberSteamId.GetSteamID() == SteamUser.GetSteamID()) {
                                     localUpsyncSnapshotBytesBuffer.Enqueue(toSendBuffer);
                                 } else {
+                                    uint joinIndex = (uint)i + 1;
+                                    if (disconnectedPeerJoinIndices.Contains(joinIndex)) {
+                                        continue;
+                                    }
                                     SteamNetworkingMessages.SendMessageToUser(
                                         ref memberSteamId,
                                         (IntPtr)pArray,

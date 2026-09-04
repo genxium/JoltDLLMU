@@ -117,7 +117,7 @@ public class SteamNetworkDoctor {
 
         while (0 < sendingQ.Cnt) {
             var st = sendingQ.GetFirst();
-            if (st.t + EXPIRY_MILLIS < nowMillis ) {
+            if (st.t + EXPIRY_MILLIS < nowMillis) {
                 sendingQ.Pop();
             } else {
                 break;
@@ -141,7 +141,7 @@ public class SteamNetworkDoctor {
 
         while (0 < inputFrameDownsyncQ.Cnt) {
             var st = inputFrameDownsyncQ.GetFirst();
-            if (st.t + EXPIRY_MILLIS < nowMillis ) {
+            if (st.t + EXPIRY_MILLIS < nowMillis) {
                 inputFrameDownsyncQ.Pop();
             } else {
                 break;
@@ -165,7 +165,7 @@ public class SteamNetworkDoctor {
 
         while (0 < upsyncSnapshotQ.Cnt) {
             var st = upsyncSnapshotQ.GetFirst();
-            if (st.t + EXPIRY_MILLIS < nowMillis ) {
+            if (st.t + EXPIRY_MILLIS < nowMillis) {
                 upsyncSnapshotQ.Pop();
             } else {
                 break;

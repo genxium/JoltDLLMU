@@ -19,9 +19,10 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
             var selectedIdx = selectedCell.GetSelectedIdx();
             switch (selectedIdx) {
                 case 0:
-                    ToggleUIInteractability(false);
-                    TogglePlayerInput(false);
-                    map.AttemptToRejoinBattle();
+                    if (map.AttemptToRejoinBattle()) {
+                        ToggleUIInteractability(false);
+                        TogglePlayerInput(false);
+                    }
                     break;
                 case 1:
                     map.OnBattleStopped("Exit from rejoinPrompt");
