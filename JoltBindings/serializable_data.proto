@@ -905,6 +905,8 @@ message TrapConfig {
 
     bool use_kinematic = 12;
 
+    int32 hp = 13;
+
     uint32 atk1_skill_id = 23;
 
     float default_box_half_size_x = 26;
@@ -1014,6 +1016,11 @@ message Trap {
     float ang_vel_x = 23;
     float ang_vel_y = 24;
     float ang_vel_z = 25;
+
+    // For being destructable
+    int32 hp = 26;
+    repeated BulletImmuneRecord bullet_immune_records = 27; 
+    uint32 bir_count = 28;
 }
 
 message PeerUdpAddr {
@@ -1496,6 +1503,7 @@ message TriggerConfigFromTiled {
     uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
 
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
+    int32 level_score = 23;
 
     bool is_story_ready_go = 512; 
     int32 bgm_id = 513;

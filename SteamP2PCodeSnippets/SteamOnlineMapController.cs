@@ -6,7 +6,6 @@ using SuperTiled2Unity;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -107,7 +106,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
         rejoinTimer.Dispose();
         rejoinTimer = null;
-        Debug.Log($"{motivation}: DisposeRejoinTimer");
+        //Debug.Log($"{motivation}: DisposeRejoinTimer");
         return true;
     }
 
@@ -118,7 +117,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             long timeoutMillis = 10000;
             rejoinTimer = new Timer(new TimerCallback((object s) => {
                 if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
-                    Debug.Log($"RejoinTimer ticked at csharpTimerRdfId={csharpTimerRdfId} with battleState=ROOM_STATE_IN_BATTLE, lastSentIfdId={lastSentIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
+                    //Debug.Log($"RejoinTimer ignored at csharpTimerRdfId={csharpTimerRdfId} with battleState=ROOM_STATE_IN_BATTLE, lastSentIfdId={lastSentIfdId}, lcacIfdId={newLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
                     rejoinPrompt.OnCancel(null);
                 } else {
                     OnRejoinFailed(battleState);
@@ -218,7 +217,32 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         Debug.Log($"OnSessionWithPeerFailed with peerUlSteamID={peerUlSteamID}, peerJoinIndex={peerJoinIndex}, battleState={battleState}, currentLobbyId={p2pSessionManager.GetCurrentLobbyId()}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
     }
 
-    public bool ToggleInactiveJoinIndexMask(in uint joinIndex) {
+    public bool AddInactiveJoinIndexMask(in uint joinIndex) {
+        if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
+            if (joinIndex == selfJoinIndex) {
+                return false;
+            }
+            int joinIndexArrIdx = ((int)joinIndex) - 1;
+            ulong joinIndexMask = (1UL << joinIndexArrIdx);
+            {
+                ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(battle);
+                if (0 == (existingInactiveJoinIndexMask & joinIndexMask)) {
+                    APP_SetInactiveJoinMask(battle, (existingInactiveJoinIndexMask | joinIndexMask));
+                }
+            }
+            {
+                ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(shadowBattle);
+                if (0 == (existingInactiveJoinIndexMask & joinIndexMask)) {
+                    APP_SetInactiveJoinMask(shadowBattle, (existingInactiveJoinIndexMask | joinIndexMask));
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public bool RemoveInactiveJoinIndexMask(in uint joinIndex) {
         if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
             int joinIndexArrIdx = ((int)joinIndex) - 1;
             ulong joinIndexMask = (1UL << joinIndexArrIdx);
@@ -246,13 +270,13 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         
         startFrozenGracePeriod($"[PEER REJOINED] joinIndex={joinIndex}"); // [REMINDER] After "RemoveDisconnectedRecord(joinIndex)", all will be awaiting the first "UpsyncSnapshot" from this rejoined peer after it handles "[REJOIN SNATCH] due to `RejoinRefRdf`"
         if (isCurrentLobbyOwner) {
-            forceConfirmAllPeersAndBroadcastDaRegularAsOwner("RejoinRefRdf", true); // [REMINDER] We're sure that by now the rejoined peer can receive LobbyChat.
+            forceConfirmAndBroadcastDaRegularAsOwner("RejoinRefRdf", true); // [REMINDER] We're sure that by now the rejoined peer can receive LobbyChat.
         }
     }
 
     protected byte[] downsyncSnapshotRecvBuff = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
 
-    protected unsafe void handleSingleDownsyncSnapshotBytes(in IntPtr pData, in int bytesCnt) {
+    protected unsafe void handleSingleDownsyncSnapshotBytes(in IntPtr pData, in int bytesCnt, in int toGenIfdId) {
         Marshal.Copy(pData, downsyncSnapshotRecvBuff, 0, bytesCnt);
 
         Bindings.PreemptDownsyncSnapshotBeforeMerge(downsyncSnapshotHolder, PbPrimitivesOverride.Instance.getUnderlying());
@@ -269,6 +293,13 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 break;
             case DownsyncAct.DaRegular:
                 // [REMINDER] When the "Lobby owner" handles a "DaRegular" (sent from itself) by "FRONTEND_OnDownsyncSnapshotReceived(...)", the fields "lcacIfdId" and "udpLcacIfdId" will be incremented and thus break "lag-induced-freezing".   
+                var ifdBatch = downsyncSnapshotHolder.IfdBatch;
+                if (null != downsyncSnapshotHolder.RefRdf && PbPrimitivesOverride.Instance.getUnderlying().TerminatingRenderFrameId != downsyncSnapshotHolder.RefRdfId) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner() && downsyncSnapshotHolder.RefRdfId > csharpTimerRdfId) {
+                        var lastIfdId = (null != ifdBatch && 0 < ifdBatch.Count) ? (downsyncSnapshotHolder.StIfdId + ifdBatch.Count - 1) : 0;
+                        Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, oldLcacIfdId={newLcacIfdId}, handling DaRegular as owner, downsyncSnapshotHolder.RefRdfId={downsyncSnapshotHolder.RefRdfId}, downsyncLastIfdId={lastIfdId}");
+                    }
+                }
                 int postTimerRdfEvictedCnt = 0, postTimerRdfDelayedIfdEvictedCnt = 0;
                 fixed (int* newChaserRdfIdPtr = &newChaserRdfId, newLcacIfdIdPtr = &newLcacIfdId, newUdpLcacIfdIdPtr = &newUdpLcacIfdId, maxPlayerInputFrontIdPtr = &maxPlayerInputFrontId, minPlayerInputFrontIdPtr = &minPlayerInputFrontId) {
                     Bindings.FRONTEND_OnDownsyncSnapshotReceived(battle, (char*)pData, bytesCnt, &postTimerRdfEvictedCnt, &postTimerRdfDelayedIfdEvictedCnt, newChaserRdfIdPtr, newLcacIfdIdPtr, newUdpLcacIfdIdPtr, maxPlayerInputFrontIdPtr, minPlayerInputFrontIdPtr);
@@ -278,14 +309,22 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     }
                 }
 
-                var ifdBatch = downsyncSnapshotHolder.IfdBatch;
                 if (null != ifdBatch && 0 < ifdBatch.Count) {
-                    var firstInBatch = ifdBatch[0];
-                    var lastInBatch = ifdBatch[ifdBatch.Count - 1];
-                    SteamNetworkDoctor.Instance.LogInputFrameDownsync(downsyncSnapshotHolder.StIfdId, downsyncSnapshotHolder.StIfdId + ifdBatch.Count - 1);
+                    var firstIfdId = downsyncSnapshotHolder.StIfdId;
+                    var lastIfdId = downsyncSnapshotHolder.StIfdId + ifdBatch.Count - 1;
+                    SteamNetworkDoctor.Instance.LogInputFrameDownsync(firstIfdId, lastIfdId);
                 }
 
                 if (null != downsyncSnapshotHolder.RefRdf && PbPrimitivesOverride.Instance.getUnderlying().TerminatingRenderFrameId != downsyncSnapshotHolder.RefRdfId) {
+                    if (p2pSessionManager.GetIsCurrentLobbyOwner() && downsyncSnapshotHolder.RefRdfId > csharpTimerRdfId) {
+                        int timerRdfId = -1, chaserRdfIdLowerBound = -1, localRequiredIfdId = -1;
+                        bool inFrozenGracePeriod = (frozenRdfCount >= frozenRdfCountLimit);
+                        ifdFrontShouldFreeze = false;
+                        fixed (int* newChaserRdfIdPtr = &newChaserRdfId, pToGenIfdId=&toGenIfdId, newLcacIfdIdPtr = &newLcacIfdId, newUdpLcacIfdIdPtr = &newUdpLcacIfdId) {
+                                bool ok1 = Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, newChaserRdfIdPtr, &chaserRdfIdLowerBound, newLcacIfdIdPtr, newUdpLcacIfdIdPtr, pToGenIfdId, &localRequiredIfdId);
+                            Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, newLcacIfdId={newLcacIfdId}, handling DaRegular as owner, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, timerRdfId={timerRdfId}");
+                        }
+                    }
                     readyGoPanel.hideReady();
                     readyGoPanel.hideGo();
                     if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING == battleState
@@ -295,6 +334,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         rejoinPrompt.OnCancel(null);
                         var prevCsharpTimerRdfId = csharpTimerRdfId; 
                         if (FRONTEND_DirectSnatch(battle)) {
+                            skipInterpolation = true;
                             csharpTimerRdfId = downsyncSnapshotHolder.RefRdfId;
                             startFrozenGracePeriod($"[REJOIN SNATCH] @csharpTimerRdfId={prevCsharpTimerRdfId}->{csharpTimerRdfId}, chaserRdfIdLowerBound={downsyncSnapshotHolder.RefRdfId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, udpLcacIfdId={newUdpLcacIfdId}");
                         }
@@ -330,7 +370,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 SteamNetworkingMessage_t netMessage = Marshal.PtrToStructure<SteamNetworkingMessage_t>(messagePointers[i]);
                 CSteamID fromSteamID = netMessage.m_identityPeer.GetSteamID();
                 if (fromSteamID == p2pSessionManager.GetCurrentLobbyOwnerId()) {
-                    handleSingleDownsyncSnapshotBytes(netMessage.m_pData, netMessage.m_cbSize);
+                    handleSingleDownsyncSnapshotBytes(netMessage.m_pData, netMessage.m_cbSize, *pToGenIfdId);
                 } // else check why it's coming here
                 SteamNetworkingMessage_t.Release(messagePointers[i]);
                 messagePointers[i] = IntPtr.Zero;
@@ -340,7 +380,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
         while (p2pSessionManager.DequeLocalDownsyncSnapshotBytesBuffer(out localRecvBytes)) {
             fixed (byte* pData = localRecvBytes) {
-                handleSingleDownsyncSnapshotBytes((IntPtr)pData, localRecvBytes.Length);
+                handleSingleDownsyncSnapshotBytes((IntPtr)pData, localRecvBytes.Length, *pToGenIfdId);
             }
         }
 
@@ -362,21 +402,18 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         fixed (long* shadowBattleDownsyncSnapshotByteCntPtr = &shadowBattleDownsyncSnapshotByteCnt) 
         fixed (int* shadowBattleOldLcacIfdIdPtr = &shadowBattleOldLcacIfdId, shadowBattleNewLcacIfdIdPtr = &shadowBattleNewLcacIfdId, shadowBattleOldDynamicsRdfIdPtr = &shadowBattleOldDynamicsRdfId, shadowBattleNewDynamicsRdfIdPtr = &shadowBattleNewDynamicsRdfId, shadowBattleEvictedStCntPtr = &shadowBattleEvictedStCnt, shadowBattleMaxPlayerInputFrontIdPtr = &shadowBattleMaxPlayerInputFrontId, shadowBattleMinPlayerInputFrontIdPtr = &shadowBattleMinPlayerInputFrontId) {
             Bindings.BACKEND_OnUpsyncSnapshotReqReceived(shadowBattle, (char*)pData, bytesCnt, true, false, (char*)shadowBattleDownsyncSnapshotBytesPtr, shadowBattleDownsyncSnapshotByteCntPtr, shadowBattleEvictedStCntPtr, shadowBattleOldLcacIfdIdPtr, shadowBattleNewLcacIfdIdPtr, shadowBattleOldDynamicsRdfIdPtr, shadowBattleNewDynamicsRdfIdPtr, shadowBattleMaxPlayerInputFrontIdPtr, shadowBattleMinPlayerInputFrontIdPtr);
-            if (p2pSessionManager.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle) {
-                if (0 < *shadowBattleDownsyncSnapshotByteCntPtr) {
-                    if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
-                        byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
-                        Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
-                        /*
-                         [WARNING]
+            if (p2pSessionManager.GetIsCurrentLobbyOwner() && broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle && 0 < *shadowBattleDownsyncSnapshotByteCntPtr) {
+                byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
+                Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
+                /*
+                    [WARNING]
                          
-                         The function "BACKEND_OnUpsyncSnapshotReqReceived" MIGHT increment "shadowBattleNewDynamicsRdfId" yet it NEVER produces a "RefRenderFrame" in the output "shadowBattleDownsyncSnapshotBytes" (which contains only "DownsyncSnapshot.st_ifd_id" & "DownsyncSnapshot.ifd_batch").
+                    The function "BACKEND_OnUpsyncSnapshotReqReceived" MIGHT increment "shadowBattleNewDynamicsRdfId" yet it NEVER produces a "RefRenderFrame" in the output "shadowBattleDownsyncSnapshotBytes" (which contains only "DownsyncSnapshot.st_ifd_id" & "DownsyncSnapshot.ifd_batch").
                          
-                         Therefore we ALWAYS pass in "refRdfId: lastSentRefRdfIdAsOwner" here to avoid blocking regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
-                        */
-                        broadcastDaRegularAsOwner(copiedBytes, refRdfId: lastSentRefRdfIdAsOwner, false);
-                    }
-                }
+                    Therefore we ALWAYS pass in "refRdfId: lastSentRefRdfIdAsOwner" here to avoid blocking regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
+                */
+                //broadcastDaRegularAsOwner(copiedBytes, refRdfId: lastSentRefRdfIdAsOwner, false, "broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle");
+                broadcastDaRegularAsOwner(copiedBytes, refRdfId: lastSentRefRdfIdAsOwner, false, "");
             }
         }
     }
@@ -420,7 +457,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     protected void startFrozenGracePeriod(in string motivation) {
         frozenRdfCount = frozenRdfCountLimit;
         frozenGracingRdfCnt = 0;
-        Debug.LogWarning($"Started frozen grace period: {motivation}");
+        if (!String.IsNullOrEmpty(motivation)) {
+            Debug.LogWarning($"Started frozen grace period: {motivation}");
+        }
     }
 
     public void OnWaitingInterrupted() {
@@ -482,6 +521,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
         frameLogEnabled = downsyncSnapshotHolder.PrepareInfo.FrameLogEnabled;
         Bindings.APP_SetFrameLogEnabled(battle, frameLogEnabled);
+        Bindings.APP_SetFrameLogEnabled(shadowBattle, frameLogEnabled);
         resetCurrentMatch(downsyncSnapshotHolder.PrepareInfo.StageName);
         preallocateFrontendOnlyHolders();
         calcCameraCaps();
@@ -563,7 +603,6 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             readyGoPanel.playGoAnim();
             battleState = PbPrimitivesOverride.ROOM_STATE_IN_BATTLE;
             bgmSource.Play();
-            enableBattleInput(true);
             startFrozenGracePeriod("ReadyGo");
             Debug.Log($"Battle started by local ready-go timer!");
             /*
@@ -580,6 +619,11 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         bool res = p2pSessionManager.JoinTargetLobby(p2pSessionManager.GetCurrentLobbyId(), "AttemptToRejoinBattle");
         if (res) {
             battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_REJOINING;
+        } else {
+            rejoinPrompt.ToggleUIInteractability(false);
+            rejoinPrompt.TogglePlayerInput(false);
+            rejoinPrompt.gameObject.SetActive(false);
+            battleState = PbPrimitivesOverride.ROOM_STATE_IN_BATTLE;
         }
         return res;
     }
@@ -603,9 +647,19 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     Debug.Log($"Frame log written with stRdfId={stRdfId}, edRdfId={edRdfId}");
                 }
             } catch (Exception e) {
-                Debug.LogError($"Error occurred when wrapUpFrameLogs with battle={battle:X}");
-                Debug.LogException(e);
-            }   
+                Debug.LogError($"Error occurred when wrapUpFrameLogs with battle={battle:X}: {e.StackTrace}");
+            }
+
+            try {
+                int stRdfId = 0, edRdfId = 0;
+                Bindings.APP_GetRdfBufferBounds(shadowBattle, &stRdfId, &edRdfId);
+                if (0 < edRdfId) {
+                    FrameLogPrinter.wrapUpFrameLogs(shadowBattle, stRdfId, edRdfId, false, Application.persistentDataPath, $"shadow-p{selfJoinIndex}-jolt-{DateTime.Now.ToString("yyyy_MM_ddTHH_mm_ss")}.log");
+                    Debug.Log($"Shadow frame log written with stRdfId={stRdfId}, edRdfId={edRdfId}");
+                }
+            } catch (Exception e) {
+                Debug.LogError($"Error occurred when wrapUpFrameLogs with shadowBattle={shadowBattle:X}: {e.StackTrace}");
+            }
         }
         
         autoRejoinQuota = DEFAULT_AUTO_REJOIN_QUOTA;
@@ -621,10 +675,17 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         if (null != bgmSource) {
             bgmSource.Stop();
         }
+
+        if (null != rejoinPrompt) {
+            rejoinPrompt.ToggleUIInteractability(false);
+            rejoinPrompt.TogglePlayerInput(false);
+            rejoinPrompt.gameObject.SetActive(false);
+        }
+
         Debug.LogWarning($"Ending {GetType()}.OnBattleStopped: thread ud={Thread.CurrentThread.ManagedThreadId}.");
     }
 
-    protected unsafe bool forceConfirmAllPeersAndBroadcastDaRegularAsOwner(in string motivation, in bool byLobbyChat) {
+    protected unsafe bool forceConfirmAndBroadcastDaRegularAsOwner(in string motivation, in bool byLobbyChat) {
         shadowBattleDownsyncSnapshotByteCnt = pbBufferSizeLimit;
         fixed (byte* shadowBattleDownsyncSnapshotBytesPtr = shadowBattleDownsyncSnapshotBytes)
         fixed (long* shadowBattleDownsyncSnapshotByteCntPtr = &shadowBattleDownsyncSnapshotByteCnt)
@@ -632,17 +693,13 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             ulong existingInactiveJoinIndexMask = APP_GetInactiveJoinMask(shadowBattle);
             ulong inactiveJoinIndexMaskToForceConfirm = (allConfirmedMask ^ selfJoinIndexMask);
             APP_SetInactiveJoinMask(shadowBattle, inactiveJoinIndexMaskToForceConfirm); // [REMINDER] Even when all other peers are skippable, the progress of force-confirmation is still limited by local "toGenIfdId"
-            BACKEND_MoveForwardLcacIfdIdAndStep(shadowBattle, withRefRdf: true, shadowBattleOldLcacIfdIdPtr, shadowBattleNewLcacIfdIdPtr, shadowBattleOldDynamicsRdfIdPtr, shadowBattleNewDynamicsRdfIdPtr, (char*)shadowBattleDownsyncSnapshotBytesPtr, shadowBattleDownsyncSnapshotByteCntPtr);
+            BACKEND_MoveForwardLcacIfdIdAndStep(shadowBattle, withRefRdf: true, shadowBattleOldLcacIfdIdPtr, shadowBattleNewLcacIfdIdPtr, shadowBattleOldDynamicsRdfIdPtr, shadowBattleNewDynamicsRdfIdPtr, (char*)shadowBattleDownsyncSnapshotBytesPtr, shadowBattleDownsyncSnapshotByteCntPtr);    
             APP_SetInactiveJoinMask(shadowBattle, existingInactiveJoinIndexMask); // recover
             if (0 < *shadowBattleDownsyncSnapshotByteCntPtr && shadowBattleOldDynamicsRdfId < shadowBattleNewDynamicsRdfId) {
                 byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                 Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
-                /*
-                if (!String.IsNullOrEmpty(motivation)) {
-                    Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, about to broadcast DaRegular from owner [lastSentIfdId={lastSentIfdId}, newLcacIfdId={newLcacIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, shadowBattleOldDynamicsRdfId={shadowBattleOldDynamicsRdfId}, shadowBattleNewDynamicsRdfId={shadowBattleNewDynamicsRdfId}]: {motivation}");
-                }
-                */
-                broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId, byLobbyChat);
+                
+                broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId, byLobbyChat, motivation);
                 return true;
             } else {
                 // Otherwise "shadowBattleNewDynamicsRdfId" has already been broadcasted as DaRegular earlier.
@@ -651,7 +708,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         }
     }
 
-    protected unsafe bool broadcastDaRegularAsOwner(in byte[] toSendBytes, in int refRdfId, in bool byLobbyChat) {
+    protected unsafe bool broadcastDaRegularAsOwner(in byte[] toSendBytes, in int refRdfId, in bool byLobbyChat, in string motivation) {
         if (refRdfId < lastSentRefRdfIdAsOwner) {
             return false;
         }
@@ -660,17 +717,19 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         } else {
             fixed (byte* rdfFetchBufferPtr = rdfFetchBuffer, ifdFetchBufferPtr = ifdFetchBuffer) {
                 p2pSessionManager.EnqueOwnerSignalSenderBuffer(toSendBytes);
-
-                if (refRdfId > lastSentRefRdfIdAsOwner) {
-                    // [REMINDER] In case "false == stepShadowBattleAlongWithMainBattle && true == broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle", we shouldn't block regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
-                    lastSentRefRdfAtTimerRdfIdAsOwner = csharpTimerRdfId;
-                    lastSentRefRdfIdAsOwner = refRdfId;
-
-                    //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, buffered to be broadcasted DaRegular from owner due to [refRdfId={refRdfId}, lastSentIfdId={lastSentIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, pre-lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner}, pre-lastSentRefRdfIdAsOwner={lastSentRefRdfIdAsOwner}");
-                }
             }
         }
-        
+
+        if (refRdfId > lastSentRefRdfIdAsOwner) {
+            // [REMINDER] In case "false == stepShadowBattleAlongWithMainBattle && true == broadcastShadowBattleDownsyncSnapshotAlongWithMainBattle", we shouldn't block regular broadcasting by "REF_RDF_ID_INTERVAL_RDF_CNT".
+            lastSentRefRdfAtTimerRdfIdAsOwner = csharpTimerRdfId;
+            lastSentRefRdfIdAsOwner = refRdfId;
+        }
+
+        if (!String.IsNullOrEmpty(motivation)) {
+            Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, broadcasted DaRegular (refRdfId={refRdfId}, lastSentRefRdfIdAsOwner={lastSentRefRdfIdAsOwner}) from owner [lastSentIfdId={lastSentIfdId}, newLcacIfdId={newLcacIfdId}, shadowBattleNewLcacIfdId={shadowBattleNewLcacIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, shadowBattleOldDynamicsRdfId={shadowBattleOldDynamicsRdfId}, shadowBattleNewDynamicsRdfId={shadowBattleNewDynamicsRdfId}]: {motivation}");
+        }
+
         return true;
     }
 
@@ -694,9 +753,9 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
 
             if (PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN == battleState) {
+                rejoinPrompt.gameObject.SetActive(true);
                 rejoinPrompt.ToggleUIInteractability(true);
                 rejoinPrompt.TogglePlayerInput(true);
-                rejoinPrompt.gameObject.SetActive(true);
             }
 
             int timerRdfId = -1, chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, oldUdpLcacIfdId = -1, toGenIfdId = -1, localRequiredIfdId = -1;
@@ -747,6 +806,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 return;
             }
 
+
             if (localTimerEnded) {
                 bool rdfAllConfirmed = (newLcacIfdId >= localRequiredIfdId);
                 if (rdfAllConfirmed) {
@@ -763,7 +823,6 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 return;
             }
 
-
             if (acLagShouldLockStep || ifdFrontShouldFreeze || ifdFrontShouldLockStep) {
                 if (acLagShouldLockStep) {
                     //Debug.LogWarning($"Frozen by acLagShouldLockStep @csharpTimerRdfId={csharpTimerRdfId}");
@@ -773,12 +832,14 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     SteamNetworkDoctor.Instance.LogIfdFrontLockedStepCnt();
                     //Debug.LogWarning($"Frozen by ifdFrontShouldLockStep @csharpTimerRdfId={csharpTimerRdfId}, frozenRdfCount={frozenRdfCount}/{frozenRdfCountLimit}");
                     if (!inFrozenGracePeriod && frozenRdfCount + 1 >= frozenRdfCountLimit) {
-                        frozenGracingRdfCnt = 0;
+                        //startFrozenGracePeriod($"ifdLag={networkInfoPanel.ifdLagValue.text}, ifdFrontShouldFreeze={ifdFrontShouldFreeze}, frozenRdfCount={frozenRdfCount}");
+                        startFrozenGracePeriod("");
                     }
                     ++frozenRdfCount;
                     if (p2pSessionManager.GetIsCurrentLobbyOwner() && frozenRdfCountDaRegularBroadcastingThreshold == frozenRdfCount) {
                         if (-1 != lastSentRefRdfAtTimerRdfIdAsOwner) {
-                            forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"frozenRdfCount={frozenRdfCount}", false); // For breaking "lag-induced-freezing avalanche across all players"
+                            //forceConfirmAndBroadcastDaRegularAsOwner($"frozenRdfCount={frozenRdfCount}", false); // For breaking "lag-induced-freezing avalanche across all players"
+                            forceConfirmAndBroadcastDaRegularAsOwner("", false); // For breaking "lag-induced-freezing avalanche across all players"
                         }
                     }
                 } else {
@@ -791,11 +852,13 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 return;
             }
 
+            enableBattleInput(true);
+
             if (inFrozenGracePeriod) {
                 if (frozenGracingRdfCnt >= frozenGracePeriodRdfCount) {
                     frozenRdfCount = 0;
                     frozenGracingRdfCnt = 0;
-                    Debug.LogWarning($"Ended frozen grace period at csharpTimerRdfId={csharpTimerRdfId}, battleState={battleState}");
+                    //Debug.LogWarning($"Ended frozen grace period at csharpTimerRdfId={csharpTimerRdfId}, battleState={battleState}");
                 } else {
                     ++frozenGracingRdfCnt;
                 }
@@ -824,13 +887,12 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
                     ulong effSelfInput = ifdHolder.InputList[selfJoinIndexArrIdx];
                     toGenIfdSelfConfirmed = (0 < (ifdHolder.ConfirmedList & selfJoinIndexMask) || 0 < (ifdHolder.UdpConfirmedList & selfJoinIndexMask));
-                    /*
+                    
                     if (effSelfInput != currSelfInput && toGenIfdSelfConfirmed) {
                         if (toGenIfdId <= newLcacIfdId) {
-                            Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, (toGenIfdId:{toGenIfdId} <= newLcacIfdId:{newLcacIfdId}), effSelfInput={effSelfInput} conflicting currSelfInput={currSelfInput} with selfJoinIndex={selfJoinIndex}, confirmedList={ifdHolder.ConfirmedList}, udpConfirmedList={ifdHolder.UdpConfirmedList}, lastSentIfdId={lastSentIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}");
+                            Debug.LogWarning($"@csharpTimerRdfId={csharpTimerRdfId}, (toGenIfdId:{toGenIfdId} <= newLcacIfdId:{newLcacIfdId}), effSelfInput={effSelfInput} conflicting currSelfInput={currSelfInput} with selfJoinIndex={selfJoinIndex}, confirmedList={ifdHolder.ConfirmedList}, udpConfirmedList={ifdHolder.UdpConfirmedList}, lastSentIfdId={lastSentIfdId}, newUdpLcacIfdId={newUdpLcacIfdId}, chaserRdfIdLowerBound={chaserRdfIdLowerBound}");
                         }
                     }
-                    */
                 }
                 FRONTEND_Step(battle);
                 
@@ -841,16 +903,18 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                             if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
                                 byte[] copiedBytes = new byte[(int)(*shadowBattleDownsyncSnapshotByteCntPtr)];
                                 Buffer.BlockCopy(shadowBattleDownsyncSnapshotBytes, 0, copiedBytes, 0, copiedBytes.Length);
-                                broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId, false);
+                                broadcastDaRegularAsOwner(copiedBytes, shadowBattleNewDynamicsRdfId, false, "stepShadowBattleAlongWithMainBattle");
                             }
                         }
                     }
                 } else {
                     if (p2pSessionManager.GetIsCurrentLobbyOwner()) {
                         if (-1 == lastSentRefRdfAtTimerRdfIdAsOwner && csharpTimerRdfId > (REF_RDF_ID_INTERVAL_RDF_CNT << 1)) {
-                            forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId}, initial force-confirmation to all peers", true);
+                            //forceConfirmAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId}, initial force-confirmation to all peers", true);
+                            forceConfirmAndBroadcastDaRegularAsOwner("", true);
                         } else if (csharpTimerRdfId > (lastSentRefRdfAtTimerRdfIdAsOwner + REF_RDF_ID_INTERVAL_RDF_CNT)) {
-                            forceConfirmAllPeersAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId} > lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner} + REF_RDF_ID_INTERVAL_RDF_CNT={REF_RDF_ID_INTERVAL_RDF_CNT}", false);
+                            //forceConfirmAndBroadcastDaRegularAsOwner($"csharpTimerRdfId={csharpTimerRdfId} > lastSentRefRdfAtTimerRdfIdAsOwner={lastSentRefRdfAtTimerRdfIdAsOwner} + REF_RDF_ID_INTERVAL_RDF_CNT={REF_RDF_ID_INTERVAL_RDF_CNT}", false);
+                            forceConfirmAndBroadcastDaRegularAsOwner("", false);
                         }
                     }
                 }
@@ -879,6 +943,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 }
 
                 if (snatched) {
+                    skipInterpolation = true;
                     SteamNetworkDoctor.Instance.LogForceResyncFutureApplied();
                 }           
 
@@ -902,7 +967,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                     }
                     */
                 }
-
+                //skipInterpolation = true; // [REMINDER] For debugging possible "battle" and "shadowBattle" desync
                 applyRdf(rdfHolder, stepResultHolder, PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf);
             }
 
@@ -977,10 +1042,11 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
             //throw new NotImplementedException("Intended");
         } catch (Exception ex) {
-            Debug.LogError($"Error during OnlineMap.Update csharpTimerRdfId={csharpTimerRdfId}, calling cleanupNetworkSessionsReentrantSafe for manual rejoin: {ex.StackTrace}");
-            battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN; 
-            autoRejoinQuota = 0; // To require manual rejoin.
-            cleanupNetworkSessionsReentrantSafe();
+            Debug.LogError($"Error during OnlineMap.Update csharpTimerRdfId={csharpTimerRdfId}, battleState={battleState}, calling cleanupNetworkSessionsReentrantSafe for manual rejoin: {ex.StackTrace}");
+            if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
+                battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN;
+                autoRejoinQuota = 0; // To require manual rejoin.
+            }
         }
     }
 

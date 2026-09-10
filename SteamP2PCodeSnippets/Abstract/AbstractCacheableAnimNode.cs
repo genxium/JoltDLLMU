@@ -40,7 +40,7 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     protected abstract bool lazyInit();
 
-    void Start() {
+    protected virtual void Start() {
         lazyInit();
     }
 

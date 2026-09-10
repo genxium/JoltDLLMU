@@ -75,7 +75,6 @@ public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<Characte
     }
 
     protected override bool updateAnimUnderlying(in int rdfId, in CharacterDownsync rdfCharacter, in CharacterState newCharacterState, in CharacterConfig chConfig, in int framesInNewState) {
-        SetCacheGroupId(chConfig.SpeciesId);
         updateHpByValsAndCaps(rdfCharacter.Hp, chConfig.Hp);
         return true;
     }

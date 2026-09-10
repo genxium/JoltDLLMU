@@ -36,7 +36,6 @@ public class JoltPickableAnimController : AbstractCacheableAnimNode<Pickable, Pi
         if (!lookUpTable.ContainsKey(newState)) {
             effNewState = PickableState.Pidle;
         }
-        SetCacheGroupId(currPickable.PickupType);
 
         int targetLayer = 0; // We have only 1 layer, i.e. the baseLayer, playing at any time
         int targetClipIdx = 0; // We have only 1 frame anim playing at any time

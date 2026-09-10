@@ -25,7 +25,6 @@ public class KeyChLightSourceAnimController : AbstractCacheableAnimNode<Characte
     }
 
     protected override bool updateAnimUnderlying(in int currRdfId, in CharacterDownsync chd, in CharacterState newState, in CharacterConfig insConfig, in int frameIdxInAnim) {
-        SetCacheGroupId(insConfig.SpeciesId);
         facingQ.Set(chd.QX, chd.QY, chd.QZ, chd.QW);
         Vector3 chdFacing = facingQ * Vector3.right;
         // Update directions

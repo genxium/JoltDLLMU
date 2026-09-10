@@ -1,5 +1,3 @@
-using JoltCSharp;
-using System.Threading;
 using TMPro;
 
 public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectPanel {

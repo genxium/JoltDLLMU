@@ -134,8 +134,9 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
         if (null != g) {
             oldUd = g.GetUd();
             g.SetUd(ud);
+            g.SetCacheGroupId(cacheGroupId);
             activeAnimNodes[ud] = g;
-        } 
+        }
         
         return (g, oldUd);
     }

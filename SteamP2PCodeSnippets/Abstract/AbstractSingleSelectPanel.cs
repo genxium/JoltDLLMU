@@ -162,6 +162,7 @@ public abstract partial class AbstractSingleSelectGroup {
                 selectPanel.OnCancel(eventData);
             }
         }
+
         protected virtual void initCancelBtnPointerClickHandler() {
             if (null == cancelBtn) return;
             var existingEventTrigger = cancelBtn.GetComponent<CancelBtnTrigger>();
