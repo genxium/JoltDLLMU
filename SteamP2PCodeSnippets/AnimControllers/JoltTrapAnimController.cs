@@ -35,7 +35,6 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
         }
-        SetCacheGroupId(currTrap.Tpt);
         facingQ.Set(currTrap.QX, currTrap.QY, currTrap.QZ, currTrap.QW);
         Vector3 trapFacing = facingQ * Vector3.right;
 

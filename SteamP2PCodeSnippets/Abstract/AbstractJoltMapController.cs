@@ -105,7 +105,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected JoltPickableAnimPool pickableAnimPool = null;
     protected GameplayBtnsHintAnimPool gameplayBtnsHintAnimPool = null;
     protected KeyChLightSourceAnimPool keyChLightSourceAnimPool = null;
-    protected SfxSourceAnimPool sfxSourceAnimPool = null;
+    protected SFXSourceAnimPool sfxSourceAnimPool = null;
 
     protected bool allowSelfEmittingLight = true;
     protected bool shouldDetectRealtimeRenderHistoryCorrection = false; // Not recommended to enable in production, it might have some memory performance impact.
@@ -277,7 +277,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         pickableAnimPool = new JoltPickableAnimPool(this, sprDefaultMaterial);
         gameplayBtnsHintAnimPool = new GameplayBtnsHintAnimPool(this);
         keyChLightSourceAnimPool = new KeyChLightSourceAnimPool(this);
-        sfxSourceAnimPool = new SfxSourceAnimPool(this);
+        sfxSourceAnimPool = new SFXSourceAnimPool(this);
 
         playerAnimPool.ResetUponBattlePreparation(-1);
         npcAnimPool.ResetUponBattlePreparation(-1);
@@ -437,6 +437,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         if (false == yesOrNo && !iptmgr.gameObject.activeSelf) return;
         if (iptmgr.enable(yesOrNo)) {
             iptmgr.gameObject.SetActive(yesOrNo);
+            iptmgr.TogglePlayerInput(yesOrNo);
         }
     }
 
@@ -1307,6 +1308,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             if (debugDrawingEnabled && null != debugColliderPrefab) {
                 lazyInitDebugColliderAnimPool(rdfId);
+                var cacheGroupId = debugColliderAnimPool.CalcMeshType(currCharacterDownsync, chConfig);
                 var (animCtrl, oldAnimUd) = debugColliderAnimPool.GetOrCreateAnimNode(playerUd, 0, chConfig, underlyingMap.transform);
                 animCtrl.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, 0);
                 var cachedNewPosHolder = newPosHolder;
@@ -1364,6 +1366,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             if (debugDrawingEnabled && null != debugColliderPrefab) {
                 lazyInitDebugColliderAnimPool(rdfId);
+                var cacheGroupId = debugColliderAnimPool.CalcMeshType(currCharacterDownsync, chConfig);
                 var (animCtrl, oldAnimUd) = debugColliderAnimPool.GetOrCreateAnimNode(npcUd, 0, chConfig, underlyingMap.transform);
                 animCtrl.updateAnim(rdfId, npcUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, 0);
                 var cachedNewPosHolder = newPosHolder;
@@ -1399,6 +1402,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var (wx, wy) = CollisionSpacePositionToWorldPosition(bullet.X, bullet.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
             newPosHolder.Set(wx, wy, bulletZ);
 
+            string sfxName = sfxSourceAnimPool.CalcSfxName(bullet, bulletConfig);
+            if (!String.IsNullOrEmpty(sfxName)) {
+                var (sfxHolder, oldUd) = sfxSourceAnimPool.GetOrCreateAnimNode(bulletUd, sfxName, bulletConfig, underlyingMap.transform);
+                sfxHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
+                sfxHolder.gameObject.transform.position = newPosHolder;
+            }
+
             if (!String.IsNullOrEmpty(bulletConfig.AnimName)) {
                 var (bulletAnimHolder, oldUd) = bulletAnimPool.GetOrCreateAnimNode(bulletUd, bulletConfig.AnimName, bulletConfig, underlyingMap.transform);
                 bulletAnimHolder.damageDealedIndicatorPrefab = damageIndicatorPrefab;
@@ -1419,7 +1429,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     }
                     if (shouldRenderDebugDraw) {
                         lazyInitDebugColliderAnimPool(rdfId);
-                        var (animCtrl, oldUd) = debugColliderAnimPool.GetOrCreateAnimNode(bulletUd, 0, bulletConfig, underlyingMap.transform);
+                        var cacheGroupId = debugColliderAnimPool.CalcMeshType(bullet, bulletConfig);
+                        var (animCtrl, oldUd) = debugColliderAnimPool.GetOrCreateAnimNode(bulletUd, cacheGroupId, bulletConfig, underlyingMap.transform);
                         animCtrl.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, 0);
                         newPosHolder.Set(newPosHolder.x, newPosHolder.y, newPosHolder.z - 1);
                         animCtrl.transform.position = newPosHolder;
@@ -1494,7 +1505,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             for (int k = 0; k < stepResultHolder.AimingRayCount; k++) {
                 var aimingRay = stepResultHolder.AimingRays[k];
 
-                var (animCtrl, oldUd) = aimingRayAnimPool.GetOrCreateAnimNode(aimingRay.OffenderUd, 0, 0, underlyingMap.transform);
+                var (animCtrl, oldUd) = aimingRayAnimPool.GetOrCreateAnimNode(aimingRay.OffenderUd, cacheGroupId: 0, insConfig: 0, underlyingMap.transform);
                 animCtrl.updateAnim(rdfId, aimingRay.OffenderUd, aimingRay, 0, 0, 0);
 
                 var (wStX, wStY) = CollisionSpacePositionToWorldPosition(0.5f * (aimingRay.StX+aimingRay.EdX), 0.5f * (aimingRay.StY + aimingRay.EdY), tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);

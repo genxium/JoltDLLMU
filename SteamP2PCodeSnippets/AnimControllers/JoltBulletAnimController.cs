@@ -55,7 +55,6 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
         }
-        SetCacheGroupId(bulletConfig.AnimName);
         if (BulletState.Hit == newState) {
             if (frameIdxInAnim > bulletConfig.HitAnimRdfCnt) {
                 return false;

@@ -282,7 +282,7 @@ namespace JoltCSharp {
                               GuardBreakerExtraHitCnt = 1,
                               ReflectFireballXIfNotHarder = true,
                               CharacterEmitSfxName = "SlashEmitSpd1",
-                              HitSfxName="Melee_Vanishing2",
+                              HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
                               CollisionTypeMask = 0, // TODO
             };
@@ -314,7 +314,7 @@ namespace JoltCSharp {
                               GuardBreakerExtraHitCnt = 1,
                               ReflectFireballXIfNotHarder = true,
                               CharacterEmitSfxName = "SlashEmitSpd2",
-                              HitSfxName="Melee_Vanishing2",
+                              HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
                               CollisionTypeMask = 0, // TODO
             };
@@ -344,7 +344,7 @@ namespace JoltCSharp {
                               GuardBreakerExtraHitCnt = 1,
                               ReflectFireballXIfNotHarder = true,
                               CharacterEmitSfxName = "SlashEmitSpd3",
-                              HitSfxName="Melee_Vanishing2",
+                              HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
                               CollisionTypeMask = 0, // TODO
             };
@@ -376,7 +376,7 @@ namespace JoltCSharp {
                               GuardBreakerExtraHitCnt = 1,
                               ReflectFireballXIfNotHarder = true,
                               CharacterEmitSfxName = "SlashEmitSpd1",
-                              HitSfxName="Melee_Vanishing2",
+                              HitSfxName="Melee_Hit2",
                               RemainsUponHit = false,
                               MeleeHitSelfStunFrames = PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES,
                               CollisionTypeMask = 0, // TODO
@@ -807,7 +807,7 @@ namespace JoltCSharp {
                               GuardBreakerExtraHitCnt = 1,
                               ReflectFireballXIfNotHarder = true,
                               CharacterEmitSfxName = "SlashEmitSpd1",
-                              HitSfxName="Melee_Vanishing2",
+                              HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
                               CollisionTypeMask = 0, // TODO
             };

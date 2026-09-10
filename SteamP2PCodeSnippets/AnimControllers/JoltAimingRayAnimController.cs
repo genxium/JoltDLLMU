@@ -36,7 +36,6 @@ public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, 
     }
     
     protected override bool updateAnimUnderlying(in int rdfId, in AimingRay aimingRay, in uint ignored1, in uint ignored2, in int framesInNewState) {
-        SetCacheGroupId(0);
         if (null == lineRenderer) {
             lineRenderer = gameObject.AddComponent<BoxMeshRenderer>();
         } else {

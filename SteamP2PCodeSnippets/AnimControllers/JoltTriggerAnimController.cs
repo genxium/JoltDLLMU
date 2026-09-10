@@ -36,7 +36,6 @@ public class JoltTriggerAnimController : AbstractCacheableAnimNode<Trigger, Trig
         if (!lookUpTable.ContainsKey(newState)) {
             effNewState = TriggerState.TrCoolingDown;
         }
-        SetCacheGroupId(currTrigger.Trt);
         facingQ.Set(insConfig.InitQX, insConfig.InitQY, insConfig.InitQZ, insConfig.InitQW);
         Vector3 facing = facingQ * Vector3.right;
         if (0 > facing.x) {

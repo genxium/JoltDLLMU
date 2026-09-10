@@ -92,7 +92,6 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         // [WARNING] Being frozen might invoke this function with "newCharacterState != rdfCharacter.ChState" 
 
         // As this function might be called after many frames of a rollback, it's possible that the playing animation was predicted, different from "prevRdfCharacter.CharacterState" but same as "newCharacterState". More granular checks are needed to determine whether we should interrupt the playing animation.
-        SetCacheGroupId(chConfig.SpeciesId);
         facingQ.Set(rdfCharacter.QX, rdfCharacter.QY, rdfCharacter.QZ, rdfCharacter.QW);
         Vector3 chdFacing = facingQ * Vector3.right;
         // Update directions

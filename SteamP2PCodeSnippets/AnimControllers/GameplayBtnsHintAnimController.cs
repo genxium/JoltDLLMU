@@ -40,8 +40,6 @@ public class GameplayBtnsHintAnimController : AbstractCacheableAnimNode<Trigger,
     }
 
     protected override bool updateAnimUnderlying(in int currRdfId, in Trigger trigger, in TriggerState newState, in TriggerConfigFromTiled insConfig, in int frameIdxInAnim) {
-        SetCacheGroupId(insConfig.Trt);
-
         if (PbPrimitivesOverride.Instance.getUnderlying().Trts.ByPatternF == insConfig.Trt) {
             SetForPatternF();
         } else {

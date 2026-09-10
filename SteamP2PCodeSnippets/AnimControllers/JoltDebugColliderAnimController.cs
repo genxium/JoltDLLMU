@@ -3,10 +3,16 @@ using JoltCSharp;
 using jtshared;
 using System;
 using UnityEngine;
+using static JoltDebugColliderAnimPool;
 
-public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessage, Enum, IMessage, uint> {
+public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessage, Enum, IMessage, MeshType> {
     public Material hitboxMaterial;
     public Material hurtboxMateria;
+
+    private CircleMeshRenderer circle2DRenderer;
+    public CircleMeshRenderer GetCircle2DRenderer() {
+        return circle2DRenderer;
+    }
 
     private BoxMeshRenderer box2DRenderer;
     public BoxMeshRenderer GetBox2DRenderer() {
@@ -20,7 +26,7 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
 
     public JoltDebugColliderAnimController() {
         SetUd(PbPrimitivesOverride.Instance.getUnderlying().TerminatingCharacterId);
-        SetCacheGroupId(PbPrimitivesOverride.Instance.getUnderlying().ChSpecies.None);
+        SetCacheGroupId(MeshType.None);
     }
 
     public Material GetMaterial() {
@@ -54,34 +60,40 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
     }
     
     protected override bool updateAnimUnderlying(in int rdfId, in IMessage target, in Enum newTargetState, in IMessage newTargetConfig, in int framesInNewState) {
-        SetCacheGroupId(0);
-        switch (target) {
-            case Bullet bullet:
-                if (newTargetConfig is BulletConfig bulletConfig) {
-                    if (null == box2DRenderer) {                       
+        MeshType cacheGroupId = GetCacheGroupId();
+        if (newTargetConfig is BulletConfig bulletConfig) {
+            switch (cacheGroupId) {
+                case MeshType.Circle:
+                    if (null == circle2DRenderer) {
+                        circle2DRenderer = gameObject.AddComponent<CircleMeshRenderer>();
+                    } else {
+                        circle2DRenderer = gameObject.GetComponent<CircleMeshRenderer>();
+                    }
+                    circle2DRenderer.SetRadius(bulletConfig.HitboxHalfSizeX);
+                    meshRenderer.sharedMaterial = hitboxMaterial;
+                    break;
+                case MeshType.Box:
+                    if (null == box2DRenderer) {
                         box2DRenderer = gameObject.AddComponent<BoxMeshRenderer>();
                     } else {
                         box2DRenderer = gameObject.GetComponent<BoxMeshRenderer>();
                     }
-                    meshRenderer.sharedMaterial = hitboxMaterial;
                     box2DRenderer.SetHalfExtent(bulletConfig.HitboxHalfSizeX, bulletConfig.HitboxHalfSizeY);
-                }
-                break;
-            case CharacterDownsync chd:
-                if (newTargetConfig is CharacterConfig chConfig) {
-                    if (null == capsule2DRenderer) {
-                        capsule2DRenderer = gameObject.AddComponent<CapsuleMeshRenderer>();
-                    } else {
-                        capsule2DRenderer = gameObject.GetComponent<CapsuleMeshRenderer>();
-                    }
-                    meshRenderer.sharedMaterial = hurtboxMateria;
-                    float capsuleRadius = 0, capsuleHalfHeight = 0;
-                    calcChdShape(chd.ChState, chConfig, out capsuleRadius, out capsuleHalfHeight);
-                    capsule2DRenderer.SetRadiusAndHalfHeight(capsuleRadius, capsuleHalfHeight);
-                }
-                break;
-            default:
-                break;
+                    meshRenderer.sharedMaterial = hitboxMaterial;
+                    break;
+                case MeshType.Capsule:
+                    break;
+            }
+        } else if (newTargetConfig is CharacterConfig chConfig && newTargetState is CharacterState newChState) {
+            if (null == capsule2DRenderer) {
+                capsule2DRenderer = gameObject.AddComponent<CapsuleMeshRenderer>();
+            } else {
+                capsule2DRenderer = gameObject.GetComponent<CapsuleMeshRenderer>();
+            }
+            float capsuleRadius = 0, capsuleHalfHeight = 0;
+            calcChdShape(newChState, chConfig, out capsuleRadius, out capsuleHalfHeight);
+            capsule2DRenderer.SetRadiusAndHalfHeight(capsuleRadius, capsuleHalfHeight);
+            meshRenderer.sharedMaterial = hurtboxMateria;
         }
 
         return true;

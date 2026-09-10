@@ -72,7 +72,7 @@ public class SteamP2PSessionManager {
         }
 
         if (isArealdyInTargetLobby) {
-            Debug.Log($"Self is already in targetLobbyId={targetLobbyId} with existingNumLobbyMembers={lobbyMembersCnt}, motivation ={motivation}...");
+            Debug.Log($"Self is already in targetLobbyId={targetLobbyId} with existingNumLobbyMembers={lobbyMembersCnt}, motivation={motivation}...");
             return false;
         }
 
@@ -200,7 +200,7 @@ public class SteamP2PSessionManager {
             SteamNetworkingMessages.CloseSessionWithUser(ref single);
             Debug.Log($"Closed SteamNetworkingMessages session with {single.GetSteamID()}, peerJoinIndex={peerJoinIndex}: AddDisconnectedRecord/{motivation}");
             if (null != map) {
-                map.ToggleInactiveJoinIndexMask(peerJoinIndex);
+                map.AddInactiveJoinIndexMask(peerJoinIndex);
             }
             return true;
         }
@@ -212,7 +212,7 @@ public class SteamP2PSessionManager {
         if (disconnectedPeerJoinIndices.Contains(joinIndex)) {
             disconnectedPeerJoinIndices.Remove(joinIndex);
             if (null != map) {
-                map.ToggleInactiveJoinIndexMask(joinIndex);
+                map.RemoveInactiveJoinIndexMask(joinIndex);
             }
             Debug.Log($"Peer joinIndex={joinIndex} is removed from disconnectedPeerJoinIndices: {motivation}");
             return true;
@@ -401,7 +401,7 @@ public class SteamP2PSessionManager {
                     Act = DownsyncAct.DaBattlePrepare,
                     PrepareInfo = new BattlePrepareInfo {
                         StageName = "JoltOnlinePlayground", // [TODO] Don't hardcode
-                        FrameLogEnabled = false,
+                        FrameLogEnabled = true,
                     }
                 };
                 prepareSignal.PeerSteamBindingList.AddRange(lockedLobbyMemberBindings);
@@ -603,9 +603,9 @@ public class SteamP2PSessionManager {
             uint peerJoinIndex = lockedLobbyMemberUlSteamIdToJoinIndex[fromPeerUlSteamID];
             var battleState = map.GetBattleState();
            
-            Debug.Log($"onConnectionStatusChanged: fromPeerUlSteamID={fromPeerUlSteamID}, peerJoinIndex={peerJoinIndex}, battleState={battleState}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
+            //Debug.Log($"onConnectionStatusChanged: fromPeerUlSteamID={fromPeerUlSteamID}, peerJoinIndex={peerJoinIndex}, battleState={battleState}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
         } else {
-            Debug.Log($"onConnectionStatusChanged: remoteUser={fromPeerUlSteamID}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
+            //Debug.Log($"onConnectionStatusChanged: remoteUser={fromPeerUlSteamID}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
         }
     }
 

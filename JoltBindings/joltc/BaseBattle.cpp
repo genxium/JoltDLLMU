@@ -6272,8 +6272,45 @@ void BaseBattle::CopyBullet(const Bullet* from, Bullet* to) {
 }
 
 void BaseBattle::CopyTrap(const Trap* from, Trap* to) {
-    // All primitive
-    to->CopyFrom(*from);
+    // Bullet immune records
+    to->set_bir_count(from->bir_count());
+    for (int i = 0; i < from->bullet_immune_records_size(); i++) {
+        const BulletImmuneRecord* fromSingle = &(from->bullet_immune_records(i));
+        BulletImmuneRecord* toSingle = i < to->bullet_immune_records_size() ? to->mutable_bullet_immune_records(i) : to->add_bullet_immune_records();
+        toSingle->CopyFrom(*fromSingle);  // All primitive types, no memory alloc/free would happen
+    }
+    if (0 < to->bullet_immune_records_size() && to->bir_count() < to->bullet_immune_records_size()) {
+        BulletImmuneRecord* toSingle = to->mutable_bullet_immune_records(to->bir_count());
+        ClearBulletImmuneRecord(toSingle);
+    }
+
+    // Other primitives
+    to->set_id(from->id()); 
+    to->set_tpt(from->tpt()); 
+
+    to->set_hp(from->hp()); 
+
+    to->set_trap_state(from->trap_state());
+    to->set_frames_in_trap_state(from->frames_in_trap_state());
+    
+    to->set_x(from->x()); 
+    to->set_y(from->y());
+    to->set_z(from->z());
+
+    to->set_q_x(from->q_x()); 
+    to->set_q_y(from->q_y());
+    to->set_q_z(from->q_z());
+    to->set_q_w(from->q_w());
+
+    // Linear velocity.
+    to->set_vel_x(from->vel_x());
+    to->set_vel_y(from->vel_y());
+    to->set_vel_z(from->vel_z());
+
+    // Angular velocity.
+    to->set_ang_vel_x(from->ang_vel_x());
+    to->set_ang_vel_y(from->ang_vel_y());
+    to->set_ang_vel_z(from->ang_vel_z());
 }
 
 void BaseBattle::CopyTrigger(const Trigger* from, Trigger* to) {
