@@ -316,6 +316,8 @@ namespace JoltCSharp {
               StairsPTerrainPriority = 0.35f,
               RegularSlopeTerrainPriority = 0.30f,
 
+              DefaultRevengeRdfCountdown = 5*BATTLE_DYNAMICS_FPS,
+
               EleWeaknessDefaultYield = 1.5f,
               EleResistanceDefaultYield = 0.5f,
 

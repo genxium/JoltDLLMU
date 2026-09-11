@@ -5,7 +5,6 @@
 #include "FrameRingBuffer.h"
 #include "CollisionLayers.h"
 #include "CollisionCallbacks.h"
-#include <Jolt//Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include "CharacterCollisionCollector.h"
@@ -1616,6 +1615,24 @@ public:
         const uint64_t udRhs, const uint64_t udtRhs, const JPH::Body& rhs) const {
         const Bullet* lhsCurrBl = transientUdToCurrBl.at(udLhs);
         return validateLhsBulletContact(lhsCurrBl, udRhs, udtRhs, rhs);
+    }
+
+    virtual RVec3 getColliderPositionByUd(const uint64_t ud, const BodyInterface* bi) const {
+        if (transientUdToChCollider.count(ud)) {
+            CH_COLLIDER_T* chCollider = transientUdToChCollider.at(ud);
+            return chCollider->GetPosition();
+        }
+
+        if (!transientUdToBodyID.count(ud)) {
+            return Vec3::sNaN();
+        }
+
+        const BodyID* bodyID = transientUdToBodyID.at(ud); 
+        if (nullptr == bodyID || bodyID->IsInvalid()) {
+            return Vec3::sNaN();
+        }
+
+        return bi->GetPosition(*bodyID);
     }
 
 public:

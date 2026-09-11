@@ -1015,7 +1015,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     phySys->Update(dt, 1, globalTempAllocator, jobSys);
 
     // [REMINDER] From now on, we can safely use "biNoLock" because there'd be NO USE of "bi->SetXxx(...)"!
-    JobSystem::Barrier* postPhysicsUpdateMTBarrier = jobSys->CreateBarrier();
+    JobSystem::Barrier* postPhysicsUpdateMTBarrier1 = jobSys->CreateBarrier();
     const BaseBattle* battle = this;
     for (int i = 0; i < playersCnt; i++) {
         auto handle = jobSys->CreateJob("player-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt, stepResult]() {
@@ -1099,7 +1099,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 }
             }
         }, 0);
-        postPhysicsUpdateMTBarrier->AddJob(handle);
+        postPhysicsUpdateMTBarrier1->AddJob(handle);
     }
 
     for (int i = 0; i < currRdf->npc_count(); i++) {
@@ -1158,37 +1158,58 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 #endif // ! NDEBUG
                     }
                 }
-            } else if (!noOpSet.count(nextChd->ch_state()) || BlownUp1 == nextChd->ch_state()) {
-                bool notTurningAround = (currChd.q_x() == nextChd->q_x() && currChd.q_y() == nextChd->q_y() && currChd.q_z() == nextChd->q_z() && currChd.q_w() == nextChd->q_w());
-                if (cc->has_vision_reaction() && notTurningAround) {
-                    BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
-                    if (nullptr != npcReaction) {
-                        NpcGoal currNpcGoal = currNpc.goal_as_npc();
-                        uint64_t currNpcCachedCueCmd = currNpc.cached_cue_cmd();
-                        NpcGoal newGoal = currNpcGoal;
-                        uint64_t newCmd = 0;
-                        const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
-                        const MassProperties massProps = shape->GetMassProperties();
-                        
-                        uint64_t toRevengeOppoUd = closestOffenderUd;
-                        uint64_t toRevengeOppoUdt = getUDT(toRevengeOppoUd);
-                        
-                        int newLastFledRdfId = nextNpc->last_fled_rdf_id();
-                        if (0 >= newLastFledRdfId) {
-                            // [WARNING] To workaround the edge case when an NPC is born right at a "movement blocker".
-                            newLastFledRdfId = INT_MIN;
+            } else {
+                if (0 != closestOffenderUd) {
+                    nextNpc->set_to_revenge_ud(closestOffenderUd);
+                    nextNpc->set_revenge_rdf_countdown(globalPrimitiveConsts->default_revenge_rdf_countdown());
+                /*
+#ifndef  NDEBUG
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", NPC id=" << currNpc.id() << " updated to_revenge_ud=" << closestOffenderUd << ".";
+                    Debug::Log(oss.str(), DColor::Yellow);
+#endif // ! NDEBUG
+                */
+                }
+
+                if (!noOpSet.count(nextChd->ch_state()) || BlownUp1 == nextChd->ch_state()) {
+                    bool notTurningAround = (currChd.q_x() == nextChd->q_x() && currChd.q_y() == nextChd->q_y() && currChd.q_z() == nextChd->q_z() && currChd.q_w() == nextChd->q_w());
+                    if (cc->has_vision_reaction() && notTurningAround) {
+                        BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
+                        if (nullptr != npcReaction) {
+                            NpcGoal currNpcGoal = currNpc.goal_as_npc();
+                            uint64_t currNpcCachedCueCmd = currNpc.cached_cue_cmd();
+                            NpcGoal newGoal = currNpcGoal;
+                            uint64_t newCmd = 0;
+                            const RotatedTranslatedShape* shape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
+                            const MassProperties massProps = shape->GetMassProperties();
+
+                            int newLastFledRdfId = nextNpc->last_fled_rdf_id();
+                            if (0 >= newLastFledRdfId) {
+                                // [WARNING] To workaround the edge case when an NPC is born right at a "movement blocker".
+                                newLastFledRdfId = INT_MIN;
+                            }
+                            npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, nextNpc, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd, newLastFledRdfId);
+                            nextNpc->set_goal_as_npc(newGoal);
+                            nextNpc->set_cached_cue_cmd(newCmd);
+                            nextNpc->set_last_fled_rdf_id(newLastFledRdfId);
+                            if (0 != nextNpc->to_revenge_ud() && 0 == nextChd->locking_on_ud()) {
+                                // i.e. "shouldHunt" was set to false in "postStepDeriveNpcVisionReaction"
+                                nextNpc->set_to_revenge_ud(0);
+                                nextNpc->set_revenge_rdf_countdown(0);
+                            }
                         }
-                        npcReaction->postStepDeriveNpcVisionReaction(currRdfId, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, toRevengeOppoUdt, toRevengeOppoUd, closestOffenderPosDiff, newGoal, newCmd, newLastFledRdfId);
-                        nextNpc->set_goal_as_npc(newGoal);
-                        nextNpc->set_cached_cue_cmd(newCmd);
-                        nextNpc->set_last_fled_rdf_id(newLastFledRdfId);
                     }
                 }
             }
         }, 0);
-        postPhysicsUpdateMTBarrier->AddJob(handle);
+        postPhysicsUpdateMTBarrier1->AddJob(handle);
     }
 
+
+    jobSys->WaitForJobs(postPhysicsUpdateMTBarrier1);
+    jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier1);
+
+    JobSystem::Barrier* postPhysicsUpdateMTBarrier2 = jobSys->CreateBarrier();
     for (int i = 0; i < currRdf->bullet_count(); i++) { 
         if (globalPrimitiveConsts->terminating_bullet_id() == currRdf->bullets(i).id()) break;
         auto handle = jobSys->CreateJob("bullet-post-physics-update", JPH::Color::sBlack, [currRdfId, i, currRdf, nextRdf, this, dt]() {
@@ -1284,11 +1305,11 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
                         if (hitOnCharacter) {
                             if (hitFromCharacter && transientOffenderUdToSuperAtkGaugeInc.count(offenderUd)) {
-                                CharacterDownsync* victimNextChd = mutableNextChdFromUd(udRhs);
-                                if (nullptr != victimNextChd && Dying == victimNextChd->ch_state() && 0 == victimNextChd->frames_in_ch_state()) {
-                                    // [WARNING] We haven't reached "calcFallenDeath", hence victim death can only be subjected to bullet hits.
+                                const CharacterDownsync& victimCurrChd = immutableCurrChdFromUd(udRhs);
+                                const CharacterDownsync* victimNextChd = mutableNextChdFromUd(udRhs);
+                                if (0 < victimCurrChd.hp() && 0 >= victimNextChd->hp()) {
                                     const CharacterConfig* victimCurrCc = getCc(victimNextChd->species_id());
-                                    int effGaugeInc = lhsBlConfig->gauge_inc_reduction_ratio() * victimCurrCc->gauge_inc_when_exhausted();
+                                    int effGaugeInc = (1.0f - lhsBlConfig->gauge_inc_reduction_ratio()) * victimCurrCc->gauge_inc_when_exhausted();
                                     transientOffenderUdToSuperAtkGaugeInc[offenderUd] += effGaugeInc;
                                 }
                             }
@@ -1406,31 +1427,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 }
             }
         }, 0);
-        postPhysicsUpdateMTBarrier->AddJob(handle);
-    }
-
-    for (auto& [offenderUd, superAtkGaugeInc] : transientOffenderUdToSuperAtkGaugeInc) {
-        if (0 >= superAtkGaugeInc) continue;
-        CharacterDownsync* offenderNextChd = mutableNextChdFromUd(offenderUd);
-        const CharacterConfig* offenderCc = getCc(offenderNextChd->species_id());
-
-        InventorySlot* offenderNextSuperAtkGauge = offenderNextChd->mutable_super_atk_gauge();
-        const InventorySlotConfig& ivsConfig = offenderCc->super_atk_gauge();
-        int newGaugeCharged = offenderNextSuperAtkGauge->gauge_charged() + superAtkGaugeInc;
-        int newQuota = offenderNextSuperAtkGauge->quota();
-
-        if (newGaugeCharged > ivsConfig.gauge_required()) {
-            int quotaInc = newGaugeCharged / ivsConfig.gauge_required();
-            newQuota = newQuota + quotaInc;
-            newGaugeCharged = newGaugeCharged - quotaInc * ivsConfig.gauge_required();
-        }
-        if (newQuota > ivsConfig.quota()) {
-            newQuota = ivsConfig.quota();
-            newGaugeCharged = 0;
-        }
-        
-        offenderNextSuperAtkGauge->set_gauge_charged(newGaugeCharged);
-        offenderNextSuperAtkGauge->set_quota(newQuota);
+        postPhysicsUpdateMTBarrier2->AddJob(handle);
     }
 
     for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
@@ -1482,7 +1479,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextTp->set_ang_vel_z(IsAngleNearZero(newAngVel.GetZ()* dt) ? 0 : newAngVel.GetZ());
                 }
             }, 0);
-        postPhysicsUpdateMTBarrier->AddJob(handle);
+        postPhysicsUpdateMTBarrier2->AddJob(handle);
     }
 
     for (int i = 0; i < currRdf->trigger_count(); i++) {
@@ -1563,12 +1560,37 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 }
             }
         }, 0);
-        postPhysicsUpdateMTBarrier->AddJob(handle);
+        postPhysicsUpdateMTBarrier2->AddJob(handle);
     }
 
-    jobSys->WaitForJobs(postPhysicsUpdateMTBarrier);
-    jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier);
+    jobSys->WaitForJobs(postPhysicsUpdateMTBarrier2);
+    jobSys->DestroyBarrier(postPhysicsUpdateMTBarrier2);
     
+    for (auto& [offenderUd, superAtkGaugeInc] : transientOffenderUdToSuperAtkGaugeInc) {
+        if (0 >= superAtkGaugeInc) continue;
+        CharacterDownsync* offenderNextChd = mutableNextChdFromUd(offenderUd);
+        const CharacterConfig* offenderCc = getCc(offenderNextChd->species_id());
+        if (!offenderCc->has_super_atk_gauge()) continue;
+        InventorySlot* offenderNextSuperAtkGauge = offenderNextChd->mutable_super_atk_gauge();
+        const InventorySlotConfig& ivsConfig = offenderCc->super_atk_gauge();
+        int newGaugeCharged = offenderNextSuperAtkGauge->gauge_charged() + superAtkGaugeInc;
+        int newQuota = offenderNextSuperAtkGauge->quota();
+
+        if (newGaugeCharged >= ivsConfig.gauge_required()) {
+            int quotaInc = newGaugeCharged / ivsConfig.gauge_required();
+            newQuota = newQuota + quotaInc;
+            newGaugeCharged = newGaugeCharged - quotaInc * ivsConfig.gauge_required();
+        }
+
+        if (newQuota > ivsConfig.quota()) {
+            newQuota = ivsConfig.quota();
+            newGaugeCharged = 0;
+        }
+
+        offenderNextSuperAtkGauge->set_gauge_charged(newGaugeCharged);
+        offenderNextSuperAtkGauge->set_quota(newQuota);
+    }
+
     // Special handling for triggers that MUST subscribe to its own "publishing_to_trigger_id_upon_exhausted"
     for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
@@ -2767,7 +2789,6 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
         } else if (1 == currChd.walkstopping_rdf_countdown()) {
             if (!isInWalkingAtkAndNotRecovered) {
                 nextChd->set_ch_state(Idle1);
-                nextChd->set_frames_in_ch_state(0);
             }
         }
     } 
@@ -2833,11 +2854,6 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
         return;
     }
  
-    bool exactTurningAround = false;
-    if (0 > effDx * currChdFacing.GetX()) {
-        exactTurningAround = true;
-    }
-    
     if (0 != effDx) {
         if (onWallSet.count(currChd.ch_state())) {
             ioInputInducedMotion->angVelCOM.SetY(0 > effDx ? cc->wall_ang_y_speed() : -cc->wall_ang_y_speed());
@@ -2879,16 +2895,8 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
                 ioFrictionDirty = true;
             } else {
                 forceX = xfac * (cc->acc_mag_x() * massProps.mMass);
-                if (exactTurningAround && cc->has_turn_around_anim()) {
-                    if (currEffInAir && cc->has_in_air_turn_around_anim()) {
-                        nextChd->set_ch_state(InAirTurnAround);
-                    } else {
-                        nextChd->set_ch_state(TurnAround);
-                    }
-                } else {
-                    if (!isInWalkingAtkAndNotRecovered) {
-                        nextChd->set_ch_state(Walking);
-                    }
+                if (!isInWalkingAtkAndNotRecovered) {
+                    nextChd->set_ch_state(Walking);
                 }
             }
         }
@@ -2983,7 +2991,6 @@ void BaseBattle::processInertiaFlyingHandleZeroEffDxAndDy(const int currRdfId, f
         } else if (1 == currChd.walkstopping_rdf_countdown()) {
             if (!isInWalkingAtkAndNotRecovered) {
                 nextChd->set_ch_state(Idle1);
-                nextChd->set_frames_in_ch_state(0);
             }
         }
     }
@@ -3011,11 +3018,6 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
         shouldReturnEarly = true;
     }
  
-    bool exactTurningAround = false;
-    if (0 > effDx * currChdFacing.GetX()) {
-        exactTurningAround = true;
-    }
-    
     bool isInWalkingAtk = walkingAtkSet.count(currChd.ch_state());
     bool isInWalkingAtkAndNotRecovered = false;
     if (0 < currChd.frames_to_recover()) {
@@ -3046,16 +3048,8 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
             forceY = yfac * (cc->acc_mag_x() * massProps.mMass);
             ioInputInducedMotion->forceCOM.SetX(forceX);
             ioInputInducedMotion->forceCOM.SetY(forceY);
-            if (exactTurningAround && cc->has_turn_around_anim()) {
-                if (cc->has_in_air_turn_around_anim()) {
-                    nextChd->set_ch_state(InAirTurnAround);
-                } else {
-                    nextChd->set_ch_state(TurnAround);
-                }
-            } else {
-                if (!isInWalkingAtkAndNotRecovered) {
-                    nextChd->set_ch_state(Walking);
-                }
+            if (!isInWalkingAtkAndNotRecovered) {
+                nextChd->set_ch_state(Walking);
             }
         }
 
@@ -3525,6 +3519,12 @@ void BaseBattle::elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* 
     auto* chOverride = getChOverride(ud);
     elapse1RdfForChd(currRdfId, ud, chd, cc, chOverride);
     npcChd->set_frames_in_patrol_cue(0 < npcChd->frames_in_patrol_cue() ? npcChd->frames_in_patrol_cue() - 1 : 0);
+    if (0 < npcChd->revenge_rdf_countdown()) {
+        npcChd->set_revenge_rdf_countdown(npcChd->revenge_rdf_countdown() - 1);
+    } else {
+        npcChd->set_to_revenge_ud(0);
+        npcChd->set_revenge_rdf_countdown(0);
+    }
 }
 
 void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, CharacterDownsync* cd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* characterOverride) {
@@ -5033,6 +5033,7 @@ void BaseBattle::processDelayedBulletSelfVel(const int currRdfId, const Characte
 }
 
 void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+
     CharacterState oldNextChState = nextChd->ch_state();
 
     uint32_t activeSkillId = currChd.active_skill_id();
@@ -5089,16 +5090,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     nextChd->set_remaining_def1_quota(0);
                 }
                 break;
-            case TurnAround:
-                if (cc->omit_gravity()) {
-                    // [WARNING] No need to distinguish in this case.
-                    break;
-                } else {
-                    if (cc->has_in_air_turn_around_anim()) {
-                        nextChd->set_ch_state(InAirTurnAround);
-                    }
-                    break;
-                }
             case Def1Broken:
                 nextChd->set_ch_state(InAirAtked1);
                 break;
@@ -5149,9 +5140,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case InAirWalking:
                 nextChd->set_ch_state(Walking);
                 break;
-            case InAirTurnAround:
-                nextChd->set_ch_state(TurnAround);
-                break;
             default:
                 if (0 != inputInducedMotion->forceCOM.GetX()) {
                     nextChd->set_ch_state(Walking);
@@ -5172,7 +5160,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case InAirIdle1ByWallJump:
             case Walking:
             case GetUp1:
-            case TurnAround:
                 nextChd->set_ch_state(CrouchIdle1);
                 nextChd->set_vel_x(nextChd->ground_vel_x());
                 nextChd->set_vel_y(nextChd->ground_vel_y());
@@ -5355,6 +5342,17 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         std::ostringstream oss1;
         oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state() << ", oldNextChState=" << oldNextChState << "; cvSupported=" << cvSupported << ", cvInAir=" << cvInAir << ", cvOnWall=" << cvOnWall << ", currNotDashing=" << currNotDashing << ", currEffInAir=" << currEffInAir << ", oldNextNotDashing=" << oldNextNotDashing << ", oldNextEffInAir=" << oldNextEffInAir << ", inJumpStartupOrJustEnded=" << inJumpStartupOrJustEnded << ", cvGroundState=" << CharacterBase::sToString(cvGroundState);
         Debug::Log(oss1.str(), DColor::Orange);
+    }
+    
+    if (globalPrimitiveConsts->ch_species().wolverine1() == nextChd->species_id()) {
+        switch (nextChd->ch_state()) {
+        case Walking:
+        case Atked1:
+            std::ostringstream oss1;
+            oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChState=" << nextChd->ch_state() << " and nextFramesInChState=" << nextChd->frames_in_ch_state() << "; while oldNextChState=" << oldNextChState << ", currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state();
+            Debug::Log(oss1.str(), DColor::Orange);
+            break;
+        }
     }
     */
 #endif // !NDEBUG
@@ -5896,6 +5894,9 @@ void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
 
     npc->set_subscribes_to_trigger_id(globalPrimitiveConsts->terminating_trigger_id()); 
 
+    npc->set_to_revenge_ud(0);
+    npc->set_revenge_rdf_countdown(0);
+
     npc->set_captured_by_patrol_cue(0);
     npc->set_frames_in_patrol_cue(0);
 
@@ -6030,6 +6031,9 @@ void BaseBattle::CopyNpcChd(const NpcCharacterDownsync* from, NpcCharacterDownsy
     to->set_publishing_to_trigger_id_upon_exhausted(from->publishing_to_trigger_id_upon_exhausted());
 
     to->set_subscribes_to_trigger_id(from->subscribes_to_trigger_id()); 
+
+    to->set_to_revenge_ud(from->to_revenge_ud());
+    to->set_revenge_rdf_countdown(from->revenge_rdf_countdown());
 
     to->set_captured_by_patrol_cue(from->captured_by_patrol_cue());
     to->set_frames_in_patrol_cue(from->frames_in_patrol_cue());
@@ -6489,7 +6493,7 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
         } else {
 #ifndef NDEBUG
              std::ostringstream oss;
-             oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", not enough atk1 magazine to use targetSkillId=" << targetSkillId;
+             oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ", not enough super atk gauge (curr:" << currChd.super_atk_gauge().quota() << ", required:" << targetSkillConfig.super_atk_gauge_delta() << ") to use targetSkillId = " << targetSkillId;
              Debug::Log(oss.str(), DColor::Yellow);
 #endif // !NDEBUG
             return false;
@@ -6551,99 +6555,7 @@ void BaseBattle::useInventorySlot(const int currRdfId, int slotArrIdx, const Cha
     outSlotUsed = false;
     bool intendToDodgeInBlockStun = false;
     outDodgedInBlockStun = false;
-
-    /*
-    auto targetSlotCurr = currChd.Inventory.Slots[slotArrIdx];
-    auto targetSlotNext = nextChd->Inventory.Slots[slotArrIdx];
-    if (globalPrimitiveConsts->pattern_inventory_slot_bc() == patternId) {
-        // Handle full charge skill usage
-        if (InventorySlotStockType.GaugedMagazineIv != targetSlotCurr.stock_type() || targetSlotCurr.Quota != targetSlotCurr.DefaultQuota) {
-            return (false, globalPrimitiveConsts->no_skill(), false);
-        }
-        slotLockedSkillId = targetSlotCurr.FullChargeSkillId;
-
-        if (globalPrimitiveConsts->no_skill() == slotLockedSkillId && TERMINATING_BUFF_SPECIES_ID == targetSlotCurr.FullChargeBuffspecies_id()) {
-            return (false, globalPrimitiveConsts->no_skill(), false);
-        }
-
-        // [WARNING] Deliberately allowing full charge skills to be used in "notRecovered" cases
-        targetSlotNext.Quota = 0;
-        slotUsed = true;
-
-        // [WARNING] Revert all debuffs
-        AssignToDebuff(globalPrimitiveConsts->terminating_debuff_species_id(), 0, nextChd->DebuffList[0]);
-
-        if (TERMINATING_BUFF_SPECIES_ID != targetSlotCurr.FullChargeBuffspecies_id()) {
-            auto buffConfig = buffConfigs[targetSlotCurr.FullChargeBuffspecies_id()];
-            ApplyBuffToCharacter(currRdfId, buffConfig, currChd, nextChd);
-        }
-
-        if (globalPrimitiveConsts->no_skill() != slotLockedSkillId) {
-            auto (currSkillConfig, currBulletConfig) = FindBulletConfig(currChd.active_skill_id(), currChd.ActiveSkillHit);
-            if (null == currSkillConfig || null == currBulletConfig) return (false, globalPrimitiveConsts->no_skill(), false);
-
-            if (!currBulletConfig.cancellable_by_inventory_slot_c()) return (false, globalPrimitiveConsts->no_skill(), false);
-            if (!(currBulletConfig.cancellable_st_frame() <= currChd.frames_in_ch_state() && currChd.frames_in_ch_state() < currBulletConfig.CancellableEdFrame)) return (false, globalPrimitiveConsts->no_skill(), false);
-        }
-
-        return (slotUsed, slotLockedSkillId, false);
-    } else {
-        slotLockedSkillId = intendToDodgeInBlockStun ? globalPrimitiveConsts->no_skill() : (currEffInAir ? targetSlotCurr.skill_id_air() : targetSlotCurr.skill_id());
-
-        if (!intendToDodgeInBlockStun && globalPrimitiveConsts->no_skill() == slotLockedSkillId && TERMINATING_BUFF_SPECIES_ID == targetSlotCurr.Buffspecies_id()) {
-            return (false, globalPrimitiveConsts->no_skill(), false);
-        }
-
-        bool notRecovered = (0 < currChd.frames_to_recover());
-        if (notRecovered && !intendToDodgeInBlockStun) {
-            auto (currSkillConfig, currBulletConfig) = FindBulletConfig(currChd.active_skill_id(), currChd.ActiveSkillHit);
-            if (null == currSkillConfig || null == currBulletConfig) return (false, globalPrimitiveConsts->no_skill(), false);
-
-            if (globalPrimitiveConsts->pattern_inventory_slot_c() == patternId && !currBulletConfig.cancellable_by_inventory_slot_c()) return (false, globalPrimitiveConsts->no_skill(), false);
-            if (globalPrimitiveConsts->pattern_inventory_slot_d() == patternId && !currBulletConfig.cancellable_by_inventory_slot_d()) return (false, globalPrimitiveConsts->no_skill(), false);
-            if (!(currBulletConfig.cancellable_st_frame() <= currChd.frames_in_ch_state() && currChd.frames_in_ch_state() < currBulletConfig.CancellableEdFrame)) return (false, globalPrimitiveConsts->no_skill(), false);
-        }
-
-        if (InventorySlotStockType.GaugedMagazineIv == targetSlotCurr.stock_type()) {
-            if (0 < targetSlotCurr.Quota) {
-                targetSlotNext.Quota = targetSlotCurr.Quota - 1;
-                slotUsed = true;
-                dodgedInBlockStun = intendToDodgeInBlockStun;
-            }
-        } else if (InventorySlotStockType.QuotaIv == targetSlotCurr.stock_type()) {
-            if (0 < targetSlotCurr.Quota) {
-                targetSlotNext.Quota = targetSlotCurr.Quota - 1;
-                slotUsed = true;
-                dodgedInBlockStun = intendToDodgeInBlockStun;
-            }
-        } else if (InventorySlotStockType.TimedIv == targetSlotCurr.stock_type()) {
-            if (0 == targetSlotCurr.frames_to_recover()) {
-                targetSlotNext.set_frames_to_recover(targetSlotCurr.default_frames_to_recover());
-                slotUsed = true;
-                dodgedInBlockStun = intendToDodgeInBlockStun;
-            }
-        } else if (InventorySlotStockType.TimedMagazineIv == targetSlotCurr.stock_type()) {
-            if (0 < targetSlotCurr.Quota) {
-                targetSlotNext.Quota = targetSlotCurr.Quota - 1;
-                if (0 == targetSlotNext.Quota) {
-                    targetSlotNext.set_frames_to_recover(targetSlotCurr.default_frames_to_recover());
-                    //logger.LogInfo(String.Format("At currRdfId={0}, player joinIndex={1} starts reloading inventoryBtnB", currRdfId, currChd.JoinIndex));
-                }
-                slotUsed = true;
-                dodgedInBlockStun = intendToDodgeInBlockStun;
-            }
-        }
-
-        if (slotUsed && !intendToDodgeInBlockStun) {
-            if (TERMINATING_BUFF_SPECIES_ID != targetSlotCurr.Buffspecies_id()) {
-                auto buffConfig = buffConfigs[targetSlotCurr.Buffspecies_id()];
-                ApplyBuffToCharacter(currRdfId, buffConfig, currChd, nextChd);
-            }
-        }
-
-        return (slotUsed, slotLockedSkillId, dodgedInBlockStun);
-    }
-    */
+    // TBD
 }
 
 CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig* cc, const Vec3Arg& newPos, const QuatArg& newRot, const uint64_t newUd, BodyInterface* inBodyInterface) {
@@ -7245,12 +7157,27 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         clampFlyingChdVel(nextChd, newOverallVel, cc);
     }
 
-    nextChd->set_x(newPos.GetX());
-    nextChd->set_y(newPos.GetY());
-    nextChd->set_z(0);
-    nextChd->set_vel_x(IsLengthNearZero(newOverallVel.GetX() * dt) ? 0 : newOverallVel.GetX());
-    nextChd->set_vel_y(IsLengthNearZero(newOverallVel.GetY() * dt) ? 0 : newOverallVel.GetY());
-    nextChd->set_vel_z(0);
+    switch (nextChd->ch_state()) {
+    case Dying:
+    case Dimmed:
+    case Awaking:
+    case TransformingInto:
+        nextChd->set_x(currChd.x());
+        nextChd->set_y(newPos.GetY());
+        nextChd->set_z(0);
+        nextChd->set_vel_x(0);
+        nextChd->set_vel_y(IsLengthNearZero(newOverallVel.GetY() * dt) ? 0 : newOverallVel.GetY());
+        nextChd->set_vel_z(0);
+        break;
+    default:
+        nextChd->set_x(newPos.GetX());
+        nextChd->set_y(newPos.GetY());
+        nextChd->set_z(0);
+        nextChd->set_vel_x(IsLengthNearZero(newOverallVel.GetX() * dt) ? 0 : newOverallVel.GetX());
+        nextChd->set_vel_y(IsLengthNearZero(newOverallVel.GetY() * dt) ? 0 : newOverallVel.GetY());
+        nextChd->set_vel_z(0);
+        break; 
+    }
     // [WARNING] Intentionally NOT setting "nextChd->q_*" here by "newRot", but in "processSingleCharacterInput" instead.
     if (cvSupported) {
         nextChd->set_ground_vel_x(newGroundVel.GetX());

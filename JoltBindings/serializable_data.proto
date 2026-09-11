@@ -145,7 +145,6 @@ enum CharacterState {
     InvalidChState = 0;
     Idle1 = 1;
     Walking = 2;
-    TurnAround = 3;
     Atked1 = 4;
     InAirIdle1NoJump = 5;
     InAirIdle1ByJump = 6;
@@ -178,9 +177,10 @@ enum CharacterState {
 
     InAirDashing = 27;
     InAirBackDashing = 28;
-    InAirTurnAround = 29;
 
     InAirIdle1BySlipJump = 30;
+
+    TurnAround = 31;
 
     OnWallIdle1 = 128; 
 
@@ -406,6 +406,8 @@ message CharacterConfig {
     bool has_dimmed_anim = 115;
     bool has_awaking_anim = 116;
 
+    float inplace_prompt_y_offset = 117;
+
     repeated InventorySlotConfig init_inventory_slots = 258;
     map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
     map<int32, int32> looping_ch_states = 260; 
@@ -527,7 +529,7 @@ message CharacterDownsync {
     CharacterState ch_state = 56;
     int32 frames_in_ch_state = 57; // number of frames elapsed in the current character state   
     int32 lower_part_rdf_cnt = 58;   
-    uint64 locking_on_ud = 59;
+    uint64 locking_on_ud = 59; // Used for auto aiming, different from "NpcCharacterDownsync.to_revenge_ud".
 
     float ground_norm_x = 60;
     float ground_norm_y = 61;
@@ -596,10 +598,12 @@ message NpcCharacterDownsync {
 
     uint64 publishing_mask_upon_exhausted = 9; // [WARNING] NOT to be configured from UI/Story Editor.
 
-    bool captured_by_patrol_cue = 11;
-    int32 frames_in_patrol_cue = 12;
+    uint64 to_revenge_ud = 10;
+    uint64 revenge_rdf_countdown = 11;
 
-    uint32 exhausted_to_drop_pkt = 13;
+    uint32 exhausted_to_drop_pkt = 12;
+    int32 frames_in_patrol_cue = 13;
+    bool captured_by_patrol_cue = 14;
 
     bool is_main_tower_of_team = 16;
     
@@ -1855,6 +1859,8 @@ message PrimitiveConsts {
     float baumgarte_factor = 150;
     float penetration_slop = 151;
     float max_penetration_distance = 152;
+
+    int32 default_revenge_rdf_countdown = 153;
 
     float ele_weakness_default_yield = 154;
     float ele_resistance_default_yield = 155;

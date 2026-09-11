@@ -45,7 +45,6 @@ const std::unordered_set<CharacterState> inAirSet = {
     InAirDashing,
     InAirBackDashing,
     InAirWalking,
-    InAirTurnAround,
 };
 
 const std::unordered_set<CharacterState> atkedSet = {
@@ -108,8 +107,6 @@ const std::unordered_set<CharacterState> nonAttackingSet = {
     BackDashing,
     Sliding,
     GroundDodged, 
-    TurnAround,
-    InAirTurnAround,
     InAirIdle1NoJump,
     InAirIdle1ByJump,
     InAirIdle1ByWallJump,

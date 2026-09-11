@@ -79,6 +79,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (28.0f),
             };
 
             CharacterConfig BOUNTY_HUNTER = new CharacterConfig {
@@ -129,6 +130,12 @@ namespace JoltCSharp {
                     FramesToRecover = 25,
                     BadgeName = "Pistol"
                 },
+                SuperAtkGauge = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.GaugedMagazineIv,
+                    Quota = 3,
+                    GaugeRequired = 120,
+                    FramesToRecover = 60,
+                },
                 GaugeIncWhenExhausted = 80,
                 HasBtnBCharging = true,
                 Ifc = IfaceCat.Flesh,
@@ -136,7 +143,8 @@ namespace JoltCSharp {
                 TrailingRdfChargeableChStates = {
                     {(int)CharacterState.InAirIdle2ByJump, 25},
                     {(int)CharacterState.InAirIdle1ByWallJump, 25},
-                }
+                },
+                InplacePromptYOffset = (28.0f),
             };
 
             CharacterConfig BLACKSABER1 = new CharacterConfig {
@@ -174,6 +182,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 50,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BLACKSABER_TEST_NO_VISION = new CharacterConfig {
@@ -202,6 +211,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 50,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BLACKSABER_TEST_WITH_VISION = new CharacterConfig {
@@ -239,6 +249,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 50,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BLACKSHOOTER1 = new CharacterConfig {
@@ -280,6 +291,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 50,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BLACKTHROWER1 = new CharacterConfig {
@@ -321,6 +333,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 50,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig HEADQUARTER1 = new CharacterConfig {
@@ -355,6 +368,7 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 128,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (48.0f),
             };
 
             CharacterConfig SHIELDGUARD1 = new CharacterConfig {
@@ -403,7 +417,9 @@ namespace JoltCSharp {
                 Def1StartupFrames = 3,
                 Def1DamageYield = 0.2f,
                 Def1DefiesEleWeakness = false,
-                Def1DefiesDebuff = false
+                Def1DefiesDebuff = false,
+
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BAT1 = new CharacterConfig {
@@ -449,6 +465,8 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 10,
                 Ifc = IfaceCat.Flesh,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+
+                InplacePromptYOffset = (8.0f),
             };
 
             CharacterConfig WOLF1 = new CharacterConfig {
@@ -484,6 +502,8 @@ namespace JoltCSharp {
                 MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
+
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig WOLVERINE1 = new CharacterConfig {
@@ -522,7 +542,9 @@ namespace JoltCSharp {
                 Ifc = IfaceCat.Flesh,
                 LoopingChStates = {
                     {(int)CharacterState.Walking, 10},
-                }
+                },
+
+                InplacePromptYOffset = (24.0f),
             };
 
             CharacterConfig WOLVERINE1_TEST_WITH_VISION = new CharacterConfig {
@@ -561,7 +583,9 @@ namespace JoltCSharp {
                 Ifc = IfaceCat.Flesh,
                 LoopingChStates = {
                     {(int)CharacterState.Walking, 10},
-                }
+                },
+
+                InplacePromptYOffset = (24.0f),
             };
 
             CharacterConfig BLACKSABER2 = new CharacterConfig {
@@ -599,6 +623,8 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig BLACKSHOOTER2 = new CharacterConfig {
@@ -640,6 +666,8 @@ namespace JoltCSharp {
                 GaugeIncWhenExhausted = 90,
                 Ifc = IfaceCat.Metal,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig PARIS_POLICE_CHIEF = new CharacterConfig {
@@ -674,6 +702,8 @@ namespace JoltCSharp {
                 MaxAscendingVelY = -DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
                 Ifc = IfaceCat.Flesh,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+
+                InplacePromptYOffset = (12.0f),
             };
 
             CharacterConfig POLICEMAN1 = new CharacterConfig {
@@ -706,6 +736,8 @@ namespace JoltCSharp {
                 },
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
+
+                InplacePromptYOffset = (22.0f),
             };
 
             CharacterConfig POLICEMAN2 = new CharacterConfig {
@@ -738,6 +770,8 @@ namespace JoltCSharp {
                 },
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
+
+                InplacePromptYOffset = (22.0f),
             };
 
             CharacterConfig POLICEWOMAN1 = new CharacterConfig {
@@ -770,6 +804,8 @@ namespace JoltCSharp {
                 },
                 GaugeIncWhenExhausted = 80,
                 Ifc = IfaceCat.Flesh,
+
+                InplacePromptYOffset = (22.0f),
             };
 
             // BLADEGIRL

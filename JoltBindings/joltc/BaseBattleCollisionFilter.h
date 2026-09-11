@@ -11,6 +11,7 @@
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Constraints/Constraint.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Math/Quat.h>
@@ -335,6 +336,8 @@ public:
     virtual ValidateResult validateLhsBulletContact(const uint64_t udLhs,
         const Body& lhs, // the "Bullet"
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+
+    virtual RVec3 getColliderPositionByUd(const uint64_t ud, const BodyInterface* bi) const = 0;
     
     virtual ~BaseBattleCollisionFilter() {
 
