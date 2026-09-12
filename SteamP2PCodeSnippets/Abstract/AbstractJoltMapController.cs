@@ -13,7 +13,7 @@ using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
 
 public abstract class AbstractJoltMapController : MonoBehaviour {
-    protected Quaternion cTurnbackAroundYAxis = new Quaternion(0, 1, 0, 0);
+    public static Quaternion cTurnbackAroundYAxis = new Quaternion(0, 1, 0, 0);
 
     protected const uint KV_PREFIX_SFX_FT = (1 << 7); // 128; // Footstep, jumping, landing, pickable
     protected const uint KV_PREFIX_SFX_CH_EMIT = (KV_PREFIX_SFX_FT << 1);
@@ -1632,13 +1632,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         return false;
     }
 
-    protected Vector2 inplaceHpBarOffset = new Vector2(-8f, +16f);
     public void showInplaceHpBar(int rdfId, CharacterDownsync currCharacterDownsync, float wx, float wy, float halfBoxCw, float halfBoxCh, ulong lookupKey, CharacterConfig chConfig) {
         if (hideInplaceHpBars) return;
 
         var (inplaceHpBarAnimCtrl, oldUd) = inplaceHpBarAnimPool.GetOrCreateAnimNode(lookupKey, chConfig.SpeciesId, chConfig, underlyingMap.transform);
 
-        newPosHolder.Set(wx + inplaceHpBarOffset.x, wy + halfBoxCh + inplaceHpBarOffset.y, inplaceHpBarZ);
+        newPosHolder.Set(wx, wy + halfBoxCh + chConfig.InplacePromptYOffset, inplaceHpBarZ);
 
         inplaceHpBarAnimCtrl.gameObject.transform.position = newPosHolder;
 

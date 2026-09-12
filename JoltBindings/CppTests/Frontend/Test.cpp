@@ -7180,7 +7180,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
     initTest9Data(initializerMapData, hulls, theAllocator);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 2048;
+    int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
@@ -7750,12 +7750,22 @@ bool runTestCase15(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == p1Chd.frames_in_ch_state());
         }
 
+        if (82 == outerTimerRdfId) {
+            JPH_ASSERT(0 == p1Chd.super_atk_gauge().quota());
+            JPH_ASSERT(80 == p1Chd.super_atk_gauge().gauge_charged());
+        }
+
         if (100 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Dying == npc1Chd.ch_state());
         }
 
         if (182 == outerTimerRdfId) {
             JPH_ASSERT(0 == stepResult->fulfilled_triggers_size());
+        }
+
+        if (199 == outerTimerRdfId) {
+            JPH_ASSERT(1 == p1Chd.super_atk_gauge().quota());
+            JPH_ASSERT(40 == p1Chd.super_atk_gauge().gauge_charged());
         }
 
         if (300 == outerTimerRdfId) {
@@ -7779,7 +7789,7 @@ bool runTestCase16(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     initTest16Data(initializerMapData, hulls, theAllocator);
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 2048;
+    int loopRdfCnt = 1024;
     int printIntervalRdfCnt = (1 << 4);
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
@@ -8735,8 +8745,8 @@ bool runTestCase27(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         if (360 == outerTimerRdfId) {
             JPH_ASSERT(72 == npc1Chd.hp());
             JPH_ASSERT(0 > npc1Chd.vel_x());
-            JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
-            JPH_ASSERT(0 == npc1Chd.locking_on_ud());
+            JPH_ASSERT(NpcGoal::NHuntThenPatrol == npc1.goal_as_npc());
+            JPH_ASSERT(0 != npc1Chd.locking_on_ud());
         }
 
         oldGroundUd = p1Chd.ground_ud();

@@ -33,7 +33,7 @@ public class KeyChLightSourceAnimController : AbstractCacheableAnimNode<Characte
         } else if (0 < chdFacing.x) {
             this.gameObject.transform.localRotation = facingXPlus;
         }
-        if (CharacterState.OnWallIdle1 == newState || CharacterState.OnWallAtk1 == newState || CharacterState.TurnAround == newState) {
+        if (CharacterState.OnWallIdle1 == newState || CharacterState.OnWallAtk1 == newState) {
             if (0 < chdFacing.x) {
                 this.gameObject.transform.localRotation = facingXMinus;
             } else {

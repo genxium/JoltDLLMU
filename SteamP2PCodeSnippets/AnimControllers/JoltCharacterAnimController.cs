@@ -40,7 +40,8 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         BlownUp1,
         LayDown1,
         GetUp1,
-        OnWallIdle1
+        OnWallIdle1,
+        TurnAround,
     };
 
     public Material GetMaterial() {
@@ -95,6 +96,7 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         facingQ.Set(rdfCharacter.QX, rdfCharacter.QY, rdfCharacter.QZ, rdfCharacter.QW);
         Vector3 chdFacing = facingQ * Vector3.right;
         // Update directions
+        
         if (0 > chdFacing.x) {
             scaleHolder.Set(-1.0f, 1.0f, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;
@@ -102,7 +104,8 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
             scaleHolder.Set(+1.0f, 1.0f, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;
         }
-        if (OnWallIdle1 == newCharacterState || OnWallAtk1 == newCharacterState || TurnAround == newCharacterState) {
+
+        if (OnWallIdle1 == newCharacterState || OnWallAtk1 == newCharacterState) {
             if (0 < chdFacing.x) {
                 scaleHolder.Set(-1.0f, 1.0f, this.gameObject.transform.localScale.z);
                 this.gameObject.transform.localScale = scaleHolder;
@@ -135,7 +138,10 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
             }
         }
         var effNewChState = newCharacterState;
-        if (chConfig.HasBtnBCharging && PbPrimitivesOverride.Instance.getUnderlying().BtnBHoldingRdfCntThreshold2 <= rdfCharacter.BtnBHoldingRdfCnt) {
+        if (chConfig.HasTurnAroundAnim && (Walking == newCharacterState || InAirWalking == newCharacterState)
+            && (facingQ != Quaternion.identity && facingQ != AbstractJoltMapController.cTurnbackAroundYAxis)) {
+            effNewChState = TurnAround;
+        } else if (chConfig.HasBtnBCharging && PbPrimitivesOverride.Instance.getUnderlying().BtnBHoldingRdfCntThreshold2 <= rdfCharacter.BtnBHoldingRdfCnt) {
             switch (newCharacterState) {
             case Idle1:
             if (hasIdle1Charging) {
@@ -195,11 +201,6 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         var targetClip = lookUpTable[effNewChState];
         if (null == chConfig.LoopingChStates || !chConfig.LoopingChStates.ContainsKey(((int)effNewChState))) {
             if (playingAnimName.Equals(targetClip.name) && INTERRUPT_WAIVE_SET.Contains(effNewChState)) {
-                return true;
-            }
-
-            if (INTERRUPT_WAIVE_SET.Contains(newCharacterState)) {
-                animator.Play(targetClip.name, targetLayer);
                 return true;
             }
 
