@@ -635,18 +635,38 @@ protected:
 
     std::unordered_map<uint64_t, atomic<int>> transientOffenderUdToSuperAtkGaugeInc;
 
-    inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) {
+    virtual const CharacterDownsync* immutableCurrChdPtrFromUd(uint64_t ud) const {
+        uint64_t udt = getUDT(ud);
+        return immutableCurrChdPtrFromUd(udt, ud);
+    }
+
+    virtual const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) const {
         uint64_t udt = getUDT(ud);
         return immutableCurrChdFromUd(udt, ud);
     }
 
-    inline CharacterDownsync* mutableNextChdFromUd(uint64_t ud) const {
+    virtual CharacterDownsync* mutableNextChdFromUd(uint64_t ud) const {
         uint64_t udt = getUDT(ud);
         return mutableNextChdFromUd(udt, ud);
     }
 
-    inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t udt, uint64_t ud) {
+    virtual inline const CharacterDownsync& immutableCurrChdFromUd(uint64_t udt, uint64_t ud) const {
         return (UDT_PLAYER == udt ? transientUdToCurrPlayer.at(ud)->chd() : transientUdToCurrNpc.at(ud)->chd());
+    }
+
+    virtual inline const CharacterDownsync* immutableCurrChdPtrFromUd(uint64_t udt, uint64_t ud) const {
+        if (UDT_PLAYER == udt) {
+            if (!transientUdToCurrPlayer.count(ud)) {
+                return nullptr;
+            }
+            return &(transientUdToCurrPlayer.at(ud)->chd());
+        }
+
+        if (!transientUdToCurrNpc.count(ud)) {
+            return nullptr;
+        }
+
+        return &(transientUdToCurrNpc.at(ud)->chd());
     }
 
     inline CharacterDownsync* mutableNextChdFromUd(uint64_t udt, uint64_t ud) const {

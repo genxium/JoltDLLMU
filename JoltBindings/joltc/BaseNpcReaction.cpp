@@ -14,7 +14,7 @@
 #include "DebugLog.h"
 #endif
 
-void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3& mvIntentionNorm, const Vec3& antiGravityNorm, const float gravityMagnitude, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const DefaultBroadPhaseLayerFilter& bplf, const DefaultObjectLayerFilter& olf, const NpcCharacterDownsync* nextself, const CH_COLLIDER_T* selfCollider, const BodyID& selfBodyID, const uint64_t selfUd, const NpcGoal currNpcGoal, const uint64_t currNpcCachedCueCmd, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, NpcGoal& outNextNpcGoal, uint64_t& outCmd, int& outLastFledRdfId) {
+void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3& mvIntentionNorm, const Vec3& antiGravityNorm, const float gravityMagnitude, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const DefaultBroadPhaseLayerFilter& bplf, const DefaultObjectLayerFilter& olf, const NpcCharacterDownsync* nextself, const CH_COLLIDER_T* selfCollider, const BodyID& selfBodyID, const uint64_t selfUd, const NpcGoal currNpcGoal, const uint64_t currNpcCachedCueCmd, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, NpcGoal& outNextNpcGoal, uint64_t& outCmd, int& outLastFledRdfId) {
 
     Vec3 initVisionOffset(cc->vision_offset_x(), cc->vision_offset_y(), 0);
     auto visionInitTransform = cTurn90DegsAroundZAxisMat.PostTranslated(initVisionOffset); // Rotate, and then translate
@@ -88,13 +88,13 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     Now that we've got all entities in vision, will start handling each.
     */
     uint64_t toHandleAllyUd = 0, toHandleOppoChUd = 0, toHandleOppoBlUd = 0, toHandleMvBlockerUd = 0;
-    Vec3 selfPositionDiffForAllyUd, selfPositionDiffForOppoChUd, selfPositionDiffForOppoBlUd;
+    Vec3 selfPositionDiffForAllyUd = Vec3::sZero(), selfPositionDiffForOppoChUd = Vec3::sZero(), selfPositionDiffForOppoBlUd = Vec3::sZero();
     GapToJump currGapToJump; currGapToJump.set_vision_alignment(FLT_MAX); currGapToJump.set_anti_gravity_alignment(FLT_MAX);
     GapToJump minGapToJump;  minGapToJump.set_vision_alignment(FLT_MAX); minGapToJump.set_anti_gravity_alignment(FLT_MAX);
     GapToJump currGroundMvTolerance; currGroundMvTolerance.set_vision_alignment(0); currGroundMvTolerance.set_anti_gravity_alignment(0);
 
     BodyID toHandleMvBlockerBodyID;
-    extractKeyEntitiesInVision(currRdfId, mvIntentionNorm, antiGravityNorm, currPlayersMap, currNpcsMap, currBulletsMap, biNoLock, narrowPhaseQuery, baseBattleFilter, selfCollider, &selfAABB, selfBodyID, selfUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfPositionDiffForAllyUd, toHandleOppoChUd, selfPositionDiffForOppoChUd, toHandleOppoBlUd, selfPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
+    extractKeyEntitiesInVision(currRdfId, mvIntentionNorm, antiGravityNorm, currBulletsMap, biNoLock, narrowPhaseQuery, baseBattleFilter, selfCollider, &selfAABB, selfBodyID, selfUd, currChd, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, visionAABB, effVisionOffsetFromNpcChd, visionNarrowPhaseInBaseOffset, visionDirection, visionHitCollector, toHandleAllyUd, selfPositionDiffForAllyUd, toHandleOppoChUd, selfPositionDiffForOppoChUd, toHandleOppoBlUd, selfPositionDiffForOppoBlUd, toHandleMvBlockerUd, toHandleMvBlockerBodyID, currGapToJump, minGapToJump, currGroundMvTolerance);
 
 
     int fleeingAnchorRdfId = (outLastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
@@ -152,14 +152,14 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     Another branch to handle "toHandleOppoBlUd".
     */
     if (0 != toHandleOppoChUd && (0 == currChd.locking_on_ud() || toHandleOppoChUd == currChd.locking_on_ud())) {
-        newVisionReaction = deriveNpcVisionReactionAgainstOppoChUd(currRdfId, currPlayersMap, currNpcsMap, selfCollider, selfBodyID, selfUd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionDirection, toHandleOppoChUd, selfPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe);
+        newVisionReaction = deriveNpcVisionReactionAgainstOppoChUd(currRdfId, baseBattleFilter, selfCollider, selfBodyID, selfUd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, canJumpWithinInertia, visionDirection, toHandleOppoChUd, selfPositionDiffForOppoChUd, opponentBehindMe, opponentAboveMe, opponentIsAttacking, opponentIsFacingMe);
 
        bool shouldHunt = true;
        bool shouldPause = false;
        bool inOppoBehindMeIgnoringPeriod = (currRdfId < (outLastFledRdfId + (globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt() >> 1)));
        if (inOppoBehindMeIgnoringPeriod && 0 == toRevengeOppoUd && opponentBehindMe) {
            toHandleOppoChUd = 0;
-           selfPositionDiffForOppoChUd = Vec3::sNaN();
+           selfPositionDiffForOppoChUd = Vec3::sZero();
            // [REMINDER] Might be re-assigned by "toRevengeOppoUd" which is the only way to interrupt a fleeing grace period.
            newVisionReaction = TARGET_CH_REACTION_UNCHANGED;
            shouldHunt = false;
@@ -572,7 +572,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     outCmd = newCachedCueCmd;
 }
 
-void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIntentionNorm, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfCollider, const AABox* selfAABB, const BodyID& selfBodyID, const uint64_t selfUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionHitCollector, uint64_t& outToHandleAllyUd, Vec3& outselfPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
+void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIntentionNorm, const Vec3& antiGravityNorm, std::unordered_map<uint64_t, const Bullet*>& currBulletsMap, const BodyInterface* biNoLock, const NarrowPhaseQuery* narrowPhaseQuery, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfCollider, const AABox* selfAABB, const BodyID& selfBodyID, const uint64_t selfUd, const CharacterDownsync& currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const AABox& visionAABB, const Vec3Arg& effVisionOffsetFromNpcChd, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3Arg& visionDirection, const VISION_HIT_COLLECTOR_T& visionHitCollector, uint64_t& outToHandleAllyUd, Vec3& outselfPositionDiffForAllyUd, uint64_t& outToHandleOppoChUd, Vec3& outSelfPositionDiffForOppoChUd, uint64_t& outToHandleOppoBlUd, Vec3& outSelfPositionDiffForOppoBlUd, uint64_t& outToHandleMvBlockerUd, BodyID& outToHandleMvBlockerBodyID, GapToJump& outCurrGapToJump, GapToJump& outMinGapToJump, GapToJump& outCurrGroundMvTolerance) {
     if (!visionHitCollector.HadHit()) return;
 
     float selfAABBMvIntentionAlignmentMax = selfAABB->mMax.Dot(mvIntentionNorm);
@@ -670,13 +670,9 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                 // If blocked by others.
                 continue;
             }
-            const CharacterDownsync* rhsCurrChd = nullptr;
-            if (UDT_PLAYER == udtRhs) {
-                auto rhsCurrPlayer = currPlayersMap.at(udRhs);
-                rhsCurrChd = &(rhsCurrPlayer->chd());
-            } else {
-                auto rhsCurrNpc = currNpcsMap.at(udRhs);
-                rhsCurrChd = &(rhsCurrNpc->chd());
+            const CharacterDownsync* rhsCurrChd = baseBattleFilter->immutableCurrChdPtrFromUd(udtRhs, udRhs);
+            if (nullptr == rhsCurrChd) {
+                continue;
             }
             auto& rhsCc = globalConfigConsts->character_configs().at(rhsCurrChd->species_id());
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
@@ -718,6 +714,9 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
             if (foundSameLockedUd) {
                 continue;
             }
+            if (!currBulletsMap.count(udRhs)) {
+                continue;
+            }
             const Bullet* rhsCurrBl = currBulletsMap.at(udRhs);
             const Vec3 rhsPos = biNoLock->GetPosition(rhsBodyID);
             const Vec3 rhsCOMPos = biNoLock->GetCenterOfMassPosition(rhsBodyID);
@@ -733,8 +732,8 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                 }
 
                 bestVisionAlignmentForOppo = rhsVisionAlignmentFromNpcChdPosition;
-                outToHandleOppoBlUd = udRhs;
                 outToHandleOppoChUd = 0;
+                outToHandleOppoBlUd = udRhs;
                 outSelfPositionDiffForOppoChUd = Vec3::sZero();
                 outSelfPositionDiffForOppoBlUd = selfPositionDiff;
             } else {
@@ -918,19 +917,16 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
     }
 }
 
-int BaseNpcReaction::deriveNpcVisionReactionAgainstOppoChUd(int currRdfId, std::unordered_map<uint64_t, const PlayerCharacterDownsync*>& currPlayersMap, std::unordered_map<uint64_t, const NpcCharacterDownsync*>& currNpcsMap, const CH_COLLIDER_T* selfCollider, const BodyID& selfBodyID, const uint64_t selfUd, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const bool canJumpWithinInertia, const Vec3& visionDirection, const uint64_t toHandleOppoChUd, const Vec3& selfPositionDiffForOppoChUd, bool& outOpponentBehindMe, bool& outOpponentAboveMe, bool& outOpponentIsAttacking, bool& outOpponentIsFacingMe) {
+int BaseNpcReaction::deriveNpcVisionReactionAgainstOppoChUd(int currRdfId, const BaseBattleCollisionFilter* baseBattleFilter, const CH_COLLIDER_T* selfCollider, const BodyID& selfBodyID, const uint64_t selfUd, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const bool canJumpWithinInertia, const Vec3& visionDirection, const uint64_t toHandleOppoChUd, const Vec3& selfPositionDiffForOppoChUd, bool& outOpponentBehindMe, bool& outOpponentAboveMe, bool& outOpponentIsAttacking, bool& outOpponentIsFacingMe) {
     int ret = TARGET_CH_REACTION_UNCHANGED;
+    const CharacterDownsync* rhsCurrChd = baseBattleFilter->immutableCurrChdPtrFromUd(toHandleOppoChUd);
+    if (nullptr == rhsCurrChd) {
+        return ret;
+    }
+
     outOpponentBehindMe = (0 > (selfPositionDiffForOppoChUd.GetX() * visionDirection.GetX()));
     outOpponentAboveMe = cc->capsule_half_height() < selfPositionDiffForOppoChUd.GetY();
-    const CharacterDownsync* rhsCurrChd = nullptr;
-    const uint64_t udtRhs = BaseBattleCollisionFilter::getUDT(toHandleOppoChUd);
-    if (UDT_PLAYER == udtRhs) {
-        auto rhsCurrPlayer = currPlayersMap.at(toHandleOppoChUd);
-        rhsCurrChd = &(rhsCurrPlayer->chd());
-    } else {
-        auto rhsCurrNpc = currNpcsMap.at(toHandleOppoChUd);
-        rhsCurrChd = &(rhsCurrNpc->chd());
-    }
+   
 
     if (!outOpponentBehindMe) {
         // Opponent is in front of me

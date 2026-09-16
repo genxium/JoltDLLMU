@@ -32,7 +32,11 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
 
     protected static HashSet<CharacterState> INTERRUPT_WAIVE_SET = new HashSet<CharacterState> {
         Idle1,
+        Atk1Charging,
+        CrouchAtk1Charging,
         Walking,
+        WalkingAtk1Charging,
+        InAirWalkingAtk1Charging,
         InAirWalking,
         InAirIdle1NoJump,
         InAirIdle1ByJump,

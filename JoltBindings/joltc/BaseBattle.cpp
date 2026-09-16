@@ -1196,7 +1196,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                                     mvIntentionNorm = currChdFacing;
                                 }
                             }
-                            npcReaction->postStepDeriveNpcVisionReaction(currRdfId, mvIntentionNorm, antiGravityNorm, gravityMagnitude, transientUdToCurrPlayer, transientUdToCurrNpc, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, nextNpc, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd, newLastFledRdfId);
+                            npcReaction->postStepDeriveNpcVisionReaction(currRdfId, mvIntentionNorm, antiGravityNorm, gravityMagnitude, transientUdToCurrBl, biNoLock, narrowPhaseQueryNoLock, this, defaultBplf, defaultOlf, nextNpc, single, selfNpcBodyID, ud, currNpcGoal, currNpcCachedCueCmd, currChd, massProps, currChdFacing, cc, nextChd, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, currIsFlying, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, newGoal, newCmd, newLastFledRdfId);
                             nextNpc->set_goal_as_npc(newGoal);
                             nextNpc->set_cached_cue_cmd(newCmd);
                             nextNpc->set_last_fled_rdf_id(newLastFledRdfId);

@@ -342,6 +342,14 @@ public:
         const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
     virtual RVec3 getColliderPositionByUd(const uint64_t ud, const BodyInterface* bi) const = 0;
+
+    virtual const CharacterDownsync* immutableCurrChdPtrFromUd(uint64_t ud) const = 0;
+    virtual const CharacterDownsync& immutableCurrChdFromUd(uint64_t ud) const = 0;
+    virtual CharacterDownsync* mutableNextChdFromUd(uint64_t ud) const = 0;
+
+    virtual const CharacterDownsync& immutableCurrChdFromUd(uint64_t udt, uint64_t ud) const = 0;
+    virtual const CharacterDownsync* immutableCurrChdPtrFromUd(uint64_t udt, uint64_t ud) const = 0;
+    virtual CharacterDownsync* mutableNextChdFromUd(uint64_t udt, uint64_t ud) const = 0;
     
     virtual ~BaseBattleCollisionFilter() {
 
