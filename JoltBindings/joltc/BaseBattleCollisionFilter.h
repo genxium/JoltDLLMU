@@ -17,6 +17,10 @@
 #include <Jolt/Math/Quat.h>
 #include <Jolt/Math/Mat44.h>
 
+#ifndef NDEBUG
+#include "DebugLog.h"
+#endif
+
 using namespace JPH;
 
 typedef struct InputInducedMotion {
@@ -701,6 +705,13 @@ public:
         const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
         const float minVelY = -cc->speed();
         if (ioVel.GetY() > maxVelY) {
+#ifndef  NDEBUG
+            /*
+            std::ostringstream oss;
+            oss << "clampFlyingChdVel/speciesId=" << cc->species_id() << ", clamped flying maxVelY from ioVel.GetY=" << ioVel.GetY() << "." << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+            */
+#endif // ! NDEBUG
             ioVel.SetY(maxVelY);
         } else if (ioVel.GetY() < minVelY) {
             ioVel.SetY(minVelY);

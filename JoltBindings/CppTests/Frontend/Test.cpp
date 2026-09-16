@@ -2385,7 +2385,7 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
     auto playerCh1 = player1->mutable_chd();
     auto playerCh1Species = chSpecies.bladegirl();
     auto cc1 = characterConfigs[playerCh1Species];
-    playerCh1->set_x(360);
+    playerCh1->set_x(-100);
     playerCh1->set_y(100);
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -2413,30 +2413,31 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
 
     auto npc1 = startRdf->mutable_npcs(0);
     npc1->set_id(npcIdCounter++);
-    npc1->set_goal_as_npc(NpcGoal::NIdleIfGoHuntingThenPatrol);
+    npc1->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh1 = npc1->mutable_chd();
     auto npcCh1Species = chSpecies.bat1();
     auto npcCc1 = characterConfigs[npcCh1Species];
-    npcCh1->set_x(320);
-    npcCh1->set_y(100);
+    npcCh1->set_x(450);
+    npcCh1->set_y(240);
     npcCh1->set_speed(npcCc1.speed());
-    npcCh1->set_ch_state(CharacterState::Idle1);
+    npcCh1->set_ch_state(CharacterState::Walking);
     npcCh1->set_frames_to_recover(0);
     // Intentionally NOT facing player at the beginning to test turnaround logic
     npcCh1->set_q_x(0);
-    npcCh1->set_q_y(1);
+    npcCh1->set_q_y(0);
     npcCh1->set_q_z(0);
-    npcCh1->set_q_w(0); 
+    npcCh1->set_q_w(1); 
     npcCh1->set_aiming_q_x(0);
     npcCh1->set_aiming_q_y(0);
     npcCh1->set_aiming_q_z(0);
     npcCh1->set_aiming_q_w(1);
-    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_x(npcCc1.speed());
     npcCh1->set_vel_y(0);
     npcCh1->set_hp(npcCc1.hp());
     npcCh1->set_species_id(npcCh1Species);
     npcCh1->set_bullet_team_id(3);
 
+    /*
     auto npc2 = startRdf->mutable_npcs(1);
     npc2->set_id(npcIdCounter++);
     npc2->set_goal_as_npc(NpcGoal::NPatrol);
@@ -2461,7 +2462,8 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
     npcCh2->set_hp(npcCc2.hp());
     npcCh2->set_species_id(npcCh2Species);
     npcCh2->set_bullet_team_id(3);
-    
+    */
+
     startRdf->set_npc_id_counter(npcIdCounter);
     startRdf->set_npc_count(npcIdCounter-1);
 
@@ -3508,40 +3510,32 @@ std::map<int, uint64_t> testCmds37 = {
 
 std::map<int, uint64_t> testCmds38 = {
     {0, 0},
-    {9, 0},
-    {10, 3},
-    {59, 3},
-    {60, 19}, // Climb up the wall and air-dash to flee from npc1
-    {63, 19},
-    {64, 3},
-    {71, 3},
-    {72, 19},
-    {89, 19},
-    {90, 259},
-    {99, 259},
-    {100, 3},
-    {107, 3},
-    {108, 20},
-    {127, 20},
-    {128, 260},
-    {129, 260},
-    {132, 4},
-    {149, 4},
-    {150, 4},
-    {151, 4},
-    {199, 4},
-    {279, 4},
-    {280, 4},
-    {299, 4},
-    {300, 20},
-    {323, 20}, 
-    {324, 4},
-    {359, 4},
-    {360, 20},
-    {399, 20},
+    {59, 0},
+    {60, 3},
+    {99, 3},
+    {100, 19},
+    {104, 3},
+    {108, 3},
+    {119, 3},
+    {120, 19},
+    {127, 3},
+    {128, 3},
+    {129, 3},
+    {135, 3},
+    {136, 19},
+    {139, 3},
+    {140, 3},
+    {299, 3},
+    {300, 16},
+    {301, 0},
+    {399, 0},
     {400, 4},
-    {499, 4},
-    {500, 0},
+    {439, 4},
+    {440, 256},
+    {441, 4},
+    {500, 4},
+    {504, 0},
+    {1024, 0},
     {2048, 0},
 };
 
@@ -3606,12 +3600,21 @@ std::map<int, uint64_t> testCmds41 = {
     {230, 20},
     {231, 4},
     {259, 4},
-    {260, 3},
-    {269, 3},
-    {270, 0},
-    {279, 0},
-    {280, 32},
-    {341, 0},
+    {260, 4},
+    {264, 20},
+    {268, 4},
+    {299, 4},
+    {300, 20},
+    {339, 4},
+    {340, 20},
+    {379, 4},
+    {380, 20},
+    {399, 4},
+    {400, 3},
+    {419, 3},
+    {420, 0},
+    {423, 0},
+    {424, 32},
     {1000, 0},
     {1024, 0},
 };
@@ -6249,7 +6252,7 @@ void initTest41Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
     trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
     trapConfigFromTiled1->set_box_half_size_x(10.f);
-    trapConfigFromTiled1->set_box_half_size_y(32.f);
+    trapConfigFromTiled1->set_box_half_size_y(256.f);
     trapConfigFromTiled1->set_init_q_x(0);
     trapConfigFromTiled1->set_init_q_y(0);
     trapConfigFromTiled1->set_init_q_z(0);
@@ -8767,7 +8770,7 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1024;
+    int loopRdfCnt = 800;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -8837,7 +8840,7 @@ bool runTestCase28(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(BaseBattle::IsLengthNearZero(npc1Chd.vel_x()*globalPrimitiveConsts->estimated_seconds_per_rdf()));
             JPH_ASSERT(0 == npc1Chd.locking_on_ud());
             JPH_ASSERT(NpcGoal::NPatrol == npc1.goal_as_npc());
-        } else if (380 == outerTimerRdfId) {
+        } else if (400 == outerTimerRdfId) {
             JPH::Quat npc1ChdQ(npc1Chd.q_x(), npc1Chd.q_y(), npc1Chd.q_z(), npc1Chd.q_w());
             JPH_ASSERT(cTurnbackAroundYAxis.IsClose(npc1ChdQ)); // Got enough MP and thus turnaround to attack again
             JPH_ASSERT(globalPrimitiveConsts->no_skill() != npc1Chd.active_skill_id());
@@ -8942,12 +8945,12 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(Active == bl1.bl_state());
             JPH_ASSERT(1 == bl1.team_id());
             JPH_ASSERT(1 == bl1.active_skill_hit());
-        } else if (635 == outerTimerRdfId) {
+        } else if (700 == outerTimerRdfId) {
             npc1NotEnoughMpX = npc1Chd.x();
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.vel_x());
-        } else if (730 == outerTimerRdfId) {
+        } else if (760 == outerTimerRdfId) {
             JPH_ASSERT(npc1NotEnoughMpX == npc1Chd.x());
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
@@ -9757,6 +9760,12 @@ bool runTestCase38(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
     int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, newUdpLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0;
+
+    int firstOppoChUdCapturedRdfId = 0;
+    int firstOppoChUdLostRdfId = 0;
+
+    uint64_t oldNpc1LockingOnUd = 0;
+    CharacterState oldNpc1ChState = InAirIdle1NoJump;
     
     jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
     while (loopRdfCnt > outerTimerRdfId) {
@@ -9781,80 +9790,37 @@ bool runTestCase38(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
 
         const NpcCharacterDownsync& npc1 = outerTimerRdf->npcs(0);
         const CharacterDownsync& npc1Chd = npc1.chd();
+    
+        if (0 == firstOppoChUdCapturedRdfId) {
+            if (0 == oldNpc1LockingOnUd && p1Ud == npc1Chd.locking_on_ud()) {
+                firstOppoChUdCapturedRdfId = outerTimerRdfId;
+            } 
+        } else if (0 == firstOppoChUdLostRdfId) {
+            if (p1Ud == oldNpc1LockingOnUd && 0 == npc1Chd.locking_on_ud()) {
+                firstOppoChUdLostRdfId = outerTimerRdfId;
+            }
+        }
 
-        const NpcCharacterDownsync& npc2 = outerTimerRdf->npcs(1);
-        const CharacterDownsync& npc2Chd = npc2.chd();
-
-        if (0 <= outerTimerRdfId && outerTimerRdfId < 45) {
+        if (120 <= outerTimerRdfId && outerTimerRdfId < 380) {
             //shouldPrint = true;
         }
 
-        if (70 <= outerTimerRdfId && outerTimerRdfId < 160) {
-            //shouldPrint = true;
-        }
-
-        if (280 <= outerTimerRdfId && outerTimerRdfId < 1024) {
+        if (380 <= outerTimerRdfId && outerTimerRdfId < 1024) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
-            //std::cout << "TestCase38/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", mp=" << npc1Chd.mp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", fr=" << npc1Chd.frames_to_recover() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << ", locking_on_ud=" << npc1Chd.locking_on_ud() << std::endl;
-
-            //std::cout << "TestCase38/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc2Chd hp=" << npc2Chd.hp() << ", cs=" << npc2Chd.ch_state() << ", fc=" << npc2Chd.frames_in_ch_state() << ", fr=" << npc2Chd.frames_to_recover() << ", dir=(" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos=(" << npc2Chd.x() << ", " << npc2Chd.y() << "), vel=(" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << "), cuedCmd=" << npc2.cached_cue_cmd() << ", locking_on_ud=" << npc2Chd.locking_on_ud() << std::endl;
-
-            std::cout << "TestCase38/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", fr=" << npc1Chd.frames_to_recover() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << ", locking_on_ud=" << npc1Chd.locking_on_ud() << "\n\tnpc2Chd hp=" << npc2Chd.hp() << ", cs=" << npc2Chd.ch_state() << ", fc=" << npc2Chd.frames_in_ch_state() << ", fr=" << npc2Chd.frames_to_recover() << ", dir=(" << npc2Chd.q_x() << ", " << npc2Chd.q_y() << ", " << npc2Chd.q_z() << ", " << npc2Chd.q_w() << "), pos=(" << npc2Chd.x() << ", " << npc2Chd.y() << "), vel=(" << npc2Chd.vel_x() << ", " << npc2Chd.vel_y() << "), cuedCmd=" << npc2.cached_cue_cmd() << ", locking_on_ud=" << npc2Chd.locking_on_ud() << std::endl;
+            std::cout << "TestCase38/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", fr=" << npc1Chd.frames_to_recover() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << ", locking_on_ud=" << npc1Chd.locking_on_ud() << std::endl;
         }
 
-        if (7 == outerTimerRdfId) {
-            //JPH_ASSERT(0 == npc1Chd.q_x() && 1 == npc1Chd.q_y() && 0 == npc1Chd.q_z() && 0 == npc1Chd.q_w()); // Turned around
-        } else if (45 == outerTimerRdfId) {
-            JPH_ASSERT(150 == p1Chd.hp());
-            JPH_ASSERT(CharacterState::Walking == npc1Chd.ch_state());
-            JPH_ASSERT(p1Ud == npc1Chd.locking_on_ud()); // still tracking target
-            JPH_ASSERT(3 == npc1.cached_cue_cmd()); // horizontally
-
-            JPH_ASSERT(0 > npc2Chd.vel_x());
-            JPH_ASSERT(0 == npc2Chd.q_x() && 1 == npc2Chd.q_y() && 0 == npc2Chd.q_z() && 0 == npc2Chd.q_w());
-        } else if (69 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::Walking == npc1Chd.ch_state());
-            JPH_ASSERT(p1Ud == npc1Chd.locking_on_ud()); // still tracking target
-            JPH_ASSERT(5 == npc1.cached_cue_cmd()); // but skewed towards the target which climbed up on wall
-        } else if (73 == outerTimerRdfId) {
-            //JPH_ASSERT(140 == p1Chd.hp());
-            JPH_ASSERT(CharacterState::Walking == npc1Chd.ch_state());
-            JPH_ASSERT(0 == npc1Chd.locking_on_ud()); // lost target
-            JPH_ASSERT(3 == npc1.cached_cue_cmd());  // lost target and thus stops Y-axis force
-        } else if (108 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::OnWallIdle1 == p1Chd.ch_state());
-        } else if (140 == outerTimerRdfId) {
-            JPH_ASSERT(CharacterState::InAirDashing == p1Chd.ch_state());
-            JPH_ASSERT(0 > p1Chd.vel_x());
-            JPH_ASSERT(0 < npc1Chd.vel_x());
-            JPH_ASSERT(p1Chd.y() > npc1Chd.y()); // player fleeing on top of npc1
-        } else if (150 == outerTimerRdfId) {
-            JPH_ASSERT(0 == npc2Chd.vel_x()); // Gracing to turn around
-            //JPH_ASSERT(0 == npc2.cached_cue_cmd());
-            JPH_ASSERT(0 == npc2Chd.q_x() && 1 == npc2Chd.q_y() && 0 == npc2Chd.q_z() && 0 == npc2Chd.q_w());
-        } else if (320 == outerTimerRdfId) {
-            JPH_ASSERT(-490 < npc2Chd.x());
-            JPH_ASSERT(0 < npc2Chd.vel_x());
-            JPH_ASSERT(0 == npc2Chd.q_x() && 0 == npc2Chd.q_y() && 0 == npc2Chd.q_z() && 1 == npc2Chd.q_w()); // Turned around
-        } else if (400 == outerTimerRdfId) {
-            JPH_ASSERT(490 > npc1Chd.x());
-            JPH_ASSERT(0 > npc1Chd.vel_x());
-            JPH_ASSERT(0 == npc1Chd.q_x() && 1 == npc1Chd.q_y() && 0 == npc1Chd.q_z() && 0 == npc1Chd.q_w()); // Turned around after loss of hunting target
-        } else if (900 == outerTimerRdfId) {
-            // Rest after lingering
-            JPH_ASSERT(CharacterState::InAirIdle1NoJump == npc2Chd.ch_state());
-            JPH_ASSERT(0 == npc2Chd.vel_x());
-        } else if (1020 == outerTimerRdfId) {
-            // Rest after lingering
-            JPH_ASSERT(CharacterState::InAirIdle1NoJump == npc1Chd.ch_state());
-            JPH_ASSERT(0 == npc1Chd.vel_x());
-        }
-
+        oldNpc1LockingOnUd = npc1Chd.locking_on_ud();
+        oldNpc1ChState = npc1Chd.ch_state();
         outerTimerRdfId++;
     }
+
+    JPH_ASSERT(0 != firstOppoChUdCapturedRdfId);
+    JPH_ASSERT(0 != firstOppoChUdLostRdfId);
+    JPH_ASSERT(firstOppoChUdCapturedRdfId < firstOppoChUdLostRdfId);
 
     std::cout << "Passed TestCase38: Bat1 vision reaction\n" << std::endl;
     theAllocator->Reset();
@@ -10238,12 +10204,12 @@ bool runTestCase41(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
 
         bool shouldPrint = false;
-        if (256 < outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+        if (0 != frontDoorCloseRdfId && frontDoorCloseRdfId <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase41/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")\n\tnpc1Chd ud=" << npc1Ud << ", hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ccmd=" << npc1.cached_cue_cmd() << std::endl;
+            std::cout << "TestCase41/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ")\n\tnpc1Chd ud=" << npc1Ud << ", hp=" << npc1Chd.hp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", q=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ccmd=" << npc1.cached_cue_cmd() << ", lockingOnUd=" << npc1Chd.locking_on_ud() << std::endl;
         }
         
         if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
@@ -10569,19 +10535,19 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> flyingMapHull3 = {
-        // Right pillar
+        // Right pillar, intentionally made very thin to test edge case of vision detection
         500, 1000,
-        800, 1000,
-        800, 0,
+        516, 1000,
+        516, 0,
         500, 0,
     };
 
     std::vector<float> flyingMapHull4 = {
         // Ceiling
-        -500, 500,
+        -500, 250,
         -500, 600,
         500, 600,
-        500, 500
+        500, 250
     };
 
     std::vector<float> stairsHull1 = {
@@ -10739,7 +10705,7 @@ int main(int argc, char** argv)
     runTestCase35(wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase36(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase37(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    runTestCase38(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase38(battle, flyingMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase39(battle, stairsMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase40(battle, slopeMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase41(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);

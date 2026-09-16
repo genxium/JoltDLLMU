@@ -581,6 +581,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                                     ProvidesSlipJump = providesSlipJumpVal,
                                     ProvidesStairsP = providesStairsPVal,
                                     ProvidesStairsN = providesStairsNVal,
+                                    ProhibitsWallGrabbing = prohibitsWallGrabbingVal,
                                 },
                             };
                             result.SerializedBarriers.Add(barrierCollider);

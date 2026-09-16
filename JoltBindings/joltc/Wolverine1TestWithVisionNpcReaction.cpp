@@ -1,13 +1,12 @@
 #include "Wolverine1TestWithVisionNpcReaction.h"
 
-int Wolverine1TestWithVisionNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, const Vec3& antiGravityNorm, const float gravityMagnitude, const BodyInterface* biNoLock, const CH_COLLIDER_T* selfNpcCollider, const AABox* selfNpcAABB, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal inNpcGoal, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const bool canJumpWithinInertia, const AABox& visionAABB, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3& visionDirection, const BodyID& toHandleMvBlockerBodyID, const uint64_t toHandleMvBlockerUd, const GapToJump& currGapToJump, const GapToJump& minGapToJump, const GapToJump& currGroundMvTolerance, const int visionReactionByFar, const uint64_t toHandleOppoChUd, const Vec3& selfNpcPositionDiffForOppoChUd, const bool opponentBehindMe, const bool opponentAboveMe, const bool opponentIsAttacking, const bool opponentIsFacingMe, const int lastFledRdfId) {
+int Wolverine1TestWithVisionNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, const Vec3& mvIntentionNorm, const Vec3& antiGravityNorm, const float gravityMagnitude, const BodyInterface* biNoLock, const CH_COLLIDER_T* selfNpcCollider, const AABox* selfNpcAABB, const BodyID& selfNpcBodyID, const uint64_t selfNpcUd, const NpcGoal inNpcGoal, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, const CharacterConfig* cc, CharacterDownsync* nextChd, const bool cvSupported, const bool cvInAir, const bool cvOnWall, const bool currNotDashing, const bool currEffInAir, const bool currIsFlying, const bool oldNextNotDashing, const bool oldNextEffInAir, const bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const bool canJumpWithinInertia, const AABox& visionAABB, const Vec3Arg& visionNarrowPhaseInBaseOffset, const Vec3& visionDirection, const BodyID& toHandleMvBlockerBodyID, const uint64_t toHandleMvBlockerUd, const GapToJump& currGapToJump, const GapToJump& minGapToJump, const GapToJump& currGroundMvTolerance, const int visionReactionByFar, const uint64_t toHandleOppoChUd, const Vec3& selfNpcPositionDiffForOppoChUd, const bool opponentBehindMe, const bool opponentAboveMe, const bool opponentIsAttacking, const bool opponentIsFacingMe, const bool temptingToMove, const bool inFleeingGracePeriod) {
     
     if (NpcGoal::NIdle == inNpcGoal || NpcGoal::NIdleIfGoHuntingThenPatrol == inNpcGoal || NpcGoal::NIdleIfGoHuntingThenPathPatrol == inNpcGoal) {
         return visionReactionByFar;
     }
 
     int newVisionReaction = visionReactionByFar;
-    bool temptingToMove = (temptingToMoveNpcGoalSet.count(inNpcGoal)) && (canJumpWithinInertia || currIsFlying);
 
     /*
     [WARNING] DON'T use "selfNpcCollider->GetLinearVelocity()" to evaluate "currGroundCanHoldMeIfWalkOn". 
@@ -22,8 +21,6 @@ int Wolverine1TestWithVisionNpcReaction::deriveReactionAgainstGroundAndMvBlocker
     const float constraintVelXDiff = chColliderVel.GetX() - nextChd->vel_x();
     const float constraintVelYDiff = chColliderVel.GetY() - nextChd->vel_y();
     bool hasEffectiveMvBlocker = false;
-
-    bool inFleeingGracePeriod = (currRdfId < lastFledRdfId + globalPrimitiveConsts->default_fleeing_grace_period_rdf_cnt());
 
     hasEffectiveMvBlocker = (walkingSet.count(currChd.ch_state()) || temptingToMove) &&
         (
@@ -77,7 +74,7 @@ int Wolverine1TestWithVisionNpcReaction::deriveReactionAgainstGroundAndMvBlocker
         toHandleMvBlockerCanHoldMeIfWalkOn = isCurrGapJumpable && (0 >= currGapToJumpVisionAlignment && 0 >= currGapToJumpAntiGravityAlignment);
     }
 
-    newVisionReaction = deriveReactionAgainstMvBlockerAfterApproximation(currRdfId, antiGravityNorm, selfNpcUd, currChd, massProps, currChdFacing, cvSupported, canJumpWithinInertia, isMinGapJumpable, isCurrGapJumpable, currGroundCanHoldMeIfWalkOn, toHandleMvBlockerCanHoldMeIfWalkOn, currGapToJumpVisionAlignment, temptingToMove, inFleeingGracePeriod, newVisionReaction);
+    newVisionReaction = deriveReactionAgainstMvBlockerAfterApproximation(currRdfId, mvIntentionNorm, antiGravityNorm, selfNpcUd, currChd, massProps, currChdFacing, cvSupported, canJumpWithinInertia, isMinGapJumpable, isCurrGapJumpable, currGroundCanHoldMeIfWalkOn, toHandleMvBlockerCanHoldMeIfWalkOn, currGapToJumpVisionAlignment, temptingToMove, inFleeingGracePeriod, newVisionReaction);
 
     return newVisionReaction;
 }
