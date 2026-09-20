@@ -185,8 +185,8 @@ namespace JoltCSharp {
                 InplacePromptYOffset = (12.0f),
             };
 
-            CharacterConfig BLACKSABER_TEST_NO_VISION = new CharacterConfig {
-                SpeciesId = SPECIES_BLACKSABER_TEST_NO_VISION,
+            CharacterConfig BLACKSABER1_TEST_NO_VISION = new CharacterConfig {
+                SpeciesId = SPECIES_BLACKSABER1_TEST_NO_VISION,
                 SpeciesName = "BlackSaber1",
                 Hp = 10,
                 LayDownFramesToRecover = 12,
@@ -214,8 +214,8 @@ namespace JoltCSharp {
                 InplacePromptYOffset = (12.0f),
             };
 
-            CharacterConfig BLACKSABER_TEST_WITH_VISION = new CharacterConfig {
-                SpeciesId = SPECIES_BLACKSABER_TEST_WITH_VISION,
+            CharacterConfig BLACKSABER1_TEST_WITH_VISION = new CharacterConfig {
+                SpeciesId = SPECIES_BLACKSABER1_TEST_WITH_VISION,
                 SpeciesName = "BlackSaber1",
                 Hp = 10,
                 LayDownFramesToRecover = 12,
@@ -296,6 +296,49 @@ namespace JoltCSharp {
 
             CharacterConfig BLACKTHROWER1 = new CharacterConfig {
                 SpeciesId = SPECIES_BLACKTHROWER1,
+                SpeciesName = "BlackThrower1",
+                Hp = 40,
+                Mp = 300,
+                MpRegenPerInterval = 60,
+                MpRegenInterval = 80,
+                LayDownFramesToRecover = 12,
+                GetUpInvinsibleFrames = 19,
+                GetUpFramesToRecover = 14,
+                Speed = 0.6f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 4.6f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 2,
+                AccMagX = 0.05f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                VisionOffsetX = (32.0f),
+                VisionOffsetY = (10.0f),
+                VisionHalfHeight = (96.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                CapsuleRadius = (6.0f), 
+                CapsuleHalfHeight = (8.0f),
+                ShrinkedCapsuleRadius = (6.0f),
+                ShrinkedCapsuleHalfHeight = (8.0f),
+                LayDownCapsuleRadius = (6.0f),
+                LayDownCapsuleHalfHeight = (4.0f),
+                DyingCapsuleRadius = (6.0f),
+                DyingCapsuleHalfHeight = (4.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 6,
+                ColliderDensity = 15.0f,
+                HasDimmedAnim = false,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 50,
+                Ifc = IfaceCat.Metal,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (12.0f),
+                PseudoKinematicFactor = 1.0f,
+            };
+
+            CharacterConfig BLACKTHROWER1_TEST_WITH_VISION = new CharacterConfig {
+                SpeciesId = SPECIES_BLACKTHROWER1_TEST_WITH_VISION,
                 SpeciesName = "BlackThrower1",
                 Hp = 40,
                 Mp = 300,
@@ -481,6 +524,53 @@ namespace JoltCSharp {
                 InplacePromptYOffset = (8.0f),
             };
 
+            CharacterConfig BAT1_TEST_WITH_VISION = new CharacterConfig {
+                SpeciesId = SPECIES_BAT1_TEST_WITH_VISION,
+                SpeciesName = "Bat1",
+                Hp = 9,
+                Mp = 0,
+                MpRegenPerInterval = 0,
+                MpRegenInterval = 0,
+                LayDownFramesToRecover = 0,
+                GetUpInvinsibleFrames = 0,
+                GetUpFramesToRecover = 0,
+                Speed = 0.7f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 0,
+                JumpStartupFrames = 0,
+                AccMagX = 0.1f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                OmitGravity = true,
+                VisionOffsetX = (8.0f),
+                VisionOffsetY = (3.0f),
+                VisionHalfHeight = (64.0f),
+                VisionTopRadius = (32.0f),
+                VisionBottomRadius = (48.0f),
+                HasVisionReaction = true,
+                VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
+                VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
+                CapsuleRadius = (4.0f), 
+                CapsuleHalfHeight = (3.0f),
+                ShrinkedCapsuleRadius = (4.0f),
+                ShrinkedCapsuleHalfHeight = (3.0f),
+                LayDownCapsuleRadius = (4.0f),
+                LayDownCapsuleHalfHeight = (3.0f),
+                DyingCapsuleRadius = (4.0f),
+                DyingCapsuleHalfHeight = (3.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 1, // Basically a touch to die species
+                ColliderDensity = 12.0f,
+                HasDimmedAnim = false,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                MaxAscendingVelY = -DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                AntiGravityWhenIdle = true,
+                AntiGravityFramesLingering = 10*BATTLE_DYNAMICS_FPS,
+                GaugeIncWhenExhausted = 10,
+                Ifc = IfaceCat.Flesh,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+
+                InplacePromptYOffset = (8.0f),
+            };
+
             CharacterConfig WOLF1 = new CharacterConfig {
                 SpeciesId = SPECIES_WOLF1,
                 SpeciesName = "Wolf1",
@@ -556,6 +646,7 @@ namespace JoltCSharp {
                     {(int)CharacterState.Walking, 10},
                 },
 
+                PseudoKinematicFactor = 1.0f,
                 InplacePromptYOffset = (24.0f),
             };
 
@@ -927,6 +1018,11 @@ namespace JoltCSharp {
             BLACKTHROWER1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
             underlying.Add(BLACKTHROWER1.SpeciesId, BLACKTHROWER1);
 
+            BLACKTHROWER1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
+            BLACKTHROWER1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BlackThrower1TimedBombId);
+            BLACKTHROWER1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BlackThrower1TimedBombId);
+            underlying.Add(BLACKTHROWER1_TEST_WITH_VISION.SpeciesId, BLACKTHROWER1_TEST_WITH_VISION);
+
             // HEADQUARTER1
             underlying.Add(HEADQUARTER1.SpeciesId, HEADQUARTER1);
 
@@ -942,6 +1038,11 @@ namespace JoltCSharp {
             BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Bat1BiteId);
             BAT1.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Bat1BiteId);
             underlying.Add(BAT1.SpeciesId, BAT1);
+
+            BAT1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), Bat1BiteId);
+            BAT1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Bat1BiteId);
+            BAT1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Bat1BiteId);
+            underlying.Add(BAT1_TEST_WITH_VISION.SpeciesId, BAT1_TEST_WITH_VISION);
 
             // Wolf and Wolverine 
             underlying.Add(WOLF1.SpeciesId, WOLF1);
@@ -962,9 +1063,9 @@ namespace JoltCSharp {
             underlying.Add(POLICEMAN2.SpeciesId, POLICEMAN2);
             underlying.Add(POLICEWOMAN1.SpeciesId, POLICEWOMAN1);
 
-            // BLACKSABER_TEST
-            underlying.Add(BLACKSABER_TEST_NO_VISION.SpeciesId, BLACKSABER_TEST_NO_VISION);
-            underlying.Add(BLACKSABER_TEST_WITH_VISION.SpeciesId, BLACKSABER_TEST_WITH_VISION);
+            // BLACKSABER1_TEST
+            underlying.Add(BLACKSABER1_TEST_NO_VISION.SpeciesId, BLACKSABER1_TEST_NO_VISION);
+            underlying.Add(BLACKSABER1_TEST_WITH_VISION.SpeciesId, BLACKSABER1_TEST_WITH_VISION);
 
             return true;
         }

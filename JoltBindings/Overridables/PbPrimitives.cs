@@ -60,9 +60,11 @@ namespace JoltCSharp {
         public const uint SPECIES_POLICEMAN2 = 27;
         public const uint SPECIES_POLICEWOMAN1 = 28;
 
-        public const uint SPECIES_BLACKSABER_TEST_NO_VISION = 2049;
-        public const uint SPECIES_BLACKSABER_TEST_WITH_VISION = 2050;
+        public const uint SPECIES_BLACKSABER1_TEST_NO_VISION = 2049;
+        public const uint SPECIES_BLACKSABER1_TEST_WITH_VISION = 2050;
         public const uint SPECIES_WOLVERINE1_TEST_WITH_VISION = 2051;
+        public const uint SPECIES_BLACKTHROWER1_TEST_WITH_VISION = 2052;
+        public const uint SPECIES_BAT1_TEST_WITH_VISION = 2053;
 
         public const uint TRT_NONE = 0;
         public const uint TRT_BY_INIT_DELAY = 1;
@@ -421,10 +423,6 @@ namespace JoltCSharp {
                   Blackshooter1 = SPECIES_BLACKSHOOTER1,
                   Blackthrower1 = SPECIES_BLACKTHROWER1,
 
-                  BlacksaberTestNoVision = SPECIES_BLACKSABER_TEST_NO_VISION,
-                  BlacksaberTestWithVision = SPECIES_BLACKSABER_TEST_WITH_VISION,
-                  Wolverine1TestWithVision = SPECIES_WOLVERINE1_TEST_WITH_VISION,
-
                   Headquarter1 = SPECIES_HEADQUARTER1,
                   Shieldguard1 = SPECIES_SHIELDGUARD1,
                   Shieldguard2 = SPECIES_SHIELDGUARD2,
@@ -438,6 +436,12 @@ namespace JoltCSharp {
                   Policeman1 = SPECIES_POLICEMAN1,
                   Policeman2 = SPECIES_POLICEMAN2,
                   Policewoman1 = SPECIES_POLICEWOMAN1,
+
+                  Blacksaber1TestNoVision = SPECIES_BLACKSABER1_TEST_NO_VISION,
+                  Blacksaber1TestWithVision = SPECIES_BLACKSABER1_TEST_WITH_VISION,
+                  Blackthrower1TestWithVision = SPECIES_BLACKTHROWER1_TEST_WITH_VISION,
+                  Wolverine1TestWithVision = SPECIES_WOLVERINE1_TEST_WITH_VISION,
+                  Bat1TestWithVision = SPECIES_BAT1_TEST_WITH_VISION,
               },
 
               DebuffSpecies = new DebuffSpecies {

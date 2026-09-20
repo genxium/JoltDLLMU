@@ -176,7 +176,6 @@ public:
     TP_COLLIDER_Q  activeTpColliders;
     TP_COLLIDER_Q* tpDynamicStockCache;    // (Dynamic,   MyObjectLayers::MOVING)
     TP_COLLIDER_Q* tpKinematicStockCache;  // (Kinematic, MyObjectLayers::MOVING)
-    TP_COLLIDER_Q* tpObsIfaceStockCache;   // (Dynamic,   MyObjectLayers::TRAP_OBSTACLE_INTERFACE)
     TP_COLLIDER_Q* tpHelperStockCache;     // (Static,    MyObjectLayers::TRAP_HELPER)
     std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, TrapCacheKeyHasher > cachedTpColliders;
 
@@ -581,7 +580,7 @@ protected:
     }
 
     BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
-    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const bool forConstraintObsIfaceBody, const Vec3Arg& newPos, const QuatArg& newRot);
+    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const Vec3Arg& newPos, const QuatArg& newRot);
     TR_COLLIDER_T* getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
     PK_COLLIDER_T* getOrCreateCachedPickableCollider_NotThreadSafe(const uint64_t ud, const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
 
@@ -609,8 +608,6 @@ protected:
     std::unordered_map<uint64_t, TP_COLLIDER_T*> transientUdToTpCollider;
     std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintHelperBodyID;
     std::unordered_map<uint64_t, Body*> transientUdToConstraintHelperBody;
-    std::unordered_map<uint64_t, const BodyID*> transientUdToConstraintObsIfaceBodyID;
-    std::unordered_map<uint64_t, Body*> transientUdToConstraintObsIfaceBody;
 
     std::unordered_map<uint64_t, CollisionUdHolder_ThreadSafe*> transientUdToCollisionUdHolder;
     std::unordered_map<uint64_t, InputInducedMotion*> transientUdToInputInducedMotion;
@@ -1034,12 +1031,6 @@ protected:
         playerInputFronts[inSingleJoinIndexArrIdx] = inSingleInput;
         playerInputFrontIdsSorted.insert(inIfdId);
         return true;
-    }
-
-    inline bool isTrapUsingObsIface(const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTiled) {
-        if (OOIBOFalse == tpConfigFromTiled->ooibo()) return false;
-        if (OOIBOTrue == tpConfigFromTiled->ooibo()) return true;
-        return tpConfig->use_obstable_interface_body();
     }
 
     inline bool isBulletJustActive(const Bullet* bullet, const BulletConfig* bc, int currRdfId) const {
@@ -1699,6 +1690,9 @@ public:
             }
         }
 
+        float pseudoKinematicFactor1 = 0.f;
+        float pseudoKinematicFactor2 = 0.f;
+
         if (UDT_TRAP == udt1) {
             uint32_t trapId = getUDPayload(ud1);
             if (trapConfigFromTileDict.count(trapId)) {
@@ -1712,6 +1706,18 @@ public:
                     Vec3 body2LinearSurfaceVel = inBody2.GetLinearVelocity();
                     ioSettings.mRelativeLinearSurfaceVelocity = (body2LinearSurfaceVel - body1LinearSurfaceVel);
                 }
+
+                auto& trapConfigs = globalConfigConsts->trap_configs();
+                if (trapConfigs.count(trapConfigFromTiled->tpt())) {
+                    const TrapConfig& tpConfig = trapConfigs.at(trapConfigFromTiled->tpt());
+                    pseudoKinematicFactor1 = tpConfig.pseudo_kinematic_factor();
+                }
+            }
+        } else if (UDT_PLAYER == udt1 || UDT_NPC == udt1) {
+            const CharacterDownsync* currChd = immutableCurrChdPtrFromUd(udt1, ud1);
+            if (nullptr != currChd) {
+                const CharacterConfig* cc = getCc(currChd->species_id());
+                pseudoKinematicFactor1 = cc->pseudo_kinematic_factor();
             }
         }
 
@@ -1728,7 +1734,34 @@ public:
                     Vec3 body2LinearSurfaceVel = inBody2.GetRotation() * (isConveyorBelow ? conveyorInitVel : -conveyorInitVel);
                     ioSettings.mRelativeLinearSurfaceVelocity = body2LinearSurfaceVel - body1LinearSurfaceVel;
                 }
+
+                auto& trapConfigs = globalConfigConsts->trap_configs();
+                if (trapConfigs.count(trapConfigFromTiled->tpt())) {
+                    const TrapConfig& tpConfig = trapConfigs.at(trapConfigFromTiled->tpt());
+                    pseudoKinematicFactor2 = tpConfig.pseudo_kinematic_factor();
+                }
             }
+        } else if (UDT_PLAYER == udt2 || UDT_NPC == udt2) {
+            const CharacterDownsync* currChd = immutableCurrChdPtrFromUd(udt2, ud2);
+            if (nullptr != currChd) {
+                const CharacterConfig* cc = getCc(currChd->species_id());
+                pseudoKinematicFactor2 = cc->pseudo_kinematic_factor();
+            }
+        }
+        
+        if (UDT_OBSTACLE == udt1 && UDT_OBSTACLE != udt2) {
+            pseudoKinematicFactor1 = 1.f;
+            pseudoKinematicFactor2 = 0.f;
+        }
+            
+        if (UDT_OBSTACLE != udt1 && UDT_OBSTACLE == udt2) {
+            pseudoKinematicFactor1 = 0.f;
+            pseudoKinematicFactor2 = 1.f;
+        }
+        
+        if (pseudoKinematicFactor1 != pseudoKinematicFactor2) {
+            ioSettings.mInvMassScale1 = max(0.f, 1.f - pseudoKinematicFactor1);
+            ioSettings.mInvMassScale2 = max(0.f, 1.f - pseudoKinematicFactor2);
         }
 
         // Others are intentionally left blank by the time of writing.

@@ -11,9 +11,8 @@ namespace MyObjectLayers
 {
     static constexpr ObjectLayer NON_MOVING = 0;
     static constexpr ObjectLayer MOVING = 1;
-    static constexpr ObjectLayer TRAP_OBSTACLE_INTERFACE = 2; // Use to stop tangible traps with "EMotionType::Dynamic" at obstacles
-    static constexpr ObjectLayer TRAP_HELPER = 3; // Use to put non-collidable trap helper bodies
-    static constexpr ObjectLayer NUM_LAYERS = 4;
+    static constexpr ObjectLayer TRAP_HELPER = 2; // Use to put non-collidable trap helper bodies
+    static constexpr ObjectLayer NUM_LAYERS = 3;
 };
 
 /// Class that determines if two object layers can collide
@@ -25,11 +24,9 @@ public:
         switch (inObject1)
         {
         case MyObjectLayers::NON_MOVING:
-            return (inObject2 == MyObjectLayers::MOVING || inObject2 == MyObjectLayers::TRAP_OBSTACLE_INTERFACE);
+            return (inObject2 == MyObjectLayers::MOVING);
         case MyObjectLayers::MOVING:
             return (inObject2 == MyObjectLayers::MOVING || inObject2 == MyObjectLayers::NON_MOVING);
-        case MyObjectLayers::TRAP_OBSTACLE_INTERFACE:
-            return (inObject2 == MyObjectLayers::NON_MOVING || inObject2 == MyObjectLayers::TRAP_OBSTACLE_INTERFACE);
         case MyObjectLayers::TRAP_HELPER:
             return false;
         default:
@@ -48,9 +45,8 @@ namespace MyBPLayers
 {
     static constexpr BroadPhaseLayer NON_MOVING(0);
     static constexpr BroadPhaseLayer MOVING(1);
-    static constexpr BroadPhaseLayer TRAP_OBSTACLE_INTERFACE(2);
-    static constexpr BroadPhaseLayer TRAP_HELPER(3);
-    static constexpr uint NUM_LAYERS(4);
+    static constexpr BroadPhaseLayer TRAP_HELPER(2);
+    static constexpr uint NUM_LAYERS(3);
 };
 
 // BroadPhaseLayerInterface implementation
@@ -63,7 +59,6 @@ public:
         // Create a mapping table from object to broad phase layer
         mObjectToBroadPhase[MyObjectLayers::NON_MOVING] = MyBPLayers::NON_MOVING;
         mObjectToBroadPhase[MyObjectLayers::MOVING] = MyBPLayers::MOVING;
-        mObjectToBroadPhase[MyObjectLayers::TRAP_OBSTACLE_INTERFACE] = MyBPLayers::TRAP_OBSTACLE_INTERFACE;
         mObjectToBroadPhase[MyObjectLayers::TRAP_HELPER] = MyBPLayers::TRAP_HELPER;
     }
 
@@ -85,7 +80,6 @@ public:
         {
         case (BroadPhaseLayer::Type)MyBPLayers::NON_MOVING:   return "NON_MOVING";
         case (BroadPhaseLayer::Type)MyBPLayers::MOVING:       return "MOVING";
-        case (BroadPhaseLayer::Type)MyBPLayers::TRAP_OBSTACLE_INTERFACE:       return "TRAP_OBSTACLE_INTERFACE";
         case (BroadPhaseLayer::Type)MyBPLayers::TRAP_HELPER:       return "TRAP_HELPER";
         default: JPH_ASSERT(false); return "INVALID";
         }
@@ -105,11 +99,9 @@ public:
         switch (inLayer1)
         {
         case MyObjectLayers::NON_MOVING:
-            return (inLayer2 == MyBPLayers::MOVING || inLayer2 == MyBPLayers::TRAP_OBSTACLE_INTERFACE);
+            return (inLayer2 == MyBPLayers::MOVING);
         case MyObjectLayers::MOVING:
             return (inLayer2 == MyBPLayers::MOVING || inLayer2 == MyBPLayers::NON_MOVING);
-        case MyObjectLayers::TRAP_OBSTACLE_INTERFACE:
-            return (inLayer2 == MyBPLayers::NON_MOVING || inLayer2 == MyBPLayers::TRAP_OBSTACLE_INTERFACE);
         case MyObjectLayers::TRAP_HELPER:
             return false;
         default:

@@ -295,6 +295,7 @@ message CharacterConfig {
     float max_ascending_vel_y = 22;
 
     optional float collider_density = 23;
+    optional float pseudo_kinematic_factor = 24;
 
     bool atk1_uses_magazine = 25;
     InventorySlotConfig atk1_magazine = 26; 
@@ -919,16 +920,10 @@ message TrapConfig {
     float default_angular_speed = 29; // in "radians/second" 
     int32 default_cooldown_rdf_count = 30;
 
-    bool use_obstable_interface_body = 31;
+    float pseudo_kinematic_factor = 31;
     bool no_x_flip_rendering = 32;
 
     string name = 1024;
-}
-
-enum OverrideObsIfaceBodyOption {
-    OOIBOKeep = 0;    
-    OOIBOTrue = 1;    
-    OOIBOFalse = 2;    
 }
 
 message TrapConfigFromTiled {
@@ -968,7 +963,8 @@ message TrapConfigFromTiled {
     float slider_axis_z = 24;
 
     BarrierColliderAttr barrier_attr = 25;  
-    OverrideObsIfaceBodyOption ooibo = 26;
+
+    float pseudo_kinematic_factor = 26;
 
     uint32 subscribes_to_trigger_id = 27;
 
@@ -1596,9 +1592,11 @@ message ChSpeciesConsts {
     uint32 policewoman1 = 18;
 
     uint32 none = 2048;
-    uint32 blacksaber_test_no_vision = 2049;
-    uint32 blacksaber_test_with_vision = 2050;
+    uint32 blacksaber1_test_no_vision = 2049;
+    uint32 blacksaber1_test_with_vision = 2050;
     uint32 wolverine1_test_with_vision = 2051;
+    uint32 blackthrower1_test_with_vision = 2052;
+    uint32 bat1_test_with_vision = 2053;
 }
 
 message TrapTypes {

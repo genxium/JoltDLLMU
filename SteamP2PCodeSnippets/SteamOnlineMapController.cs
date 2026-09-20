@@ -294,12 +294,14 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             case DownsyncAct.DaRegular:
                 // [REMINDER] When the "Lobby owner" handles a "DaRegular" (sent from itself) by "FRONTEND_OnDownsyncSnapshotReceived(...)", the fields "lcacIfdId" and "udpLcacIfdId" will be incremented and thus break "lag-induced-freezing".   
                 var ifdBatch = downsyncSnapshotHolder.IfdBatch;
+                /*
                 if (null != downsyncSnapshotHolder.RefRdf && PbPrimitivesOverride.Instance.getUnderlying().TerminatingRenderFrameId != downsyncSnapshotHolder.RefRdfId) {
                     if (p2pSessionManager.GetIsCurrentLobbyOwner() && downsyncSnapshotHolder.RefRdfId > csharpTimerRdfId) {
                         var lastIfdId = (null != ifdBatch && 0 < ifdBatch.Count) ? (downsyncSnapshotHolder.StIfdId + ifdBatch.Count - 1) : 0;
                         Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, oldLcacIfdId={newLcacIfdId}, handling DaRegular as owner, downsyncSnapshotHolder.RefRdfId={downsyncSnapshotHolder.RefRdfId}, downsyncLastIfdId={lastIfdId}");
                     }
                 }
+                */
                 int postTimerRdfEvictedCnt = 0, postTimerRdfDelayedIfdEvictedCnt = 0;
                 fixed (int* newChaserRdfIdPtr = &newChaserRdfId, newLcacIfdIdPtr = &newLcacIfdId, newUdpLcacIfdIdPtr = &newUdpLcacIfdId, maxPlayerInputFrontIdPtr = &maxPlayerInputFrontId, minPlayerInputFrontIdPtr = &minPlayerInputFrontId) {
                     Bindings.FRONTEND_OnDownsyncSnapshotReceived(battle, (char*)pData, bytesCnt, &postTimerRdfEvictedCnt, &postTimerRdfDelayedIfdEvictedCnt, newChaserRdfIdPtr, newLcacIfdIdPtr, newUdpLcacIfdIdPtr, maxPlayerInputFrontIdPtr, minPlayerInputFrontIdPtr);
@@ -943,7 +945,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 }
 
                 if (snatched) {
-                    skipInterpolation = true;
+                    //skipInterpolation = true;
                     SteamNetworkDoctor.Instance.LogForceResyncFutureApplied();
                 }           
 

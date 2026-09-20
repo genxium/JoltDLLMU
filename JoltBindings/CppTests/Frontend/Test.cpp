@@ -144,7 +144,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf(google::protobuf::Arena* theAlloc
     npc1->set_id(npcIdCounter++);
     npc1->set_goal_as_npc(NpcGoal::NIdle);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCh1Species = chSpecies.blacksaber1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+80);
     npcCh1->set_y(100);
@@ -169,7 +169,7 @@ RenderFrame* mockBlacksaber1VisionTestStartRdf(google::protobuf::Arena* theAlloc
     npc2->set_id(npcIdCounter++);
     npc2->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh2 = npc2->mutable_chd();
-    auto npcCh2Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCh2Species = chSpecies.blacksaber1_test_with_vision();
     auto npcCc2 = characterConfigs[npcCh2Species];
     npcCh2->set_x(+350);
     npcCh2->set_y(580);
@@ -1550,7 +1550,7 @@ RenderFrame* mockCrouchTestStartRdf(google::protobuf::Arena* theAllocator) {
     npc1->set_id(npcIdCounter++);
     npc1->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCh1Species = chSpecies.blacksaber1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+900);
     npcCh1->set_y(320);
@@ -1751,7 +1751,7 @@ RenderFrame* mockBlackThrowerTestStartRdf(google::protobuf::Arena* theAllocator)
 
     auto player1 = startRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = chSpecies.blackthrower1();
+    auto playerCh1Species = chSpecies.blackthrower1_test_with_vision();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-120);
     playerCh1->set_y(100);
@@ -1783,7 +1783,7 @@ RenderFrame* mockBlackThrowerTestStartRdf(google::protobuf::Arena* theAllocator)
     npc1->set_id(npcIdCounter++);
     npc1->set_goal_as_npc(NpcGoal::NIdleIfGoHuntingThenPatrol);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.blackthrower1();
+    auto npcCh1Species = chSpecies.blackthrower1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+80);
     npcCh1->set_y(100);
@@ -1826,7 +1826,7 @@ RenderFrame* mockDeadBulletLeftShiftTestStartRdf(google::protobuf::Arena* theAll
 
     auto player1 = startRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = chSpecies.blackthrower1();
+    auto playerCh1Species = chSpecies.blackthrower1_test_with_vision();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(-120);
     playerCh1->set_y(100);
@@ -2157,7 +2157,7 @@ RenderFrame* mockBtnFTestStartRdf(google::protobuf::Arena* theAllocator) {
     npc1->set_goal_as_npc(NpcGoal::NIdleIfGoHuntingThenPatrol);
     npc1->set_exhausted_to_drop_pkt(globalPrimitiveConsts->pkts().hp_small());
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.blacksaber_test_with_vision();
+    auto npcCh1Species = chSpecies.blacksaber1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(+200);
     npcCh1->set_y(200);
@@ -2415,7 +2415,7 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
     npc1->set_id(npcIdCounter++);
     npc1->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh1 = npc1->mutable_chd();
-    auto npcCh1Species = chSpecies.bat1();
+    auto npcCh1Species = chSpecies.bat1_test_with_vision();
     auto npcCc1 = characterConfigs[npcCh1Species];
     npcCh1->set_x(450);
     npcCh1->set_y(240);
@@ -2442,7 +2442,7 @@ RenderFrame* mockBat1TestStartRdf(google::protobuf::Arena* theAllocator) {
     npc2->set_id(npcIdCounter++);
     npc2->set_goal_as_npc(NpcGoal::NPatrol);
     auto npcCh2 = npc2->mutable_chd();
-    auto npcCh2Species = chSpecies.bat1();
+    auto npcCh2Species = chSpecies.bat1_test_with_vision();
     auto npcCc2 = characterConfigs[npcCh2Species];
     npcCh2->set_x(-400);
     npcCh2->set_y(450);
@@ -5328,19 +5328,19 @@ void initTest20Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     // Its own quota is 3, however as it subscribes to a "trts().by_movement" whose "quota" is only 1, this "indi_wave_npc_spawner" will only use the first "characterSpawnerTimeSeq"
     auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
-    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto* mutableChSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto* mutableChSpanwerTimeSeq2_3 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
-    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
     triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
@@ -5810,19 +5810,19 @@ void initTest31Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     // Its own quota is 3 and it subscribes to a "trts().by_movement" whose "quota" is also 3, this "indi_wave_npc_spawner" will use all its "characterSpawnerTimeSeq"
     auto* mutableChSpanwerTimeSeq2_1 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_1->set_cutoff_rdf_id(1);
-    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_1->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto* mutableChSpanwerTimeSeq2_2 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_2->set_cutoff_rdf_id(2);
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
-    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
+    mutableChSpanwerTimeSeq2_2->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto* mutableChSpanwerTimeSeq2_3 = triggerConfigFromTiled2->add_character_spawner_time_seq(); 
     mutableChSpanwerTimeSeq2_3->set_cutoff_rdf_id(3);
-    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber_test_with_vision());
+    mutableChSpanwerTimeSeq2_3->add_species_id_list(chSpecies.blacksaber1_test_with_vision());
 
     auto triggerConfigFromTiled3 = initializerMapData->add_trigger_config_from_tile_list();
     triggerConfigFromTiled3->set_id(startRdf->triggers(2).id());
@@ -6019,7 +6019,7 @@ void initTest36Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     Vec3 initHingeAxis = initAngVel1.Normalized();
     trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
     trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
-    trapConfigFromTiled1->set_box_half_size_x(64.f);
+    trapConfigFromTiled1->set_box_half_size_x(6.f);
     trapConfigFromTiled1->set_box_half_size_y(8.f);
     trapConfigFromTiled1->set_init_q_x(0);
     trapConfigFromTiled1->set_init_q_y(0);
@@ -6034,8 +6034,8 @@ void initTest36Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled1->set_slider_axis_y(initHingeAxis.GetY());
     trapConfigFromTiled1->set_slider_axis_z(initHingeAxis.GetZ());
 
-    trapConfigFromTiled1->set_init_x(320);
-    trapConfigFromTiled1->set_init_y(512);
+    trapConfigFromTiled1->set_init_x(128);
+    trapConfigFromTiled1->set_init_y(1024);
     trapConfigFromTiled1->set_init_z(0);
 
     trapConfigFromTiled1->set_limit_1(0.0f);
@@ -9518,6 +9518,9 @@ bool runTestCase36(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         } else if (150 == outerTimerRdfId) {
             JPH_ASSERT(TrapState::TpIdle == trap1.trap_state());
             JPH_ASSERT(12 == trigger1.quota());
+        } else if (181 == outerTimerRdfId) {
+            JPH_ASSERT(TrapState::TpWalking == trap1.trap_state());
+            JPH_ASSERT(11 == trigger1.quota());
         } else if (220 == outerTimerRdfId) {
             JPH_ASSERT(TrapState::TpWalking == trap1.trap_state());
             JPH_ASSERT(11 == trigger1.quota());
