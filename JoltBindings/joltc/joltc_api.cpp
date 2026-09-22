@@ -45,17 +45,17 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     globalNpcReactionMap[chSpecies.blacksaber1()] = new BlackSaber1NpcReaction();
     globalNpcReactionMap[chSpecies.blackshooter1()] = new BlackShooter1NpcReaction();
     globalNpcReactionMap[chSpecies.blackthrower1()] = new BlackThrower1NpcReaction();
-    globalNpcReactionMap[chSpecies.blacksaber1_test_with_vision()] = new BlackSaber1TestWithVisionNpcReaction();
-    globalNpcReactionMap[chSpecies.blackthrower1_test_with_vision()] = new BlackThrower1TestWithVisionNpcReaction();
+    globalNpcReactionMap[chSpecies.blacksaber1_test_with_vision()] = new BlackSaber1NpcReaction();
+    globalNpcReactionMap[chSpecies.blackthrower1_test_with_vision()] = new BlackThrower1NpcReaction();
 
     globalNpcReactionMap[chSpecies.blacksaber2()] = new BlackSaber2NpcReaction();
     globalNpcReactionMap[chSpecies.blackshooter2()] = new BlackShooter2NpcReaction();
     globalNpcReactionMap[chSpecies.shieldguard1()] = new ShieldGuard1NpcReaction();
     globalNpcReactionMap[chSpecies.bat1()] = new Bat1NpcReaction();
-    globalNpcReactionMap[chSpecies.bat1_test_with_vision()] = new Bat1TestWithVisionNpcReaction();
+    globalNpcReactionMap[chSpecies.bat1_test_with_vision()] = new Bat1NpcReaction();
 
     globalNpcReactionMap[chSpecies.wolverine1()] = new Wolverine1NpcReaction();
-    globalNpcReactionMap[chSpecies.wolverine1_test_with_vision()] = new Wolverine1TestWithVisionNpcReaction();
+    globalNpcReactionMap[chSpecies.wolverine1_test_with_vision()] = new Wolverine1NpcReaction();
 
     trivialTrtSet = {
         globalPrimitiveConsts->trts().by_init_delay(),

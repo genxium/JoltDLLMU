@@ -481,23 +481,11 @@ namespace JoltCSharp {
                 AccMagX = 0.1f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
                 AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
                 OmitGravity = true,
-                /*
-                    [WARNING] The original "large vision" will fail to turnaround upon a "thin wall" right in front of the character, try "Frontend/TestCase38" as an example.
-    
-                    ```
-                    Set a breakpoint at "postStepDeriveNpcVisionReaction/narrowPhaseQuery->CollideShape" when "64 == currRdfId", then step all the way into "ConvexShape/sCollideShapeConvexVsConvex", the current "small vision" will get "0 < point1.GetX()" from "ConvexShape/sCollideShapeConvexVsConvex/pen_depth.GetPenetrationDepthStepEPA" which can pass "postStepDeriveNpcVisionReaction/extractKeyEntitiesInVision/isAlongForwardMv" check for "UDT_TRAP/UDT_OBSTACLE" -- BUT the original "large vision" would get "0 > point1.GetX()" with a big absolute value from "ConvexShape/sCollideShapeConvexVsConvex/pen_depth.GetPenetrationDepthStepEPA" instead, thus failing the same check.  
-                    ```
-                */
                 VisionOffsetX = (8.0f),
                 VisionOffsetY = (3.0f),
                 VisionHalfHeight = (64.0f),
                 VisionTopRadius = (32.0f),
                 VisionBottomRadius = (48.0f),
-                //VisionOffsetX = (32.0f),
-                //VisionOffsetY = (10.0f),
-                //VisionHalfHeight = (96.0f),
-                //VisionTopRadius = (32.0f),
-                //VisionBottomRadius = (48.0f),
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,
@@ -540,11 +528,23 @@ namespace JoltCSharp {
                 AccMagX = 0.1f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
                 AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
                 OmitGravity = true,
+                /*
+                    [WARNING] The original "large vision" will fail to turnaround upon a "thin wall" right in front of the character, try "Frontend/TestCase38" as an example.
+    
+                    ```
+                    Set a breakpoint at "postStepDeriveNpcVisionReaction/narrowPhaseQuery->CollideShape" when "64 == currRdfId", then step all the way into "ConvexShape/sCollideShapeConvexVsConvex", the current "small vision" will get "0 < point1.GetX()" from "ConvexShape/sCollideShapeConvexVsConvex/pen_depth.GetPenetrationDepthStepEPA" which can pass "postStepDeriveNpcVisionReaction/extractKeyEntitiesInVision/isAlongForwardMv" check for "UDT_TRAP/UDT_OBSTACLE" -- BUT the original "large vision" would get "0 > point1.GetX()" with a big absolute value from "ConvexShape/sCollideShapeConvexVsConvex/pen_depth.GetPenetrationDepthStepEPA" instead, thus failing the same check.  
+                    ```
+                */
                 VisionOffsetX = (8.0f),
                 VisionOffsetY = (3.0f),
                 VisionHalfHeight = (64.0f),
                 VisionTopRadius = (32.0f),
                 VisionBottomRadius = (48.0f),
+                //VisionOffsetX = (32.0f),
+                //VisionOffsetY = (10.0f),
+                //VisionHalfHeight = (96.0f),
+                //VisionTopRadius = (32.0f),
+                //VisionBottomRadius = (48.0f),
                 HasVisionReaction = true,
                 VisionSearchIntervalPow2Minus1U = VISION_SEARCH_INTERVAL_IMMEDIATE_U - 1,
                 VisionSearchIntervalPow2Minus1 = VISION_SEARCH_INTERVAL_IMMEDIATE - 1,

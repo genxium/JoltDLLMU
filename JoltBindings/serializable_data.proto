@@ -968,6 +968,8 @@ message TrapConfigFromTiled {
 
     uint32 subscribes_to_trigger_id = 27;
 
+    optional string name = 28; // Overrides the prefab name to use
+
     // Used for constraint limit assignment
     optional float limit_1 = 128;  
     optional float limit_2 = 129;  
@@ -1504,6 +1506,8 @@ message TriggerConfigFromTiled {
 
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
     int32 level_score = 23;
+
+    optional string name = 24; // Overrides the prefab name to use
 
     bool is_story_ready_go = 512; 
     int32 bgm_id = 513;

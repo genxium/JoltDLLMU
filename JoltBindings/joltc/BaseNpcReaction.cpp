@@ -227,6 +227,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
         case NpcGoal::NHuntThenIdle:
             outNextNpcGoal = NpcGoal::NIdle;
             newVisionReaction = TARGET_CH_REACTION_HUNTING_LOSS;
+            temptingToMove = false;
             break;
         case NpcGoal::NHuntThenPatrol:
             outNextNpcGoal = NpcGoal::NPatrol;
@@ -274,6 +275,14 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     }
     int inheritedDirY = 0; // [REMINDER] Intentionally a constant zero even for "currIsFlying" in this case, because when NOT hunting it's more convenient to just stop y-axis flying. 
     
+#ifndef NDEBUG
+    if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id() && InAirIdle1NoJump != nextChd->ch_state()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " called extractKeyEntitiesInVision, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), inheritedDir=(" << inheritedDirX << ", " << inheritedDirY << "), temptingToMove=" << temptingToMove << ", byFarVisionReaction=" << newVisionReaction << ", byFarNpcGoal=" << outNextNpcGoal << ", currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(" << currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << "), nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd << ", locking_on_ud=" << currChd.locking_on_ud();
+        Debug::Log(oss.str(), DColor::White);
+    }
+#endif
+
     switch (newVisionReaction) {
         case TARGET_CH_REACTION_NOT_ENOUGH_MP:
         case TARGET_CH_REACTION_DEF1:
@@ -754,6 +763,13 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
 
             if (!isAlongForwardMv) {
                 // Not a "movement blocker candidate" 
+#ifndef  NDEBUG
+                if (globalPrimitiveConsts->ch_species().bat1() == currChd.species_id() && InAirIdle1NoJump != currChd.ch_state()) {
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", (selfUd=" << selfUd << ", udRhs=" << udRhs << "), pos=(" << currChd.x() << ", " << currChd.y() << "), vel=(" << currChd.vel_x() << ", " << currChd.vel_y() << "), skipping because NOT isAlongForwardMv, rhsVisionAlignmentFromNpcChdPosition=" << rhsVisionAlignmentFromNpcChdPosition << "." << std::endl;
+                    Debug::Log(oss.str(), DColor::Yellow);
+                }
+#endif // ! NDEBUG
                 continue;
             }
 
@@ -793,6 +809,13 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                 if (!strictlyRight) {
                     strictlyLeft = true;
                 }
+            }
+
+            if (0 > mvIntentionNorm.GetX()) {
+                std::swap(strictlyLeft, strictlyRight);
+            } 
+            if (0 > mvIntentionNorm.GetY()) {
+                std::swap(strictlyUp, strictlyDown);
             }
             
             if (!currIsFlying) {
@@ -886,13 +909,11 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                 }
 
 #ifndef  NDEBUG
-                /*
-                if (8589934593UL == selfUd) {
+                if (globalPrimitiveConsts->ch_species().bat1() == currChd.species_id() && InAirIdle1NoJump != currChd.ch_state()) {
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << ", (selfUd=" << selfUd << ", udRhs=" << udRhs << ", compositingGap=" << compositingGap << "), pos=(" << currChd.x() << ", " << currChd.y() << "), vel=(" << currChd.vel_x() << ", " << currChd.vel_y() << "), setting outCurrGapToJump=(" << outCurrGapToJump.vision_alignment() << ", " << outCurrGapToJump.anti_gravity_alignment() << ") by (strictlyUp=" << strictlyUp << ", strictlyDown=" << strictlyDown << ", strictlyRight=" << strictlyRight << ", strictlyLeft=" << strictlyLeft << ", holdableBothForwardAndBackward=" << holdableBothForwardAndBackward << ", holdableBothUpwardAndDownward=" << holdableBothUpwardAndDownward << "), (selfAABBAntiGAlignmentMin=" << selfAABBAntiGAlignmentMin << ", selfAABBAntiGAlignmentMax=" << selfAABBAntiGAlignmentMax << "), (rhsAABBAntiGAlignmentMin=" << rhsAABBAntiGAlignmentMin << ", rhsAABBAntiGAlignmentMax=" << rhsAABBAntiGAlignmentMax << "), (selfAABBMvIntentionAlignmentMin=" << selfAABBMvIntentionAlignmentMin << ", selfAABBMvIntentionAlignmentMax=" << selfAABBMvIntentionAlignmentMax << "), (rhsAABBMvIntentionAlignmentMin=" << rhsAABBMvIntentionAlignmentMin << ", rhsAABBMvIntentionAlignmentMax=" << rhsAABBMvIntentionAlignmentMax << "), mvIntentionNorm=(" << mvIntentionNorm.GetX() << ", " << mvIntentionNorm.GetY() << "), (selfAABBVisionAlignmentMin=" << selfAABBVisionAlignmentMin << ", selfAABBVisionAlignmentMax=" << selfAABBVisionAlignmentMax << "), (rhsAABBVisionAlignmentMin=" << rhsAABBVisionAlignmentMin << ", rhsAABBVisionAlignmentMax=" << rhsAABBVisionAlignmentMax << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), currChS=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", cvSupported=" << cvSupported << ", groundBodyUd=" << currChd.ground_ud() << ", bestVisionAlignmentForMvBlocker=" << bestVisionAlignmentForMvBlocker << "." << std::endl;
                     Debug::Log(oss.str(), DColor::Orange);
                 }
-                */
 #endif // ! NDEBUG
             } else {
                 // Calc "outCurrGapToJump", if "true == currIsFlying", these "xxxGapToJump" variables still provide useful information about the gaps.
@@ -957,6 +978,14 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
         return visionReactionByFar;
     }
 
+#ifndef NDEBUG
+    if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id() && InAirIdle1NoJump != nextChd->ch_state()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " calling deriveReactionAgainstGroundAndMvBlocker, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), temptingToMove=" << temptingToMove << ", inNpcGoal=" << inNpcGoal << ", currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(" << currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << "), nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd << ", locking_on_ud=" << currChd.locking_on_ud();
+        Debug::Log(oss.str(), DColor::White);
+    }
+#endif
+
     int newVisionReaction = visionReactionByFar;
 
     /*
@@ -993,15 +1022,15 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
                 ||
                 (0 > currGapToJump.anti_gravity_alignment())
             );
-/*
 #ifndef NDEBUG
-            if (!hasEffectiveMvBlocker && 0 == currChd.locking_on_ud()) {
-                std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " is not hunting and lost effective movement blocker, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), temptingToMove=" << temptingToMove << ", inNpcGoal=" << inNpcGoal << ", currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(" << currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << "), nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd;
-                Debug::Log(oss.str(), DColor::White);
+            if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id() && InAirIdle1NoJump != nextChd->ch_state()) {
+                if (!hasEffectiveMvBlocker && 0 == currChd.locking_on_ud()) {
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " is not hunting and lost effective movement blocker, pos=(" << currChd.x() << "," << currChd.y() << "), visionDirection=(" << visionDirection.GetX() << ", " << visionDirection.GetY() << "), temptingToMove=" << temptingToMove << ", inNpcGoal=" << inNpcGoal << ", currChState=" << currChd.ch_state() << ", currFc=" << currChd.frames_in_ch_state() << ", currGapToJump=(" << currGapToJump.vision_alignment() << ", " << currGapToJump.anti_gravity_alignment() << "), nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), toHandleMvBlockerUd=" << toHandleMvBlockerUd;
+                    Debug::Log(oss.str(), DColor::White);
+                }
             }
 #endif
-*/
     }
 
     if (cvSupported) {
@@ -1025,31 +1054,41 @@ int BaseNpcReaction::deriveReactionAgainstGroundAndMvBlocker(int currRdfId, cons
         if (currIsFlying) {
             if (hasEffectiveMvBlocker) {
                 if (temptingToMove) {
+#ifndef NDEBUG
+                    if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id()) {
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " got new reaction TURNAROUND_MV_BLOCKER due to hasEffectiveMvBlocker and temptingToMove, currChS=" << currChd.ch_state() << ", currNpcGoal=" << inNpcGoal << ", vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), constraintVelDiff=(" << constraintVelXDiff << ", " << constraintVelYDiff << ")";
+                        Debug::Log(oss.str(), DColor::White);
+                    }
+#endif
                     newVisionReaction = TARGET_CH_REACTION_TURNAROUND_MV_BLOCKER;
                 } else {
 #ifndef NDEBUG
-                    /*
                     if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id()) {
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " got new reaction STOP_BY_MV_BLOCKER due to hasEffectiveMvBlocker but not temptingToMove, currChS=" << currChd.ch_state() << ", currNpcGoal=" << inNpcGoal << ", vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), constraintVelDiff=(" << constraintVelXDiff << ", " << constraintVelYDiff << ")";
                         Debug::Log(oss.str(), DColor::White);
                     }
-                    */
 #endif
                     newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
                 }
             } else {
                 if (temptingToMove) {
+#ifndef NDEBUG
+                    if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id()) {
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " got new reaction WALK_ALONG due to no effectiveMvBlocker and temptingToMove, currChS=" << currChd.ch_state() << ", currNpcGoal=" << inNpcGoal << ", vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), constraintVelDiff=(" << constraintVelXDiff << ", " << constraintVelYDiff << ")";
+                        Debug::Log(oss.str(), DColor::White);
+                    }
+#endif
                     newVisionReaction = TARGET_CH_REACTION_WALK_ALONG;
                 } else {
 #ifndef NDEBUG
-                    /*
                     if (globalPrimitiveConsts->ch_species().bat1() == nextChd->species_id()) {
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << ", flying selfUd=" << selfUd << " got new reaction STOP_BY_MV_BLOCKER due to no effectiveMvBlocker but not temptingToMove, currChS=" << currChd.ch_state() << ", currNpcGoal=" << inNpcGoal;
                         Debug::Log(oss.str(), DColor::White);
                     }
-                    */
 #endif
                     newVisionReaction = TARGET_CH_REACTION_STOP_BY_MV_BLOCKER;
                 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static JoltCSharp.Bindings;
+using UnityEngine.AddressableAssets;
 
 public class SteamOnlineMapController : AbstractJoltMapController {
     public UISoundSource uiSoundSource;
@@ -1057,7 +1058,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             Destroy(underlyingMap);
         }
         string path = $"Tiled/{theme}/map";
-        var underlyingMapPrefab = Resources.Load(path) as GameObject; // [TODO] Use "Addressables.LoadAssetAsync(...)" and display a "Loading" overlay
+        GameObject underlyingMapPrefab = Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
         if (null == underlyingMapPrefab) {
             Debug.LogError($"underlyingMapPrefab is null for theme={theme}");
         }

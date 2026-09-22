@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
+using UnityEngine.AddressableAssets;
 
 public abstract class AbstractJoltMapController : MonoBehaviour {
     public static Quaternion cTurnbackAroundYAxis = new Quaternion(0, 1, 0, 0);
@@ -383,29 +384,29 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
     public GameObject loadCharacterPrefab(CharacterConfig chConfig) {
         string path = $"JoltChPrefabs/{chConfig.SpeciesName}";
-        return Resources.Load(path) as GameObject;
+        return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
     public GameObject loadBulletPrefab(BulletConfig bulletConfig) {
         string path = $"JoltBulletPrefabs/{bulletConfig.AnimName}";
-        return Resources.Load(path) as GameObject;
+        return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
     public GameObject loadTrapPrefab(TrapConfig trapConfig) {
         string path = $"JoltTpPrefabs/{trapConfig.Name}";
-        return Resources.Load(path) as GameObject;
+        return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
     public GameObject loadTriggerPrefab(TriggerConfigFromTiled triggerConfigFromTiled) {
         var triggerConfig = PbTriggersOverride.Instance.getUnderlying()[triggerConfigFromTiled.Trt];
         string path = $"JoltTrPrefabs/{triggerConfig.Name}";
-        return Resources.Load(path) as GameObject;
+        return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
     public GameObject loadPickablePrefab(PickableConfig pickableConfig) {
         var pkConfig = PbPickablesOverride.Instance.getUnderlying()[pickableConfig.PickupType];
         string path = $"JoltPkPrefabs/{pkConfig.ActiveAnimName}";
-        return Resources.Load(path) as GameObject;
+        return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
     public GameObject loadInplaceHpBarPrefab(CharacterConfig chConfig) {
@@ -692,7 +693,17 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         NpcGoal initGoalVal = NpcGoal.Nidle;
                         if (null != initGoal && !initGoal.IsEmpty) {
                             var initGoalStr = initGoal.GetValueAsString();
-                            Enum.TryParse(initGoalStr, out initGoalVal);
+                            if (!Enum.TryParse(initGoalStr, out initGoalVal)) {
+                                Debug.Log($"initGoalStr={initGoalStr} failed to be parsed, using initGoalVal={initGoalVal} as a default but trying to parse with second character lower-cased again...");
+                                if (1 < initGoalStr.Length) {
+                                    char[] chars = initGoalStr.ToCharArray();
+                                    chars[1] = char.ToLower(chars[1]);
+                                    initGoalStr = new string(chars);
+                                    if (Enum.TryParse(initGoalStr, out initGoalVal)) {
+                                        Debug.Log($"initGoalStr={initGoalStr} re-parsed as initGoalVal={initGoalVal}");
+                                    }
+                                }
+                            }
                         }
 
                         bool xFlipped = isXFlipped(tileObj.m_TileId);
