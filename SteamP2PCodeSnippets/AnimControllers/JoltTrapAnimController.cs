@@ -4,7 +4,7 @@ using jtshared;
 using System;
 using JoltCSharp;
 
-public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState, TrapConfig, uint> {
+public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState, TrapConfigFromTiled, uint> {
 
     public JoltTrapAnimController() {
         SetUd(PbPrimitivesOverride.Instance.getUnderlying().TerminatingTrapId);
@@ -31,7 +31,7 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         return true;
     }
 
-    protected override bool updateAnimUnderlying(in int currRdfId, in Trap currTrap, in TrapState newState, in TrapConfig insConfig, in int frameIdxInAnim) {
+    protected override bool updateAnimUnderlying(in int currRdfId, in Trap currTrap, in TrapState newState, in TrapConfigFromTiled insConfig, in int frameIdxInAnim) {
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
         }

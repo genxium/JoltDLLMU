@@ -2,7 +2,7 @@ using UnityEngine;
 using jtshared;
 using JoltCSharp;
 
-public class JoltTrapAnimPool : AbstractCacheableAnimNodePool<Trap, TrapState, TrapConfig, uint, JoltTrapAnimController> {
+public class JoltTrapAnimPool : AbstractCacheableAnimNodePool<Trap, TrapState, TrapConfigFromTiled, uint, JoltTrapAnimController> {
 
     protected Material sprDefaultMaterial;
 
@@ -10,11 +10,11 @@ public class JoltTrapAnimPool : AbstractCacheableAnimNodePool<Trap, TrapState, T
         this.sprDefaultMaterial = theSprDefaultMaterial;
     }
 
-    protected override GameObject loadPrefab(TrapConfig insConfig) {
+    protected override GameObject loadPrefab(TrapConfigFromTiled insConfig) {
         return joltMap.loadTrapPrefab(insConfig);
     }
 
-    protected override JoltTrapAnimController CreateAnimNode(in uint cacheGroupId, in TrapConfig insConfig, in Transform parent, in int specifiedLayer = -1) {
+    protected override JoltTrapAnimController CreateAnimNode(in uint cacheGroupId, in TrapConfigFromTiled insConfig, in Transform parent, in int specifiedLayer = -1) {
         var g = base.CreateAnimNode(cacheGroupId, insConfig, parent, specifiedLayer);
         g.SetSprDefaultMaterial(sprDefaultMaterial);
         return g;

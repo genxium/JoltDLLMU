@@ -916,6 +916,8 @@ namespace JoltCSharp {
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
 
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), BladeGirlAirSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternUpB, true, false, false, false, false, false, false, false), BladeGirlAirSlash1Id);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternDownB, true, false, false, false, false, false, false, false), BladeGirlDiverImpactId);
 
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, true, false, false, false, false, false, false), BladeGirlCrouchSlashId);
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternDownB, false, false, false, false, false, false, false, false), BladeGirlCrouchSlashId);
@@ -937,6 +939,9 @@ namespace JoltCSharp {
 
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternFrontE, true, false, false, false, false, false, false, false), BladeGirlAirDashingId);
+
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternUpB, false, false, false, false, false, false, false, false), BladeGirlDragonPunchId);
+            BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternUpB, false, false, false, false, true, false, false, false), BladeGirlDragonPunchId);
 
             underlying.Add(BLADEGIRL.SpeciesId, BLADEGIRL);
 

@@ -1218,6 +1218,86 @@ RenderFrame* mockNpcSpawnerRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockRollbackChargePredictionRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 2;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bladegirl();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto player2 = startRdf->mutable_players(1);
+    auto playerCh2 = player2->mutable_chd();
+    auto playerCh2Species = chSpecies.bountyhunter();
+    auto cc2 = characterConfigs[playerCh2Species];
+    playerCh2->set_x(+90);
+    playerCh2->set_y(200);
+    playerCh2->set_speed(cc2.speed());
+    playerCh2->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh2->set_frames_to_recover(0);
+    playerCh2->set_q_x(cTurnbackAroundYAxis.GetX());
+    playerCh2->set_q_y(cTurnbackAroundYAxis.GetY());
+    playerCh2->set_q_z(cTurnbackAroundYAxis.GetZ());
+    playerCh2->set_q_w(cTurnbackAroundYAxis.GetW());
+    playerCh2->set_aiming_q_x(0);
+    playerCh2->set_aiming_q_y(0);
+    playerCh2->set_aiming_q_z(0);
+    playerCh2->set_aiming_q_w(1);
+    playerCh2->set_vel_x(0);
+    playerCh2->set_vel_y(0);
+    playerCh2->set_hp(cc2.hp());
+    playerCh2->set_species_id(playerCh2Species);
+    playerCh2->set_bullet_team_id(2);
+    player2->set_join_index(2);
+    player2->set_revival_x(playerCh2->x());
+    player2->set_revival_y(playerCh2->y());
+    player2->set_revival_q_x(cTurnbackAroundYAxis.GetX());
+    player2->set_revival_q_y(cTurnbackAroundYAxis.GetY());
+    player2->set_revival_q_z(cTurnbackAroundYAxis.GetZ());
+    player2->set_revival_q_w(cTurnbackAroundYAxis.GetW());
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockAimingRayTestRdf(google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 1;
@@ -2726,6 +2806,80 @@ RenderFrame* mockBossRoomStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockBladeGirlSkillRdf2(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bladegirl();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-85);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto npc1 = startRdf->mutable_npcs(0);
+    npc1->set_id(npcIdCounter++);
+    auto npcCh1 = npc1->mutable_chd();
+    auto npcCh1Species = chSpecies.bladegirl();
+    auto npcCc1 = characterConfigs[npcCh1Species];
+    npcCh1->set_x(+5);
+    npcCh1->set_y(200);
+    npcCh1->set_speed(npcCc1.speed());
+    npcCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    npcCh1->set_frames_to_recover(0);
+    npcCh1->set_q_x(cTurnbackAroundYAxis.GetX());
+    npcCh1->set_q_y(cTurnbackAroundYAxis.GetY());
+    npcCh1->set_q_z(cTurnbackAroundYAxis.GetZ());
+    npcCh1->set_q_w(cTurnbackAroundYAxis.GetW());
+    npcCh1->set_aiming_q_x(0);
+    npcCh1->set_aiming_q_y(0);
+    npcCh1->set_aiming_q_z(0);
+    npcCh1->set_aiming_q_w(1);
+    npcCh1->set_vel_x(0);
+    npcCh1->set_vel_y(0);
+    npcCh1->set_hp(npcCc1.hp());
+    npcCh1->set_species_id(npcCh1Species);
+    npcCh1->set_bullet_team_id(3);
+    
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -3615,6 +3769,45 @@ std::map<int, uint64_t> testCmds41 = {
     {420, 0},
     {423, 0},
     {424, 32},
+    {1000, 0},
+    {1024, 0},
+};
+
+std::map<int, uint64_t> testCmds42 = {
+    {0, 0},
+    {3, 0},
+    {4, 0},
+    {99, 0},
+    {100, 16},
+    {101, 0},
+    {129, 0},
+    {130, 16}, // Air jump
+    {131, 0}, 
+    {159, 0}, 
+    {160, 34}, // PatternDownB
+    {161, 0},
+    {200, 0},
+    {203, 0},
+    {204, 0},
+    {229, 0},
+    {230, 0},
+    {231, 0},
+    {259, 0},
+    {260, 0},
+    {264, 0},
+    {268, 0},
+    {299, 0},
+    {300, 0},
+    {339, 0},
+    {340, 0},
+    {379, 0},
+    {380, 0},
+    {399, 0},
+    {400, 0},
+    {419, 0},
+    {420, 0},
+    {423, 0},
+    {424, 0},
     {1000, 0},
     {1024, 0},
 };
@@ -4780,15 +4973,15 @@ void initTest12Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest13Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto bladeGirlSkillStartRdf = mockBladeGirlSkillRdf(theAllocator);
+    auto startRdf = mockBladeGirlSkillRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(bladeGirlSkillStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
 void initTest14Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto bountyHunterSkillStartRdf = mockBountyHunterSkillRdf(theAllocator);
+    auto startRdf = mockBountyHunterSkillRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
-    initializerMapData->set_allocated_self_parsed_rdf(bountyHunterSkillStartRdf);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
     {
         int receivedEdIfdId = 2;
         int receivedStIfdId = 0;
@@ -5348,7 +5541,7 @@ void initTest20Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 }
 
 void initTest21Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
-    auto* startRdf = mockBladeGirlSkillRdf(theAllocator);
+    auto* startRdf = mockRollbackChargePredictionRdf(theAllocator);
     TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
@@ -6341,6 +6534,12 @@ void initTest41Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     triggerConfigFromTiled5->set_init_q_z(0);
     triggerConfigFromTiled5->set_init_q_w(1);
     triggerConfigFromTiled5->set_quota(1);
+}
+
+void initTest42Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockBladeGirlSkillRdf2(theAllocator);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, std::vector<bool>(hulls.size(), true), std::vector<bool>(hulls.size(), false));
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
 std::string outStr;
@@ -7523,7 +7722,6 @@ bool runTestCase13(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             std::cerr << "TestCase13/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
         FRONTEND_Step(reusedBattle);
 
         RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
@@ -8259,7 +8457,7 @@ bool runTestCase21(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase21:Charge prediction\n" << std::endl;
+    std::cout << "Passed TestCase21: Rollback Charge prediction\n" << std::endl;
     theAllocator->Reset();
     reusedBattle->Clear();   
     return true;
@@ -10259,6 +10457,135 @@ bool runTestCase41(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest42Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 5);
+
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    int timerRdfId = -1, toGenIfdId = -1, localRequiredIfdId = -1; // shared 
+    int chaserRdfIdLowerBound = -1, oldLcacIfdId = -1, newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0;
+
+    int firstLandingRdfId = 0;
+    int airJumpRdfId = 0;
+    int secondLandingRdfId = 0;
+    int diverImpactUseRdfId = 0;
+    uint64_t oldGroundUd = 0;
+    CharacterState oldChState = CharacterState::InAirIdle1NoJump;
+    int diverImpactCooldownRdfCnt = 0;
+    bool cooledDownAndTransited = false;
+   
+    while (loopRdfCnt > outerTimerRdfId) {
+        bool shouldPrint = false;
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds42, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "TestCase42/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+
+        RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        
+        auto& npc1 = outerTimerRdf->npcs(0);
+        auto& npc1Chd = npc1.chd();
+
+        if (0 == airJumpRdfId) {
+            if (InAirIdle2ByJump != oldChState && InAirIdle2ByJump == p1Chd.ch_state()) {
+                airJumpRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 == firstLandingRdfId) {
+            if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+                firstLandingRdfId = outerTimerRdfId;
+            }
+        } else if (0 == secondLandingRdfId) {
+            if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+                secondLandingRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 == diverImpactUseRdfId) {
+            if (Atk7 != oldChState && Atk7 == p1Chd.ch_state()) {
+                diverImpactUseRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (100 <= outerTimerRdfId && outerTimerRdfId <= 160) {
+            //shouldPrint = true;
+        }
+
+        if (shouldPrint) {
+            std::cout << "TestCase42/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
+        }
+
+        if (0 != firstLandingRdfId) {
+            if (outerTimerRdfId == 1 + firstLandingRdfId) {
+                JPH_ASSERT(1 == p1Chd.remaining_air_jump_quota());
+            }
+        }
+
+        if (0 != diverImpactUseRdfId) {
+            if (outerTimerRdfId == 1 + diverImpactUseRdfId) {
+                JPH_ASSERT(0 == p1Chd.remaining_air_jump_quota());
+            }
+        }
+
+        if (0 != secondLandingRdfId && outerTimerRdfId >= secondLandingRdfId) {
+            if (outerTimerRdfId == 1 + secondLandingRdfId) {
+                JPH_ASSERT(1 == p1Chd.remaining_air_jump_quota());
+            }
+
+            if (CharacterState::Atk7 == p1Chd.ch_state()) {
+                int p1ExpectedAdditionalFc = outerTimerRdfId - secondLandingRdfId;
+                const Skill* skill = nullptr;
+                const BulletConfig* bulletConfig = nullptr;
+                uint32_t p1ChdDiverSkillId = p1Chd.active_skill_id();
+                int p1ChdDiverHit = 1; // Magic constant here for simplicity
+                BaseBattle::FindBulletConfig(p1ChdDiverSkillId, p1ChdDiverHit, skill, bulletConfig);
+                JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
+                int p1ExpectedFramesToRecover = skill->recovery_frames() - (bulletConfig->startup_frames() + bulletConfig->active_frames()) - p1ExpectedAdditionalFc;
+                JPH_ASSERT(bulletConfig->startup_frames() + bulletConfig->active_frames() + p1ExpectedAdditionalFc == p1Chd.frames_in_ch_state());
+                JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
+                ++diverImpactCooldownRdfCnt;
+            } else {
+                JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+                JPH_ASSERT(globalPrimitiveConsts->no_skill() == p1Chd.active_skill_id());
+                JPH_ASSERT(globalPrimitiveConsts->no_skill_hit() == p1Chd.active_skill_hit());
+                cooledDownAndTransited = true;
+            }
+        }
+
+        oldGroundUd = p1Chd.ground_ud();
+        oldChState = p1Chd.ch_state();
+
+        outerTimerRdfId++;
+    }
+
+    JPH_ASSERT(0 < airJumpRdfId);
+    JPH_ASSERT(0 < diverImpactUseRdfId);
+    JPH_ASSERT(airJumpRdfId < diverImpactUseRdfId);
+    JPH_ASSERT(0 < diverImpactCooldownRdfCnt);
+    JPH_ASSERT(cooledDownAndTransited);
+    JPH_ASSERT(0 != firstLandingRdfId);
+    JPH_ASSERT(0 != secondLandingRdfId);
+    JPH_ASSERT(diverImpactUseRdfId < secondLandingRdfId);
+
+    std::cout << "Passed TestCase42: BladeGirl skill - GroundImpact\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();   
+
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -10712,6 +11039,7 @@ int main(int argc, char** argv)
     runTestCase39(battle, stairsMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase40(battle, slopeMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase41(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase42(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "startRdf" will be automatically deallocated by the destructor of "wsReq"

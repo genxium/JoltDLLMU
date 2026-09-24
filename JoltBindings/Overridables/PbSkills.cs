@@ -391,6 +391,12 @@ namespace JoltCSharp {
                 .SetMeleeHitSelfStunFrames(PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES)
                 .SetSelfLockVel(primitiveConsts.NoLockVel, primitiveConsts.NoLockVel, primitiveConsts.NoLockVel);
 
+            BulletConfig BladeGirlGroundSlash1Hit1 = new BulletConfig(BasicBladeHit1)
+                    .SetRemainsUponHit(false)
+                    .SetMeleeHitSelfStunFrames(10)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternB, false, false, false, false, false), BladeGirlGroundSlash2Id)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId);
+
              Skill BladeGirlGroundSlash1 = new Skill {
                 Id = BladeGirlGroundSlash1Id,
                    RecoveryFrames = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
@@ -398,13 +404,7 @@ namespace JoltCSharp {
                    RecoveryFramesOnHit = BasicBladeHit1.StartupFrames+BasicBladeHit1.ActiveFrames+BasicBladeHit1.CooldownFrames,
                    InvocationType = SkillInvocation.RisingEdge,
                    BoundChState = CharacterState.Atk1
-            }.AddHit(
-                    new BulletConfig(BasicBladeHit1)
-                    .SetRemainsUponHit(false)
-                    .SetMeleeHitSelfStunFrames(10)
-                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternB, false, false, false, false, false), BladeGirlGroundSlash2Id)
-                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId)
-                    );
+            }.AddHit(BladeGirlGroundSlash1Hit1);
 
              Skill BladeGirlGroundSlash2 = new Skill {
                 Id = BladeGirlGroundSlash2Id,
@@ -512,6 +512,69 @@ namespace JoltCSharp {
             }.AddHit(
                     new BulletConfig(BasicAirDashingHit1)
                     );
+
+            BulletConfig BladeGirlDragonPunchHit1 = new BulletConfig(BladeGirlGroundSlash1Hit1)
+                .SetBlowUp(true)
+                .SetStartupFrames(5)
+                .SetActiveFrames(21)
+                .SetCooldownFrames(20)
+                .SetCancellableFrames(0, 0)
+                .SetHitboxOffsets(13f, 28f)
+                .SetDelaySelfVelToActive(true)
+                .SetHitboxHalfSizes(8f, 24f)
+                .SetRemainsUponHit(true)
+                .SetPushbacks(3.0f * BATTLE_DYNAMICS_FPS, 4.0f * BATTLE_DYNAMICS_FPS)
+                .SetSelfLockVel(1.8f * BATTLE_DYNAMICS_FPS, 6.0f * BATTLE_DYNAMICS_FPS, primitiveConsts.NoLockVel);
+
+            Skill BladeGirlDragonPunch = new Skill {
+                Id = BladeGirlDragonPunchId,
+                   RecoveryFrames = BladeGirlDragonPunchHit1.StartupFrames + BladeGirlDragonPunchHit1.ActiveFrames + BladeGirlDragonPunchHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = BladeGirlDragonPunchHit1.StartupFrames + BladeGirlDragonPunchHit1.ActiveFrames + BladeGirlDragonPunchHit1.CooldownFrames,
+                   RecoveryFramesOnHit = BladeGirlDragonPunchHit1.StartupFrames + BladeGirlDragonPunchHit1.ActiveFrames + BladeGirlDragonPunchHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk6
+            }.AddHit(BladeGirlDragonPunchHit1);
+
+            BulletConfig BladeGirlDiverImpactHit1 = new BulletConfig {
+                StartupFrames = 5,
+                              StartupInvinsibleFrames = 3,
+                              ActiveFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+                              HitStunFrames = 18,
+                              BlockStunFrames = 8,
+                              CooldownFrames = 16,
+                              Damage = 0,
+                              GroundImpactMeleeCollision = true,
+                              PushbackVelX = 0,
+                              PushbackVelY = -0.5f*BATTLE_DYNAMICS_FPS,
+                              SelfLockVelX = 0,
+                              SelfLockVelY = -0.5f*BATTLE_DYNAMICS_FPS,
+                              SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
+                              HitboxOffsetX = 11f,
+                              HitboxOffsetY = 17f,
+                              HitboxHalfSizeX = 2f,
+                              HitboxHalfSizeY = 2f,
+                              CancellableStFrame = 0,
+                              CancellableEdFrame = 0,
+                              HitAnimRdfCnt = 45,
+                              VanishingAnimRdfCnt = 25,
+                              BType = BulletType.Melee,
+                              Hardness = 5,
+                              GuardBreakerExtraHitCnt = 2,
+                              CharacterEmitSfxName = "SlashEmitSpd1",
+                              HitSfxName="Melee_Hit2",
+                              RemainsUponHit = false,
+                              CollisionTypeMask = 0, // TODO
+                              MhType = MultiHitType.FromPrevHitAnyway,
+            }; 
+
+            Skill BladeGirlDiverImpact = new Skill {
+                Id = BladeGirlDiverImpactId,
+                   RecoveryFrames = BladeGirlDiverImpactHit1.StartupFrames + BladeGirlDiverImpactHit1.ActiveFrames + BladeGirlDiverImpactHit1.CooldownFrames,
+                   RecoveryFramesOnBlock = BladeGirlDiverImpactHit1.StartupFrames + BladeGirlDiverImpactHit1.ActiveFrames + BladeGirlDiverImpactHit1.CooldownFrames,
+                   RecoveryFramesOnHit = BladeGirlDiverImpactHit1.StartupFrames + BladeGirlDiverImpactHit1.ActiveFrames + BladeGirlDiverImpactHit1.CooldownFrames,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk7
+            }.AddHit(BladeGirlDiverImpactHit1);
 
              Skill BountyhunterSliding = new Skill {
                 Id = HunterSlidingId,
@@ -847,6 +910,9 @@ namespace JoltCSharp {
                 { BladeGirlCrouchSlashId, BladeGirlCrouchSlash1 },
                 { BladeGirlSlidingId, BladeGirlSliding },
                 { BladeGirlAirDashingId, BladeGirlAirDashing },
+                { BladeGirlDragonPunchId, BladeGirlDragonPunch },
+                { BladeGirlDiverImpactId, BladeGirlDiverImpact },
+
                 { HunterPistolAirId, HunterPistolAir },
                 { HunterPistolId, HunterPistol },
                 { HunterPistolWallId, HunterPistolWall },

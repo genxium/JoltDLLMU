@@ -6,12 +6,15 @@ using jtshared;
 using SuperTiled2Unity;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
-using UnityEngine.AddressableAssets;
 
 public abstract class AbstractJoltMapController : MonoBehaviour {
     public static Quaternion cTurnbackAroundYAxis = new Quaternion(0, 1, 0, 0);
@@ -91,6 +94,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
     protected Dictionary<int, BattleResult> unconfirmedBattleResult;
     protected Dictionary<ulong, TriggerConfigFromTiled> triggerUdToConfigFromTiled;
+    protected Dictionary<ulong, TrapConfigFromTiled> trapUdToConfigFromTiled;
     protected Dictionary<ulong, int> characterUdToColorSwapRuleLock;
     protected Dictionary<uint, int> playerSpeciesIdOccurrenceCnt;
 
@@ -265,6 +269,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected virtual void preallocateFrontendOnlyHolders(int specifiedLayer = -1) {
         //---------------------------------------------FRONTEND USE ONLY SEPERARTION---------------------------------------------
         triggerUdToConfigFromTiled = new Dictionary<ulong, TriggerConfigFromTiled>();
+        trapUdToConfigFromTiled = new Dictionary<ulong, TrapConfigFromTiled>();
         characterUdToColorSwapRuleLock = new Dictionary<ulong, int>();
         playerSpeciesIdOccurrenceCnt = new Dictionary<uint, int>();
 
@@ -392,8 +397,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
-    public GameObject loadTrapPrefab(TrapConfig trapConfig) {
-        string path = $"JoltTpPrefabs/{trapConfig.Name}";
+    public GameObject loadTrapPrefab(TrapConfigFromTiled trapConfigFromTiled) {
+        var effName = trapConfigFromTiled.Name;
+        if (String.IsNullOrEmpty(effName)) {
+            var trapConfig = PbTrapsOverride.Instance.getUnderlying()[trapConfigFromTiled.Tpt];
+            effName = trapConfig.Name;
+        }
+        string path = $"JoltTpPrefabs/{effName}";
         return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
@@ -425,6 +435,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         enableBattleInput(false);
         if (null != triggerUdToConfigFromTiled) {
             triggerUdToConfigFromTiled.Clear();
+        }
+        if (null != trapUdToConfigFromTiled) {
+            trapUdToConfigFromTiled.Clear();
         }
         if (UIntPtr.Zero != battle) {
             APP_ClearBattle(battle);
@@ -460,7 +473,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected WsReq createSelfParsedStartRdf(uint[] speciesIdList) {
         Debug.Log($"createSelfParsedStartRdf with speciesIdList={ArrToString(speciesIdList)} for selfJoinIndex={selfJoinIndex}");
         triggerUdToConfigFromTiled.Clear();
-
+        trapUdToConfigFromTiled.Clear();
         var grid = underlyingMap.GetComponentInChildren<Grid>();
         uint pickableIdCounter = 1;
         uint npcIdCounter = 1;
@@ -761,163 +774,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     foreach (Transform trapChild in child) {
                         var tileObj = trapChild.GetComponent<SuperObject>();
                         var tileProps = trapChild.GetComponent<SuperCustomProperties>();
-                        
-                        CustomProperty id, tpt, initVelX, initVelY, initVelZ, initAngVelX, initAngVelY, initAngVelZ, prohibitsWallGrabbing, subscribesToTriggerId, cooldownRdfCount, sliderAxisX, sliderAxisY, sliderAxisZ, limit1, limit2, limit3, limit4;
-                    
-                        tileProps.TryGetCustomProperty("id", out id);
-                        tileProps.TryGetCustomProperty("tpt", out tpt);
-                        tileProps.TryGetCustomProperty("initVelX", out initVelX);
-                        tileProps.TryGetCustomProperty("initVelY", out initVelY);
-                        tileProps.TryGetCustomProperty("initVelZ", out initVelZ);
-
-                        tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
-                        tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
-                        tileProps.TryGetCustomProperty("initAngVelZ", out initAngVelZ);
-
-                        tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
-                        tileProps.TryGetCustomProperty("subscribesToTriggerId", out subscribesToTriggerId);
-                        tileProps.TryGetCustomProperty("cooldownRdfCount", out cooldownRdfCount);
-                        tileProps.TryGetCustomProperty("sliderAxisX", out sliderAxisX);
-                        tileProps.TryGetCustomProperty("sliderAxisY", out sliderAxisY);
-                        tileProps.TryGetCustomProperty("sliderAxisZ", out sliderAxisZ);
-                        tileProps.TryGetCustomProperty("limit1", out limit1);
-                        tileProps.TryGetCustomProperty("limit2", out limit2);
-                        tileProps.TryGetCustomProperty("limit3", out limit3);
-                        tileProps.TryGetCustomProperty("limit4", out limit4);
-
-                        if (null == id || id.IsEmpty) {
-                            throw new ArgumentNullException("Property id MUST be set for child in TrapStartingPos");
-                        }
-
-                        uint trapId = (uint)id.GetValueAsInt();
-
-                        if (null == tpt || tpt.IsEmpty) {
-                            throw new ArgumentNullException($"Property tpt MUST be set for child in TrapStartingPos for trapId={trapId}");
-                        }
-
-                        uint tptVal = (uint)tpt.GetValueAsInt(); // Not checking null or empty for this property because it shouldn't be, and in case it comes empty anyway, this automatically throws an error 
-                        float initVelXVal = (null != initVelX && !initVelX.IsEmpty ? initVelX.GetValueAsFloat() : 0);
-                        float initVelYVal = (null != initVelY && !initVelY.IsEmpty ? initVelY.GetValueAsFloat() : 0);
-                        float initVelZVal = (null != initVelZ && !initVelY.IsEmpty ? initVelZ.GetValueAsFloat() : 0);
-
-                        int cooldownRdfCountVal = (null != cooldownRdfCount && !cooldownRdfCount.IsEmpty ? cooldownRdfCount.GetValueAsInt() : 0);
-                        
-                        float initAngVelXVal = (null != initAngVelX && !initAngVelX.IsEmpty ? initAngVelX.GetValueAsFloat() : 0);
-                        float initAngVelYVal = (null != initAngVelY && !initAngVelY.IsEmpty ? initAngVelY.GetValueAsFloat() : 0);
-                        float initAngVelZVal = (null != initAngVelZ && !initAngVelZ.IsEmpty ? initAngVelZ.GetValueAsFloat() : 0);
-
-                        float sliderAxisXVal = (null != sliderAxisX && !sliderAxisX.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
-                        float sliderAxisYVal = (null != sliderAxisY && !sliderAxisY.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
-                        float sliderAxisZVal = (null != sliderAxisZ && !sliderAxisZ.IsEmpty ? sliderAxisZ.GetValueAsFloat() : 0);
-                        
-                        float limit1Val = (null != limit1 && !limit1.IsEmpty ? limit1.GetValueAsFloat() : 0);
-                        float limit2Val = (null != limit2 && !limit2.IsEmpty ? limit2.GetValueAsFloat() : 0);
-                        float limit3Val = (null != limit3 && !limit3.IsEmpty ? limit3.GetValueAsFloat() : 0);
-                        float limit4Val = (null != limit4 && !limit4.IsEmpty ? limit4.GetValueAsFloat() : 0);
-
-                        bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
-
-                        bool xFlipped = isXFlipped(tileObj.m_TileId); 
-                        uint subscribesToTriggerIdVal = (null == subscribesToTriggerId || subscribesToTriggerId.IsEmpty ? primitives.TerminatingTriggerId : (uint)subscribesToTriggerId.GetValueAsInt());
-
-                        bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
-                        var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
-
-                        TrapConfig tpConfig = PbTrapsOverride.Instance.getUnderlying()[tptVal];
-                        int effCooldownRdfCount = (0 >= cooldownRdfCountVal ? tpConfig.DefaultCooldownRdfCount : cooldownRdfCountVal);
-
-                        var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
-                        TrapConfigFromTiled trapConfigFromTiled = new TrapConfigFromTiled {
-                            Id = trapId,
-                            Tpt = tptVal,
-                            InitX = rectCx,
-                            InitY = rectCy,
-                            InitZ = 0,
-                            InitVelX = initVelXVal,
-                            InitVelY = initVelYVal,
-                            InitVelZ = initVelZVal,
-
-                            InitAngVelX = initAngVelXVal,
-                            InitAngVelY = initAngVelYVal,
-                            InitAngVelZ = initAngVelZVal,
-
-                            SliderAxisX = sliderAxisXVal,
-                            SliderAxisY = sliderAxisYVal,
-                            SliderAxisZ = sliderAxisZVal,
-                            BoxHalfSizeX = .5f*tileObj.m_Width,
-                            BoxHalfSizeY = .5f*tileObj.m_Height,
-
-                            SubscribesToTriggerId = subscribesToTriggerIdVal,
-                            CooldownRdfCount = effCooldownRdfCount,
-                        };
-
-                        if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal) {
-                            if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
-                                Assert.IsTrue(limit1Val <= limit2Val);
-                                trapConfigFromTiled.Limit1 = limit1Val;
-                                trapConfigFromTiled.Limit2 = limit2Val;
-                            }
-                            if (null != limit3 && !limit3.IsEmpty) {
-                                trapConfigFromTiled.Limit3 = limit3Val;
-                            }
-                            if (null != limit4 && !limit4.IsEmpty) {
-                                trapConfigFromTiled.Limit4 = limit4Val;
-                            }
-                        } else if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.RotatingPlatform == tptVal) {
-                            Vector3 initAngVel = new Vector3(initAngVelXVal, initAngVelYVal, initAngVelZVal);
-                            Vector3 rotationAxis = initAngVel.normalized;
-                            trapConfigFromTiled.SliderAxisX = rotationAxis.x;
-                            trapConfigFromTiled.SliderAxisY = rotationAxis.y;
-                            trapConfigFromTiled.SliderAxisZ = rotationAxis.z;
-                            if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
-                                Assert.IsTrue(limit1Val <= limit2Val);
-
-                                float radianLimit1 = Mathf.Deg2Rad * (limit1Val);
-                                float radianLimit2 = Mathf.Deg2Rad * (limit2Val);
-                                
-                                float initAngSpeed = initAngVel.magnitude;
-
-                                float cooldownRadians = initAngSpeed * effCooldownRdfCount / PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
-                                if (radianLimit1 + cooldownRadians > radianLimit2) {
-                                    Assert.IsTrue(radianLimit1 + cooldownRadians <= radianLimit2);
-                                }
-
-                                trapConfigFromTiled.Limit1 = limit1Val;
-                                trapConfigFromTiled.Limit2 = limit2Val;
-                            }
-                        }
-
-                        Trap trap = new Trap {
-                                Id = trapId,
-                                Tpt = tptVal,
-                                X = rectCx,
-                                Y = rectCy,
-                                Z = 0,
-                            };
-
-                        if (!xFlipped) {
-                            trap.QX = 0;
-                            trap.QY = 0;
-                            trap.QZ = 0;
-                            trap.QW = 1;
-                            trapConfigFromTiled.InitQX = 0;
-                            trapConfigFromTiled.InitQY = 0;
-                            trapConfigFromTiled.InitQZ = 0;
-                            trapConfigFromTiled.InitQW = 1;
-                        } else {
-                            trap.QX = 0;
-                            trap.QY = 1;
-                            trap.QZ = 0;
-                            trap.QW = 0;
-                            trapConfigFromTiled.InitQX = 0;
-                            trapConfigFromTiled.InitQY = 1;
-                            trapConfigFromTiled.InitQZ = 0;
-                            trapConfigFromTiled.InitQW = 0;
-                        }
+                        var (trap, configFromTiled) = parseTrap(tileObj, tileProps);
                         startRdf.DynamicTraps.Add(trap);
-                        result.TrapConfigFromTileList.Add(trapConfigFromTiled);
+                        result.TrapConfigFromTileList.Add(configFromTiled);
+                        var ud = APP_CalcTrapUserData(trap.Id);
+                        trapUdToConfigFromTiled[ud] = configFromTiled;
                         dynamicTrapCount++;
-                        Destroy(trapChild.gameObject);
                     }
                     Destroy(child.gameObject); // Delete the whole "ObjectLayer"
                     break;
@@ -951,6 +813,169 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         result.SelfParsedRdf = startRdf;
         
         return result;
+    }
+
+    protected virtual (Trap, TrapConfigFromTiled) parseTrap(SuperObject tileObj, SuperCustomProperties tileProps) {
+        CustomProperty id, tpt, initVelX, initVelY, initVelZ, initAngVelX, initAngVelY, initAngVelZ, prohibitsWallGrabbing, subscribesToTriggerId, cooldownRdfCount, sliderAxisX, sliderAxisY, sliderAxisZ, limit1, limit2, limit3, limit4;
+
+        CustomProperty name;
+
+        tileProps.TryGetCustomProperty("id", out id);
+        tileProps.TryGetCustomProperty("tpt", out tpt);
+        tileProps.TryGetCustomProperty("initVelX", out initVelX);
+        tileProps.TryGetCustomProperty("initVelY", out initVelY);
+        tileProps.TryGetCustomProperty("initVelZ", out initVelZ);
+        tileProps.TryGetCustomProperty("name", out name);
+
+        tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
+        tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
+        tileProps.TryGetCustomProperty("initAngVelZ", out initAngVelZ);
+
+        tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
+        tileProps.TryGetCustomProperty("subscribesToTriggerId", out subscribesToTriggerId);
+        tileProps.TryGetCustomProperty("cooldownRdfCount", out cooldownRdfCount);
+        tileProps.TryGetCustomProperty("sliderAxisX", out sliderAxisX);
+        tileProps.TryGetCustomProperty("sliderAxisY", out sliderAxisY);
+        tileProps.TryGetCustomProperty("sliderAxisZ", out sliderAxisZ);
+        tileProps.TryGetCustomProperty("limit1", out limit1);
+        tileProps.TryGetCustomProperty("limit2", out limit2);
+        tileProps.TryGetCustomProperty("limit3", out limit3);
+        tileProps.TryGetCustomProperty("limit4", out limit4);
+
+        if (null == id || id.IsEmpty) {
+            throw new ArgumentNullException("Property id MUST be set for child in TrapStartingPos");
+        }
+
+        uint trapId = (uint)id.GetValueAsInt();
+
+        if (null == tpt || tpt.IsEmpty) {
+            throw new ArgumentNullException($"Property tpt MUST be set for child in TrapStartingPos for trapId={trapId}");
+        }
+
+        uint tptVal = (uint)tpt.GetValueAsInt(); // Not checking null or empty for this property because it shouldn't be, and in case it comes empty anyway, this automatically throws an error 
+        float initVelXVal = (null != initVelX && !initVelX.IsEmpty ? initVelX.GetValueAsFloat() : 0);
+        float initVelYVal = (null != initVelY && !initVelY.IsEmpty ? initVelY.GetValueAsFloat() : 0);
+        float initVelZVal = (null != initVelZ && !initVelY.IsEmpty ? initVelZ.GetValueAsFloat() : 0);
+
+        int cooldownRdfCountVal = (null != cooldownRdfCount && !cooldownRdfCount.IsEmpty ? cooldownRdfCount.GetValueAsInt() : 0);
+
+        float initAngVelXVal = (null != initAngVelX && !initAngVelX.IsEmpty ? initAngVelX.GetValueAsFloat() : 0);
+        float initAngVelYVal = (null != initAngVelY && !initAngVelY.IsEmpty ? initAngVelY.GetValueAsFloat() : 0);
+        float initAngVelZVal = (null != initAngVelZ && !initAngVelZ.IsEmpty ? initAngVelZ.GetValueAsFloat() : 0);
+
+        float sliderAxisXVal = (null != sliderAxisX && !sliderAxisX.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
+        float sliderAxisYVal = (null != sliderAxisY && !sliderAxisY.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
+        float sliderAxisZVal = (null != sliderAxisZ && !sliderAxisZ.IsEmpty ? sliderAxisZ.GetValueAsFloat() : 0);
+
+        float limit1Val = (null != limit1 && !limit1.IsEmpty ? limit1.GetValueAsFloat() : 0);
+        float limit2Val = (null != limit2 && !limit2.IsEmpty ? limit2.GetValueAsFloat() : 0);
+        float limit3Val = (null != limit3 && !limit3.IsEmpty ? limit3.GetValueAsFloat() : 0);
+        float limit4Val = (null != limit4 && !limit4.IsEmpty ? limit4.GetValueAsFloat() : 0);
+
+        bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
+
+        bool xFlipped = isXFlipped(tileObj.m_TileId);
+        uint subscribesToTriggerIdVal = (null == subscribesToTriggerId || subscribesToTriggerId.IsEmpty ? primitives.TerminatingTriggerId : (uint)subscribesToTriggerId.GetValueAsInt());
+
+        bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
+        var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
+
+        TrapConfig tpConfig = PbTrapsOverride.Instance.getUnderlying()[tptVal];
+        int effCooldownRdfCount = (0 >= cooldownRdfCountVal ? tpConfig.DefaultCooldownRdfCount : cooldownRdfCountVal);
+
+        var nameVal = (null != name && !name.IsEmpty) ? name.GetValueAsString() : tpConfig.Name;
+
+        var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+        TrapConfigFromTiled trapConfigFromTiled = new TrapConfigFromTiled {
+            Id = trapId,
+            Tpt = tptVal,
+            InitX = rectCx,
+            InitY = rectCy,
+            InitZ = 0,
+            InitVelX = initVelXVal,
+            InitVelY = initVelYVal,
+            InitVelZ = initVelZVal,
+
+            InitAngVelX = initAngVelXVal,
+            InitAngVelY = initAngVelYVal,
+            InitAngVelZ = initAngVelZVal,
+
+            SliderAxisX = sliderAxisXVal,
+            SliderAxisY = sliderAxisYVal,
+            SliderAxisZ = sliderAxisZVal,
+            BoxHalfSizeX = .5f * tileObj.m_Width,
+            BoxHalfSizeY = .5f * tileObj.m_Height,
+
+            SubscribesToTriggerId = subscribesToTriggerIdVal,
+            CooldownRdfCount = effCooldownRdfCount,
+
+            Name = nameVal,
+        };
+
+        if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal) {
+            if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
+                Assert.IsTrue(limit1Val <= limit2Val);
+                trapConfigFromTiled.Limit1 = limit1Val;
+                trapConfigFromTiled.Limit2 = limit2Val;
+            }
+            if (null != limit3 && !limit3.IsEmpty) {
+                trapConfigFromTiled.Limit3 = limit3Val;
+            }
+            if (null != limit4 && !limit4.IsEmpty) {
+                trapConfigFromTiled.Limit4 = limit4Val;
+            }
+        } else if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.RotatingPlatform == tptVal) {
+            Vector3 initAngVel = new Vector3(initAngVelXVal, initAngVelYVal, initAngVelZVal);
+            Vector3 rotationAxis = initAngVel.normalized;
+            trapConfigFromTiled.SliderAxisX = rotationAxis.x;
+            trapConfigFromTiled.SliderAxisY = rotationAxis.y;
+            trapConfigFromTiled.SliderAxisZ = rotationAxis.z;
+            if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
+                Assert.IsTrue(limit1Val <= limit2Val);
+
+                float radianLimit1 = Mathf.Deg2Rad * (limit1Val);
+                float radianLimit2 = Mathf.Deg2Rad * (limit2Val);
+
+                float initAngSpeed = initAngVel.magnitude;
+
+                float cooldownRadians = initAngSpeed * effCooldownRdfCount / PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+                if (radianLimit1 + cooldownRadians > radianLimit2) {
+                    Assert.IsTrue(radianLimit1 + cooldownRadians <= radianLimit2);
+                }
+
+                trapConfigFromTiled.Limit1 = limit1Val;
+                trapConfigFromTiled.Limit2 = limit2Val;
+            }
+        }
+
+        Trap trap = new Trap {
+            Id = trapId,
+            Tpt = tptVal,
+            X = rectCx,
+            Y = rectCy,
+            Z = 0,
+        };
+
+        if (!xFlipped) {
+            trap.QX = 0;
+            trap.QY = 0;
+            trap.QZ = 0;
+            trap.QW = 1;
+            trapConfigFromTiled.InitQX = 0;
+            trapConfigFromTiled.InitQY = 0;
+            trapConfigFromTiled.InitQZ = 0;
+            trapConfigFromTiled.InitQW = 1;
+        } else {
+            trap.QX = 0;
+            trap.QY = 1;
+            trap.QZ = 0;
+            trap.QW = 0;
+            trapConfigFromTiled.InitQX = 0;
+            trapConfigFromTiled.InitQY = 1;
+            trapConfigFromTiled.InitQZ = 0;
+            trapConfigFromTiled.InitQW = 0;
+        }
+        return (trap, trapConfigFromTiled);
     }
 
     protected virtual (Trigger, TriggerConfigFromTiled) parseTrigger(SuperObject tileObj, SuperCustomProperties tileProps) {
@@ -1456,9 +1481,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var tp = rdf.DynamicTraps[k];
             if (PbPrimitivesOverride.Instance.getUnderlying().TerminatingTrapId == tp.Id) break;
             ulong trapUd = Bindings.APP_CalcTrapUserData(tp.Id);
-            var tpConfig = PbTrapsOverride.Instance.getUnderlying()[tp.Tpt];
-
-            var (tpAnimCtrl, oldUd) = trapAnimPool.GetOrCreateAnimNode(trapUd, tp.Tpt, tpConfig, underlyingMap.transform);
+            var tpConfigFromTiled = trapUdToConfigFromTiled[trapUd];
+            var (tpAnimCtrl, oldUd) = trapAnimPool.GetOrCreateAnimNode(trapUd, tp.Tpt, tpConfigFromTiled, underlyingMap.transform);
 
             var (wx, wy) = CollisionSpacePositionToWorldPosition(tp.X, tp.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
@@ -1466,7 +1490,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             tpAnimCtrl.gameObject.transform.position = newPosHolder;
 
-            tpAnimCtrl.updateAnim(rdfId, trapUd, tp, tp.TrapState, tpConfig, tp.FramesInTrapState);
+            tpAnimCtrl.updateAnim(rdfId, trapUd, tp, tp.TrapState, tpConfigFromTiled, tp.FramesInTrapState);
         }
 
         for (int k = 0; k < rdf.TriggerCount; k++) {

@@ -5211,7 +5211,9 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     }
 
-    if (!cvInAir && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
+    const bool fallStopping = (0 != nextChd->ground_ud() && 0 == currChd.ground_ud());
+    const bool wallStopping = (0 != nextChd->wall_ud() && 0 == currChd.wall_ud());
+    if (fallStopping && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
         // [WARNING] The "bulletCollider" for "activeBulletConfig" in this case might've been annihilated, we should end this bullet regardless of landing on character or hardPushback.
         int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames()); // correct even for "DemonDiverImpactPreJumpBullet -> DemonDiverImpactStarterBullet" sequence
         auto shiftedRdfCnt = (activeBulletConfig->active_frames() - origFramesInActiveState);
@@ -5224,9 +5226,8 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
         }
         // [WARNING] Leave velocity handling to other code snippets.
-    } else if (cvOnWall && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->wall_impact_melee_collision()) {
-        // [WARNING] The "bulletCollider" for "activeBulletConfig" in this case might've been annihilated, we should end this bullet regardless of landing on character or hardPushback.
-        int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames()); // correct even for "DemonDiverImpactPreJumpBullet -> DemonDiverImpactStarterBullet" sequence
+    } else if (wallStopping && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->wall_impact_melee_collision()) {
+        int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames());
         int shiftedRdfCnt = (activeBulletConfig->active_frames() - origFramesInActiveState);
         if (0 < shiftedRdfCnt) {
             nextChd->set_frames_in_ch_state(nextChd->frames_in_ch_state() + shiftedRdfCnt);
@@ -5238,9 +5239,10 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
         // [WARNING] Leave velocity handling to other code snippets.
     } else if (nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && (MultiHitType::FromEmission == activeBulletConfig->mh_type() || MultiHitType::FromEmissionJustActive == activeBulletConfig->mh_type()) && currChd.frames_in_ch_state() > activeBulletConfig->startup_frames() + activeBulletConfig->active_frames() + activeBulletConfig->finishing_frames()) {
-        int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames()); // correct even for "DemonDiverImpactPreJumpBullet -> DemonDiverImpactStarterBullet" sequence
+        int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames());
         auto shiftedRdfCnt = (activeBulletConfig->active_frames() - origFramesInActiveState);
         if (0 < shiftedRdfCnt) {
+            // This block is executed ONCE ONLY per finishing. 
             nextChd->set_frames_in_ch_state(nextChd->frames_in_ch_state() + shiftedRdfCnt);
             nextChd->set_frames_to_recover(nextChd->frames_to_recover() - shiftedRdfCnt);
         }
@@ -5250,8 +5252,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     }
 
-    if (cvSupported && currEffInAir && !inJumpStartupOrJustEnded) {
-        // fall stopping
+    if (fallStopping && !inJumpStartupOrJustEnded) {
 /*
 #ifndef NDEBUG
         std::ostringstream oss;
@@ -5274,19 +5275,9 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             effInertiaRdfCountdown = 8;
         }
         nextChd->set_fallstopping_rdf_countdown(effInertiaRdfCountdown);
-
-        /* 
-           [TODO] If "activeSkill & activeBulletConfig" implies a "GroundImpact", transit to cooldown phase animation.
-        */
     } else if (onWallSet.count(nextChd->ch_state()) && !onWallSet.count(currChd.ch_state())) {
         nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
         nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
-    }
-
-    if (0 != nextChd->wall_ud() && 0 == currChd.wall_ud()) {
-        /* 
-           [TODO] If "activeSkill & activeBulletConfig" implies a "GroundImpact", transit to cooldown phase animation.
-        */
     }
 
     if (cc->anti_gravity_when_idle() && currIsFlying && InAirIdle1NoJump == nextChd->ch_state() && 0 != nextChd->vel_x()) {

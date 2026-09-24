@@ -220,6 +220,11 @@ namespace jtshared {
             MeleeHitSelfStunFrames = val;
             return this;
         }
+
+        public BulletConfig SetDelaySelfVelToActive(bool val) {
+            DelaySelfVelToActive = val;
+            return this;
+        }
     }
 
     public sealed partial class Skill {
