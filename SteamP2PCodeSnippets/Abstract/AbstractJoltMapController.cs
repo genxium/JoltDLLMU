@@ -6,13 +6,10 @@ using jtshared;
 using SuperTiled2Unity;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 using static FrontendOnlyGeometry;
 using static JoltCSharp.Bindings;
 

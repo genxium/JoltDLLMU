@@ -7045,6 +7045,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         }
     }
 
+    nextChd->set_ground_ud(newGroundUd); // For "GroundImpact" transition regardless of "cvSupported" being true or false.
+
     if (cvSupported) {
         const TransformedShape& newGroundTs = biNoLock->GetTransformedShape(newGroundBodyID);
         const AABox& newGroundAABB = newGroundTs.GetWorldSpaceBounds();
@@ -7134,7 +7136,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_ground_norm_x(newGroundNormal.GetX());
         nextChd->set_ground_norm_y(newGroundNormal.GetY());
         nextChd->set_ground_norm_z(newGroundNormal.GetZ());
-        nextChd->set_ground_ud(newGroundUd);
 
         if (BlownUp1 == currChd.ch_state()) {
             nextChd->set_ch_state(LayDown1);
@@ -7156,14 +7157,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 nextChd->set_frames_invinsible(cc->get_up_invinsible_frames());
             }
         }
-    } else if (groundBodyIsChCollider) {
-        nextChd->set_ground_vel_x(0);
-        nextChd->set_ground_vel_y(0);
-        nextChd->set_ground_vel_z(0);
-        nextChd->set_ground_norm_x(0);
-        nextChd->set_ground_norm_y(0);
-        nextChd->set_ground_norm_z(0);
-        nextChd->set_ground_ud(newGroundUd);
     } else {
         nextChd->set_ground_vel_x(0);
         nextChd->set_ground_vel_y(0);
@@ -7171,7 +7164,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_ground_norm_x(0);
         nextChd->set_ground_norm_y(0);
         nextChd->set_ground_norm_z(0);
-        nextChd->set_ground_ud(0);
     }
 
     cvInAir = (!cvSupported || cvOnWall);

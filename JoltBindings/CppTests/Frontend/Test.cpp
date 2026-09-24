@@ -3787,27 +3787,23 @@ std::map<int, uint64_t> testCmds42 = {
     {160, 34}, // PatternDownB
     {161, 0},
     {200, 0},
-    {203, 0},
-    {204, 0},
-    {229, 0},
-    {230, 0},
-    {231, 0},
-    {259, 0},
-    {260, 0},
-    {264, 0},
-    {268, 0},
-    {299, 0},
-    {300, 0},
-    {339, 0},
-    {340, 0},
-    {379, 0},
-    {380, 0},
-    {399, 0},
-    {400, 0},
-    {419, 0},
-    {420, 0},
-    {423, 0},
-    {424, 0},
+    {209, 0},
+    {210, 3},
+    {229, 3},
+    {230, 19},
+    {231, 3},
+    {243, 3},
+    {244, 16},
+    {245, 0},
+    {255, 0},
+    {256, 34},
+    {261, 0},
+    {289, 0},
+    {290, 0},
+    {291, 0},
+    {309, 0},
+    {310, 0},
+    {311, 0},
     {1000, 0},
     {1024, 0},
 };
@@ -10474,7 +10470,9 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int firstLandingRdfId = 0;
     int airJumpRdfId = 0;
     int secondLandingRdfId = 0;
-    int diverImpactUseRdfId = 0;
+    int thirdLandingRdfId = 0;
+    int firstDiverImpactUseRdfId = 0;
+    int secondDiverImpactUseRdfId = 0;
     uint64_t oldGroundUd = 0;
     CharacterState oldChState = CharacterState::InAirIdle1NoJump;
     int diverImpactCooldownRdfCnt = 0;
@@ -10504,27 +10502,35 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
 
         if (0 == firstLandingRdfId) {
-            if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            if (0 == oldGroundUd && 0 != p1Chd.ground_ud()) {
                 firstLandingRdfId = outerTimerRdfId;
             }
         } else if (0 == secondLandingRdfId) {
-            if (0 == oldGroundUd && 1 == p1Chd.ground_ud()) {
+            if (0 == oldGroundUd && 0 != p1Chd.ground_ud()) {
                 secondLandingRdfId = outerTimerRdfId;
             }
-        }
-
-        if (0 == diverImpactUseRdfId) {
-            if (Atk7 != oldChState && Atk7 == p1Chd.ch_state()) {
-                diverImpactUseRdfId = outerTimerRdfId;
+        } else if (0 == thirdLandingRdfId) {
+            if (0 == oldGroundUd && 0 != p1Chd.ground_ud()) {
+                thirdLandingRdfId = outerTimerRdfId;
             }
         }
 
-        if (100 <= outerTimerRdfId && outerTimerRdfId <= 160) {
+        if (0 == firstDiverImpactUseRdfId) {
+            if (Atk7 != oldChState && Atk7 == p1Chd.ch_state()) {
+                firstDiverImpactUseRdfId = outerTimerRdfId;
+            }
+        } else if (0 == secondDiverImpactUseRdfId) {
+            if (Atk7 != oldChState && Atk7 == p1Chd.ch_state()) {
+                secondDiverImpactUseRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (200 <= outerTimerRdfId && outerTimerRdfId <= 300) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase42/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase42/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << "\n\tnpc1Chd hp = " << npc1Chd.hp() << ", cs = " << npc1Chd.ch_state() << ", fc = " << npc1Chd.frames_in_ch_state() << ", q = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ccmd = " << npc1.cached_cue_cmd() << std::endl;
         }
 
         if (0 != firstLandingRdfId) {
@@ -10533,13 +10539,13 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             }
         }
 
-        if (0 != diverImpactUseRdfId) {
-            if (outerTimerRdfId == 1 + diverImpactUseRdfId) {
+        if (0 != firstDiverImpactUseRdfId) {
+            if (outerTimerRdfId == 1 + firstDiverImpactUseRdfId) {
                 JPH_ASSERT(0 == p1Chd.remaining_air_jump_quota());
             }
         }
 
-        if (0 != secondLandingRdfId && outerTimerRdfId >= secondLandingRdfId) {
+        if (0 != secondLandingRdfId && outerTimerRdfId >= secondLandingRdfId && (0 == secondDiverImpactUseRdfId || outerTimerRdfId < secondDiverImpactUseRdfId)) {
             if (outerTimerRdfId == 1 + secondLandingRdfId) {
                 JPH_ASSERT(1 == p1Chd.remaining_air_jump_quota());
             }
@@ -10557,7 +10563,7 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
                 JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
                 ++diverImpactCooldownRdfCnt;
             } else {
-                JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
+                JPH_ASSERT(Idle1 == p1Chd.ch_state() || Walking == p1Chd.ch_state() || InAirIdle1ByJump == p1Chd.ch_state() || InAirIdle2ByJump == p1Chd.ch_state());
                 JPH_ASSERT(globalPrimitiveConsts->no_skill() == p1Chd.active_skill_id());
                 JPH_ASSERT(globalPrimitiveConsts->no_skill_hit() == p1Chd.active_skill_hit());
                 cooledDownAndTransited = true;
@@ -10571,13 +10577,16 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     }
 
     JPH_ASSERT(0 < airJumpRdfId);
-    JPH_ASSERT(0 < diverImpactUseRdfId);
-    JPH_ASSERT(airJumpRdfId < diverImpactUseRdfId);
+    JPH_ASSERT(0 < firstDiverImpactUseRdfId);
+    JPH_ASSERT(airJumpRdfId < firstDiverImpactUseRdfId);
     JPH_ASSERT(0 < diverImpactCooldownRdfCnt);
     JPH_ASSERT(cooledDownAndTransited);
     JPH_ASSERT(0 != firstLandingRdfId);
     JPH_ASSERT(0 != secondLandingRdfId);
-    JPH_ASSERT(diverImpactUseRdfId < secondLandingRdfId);
+    JPH_ASSERT(firstDiverImpactUseRdfId < secondLandingRdfId);
+    JPH_ASSERT(0 != secondDiverImpactUseRdfId);
+    JPH_ASSERT(0 != thirdLandingRdfId);
+    JPH_ASSERT(secondDiverImpactUseRdfId < thirdLandingRdfId);
 
     std::cout << "Passed TestCase42: BladeGirl skill - GroundImpact\n" << std::endl;
     theAllocator->Reset();

@@ -99,6 +99,11 @@ typedef struct PairUint64Hasher {
 } PairUint64Hasher;
 
 const std::unordered_set<std::pair<uint64_t, uint64_t>, PairUint64Hasher> transientCollisionHolderApplicableUdtPairs = {
+    {UDT_PLAYER, UDT_PLAYER},
+    {UDT_NPC,    UDT_NPC},
+    {UDT_PLAYER, UDT_NPC},
+    {UDT_NPC, UDT_PLAYER},
+
     {UDT_PLAYER, UDT_TRIGGER},
     {UDT_NPC,    UDT_TRIGGER},
     {UDT_TRIGGER, UDT_PLAYER},
