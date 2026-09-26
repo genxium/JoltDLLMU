@@ -83,10 +83,10 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     public SteamOnlineMapController() : base() {
         upsyncSnapshotReqBuffer = new byte[pbBufferSizeLimit];
         shadowBattleDownsyncSnapshotBytes = new byte[pbBufferSizeLimit];
-        bindP2PSessionManager();
     }
 
     protected SteamP2PSessionManager p2pSessionManager;
+
     protected virtual void bindP2PSessionManager() {
         p2pSessionManager = SteamP2PSessionManager.Instance;
     }
@@ -485,6 +485,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
     protected override void Start() {
         base.Start();
+        bindP2PSessionManager();
         roomCapacity = 2; // [TODO] Don't hardcode!
         allConfirmedMask = ((1UL << roomCapacity) - 1); 
         playerWaitingPanel.InitPlayerSlots(this, roomCapacity);

@@ -532,21 +532,27 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
             */
 #endif
         } else if (0 != toHandleAllyUd && !selfPositionDiffForAllyUd.IsNaN()) {
-            if (currIsFlying) {
-                if (BaseBattleCollisionFilter::IsLengthNearZero(selfPositionDiffForAllyUd.GetX())) {
-                    toMoveDirX = 0;
+            if (NFollowAlly == outNextNpcGoal) {
+                // [REMINDER] Don't blindly allow ally following.
+                if (currIsFlying) {
+                    if (BaseBattleCollisionFilter::IsLengthNearZero(selfPositionDiffForAllyUd.GetX())) {
+                        toMoveDirX = 0;
+                    } else {
+                        toMoveDirX = 0 < selfPositionDiffForAllyUd.GetX() ? +2 : -2;
+                    }
+                    if (0 == toMoveDirX) {
+                        toMoveDirY = 0 < selfPositionDiffForAllyUd.GetY() ? +2 : -2;
+                    } else {
+                        if (!BaseBattleCollisionFilter::IsLengthNearZero(selfPositionDiffForAllyUd.GetY())) {
+                            toMoveDirY = 0 < selfPositionDiffForAllyUd.GetY() ? +1 : -1;
+                        }
+                    }
                 } else {
                     toMoveDirX = 0 < selfPositionDiffForAllyUd.GetX() ? +2 : -2;
                 }
-                if (0 == toMoveDirX) {
-                    toMoveDirY = 0 < selfPositionDiffForAllyUd.GetY() ? +2 : -2;
-                } else {
-                    if (!BaseBattleCollisionFilter::IsLengthNearZero(selfPositionDiffForAllyUd.GetY())) {
-                        toMoveDirY = 0 < selfPositionDiffForAllyUd.GetY() ? +1 : -1;
-                    }
-                }
             } else {
-                toMoveDirX = 0 < selfPositionDiffForAllyUd.GetX() ? +2 : -2;
+                toMoveDirX = inheritedDirX;
+                toMoveDirY = inheritedDirY;
             }
         } else {
             toMoveDirX = inheritedDirX;

@@ -6965,17 +6965,31 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
                 }
             } else {
-                Vec3 peerPos(newPos);
-                if (0 < contactPointsLhs.size()) {
-                    Vec3 peerPosAdds(0, 0, 0);
-                    int peerAddsCnt = 0;
-                    for (int k = 0; k < contactPointsLhs.size(); ++k) {
-                        peerPosAdds += contactPointsLhs.at(k);
-                        peerAddsCnt += 1;
+                bool shouldSkipGroundOrWallCollection = false;
+                if (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs) {
+                    const CharacterDownsync* rhsCurrChd = immutableCurrChdPtrFromUd(udtRhs, udRhs);
+                    if (nullptr != rhsCurrChd) {
+                        if (currChd.bullet_team_id() == rhsCurrChd->bullet_team_id()) {
+                            shouldSkipGroundOrWallCollection = true;
+                        }
+                        if (invinsibleSet.count(currChd.ch_state()) || invinsibleSet.count(rhsCurrChd->ch_state())) {
+                            shouldSkipGroundOrWallCollection = true;
+                        }
                     }
-                    peerPos += peerPosAdds / peerAddsCnt;
                 }
-                collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, false, false);
+                if (!shouldSkipGroundOrWallCollection) {
+                    Vec3 peerPos(newPos);
+                    if (0 < contactPointsLhs.size()) {
+                        Vec3 peerPosAdds(0, 0, 0);
+                        int peerAddsCnt = 0;
+                        for (int k = 0; k < contactPointsLhs.size(); ++k) {
+                            peerPosAdds += contactPointsLhs.at(k);
+                            peerAddsCnt += 1;
+                        }
+                        peerPos += peerPosAdds / peerAddsCnt;
+                    }
+                    collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, false, false);
+                }
             }
         }
     }

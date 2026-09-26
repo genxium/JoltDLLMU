@@ -1136,12 +1136,6 @@ public:
     }
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const {
-        if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
-            return JPH::ValidateResult::RejectContact;
-        }
-        if (invinsibleSet.count(lhsCurrChd->ch_state()) || invinsibleSet.count(rhsCurrChd->ch_state())) {
-            return JPH::ValidateResult::RejectContact;
-        }
         return JPH::ValidateResult::AcceptContact;
     }
 
@@ -1758,8 +1752,26 @@ public:
             pseudoKinematicFactor1 = 0.f;
             pseudoKinematicFactor2 = 1.f;
         }
+
+        if (
+            (UDT_PLAYER == udt1 || UDT_NPC == udt1)
+            &&
+            (UDT_PLAYER == udt2 || UDT_NPC == udt2)
+        ) {
+            const CharacterDownsync* lhsCurrChd = immutableCurrChdPtrFromUd(udt1, ud1);
+            const CharacterDownsync* rhsCurrChd = immutableCurrChdPtrFromUd(udt2, ud2);
+            if (nullptr != lhsCurrChd && nullptr != rhsCurrChd) {
+                if (lhsCurrChd->bullet_team_id() == rhsCurrChd->bullet_team_id()) {
+                    // [WARNING] Merely setting "ioSettings.mInvMassScale1 = ioSettings.mInvMassScale2 = 0.0f" would NOT ignore `non-penetration constraint` resolving of `ContactManager`.
+                    ioSettings.mIsSensor = true;
+                }
+                if (invinsibleSet.count(lhsCurrChd->ch_state()) || invinsibleSet.count(rhsCurrChd->ch_state())) {
+                    ioSettings.mIsSensor = true;
+                }
+            }
+        }
         
-        if (pseudoKinematicFactor1 != pseudoKinematicFactor2) {
+        if (0.f != pseudoKinematicFactor1 || 0.f != pseudoKinematicFactor2) {
             ioSettings.mInvMassScale1 = max(0.f, 1.f - pseudoKinematicFactor1);
             ioSettings.mInvMassScale2 = max(0.f, 1.f - pseudoKinematicFactor2);
         }
