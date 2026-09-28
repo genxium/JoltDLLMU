@@ -559,6 +559,7 @@ namespace JoltCSharp {
                               VanishingAnimRdfCnt = 25,
                               BType = BulletType.Melee,
                               Hardness = 5,
+                              AnimName = "MeleeSlash2",
                               GuardBreakerExtraHitCnt = 2,
                               CharacterEmitSfxName = "SlashEmitSpd1",
                               HitSfxName="Melee_Hit2",

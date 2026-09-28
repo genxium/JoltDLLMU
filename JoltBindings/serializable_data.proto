@@ -1609,8 +1609,9 @@ message TrapTypes {
     uint32 conveyor_belt = 3; 
     uint32 falling_rock = 4; 
     uint32 spring = 5; 
-    uint32 brick = 6; 
+    uint32 brick = 6; // destructable 
     uint32 boss_door = 7; 
+    uint32 block = 8; // indestructable 
 
     uint32 none = 2048;
 }
@@ -1717,7 +1718,7 @@ message PrimitiveConsts {
     uint32 magic_join_index_invalid = 39;
     uint32 magic_join_index_srv_udp_tunnel = 40;
     int32 magic_quota_infinite = 41;
-
+    int32 magic_rdf_cnt_infinite = 42;
 
     int32 magic_last_sent_input_frame_id_normal_added = 43;
     int32 magic_last_sent_input_frame_id_readded = 44;

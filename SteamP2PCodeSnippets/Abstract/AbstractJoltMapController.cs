@@ -405,8 +405,14 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     }
 
     public GameObject loadTriggerPrefab(TriggerConfigFromTiled triggerConfigFromTiled) {
-        var triggerConfig = PbTriggersOverride.Instance.getUnderlying()[triggerConfigFromTiled.Trt];
-        string path = $"JoltTrPrefabs/{triggerConfig.Name}";
+        var effName = triggerConfigFromTiled.Name;
+        if (String.IsNullOrEmpty(effName)) {
+            if (PbTriggersOverride.Instance.getUnderlying().ContainsKey(triggerConfigFromTiled.Trt)) {
+                var triggerConfig = PbTriggersOverride.Instance.getUnderlying()[triggerConfigFromTiled.Trt];
+                effName = triggerConfig.Name;
+            }
+        }
+        string path = $"JoltTrPrefabs/{effName}";
         return Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
     }
 
@@ -816,6 +822,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         CustomProperty id, tpt, initVelX, initVelY, initVelZ, initAngVelX, initAngVelY, initAngVelZ, prohibitsWallGrabbing, subscribesToTriggerId, cooldownRdfCount, sliderAxisX, sliderAxisY, sliderAxisZ, limit1, limit2, limit3, limit4;
 
         CustomProperty name;
+        CustomProperty initNotMoving;
 
         tileProps.TryGetCustomProperty("id", out id);
         tileProps.TryGetCustomProperty("tpt", out tpt);
@@ -823,6 +830,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("initVelY", out initVelY);
         tileProps.TryGetCustomProperty("initVelZ", out initVelZ);
         tileProps.TryGetCustomProperty("name", out name);
+        tileProps.TryGetCustomProperty("initNotMoving", out initNotMoving);
 
         tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
         tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
@@ -874,15 +882,32 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         bool xFlipped = isXFlipped(tileObj.m_TileId);
         uint subscribesToTriggerIdVal = (null == subscribesToTriggerId || subscribesToTriggerId.IsEmpty ? primitives.TerminatingTriggerId : (uint)subscribesToTriggerId.GetValueAsInt());
 
+        bool initNotMovingVal = (null != initNotMoving && !initNotMoving.IsEmpty && 1 == initNotMoving.GetValueAsInt()) ? true : false;
+
         bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
         var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
+        var (boxHalfSizeX, boxHalfSizeY) = (.5f * tileObj.m_Width, .5f * tileObj.m_Height);
+
+        if (null != tileObj.m_SuperTile && null != tileObj.m_SuperTile.m_CollisionObjects) {
+            var collisionObjs = tileObj.m_SuperTile.m_CollisionObjects;
+            foreach (var collisionObj in collisionObjs) {
+                if ("collidingBox".Equals(collisionObj.m_ObjectName)) {
+                    // [WARNING] The offset (0, 0) of the tileObj within TSX is the top-left corner, but SuperTiled2Unity converted that to bottom-left corner and reverted y-axis by itself...
+                    tiledRectCenterX += (collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - boxHalfSizeX);
+                    tiledRectCenterY += (collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - boxHalfSizeY);
+                    (boxHalfSizeX, boxHalfSizeY) = (.5f * collisionObj.m_Size.x, .5f * collisionObj.m_Size.y);
+                }
+            }
+        }
 
         TrapConfig tpConfig = PbTrapsOverride.Instance.getUnderlying()[tptVal];
         int effCooldownRdfCount = (0 >= cooldownRdfCountVal ? tpConfig.DefaultCooldownRdfCount : cooldownRdfCountVal);
 
         var nameVal = (null != name && !name.IsEmpty) ? name.GetValueAsString() : tpConfig.Name;
-
         var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+        
+
+        
         TrapConfigFromTiled trapConfigFromTiled = new TrapConfigFromTiled {
             Id = trapId,
             Tpt = tptVal,
@@ -900,13 +925,14 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             SliderAxisX = sliderAxisXVal,
             SliderAxisY = sliderAxisYVal,
             SliderAxisZ = sliderAxisZVal,
-            BoxHalfSizeX = .5f * tileObj.m_Width,
-            BoxHalfSizeY = .5f * tileObj.m_Height,
+            BoxHalfSizeX = boxHalfSizeX,
+            BoxHalfSizeY = boxHalfSizeY,
 
             SubscribesToTriggerId = subscribesToTriggerIdVal,
             CooldownRdfCount = effCooldownRdfCount,
 
             Name = nameVal,
+            InitNotMoving = initNotMovingVal
         };
 
         if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal) {
@@ -978,6 +1004,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected virtual (Trigger, TriggerConfigFromTiled) parseTrigger(SuperObject tileObj, SuperCustomProperties tileProps) {
         CustomProperty id, bulletTeamId, delayedFrames, quota, recoveryFrames, trt, subCycleTriggerFrames, subCycleQuota, newRevivalX, newRevivalY, bgmId, publishingToTriggerIdUponExhausted;
         CustomProperty characterSpawnerTimeSeq, pickableSpawnerTimeSeq;
+        CustomProperty name;
 
         tileProps.TryGetCustomProperty("id", out id);
         tileProps.TryGetCustomProperty("trt", out trt);
@@ -993,6 +1020,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("newRevivalY", out newRevivalY);
         tileProps.TryGetCustomProperty("bgmId", out bgmId);
         tileProps.TryGetCustomProperty("publishingToTriggerIdUponExhausted", out publishingToTriggerIdUponExhausted);
+        tileProps.TryGetCustomProperty("name", out name);
 
         if (null == id || id.IsEmpty) {
             throw new ArgumentNullException("Property id MUST be set for child in TriggerPos");
@@ -1027,8 +1055,26 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
         int bgmIdVal = (null != bgmId && !bgmId.IsEmpty ? bgmId.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().BgmNoChange);
 
+        var nameVal = (null != name && !name.IsEmpty) ? name.GetValueAsString() : "";
+
         bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
         var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
+        var (boxHalfSizeX, boxHalfSizeY) = (0f, 0f);
+        if (PbPrimitivesOverride.Instance.getUnderlying().Trts.ByMovement == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByAttack == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByPatternF == trtVal) {
+            boxHalfSizeX = .5f * tileObj.m_Width;
+            boxHalfSizeY = .5f * tileObj.m_Height;
+        }
+        if (null != tileObj.m_SuperTile && null != tileObj.m_SuperTile.m_CollisionObjects) {
+            var collisionObjs = tileObj.m_SuperTile.m_CollisionObjects;
+            foreach (var collisionObj in collisionObjs) {
+                if ("collidingBox".Equals(collisionObj.m_ObjectName)) {
+                    // [WARNING] The offset (0, 0) of the tileObj within TSX is the top-left corner, but SuperTiled2Unity converted that to bottom-left corner and reverted y-axis by itself...
+                    tiledRectCenterX += (collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - boxHalfSizeX);
+                    tiledRectCenterY += (collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - boxHalfSizeY);
+                    (boxHalfSizeX, boxHalfSizeY) = (.5f * collisionObj.m_Size.x, .5f * collisionObj.m_Size.y);
+                }
+            }
+        }
 
         var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
@@ -1051,10 +1097,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             SubCycleTriggerFrames = subCycleTriggerFramesVal,
             SubCycleQuota = subCycleQuotaVal,
             Quota= quotaVal,
+            BoxHalfSizeX = boxHalfSizeX,
+            BoxHalfSizeY = boxHalfSizeY,
             NewRevivalX = newRevivalXVal,
             NewRevivalY = newRevivalYVal,
             PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
             BgmId = bgmIdVal,
+            Name = nameVal,
         };
         bool xFlipped = isXFlipped(tileObj.m_TileId);
 
@@ -1068,11 +1117,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             configFromTiled.InitQY = 1;
             configFromTiled.InitQZ = 0;
             configFromTiled.InitQW = 0;
-        }
-
-        if (PbPrimitivesOverride.Instance.getUnderlying().Trts.ByMovement == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByAttack == trtVal || PbPrimitivesOverride.Instance.getUnderlying().Trts.ByPatternF == trtVal) {
-            configFromTiled.BoxHalfSizeX = .5f * tileObj.m_Width;
-            configFromTiled.BoxHalfSizeY = .5f * tileObj.m_Height;
         }
 
         string[] characterSpawnerTimeSeqStrParts = characterSpawnerTimeSeqStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -1495,10 +1539,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             if (PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId == trigger.Id) break;
             ulong triggerUd = Bindings.APP_CalcTriggerUserData(trigger.Id);
             activeTriggerDictionary[triggerUd] = trigger;
-            if (PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWaveNpcSpawner != trigger.Trt && PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWavePickableSpawner != trigger.Trt) {
-                continue;
-            }
             var triggerConfigFromTiled = triggerUdToConfigFromTiled[triggerUd];
+
+            if (PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWaveNpcSpawner != trigger.Trt && PbPrimitivesOverride.Instance.getUnderlying().Trts.IndiWavePickableSpawner != trigger.Trt) {
+                if (String.IsNullOrEmpty(triggerConfigFromTiled.Name)) {
+                    continue;
+                }
+            }
 
             var (trAnimCtrl, oldUd) = triggerAnimPool.GetOrCreateAnimNode(triggerUd, trigger.Trt, triggerConfigFromTiled, underlyingMap.transform);
 

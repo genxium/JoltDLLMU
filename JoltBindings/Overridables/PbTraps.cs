@@ -64,6 +64,18 @@ namespace JoltCSharp {
                 DefaultCooldownRdfCount = 0
             };
 
+            TrapConfig SpringTrap = new TrapConfig {
+                Tpt = primitiveConsts.Tpts.Spring,
+                Name = "Spring",
+                NoXFlipRendering = false,
+                UseKinematic = true,
+                PseudoKinematicFactor = 0,
+                DefaultBoxHalfSizeX = 10.0f,
+                DefaultBoxHalfSizeY = 4.0f,
+                DefaultLinearSpeed = 0, 
+                DefaultCooldownRdfCount = 0,
+            };
+
             TrapConfig FallingRockTrap = new TrapConfig {
                 Tpt = primitiveConsts.Tpts.FallingRock,
                 Name = "FallingRock",
@@ -73,6 +85,16 @@ namespace JoltCSharp {
                 DefaultBoxHalfSizeY = 100.0f,
                 DefaultLinearSpeed = 0, 
                 DefaultCooldownRdfCount = 60
+            };
+
+            TrapConfig BlockTrap = new TrapConfig {
+                Tpt = primitiveConsts.Tpts.Block,
+                Name = "Block",
+                NoXFlipRendering = true,
+                UseKinematic = true,
+                DefaultBoxHalfSizeX = 32.0f,
+                DefaultBoxHalfSizeY = 32.0f,
+                DefaultLinearSpeed = 0,
             };
 
             TrapConfig BrickTrap = new TrapConfig {
@@ -90,8 +112,10 @@ namespace JoltCSharp {
                 { RotatingPlatformTrap.Tpt, RotatingPlatformTrap },
                 { ConveyorBeltTrap.Tpt, ConveyorBeltTrap },
                 { BossDoorTrap.Tpt, BossDoorTrap },
+                { SpringTrap.Tpt, SpringTrap },
                 { FallingRockTrap.Tpt, FallingRockTrap },
-                { BrickTrap.Tpt, BrickTrap }
+                { BlockTrap.Tpt, BlockTrap },
+                { BrickTrap.Tpt, BrickTrap },
             };
 
             return true;

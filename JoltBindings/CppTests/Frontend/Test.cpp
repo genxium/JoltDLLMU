@@ -10495,6 +10495,8 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& npc1 = outerTimerRdf->npcs(0);
         auto& npc1Chd = npc1.chd();
 
+        int bulletCount = outerTimerRdf->bullet_count();
+
         if (0 == airJumpRdfId) {
             if (InAirIdle2ByJump != oldChState && InAirIdle2ByJump == p1Chd.ch_state()) {
                 airJumpRdfId = outerTimerRdfId;
@@ -10561,9 +10563,15 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
                 int p1ExpectedFramesToRecover = skill->recovery_frames() - (bulletConfig->startup_frames() + bulletConfig->active_frames()) - p1ExpectedAdditionalFc;
                 JPH_ASSERT(bulletConfig->startup_frames() + bulletConfig->active_frames() + p1ExpectedAdditionalFc == p1Chd.frames_in_ch_state());
                 JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
+                JPH_ASSERT(1 == bulletCount);
                 ++diverImpactCooldownRdfCnt;
             } else {
                 JPH_ASSERT(Idle1 == p1Chd.ch_state() || Walking == p1Chd.ch_state() || InAirIdle1ByJump == p1Chd.ch_state() || InAirIdle2ByJump == p1Chd.ch_state());
+                JPH_ASSERT(0 == bulletCount || 1 == bulletCount);
+                if (1 == bulletCount) {
+                    const Bullet& bl = outerTimerRdf->bullets(0);
+                    JPH_ASSERT(Vanishing == bl.bl_state());
+                }
                 JPH_ASSERT(globalPrimitiveConsts->no_skill() == p1Chd.active_skill_id());
                 JPH_ASSERT(globalPrimitiveConsts->no_skill_hit() == p1Chd.active_skill_hit());
                 cooledDownAndTransited = true;

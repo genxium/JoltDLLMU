@@ -1235,6 +1235,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterDownsync* offenderNextChd = nullptr;
             if (hitFromCharacter) {
                 offenderNextChd = mutableNextChdFromUd(offenderUd);
+                if (Melee == lhsBlConfig->b_type() && nullptr != nextBl && Vanishing != nextBl->bl_state() && nullptr != offenderNextChd && offenderNextChd->active_skill_id() != currBl.skill_id() && offenderNextChd->active_skill_hit() != currBl.active_skill_hit()) {
+                    shouldVanish = true;
+                }
             }
 
             if (transientUdToCollisionUdHolder.count(ud)) {
@@ -1477,6 +1480,28 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextTp->set_ang_vel_x(IsAngleNearZero(newAngVel.GetX()* dt) ? 0 : newAngVel.GetX());
                     nextTp->set_ang_vel_y(IsAngleNearZero(newAngVel.GetY()* dt) ? 0 : newAngVel.GetY());
                     nextTp->set_ang_vel_z(IsAngleNearZero(newAngVel.GetZ()* dt) ? 0 : newAngVel.GetZ());
+
+                    uint32_t subscribesToTriggerId = tpConfigFromTile->subscribes_to_trigger_id();
+                    bool isTriggerBased = (nullptr != tpConfigFromTile && globalPrimitiveConsts->terminating_trigger_id() != subscribesToTriggerId);
+                    if (isTriggerBased && TpWalking == currTp.trap_state()) {
+                        // Stop by obstacles 
+                        if (globalPrimitiveConsts->tpts().sliding_platform() == currTp.tpt()) {
+                            if (0 == nextTp->vel_x() && 0 == nextTp->vel_y() && 0 == nextTp->vel_z()) {
+                                nextTp->set_trap_state(TpIdle);
+                                nextTp->set_frames_in_trap_state(0);
+#ifndef NDEBUG
+                                std::ostringstream oss;
+                                oss << "@currRdfId=" << currRdfId << " sliding platform currTp ud=" << ud << " at currPos=(" << currTp.x() << ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "); about to transit from walking to idle due to vel reduced to 0";
+                                Debug::Log(oss.str(), DColor::Orange);
+#endif
+                            }
+                        } else if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
+                            if (0 == nextTp->ang_vel_x() && 0 == nextTp->ang_vel_y() && 0 == nextTp->ang_vel_z()) {
+                                nextTp->set_trap_state(TpIdle);
+                                nextTp->set_frames_in_trap_state(0);
+                            }
+                        }
+                    }
                 }
             }, 0);
         postPhysicsUpdateMTBarrier2->AddJob(handle);
@@ -2077,10 +2102,6 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                 float radianLimit2 = DegreesToRadians(c.limit_2());
                 const Vec3 initAngVel(c.init_ang_vel_x(), c.init_ang_vel_y(), c.init_ang_vel_z());
                 const float initAngSpeed = initAngVel.Length();
-                float cooldownRadians = initAngSpeed*effCooldownRdfCount/globalPrimitiveConsts->battle_dynamics_fps();
-                if (radianLimit1 + cooldownRadians > radianLimit2) {
-                    JPH_ASSERT(radianLimit1 + cooldownRadians <= radianLimit2);
-                }
                 effTrapConfigFromTiled->set_limit_1(radianLimit1);
                 effTrapConfigFromTiled->set_limit_2(radianLimit2);
             } else {
@@ -2802,6 +2823,11 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
         biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
         ioFrictionDirty = true;
     } else if (0 < currChd.walkstopping_rdf_countdown()) {
+        /* [TODO] 
+
+        If "true == effInAir", shall I apply the "in-air linear damping" like that of "processInertiaFlyingHandleZeroEffDxAndDy" here? 
+
+        */
         biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->walkstopping_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
         ioFrictionDirty = true;
     } else if (0 < currChd.fallstopping_rdf_countdown()) {
@@ -4080,6 +4106,8 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             subscribingToTriggerSubCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? false : (nextSubscribingToTrigger->quota() == currSubscribingToTrigger->quota()  && nextSubscribingToTrigger->sub_cycle_index() > currSubscribingToTrigger->sub_cycle_index());
         }
 
+        const bool idleYetTriggered = (TrapState::TpIdle == currTp.trap_state() && isTriggerBased && subscribingToTriggerMainCycleTicked);
+
         if (globalPrimitiveConsts->tpts().boss_door() == tpt) {
             bool shouldFlip = (subscribingToTriggerMainCycleTicked);
             if (shouldFlip) {
@@ -4148,33 +4176,47 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
 
                 Moreover, it's weird that without "SliderConstraint.mMotorConstraintPart" the whole "SliderConstraint" DOESN'T enforce "SliderAxis movement" when "mBody1" is far from "mBody2", i.e. "SliderConstraint.mPositionConstraintPart.mEffectiveMass" will decrease along "abs(mD)" making the enforcement weak on the sides (see https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/SliderConstraint.cpp#L208 and https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/SliderConstraint.cpp#L310C13-L310C36), so I cut the velocity components perpendicular to "SliderAxis" manually.
                 */
-                if (mD <= tpConfigFromTile->limit_1()) {
-                    if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
-    /*
-    #ifndef NDEBUG
+                if (idleYetTriggered) {
+#ifndef NDEBUG
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << " sliding platform currTp ud=" << ud << " at mD=" << mD << ", limit1=" << tpConfigFromTile->limit_1() << ", limit2=" << tpConfigFromTile->limit_2() << ", trapState=" << currTp.trap_state() << ", framesInTrapState=" << currTp.frames_in_trap_state() << ", currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; idleYetTriggered; initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
+                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+                    const float midLimit = .5f*(tpConfigFromTile->limit_1()+tpConfigFromTile->limit_2()); 
+                    if (mD < midLimit) {
+                        const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
+                        nextTp->set_trap_state(TrapState::TpWalking);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpLinearVel = projectedVel;
+                    } else {
+                        const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
+                        nextTp->set_trap_state(TrapState::TpWalking);
+                        nextTp->set_frames_in_trap_state(0);
+                        newTpLinearVel = projectedVel;
+                    }
+                } else if (mD <= tpConfigFromTile->limit_1()) {
+                    if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
+/*
+#ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                         Debug::Log(oss.str(), DColor::Orange);
-    #endif
-    */
+#endif
+*/
                         nextTp->set_trap_state(TrapState::TpIdle);
                         nextTp->set_frames_in_trap_state(0);
                         newTpLinearVel = Vec3::sZero();
                     } else if (TrapState::TpIdle == currTp.trap_state()) {
                         bool shouldTransitIntoMoving = false;
-                        if (isTriggerBased) {
-                            shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
-                        } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                        if (!isTriggerBased && effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
                             shouldTransitIntoMoving = true;
                         }
                         if (shouldTransitIntoMoving) {
-    /*
-    #ifndef NDEBUG
-                        std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
-                        Debug::Log(oss.str(), DColor::Orange);
-    #endif
-    */                       
+#ifndef NDEBUG
+                            std::ostringstream oss;
+                            oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
+                            Debug::Log(oss.str(), DColor::Orange);
+#endif
                             const Vec3 projectedVel = +std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                             nextTp->set_trap_state(TrapState::TpWalking);
                             nextTp->set_frames_in_trap_state(0);
@@ -4182,22 +4224,18 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                         }
                     }
                 } else if (mD >= tpConfigFromTile->limit_2()) {
-                    if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
-    /*
+                    if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
     #ifndef NDEBUG
                         std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
+                        oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << ")";
                         Debug::Log(oss.str(), DColor::Orange);
     #endif
-    */
                         nextTp->set_trap_state(TrapState::TpIdle);
                         nextTp->set_frames_in_trap_state(0);
                         newTpLinearVel = Vec3::sZero();
-                    } else if (TrapState::TpIdle == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                    } else if (TrapState::TpIdle == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
                         bool shouldTransitIntoMoving = false;
-                        if (isTriggerBased) {
-                            shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
-                        } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                        if (!isTriggerBased && effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
                             shouldTransitIntoMoving = true;
                         }
                         if (shouldTransitIntoMoving) {
@@ -4256,8 +4294,24 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                 const float mD = hc->GetCurrentAngle();
 
                 if (hc->HasLimits()) {
-                    if (mD <= tpConfigFromTile->limit_1()) {
-                        if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                    if (idleYetTriggered) {
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << " rotating platform currTp ud=" << ud << " at mD=" << mD << ", limit1=" << tpConfigFromTile->limit_1() << ", limit2=" << tpConfigFromTile->limit_2() << ", trapState=" << currTp.trap_state() << ", framesInTrapState=" << currTp.frames_in_trap_state() << ", currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), angVel=(" << currTp.ang_vel_x() << ", " << currTp.ang_vel_y() << ", " << currTp.ang_vel_z() << ")" << "; idleYetTriggered; initAngVel=(" << initAngVel.GetX() << ", " << initAngVel.GetY() << "," << initAngVel.GetZ() << ")";
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+                        const float midLimit = .5f*(tpConfigFromTile->limit_1()+tpConfigFromTile->limit_2()); 
+                        if (mD < midLimit) {
+                            nextTp->set_trap_state(TrapState::TpWalking);
+                            nextTp->set_frames_in_trap_state(0);
+                            newTpAngVel = initAngVel;
+                        } else {
+                            nextTp->set_trap_state(TrapState::TpWalking);
+                            nextTp->set_frames_in_trap_state(0);
+                            newTpAngVel = -initAngVel;
+                        }
+                    } else if (mD <= tpConfigFromTile->limit_1()) {
+                        if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
 
     #ifndef NDEBUG
                             std::ostringstream oss;
@@ -4270,9 +4324,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                             newTpAngVel = Vec3::sZero();
                         } else if (TrapState::TpIdle == currTp.trap_state()) {
                             bool shouldTransitIntoMoving = false;
-                            if (isTriggerBased) {
-                                shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
-                            } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                            if (!isTriggerBased && effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
                                 shouldTransitIntoMoving = true;
                             }
                             if (shouldTransitIntoMoving) {
@@ -4287,7 +4339,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                             }
                         }
                     } else if (mD >= tpConfigFromTile->limit_2()) {
-                        if (TrapState::TpWalking == currTp.trap_state() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                        if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
 
     #ifndef NDEBUG
                             std::ostringstream oss;
@@ -4300,17 +4352,15 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                             newTpAngVel = Vec3::sZero();
                         } else if (TrapState::TpIdle == currTp.trap_state()) {
                             bool shouldTransitIntoMoving = false;
-                            if (isTriggerBased) {
-                                shouldTransitIntoMoving = (subscribingToTriggerMainCycleTicked || subscribingToTriggerSubCycleTicked);
-                            } else if (effCooldownRdfCount <= currTp.frames_in_trap_state()) {
+                            if (!isTriggerBased && effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state()) {
                                 shouldTransitIntoMoving = true;
                             }
                             if (shouldTransitIntoMoving) {
 
     #ifndef NDEBUG
-                            std::ostringstream oss;
-                            oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initAngVelZ=" << initAngVel.GetZ();
-                            Debug::Log(oss.str(), DColor::Orange);
+                                std::ostringstream oss;
+                                oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initAngVelZ=" << initAngVel.GetZ();
+                                Debug::Log(oss.str(), DColor::Orange);
     #endif
                                 nextTp->set_trap_state(TrapState::TpWalking);
                                 nextTp->set_frames_in_trap_state(0);

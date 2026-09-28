@@ -85,6 +85,8 @@ namespace JoltCSharp {
         public const uint TPT_FALLING_ROCK = 4;
         public const uint TPT_BRICK = 5;
         public const uint TPT_BOSS_DOOR = 6;
+        public const uint TPT_BLOCK = 7;
+        public const uint TPT_SPRING = 8;
 
         public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (1 << INPUT_SCALE_FRAMES);
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
@@ -194,6 +196,7 @@ namespace JoltCSharp {
               MagicJoinIndexInvalid = 0xFFFFFFFF,
               MagicJoinIndexSrvUdpTunnel = 0,
               MagicQuotaInfinite = 65535,
+              MagicRdfCntInfinite = 65535,
 
               MagicLastSentInputFrameIdNormalAdded = -1,
               MagicLastSentInputFrameIdReadded = -2,
@@ -401,6 +404,10 @@ namespace JoltCSharp {
                   Brick = TPT_BRICK,
 
                   BossDoor = TPT_BOSS_DOOR,  
+
+                  Block = TPT_BLOCK,
+
+                  Spring = TPT_SPRING,
               },
 
               Pkts = new PickableTypes {
