@@ -10531,6 +10531,10 @@ bool runTestCase42(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
+        if (0 != firstDiverImpactUseRdfId && firstDiverImpactUseRdfId <= outerTimerRdfId && (0 == secondLandingRdfId || outerTimerRdfId < secondLandingRdfId)) {
+            //shouldPrint = true;
+        }
+
         if (shouldPrint) {
             std::cout << "TestCase42/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << "\n\tnpc1Chd hp = " << npc1Chd.hp() << ", cs = " << npc1Chd.ch_state() << ", fc = " << npc1Chd.frames_in_ch_state() << ", q = (" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos = (" << npc1Chd.x() << ", " << npc1Chd.y() << ", " << npc1Chd.z() << "), vel = (" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), ccmd = " << npc1.cached_cue_cmd() << std::endl;
         }

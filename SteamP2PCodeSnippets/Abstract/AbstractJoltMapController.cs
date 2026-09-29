@@ -1185,11 +1185,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         posHolder.Set(newX, newY, newZ);
     }
 
-    private float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.0425f;
-    private float CROUCH_PEEKING_CAM_SPEED_FACTOR = 0.75f;
+    private float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.02125f;
+    private float CROUCH_PEEKING_CAM_SPEED_FACTOR = 1.5f;
     protected float camCurrSpeedPerSecond = 0.0f;
     protected float CAM_SPEED_LINEAR_DAMPING = 0.2f;
-    protected float CAM_REGULAR_ACC_PER_SECOND = 4.5f;
+    protected float CAM_REGULAR_ACC_PER_SECOND = 6.5f;
     protected float CAM_FAST_ACC_PER_SECOND = 8.0f;
 
     protected virtual void cameraTrack(RenderFrame rdf, RenderFrame prevRdf, bool battleResultIsSet, bool forceTeleport = false) {

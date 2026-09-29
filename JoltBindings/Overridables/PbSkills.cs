@@ -547,7 +547,7 @@ namespace JoltCSharp {
                               PushbackVelX = 0,
                               PushbackVelY = -0.5f*BATTLE_DYNAMICS_FPS,
                               SelfLockVelX = 0,
-                              SelfLockVelY = -0.5f*BATTLE_DYNAMICS_FPS,
+                              SelfLockVelY = -16f*BATTLE_DYNAMICS_FPS,
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               HitboxOffsetX = 11f,
                               HitboxOffsetY = 17f,

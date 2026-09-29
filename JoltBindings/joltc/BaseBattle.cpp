@@ -5069,8 +5069,10 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         if (!oldNextEffInAir) {
             switch (oldNextChState) {
             case Idle1:
+            case CrouchIdle1:
             case Def1:
             case Walking:
+            case CrouchWalking:
                 if (Walking == oldNextChState) {
                     if (cc->omit_gravity()) {
                         // [WARNING] No need to distinguish in this case.
@@ -5263,23 +5265,29 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 
     const bool fallStopping = (0 != nextChd->ground_ud() && 0 == currChd.ground_ud());
     const bool wallStopping = (0 != nextChd->wall_ud() && 0 == currChd.wall_ud());
-    if (fallStopping && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
+    if (0 != nextChd->ground_ud() && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->ground_impact_melee_collision()) {
         // [WARNING] The "bulletCollider" for "activeBulletConfig" in this case might've been annihilated, we should end this bullet regardless of landing on character or hardPushback.
         int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames()); // correct even for "DemonDiverImpactPreJumpBullet -> DemonDiverImpactStarterBullet" sequence
         auto shiftedRdfCnt = (activeBulletConfig->active_frames() - origFramesInActiveState);
         if (0 < shiftedRdfCnt) {
+            // This block is executed ONCE ONLY per finishing. 
             nextChd->set_frames_in_ch_state(nextChd->frames_in_ch_state() + shiftedRdfCnt);
             nextChd->set_frames_to_recover(nextChd->frames_to_recover() - shiftedRdfCnt);
+
+            // Not sure if it's guaranteed that "true == fallStopping" here, but this recovery works in all cases.
+            nextChd->set_remaining_air_jump_quota(cc->default_air_jump_quota());
+            nextChd->set_remaining_air_dash_quota(cc->default_air_dash_quota());
         }
         if (0 > origFramesInActiveState) {
             nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
             nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
         }
         // [WARNING] Leave velocity handling to other code snippets.
-    } else if (wallStopping && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->wall_impact_melee_collision()) {
+    } else if (0 != nextChd->wall_ud() && nullptr != activeSkill && activeSkill->bound_ch_state() == nextChd->ch_state() && nullptr != activeBulletConfig && activeBulletConfig->wall_impact_melee_collision()) {
         int origFramesInActiveState = (nextChd->frames_in_ch_state() - activeBulletConfig->startup_frames());
         int shiftedRdfCnt = (activeBulletConfig->active_frames() - origFramesInActiveState);
         if (0 < shiftedRdfCnt) {
+            // This block is executed ONCE ONLY per finishing. 
             nextChd->set_frames_in_ch_state(nextChd->frames_in_ch_state() + shiftedRdfCnt);
             nextChd->set_frames_to_recover(nextChd->frames_to_recover() - shiftedRdfCnt);
         }
@@ -5336,6 +5344,12 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 
 #ifndef NDEBUG
     /*
+    if (Atk7 == nextChd->ch_state() ) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state();
+        Debug::Log(oss1.str(), DColor::Orange);
+    }
+
     if (Atk1 == oldNextChState || WalkingAtk1 == oldNextChState || InAirAtk1 == oldNextChState) {
         if (oldNextChState != nextChd->ch_state()) {
             std::ostringstream oss1;
