@@ -280,6 +280,7 @@ static const JPH::Quat  cTurnNegativeMiniatureAroundYAxis = JPH::Quat::sRotation
 static const JPH::Quat  cTurn90DegsAroundYAxis = JPH::Quat::sRotation(Vec3::sAxisY(), 0.5f*JPH_PI);
 static const JPH::Vec3  cXAxis = JPH::Vec3(1, 0, 0);
 static const JPH::Vec3  cYAxis = JPH::Vec3(0, 1, 0);
+static const JPH::Vec3  cZAxis = JPH::Vec3(0, 0, 1);
 static const JPH::Vec3  cNegativeZAxis = JPH::Vec3(0, 0, -1);
 
 static const JPH::Quat  cTurn90DegsAroundZAxis = JPH::Quat::sRotation(Vec3::sAxisZ(), 0.5f*JPH_PI);
@@ -605,22 +606,22 @@ public:
 
     inline static void calcChdFacing(const CharacterDownsync& currChd, Quat& outQ, Vec3& outFacing) {
         outQ = Quat(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
-        Vec3 outFacingRaw = outQ.RotateAxisX();
-        float outFacingRawProjX = outFacingRaw.Dot(Vec3::sAxisX()); 
+        Vec3 outFacingRaw = outQ*cXAxis;
+        float outFacingRawProjX = outFacingRaw.Dot(cXAxis);
         JPH_ASSERT(0 != outFacingRawProjX); // Guaranteed by "clampChdQ"
         float outFacingX = 0 < outFacingRawProjX ? +1 : -1; 
         outFacing.Set(outFacingX, 0, 0); 
     }
 
     inline static void calcQFacing(const Bullet& currBl, const Quat& inQ, Vec3& outFacing) {
-        Vec3 facingRaw = inQ.RotateAxisX();
-        float facingRawProjX = facingRaw.Dot(Vec3::sAxisX());
+        Vec3 facingRaw = inQ*cXAxis;
+        float facingRawProjX = facingRaw.Dot(cXAxis);
         JPH_ASSERT(0 != facingRawProjX); // Guaranteed by "clampChdQ"
         float outFacingX = 0 < facingRawProjX ? +1 : -1;
         outFacing.Set(outFacingX, 0, 0);
     }
 
-    inline static void clampChdQ(Quat& ioChdQ, const int effDx) {
+    inline void clampChdQ(Quat& ioChdQ, const int effDx) {
         if (ioChdQ.IsClose(cTurn90DegsAroundYAxis) && 0 != effDx) {
             ioChdQ = (0 > effDx ? cTurnMiniatureAroundYAxis : cTurnNegativeMiniatureAroundYAxis)*ioChdQ; // Turn a little more
         }
@@ -643,88 +644,22 @@ public:
         }
     }
 
-    inline static bool isChdVelClampable(const CharacterDownsync* chd) {
-        if (atkedSet.count(chd->ch_state())) {
-            return false;
-        }
-
-        if (noOpSet.count(chd->ch_state())) {
-            return false;
-        }
-
-        if (!nonAttackingSet.count(chd->ch_state()) && !walkingAtkSet.count(chd->ch_state())) {
-            return false;
-        }
-
-        if (!chIsNotDashing(*chd)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    inline static void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) {
-        if (!isChdVelClampable(nextChd)) {
+    inline void clampRotatedXAxisToXOYPlane(Quat& ioQ) {
+        const JPH::Vec3 swungXAxis = ioQ*cXAxis;
+        if (0 == swungXAxis.GetZ()) {
+            // To save computational cost, most cases should return here.
             return;
         }
-
-        if (InAirIdle1ByWallJump == nextChd->ch_state()) {
-            const float maxVelX = +cc->wall_jump_free_speed();
-            const float minVelX = -cc->wall_jump_free_speed();
-            if (ioVel.GetX() >= maxVelX) {
-                ioVel.SetX(maxVelX);
-            } else if (ioVel.GetX() <= minVelX) {
-                ioVel.SetX(minVelX);
-            }
-        } else {
-            if (!inAirSet.count(nextChd->ch_state()) && 0 != nextChd->ground_ud()) {
-                const Vec3 origVelRelativeToGround = ioVel - groundVel;
-                const float origVelRelativeToGroundLengthSq = origVelRelativeToGround.LengthSq();
-                const float maxSpeedSq = cc->speed()*cc->speed();
-                if (origVelRelativeToGroundLengthSq > maxSpeedSq) {
-                    const float shrinkFactor = cc->speed() * InvSqrt32(origVelRelativeToGroundLengthSq);
-                    ioVel = origVelRelativeToGround * shrinkFactor + groundVel;
-                }
-            } else {
-                const float maxVelX = cc->speed() + groundVel.GetX();
-                const float minVelX = -cc->speed() + groundVel.GetX();
-                if (ioVel.GetX() > maxVelX) {
-                    ioVel.SetX(maxVelX);
-                } else if (ioVel.GetX() < minVelX) {
-                    ioVel.SetX(minVelX);
-                }
-            }
-        }
+        const JPH::Quat qTwist = ioQ.GetTwist(cXAxis);
+        const JPH::Quat qSwing = ioQ * qTwist.Conjugated();
+        const JPH::Vec3 projectedXAxis(swungXAxis.GetX(), swungXAxis.GetY(), 0.0f);
+        const JPH::Quat constrainedSwing = JPH::Quat::sFromTo(cXAxis, projectedXAxis.Normalized()); // [REMINDER] This is relatively expensive.
+        ioQ = constrainedSwing * qTwist;
     }
 
-    inline static void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) {
-        if (!isChdVelClampable(nextChd)) {
-            return;
-        }
-
-        const float maxVelX = cc->speed();
-        const float minVelX = -cc->speed();
-        if (ioVel.GetX() > maxVelX) {
-            ioVel.SetX(maxVelX);
-        } else if (ioVel.GetX() < minVelX) {
-            ioVel.SetX(minVelX);
-        }
-
-        const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
-        const float minVelY = -cc->speed();
-        if (ioVel.GetY() > maxVelY) {
-#ifndef  NDEBUG
-            /*
-            std::ostringstream oss;
-            oss << "clampFlyingChdVel/speciesId=" << cc->species_id() << ", clamped flying maxVelY from ioVel.GetY=" << ioVel.GetY() << "." << std::endl;
-            Debug::Log(oss.str(), DColor::Yellow);
-            */
-#endif // ! NDEBUG
-            ioVel.SetY(maxVelY);
-        } else if (ioVel.GetY() < minVelY) {
-            ioVel.SetY(minVelY);
-        }
-    }
+    virtual bool isChdVelClampable(const CharacterDownsync* chd) = 0;
+    virtual void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) = 0;
+    virtual void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) = 0;
 
     inline static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
         /*

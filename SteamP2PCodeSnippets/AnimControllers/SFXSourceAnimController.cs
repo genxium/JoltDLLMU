@@ -1,9 +1,15 @@
+using Google.Protobuf;
 using JoltCSharp;
-using jtshared;
+using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class SFXSourceAnimController : AbstractCacheableAnimNode<Bullet, BulletState, BulletConfig, string> {
+public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum, IMessage, string> {
+
+    private float realtimeAttenuation = 0f;
+    public void SetRealtimeAttenuation(in float val) {
+        realtimeAttenuation = val;
+    }
 
     public SFXSourceAnimController() {
         SetUd(0);
@@ -33,8 +39,8 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<Bullet, BulletS
         return true;
     }
 
-    protected override bool updateAnimUnderlying(in int currRdfId, in Bullet bullet, in BulletState newTargetState, in BulletConfig bulletConfig, in int frameIdxInAnim) {
-        audioSource.volume = PlayerSettingsManager.Instance.GetSfxVolume();
+    protected override bool updateAnimUnderlying(in int currRdfId, in IMessage ins, in Enum newTargetState, in IMessage insConfig, in int frameIdxInAnim) {
+        audioSource.volume = PlayerSettingsManager.Instance.GetSfxVolume() * (1.0f - realtimeAttenuation);
         float timeInSecond = frameIdxInAnim * PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf;
         if (audioSource.isPlaying) {
             if (timeInSecond > audioClip.length) {
