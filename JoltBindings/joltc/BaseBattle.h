@@ -150,8 +150,6 @@ public:
 
     /////////////////////////////////////////////////////Bullet Collider Cache/////////////////////////////////////////////////////
     BL_COLLIDER_Q  activeBlColliders;
-    BL_COLLIDER_Q* blStockCache;
-    BL_COLLIDER_Q* blSphericalStockCache;
     std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, BlCacheKeyHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
 
     /////////////////////////////////////////////////////Character Collider Cache/////////////////////////////////////////////////////
@@ -174,14 +172,10 @@ public:
 
     /////////////////////////////////////////////////////Trap Collider Cache/////////////////////////////////////////////////////
     TP_COLLIDER_Q  activeTpColliders;
-    TP_COLLIDER_Q* tpDynamicStockCache;    // (Dynamic,   MyObjectLayers::MOVING)
-    TP_COLLIDER_Q* tpKinematicStockCache;  // (Kinematic, MyObjectLayers::MOVING)
-    TP_COLLIDER_Q* tpHelperStockCache;     // (Static,    MyObjectLayers::TRAP_HELPER)
     std::unordered_map< TP_CACHE_KEY_T, TP_COLLIDER_Q, TrapCacheKeyHasher > cachedTpColliders;
 
     /////////////////////////////////////////////////////Trigger Collider Cache/////////////////////////////////////////////////////
     TR_COLLIDER_Q  activeTrColliders;
-    TR_COLLIDER_Q* trStockCache;
     std::unordered_map< TR_CACHE_KEY_T, TR_COLLIDER_Q, TriggerCacheKeyHasher > cachedTrColliders; 
 
     /////////////////////////////////////////////////////Pickable Collider Cache/////////////////////////////////////////////////////
@@ -208,7 +202,7 @@ public:
 
     static void FindBulletConfig(const uint32_t skillId, const uint32_t skillHit, const Skill*& outSkill, const BulletConfig*& outBulletConfig);
 
-    virtual float calcTerrainPriority(const uint64_t ud) const {
+    inline virtual float calcTerrainPriority(const uint64_t ud) const {
 
         if (transientUdToStairsP.count(ud)) {
             return globalPrimitiveConsts->stairs_p_terrain_priority();
@@ -219,6 +213,89 @@ public:
         }
 
         return 0.0f;
+    }
+
+    inline virtual bool isChdVelClampable(const CharacterDownsync* chd) {
+        if (atkedSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (noOpSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (!nonAttackingSet.count(chd->ch_state()) && !walkingAtkSet.count(chd->ch_state())) {
+            return false;
+        }
+
+        if (!chIsNotDashing(*chd)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    inline virtual void clampChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc, const Vec3& groundVel) {
+        if (!isChdVelClampable(nextChd)) {
+            return;
+        }
+
+        if (InAirIdle1ByWallJump == nextChd->ch_state()) {
+            const float maxVelX = +cc->wall_jump_free_speed();
+            const float minVelX = -cc->wall_jump_free_speed();
+            if (ioVel.GetX() >= maxVelX) {
+                ioVel.SetX(maxVelX);
+            } else if (ioVel.GetX() <= minVelX) {
+                ioVel.SetX(minVelX);
+            }
+        } else {
+            if (!inAirSet.count(nextChd->ch_state()) && 0 != nextChd->ground_ud() && !transientSpringUds.count(nextChd->ground_ud())) {
+                const Vec3 origVelRelativeToGround = ioVel - groundVel;
+                const float origVelRelativeToGroundLengthSq = origVelRelativeToGround.LengthSq();
+                const float maxSpeedSq = cc->speed() * cc->speed();
+                if (origVelRelativeToGroundLengthSq > maxSpeedSq) {
+                    const float shrinkFactor = cc->speed() * InvSqrt32(origVelRelativeToGroundLengthSq);
+                    ioVel = origVelRelativeToGround * shrinkFactor + groundVel;
+                }
+            } else {
+                const float maxVelX = cc->speed() + groundVel.GetX();
+                const float minVelX = -cc->speed() + groundVel.GetX();
+                if (ioVel.GetX() > maxVelX) {
+                    ioVel.SetX(maxVelX);
+                } else if (ioVel.GetX() < minVelX) {
+                    ioVel.SetX(minVelX);
+                }
+            }
+        }
+    }
+
+    inline virtual void clampFlyingChdVel(const CharacterDownsync* nextChd, Vec3& ioVel, const CharacterConfig* cc) {
+        if (!isChdVelClampable(nextChd)) {
+            return;
+        }
+
+        const float maxVelX = cc->speed();
+        const float minVelX = -cc->speed();
+        if (ioVel.GetX() > maxVelX) {
+            ioVel.SetX(maxVelX);
+        } else if (ioVel.GetX() < minVelX) {
+            ioVel.SetX(minVelX);
+        }
+
+        const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
+        const float minVelY = -cc->speed();
+        if (ioVel.GetY() > maxVelY) {
+#ifndef  NDEBUG
+            /*
+            std::ostringstream oss;
+            oss << "clampFlyingChdVel/speciesId=" << cc->species_id() << ", clamped flying maxVelY from ioVel.GetY=" << ioVel.GetY() << "." << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+            */
+#endif // ! NDEBUG
+            ioVel.SetY(maxVelY);
+        } else if (ioVel.GetY() < minVelY) {
+            ioVel.SetY(minVelY);
+        }
     }
 
     inline void checkWalkingOnSlope(const CharacterDownsync& chd, const float forceX, bool& outIsOnStairsP, bool& outIsOnRegularSlope, bool& outWalkingDownSlope, bool&     outWalkingUpSlope, Vec3& outSlopeOutwardNorm) {
@@ -304,7 +381,7 @@ public:
         const float invResidueLength = InvSqrt32(residueLengthSq);
 
         const Vec3 residueNorm = invResidueLength*residue;
-        ioVec = ioVec.Length()*residueNorm;
+        ioVec = origLengthSq*invOrigLength*residueNorm;
     }
 
     inline static int ConvertToIfdId(int rdfId, int delayRdfCnt) {
@@ -595,7 +672,9 @@ protected:
     const BattleSpecificConfig* battleSpecificConfig = nullptr;
     const google::protobuf::Map<uint64_t, CharacterBattleSpecificConfig>* characterOverrides = nullptr;
 
+    std::unordered_set<uint64_t> transientSpringUds;
     std::unordered_set<uint64_t> transientSlipJumpableUds;
+
     // The tricky terrain "StairsP/N" increases player control complexity, use with caution, recommended to use only in non-battle.
     std::unordered_map<uint64_t, Vec3> transientUdToSlope;
     std::unordered_map<uint64_t, Vec3> transientUdToStairsP;
@@ -789,6 +868,7 @@ protected:
     void processInertiaFlying(const int currRdfId, float dt, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, int effDx, int effDy, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool currParalyzed, bool currInBlockStun, const uint64_t ud, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool nextInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion, bool& ioGravityDirty, bool& ioFrictionDirty);
 
     void calcSingleBulletEffDamage(const int currRdfId, const CharacterDownsync* nextVictimChd, const Vec3 nextVictimFacing, const CharacterConfig* nextVictimCc, const Bullet* rhsCurrBl, const BulletConfig* rhsBlConfig, const bool isAllyTargetingBl, int* outBulletEffDamage, int* outBulletDef1QuotaReduction, bool* outSuccessfulDef1);
+    void calcSingleBulletEffDamage(const int currRdfId, const Trap* nextVictimTp, const TrapConfig* nextVictimTpConfig, const TrapConfigFromTiled* nextVictimTpConfigFromTiled, const Bullet* rhsCurrBl, const BulletConfig* rhsBlConfig, int* outBulletEffDamage);
 
     void handleLhsCharacterCollisionWithRhsBullet(
         const int currRdfId,
@@ -797,6 +877,14 @@ protected:
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
         uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
+
+    void handleLhsTrapCollisionWithRhsBullet(
+    const int currRdfId, 
+    RenderFrame* nextRdf,
+    const uint64_t udLhs, const uint64_t udtLhs, const Trap* currTp, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, Trap* nextTp,
+    const uint64_t udRhs, const uint64_t udtRhs, 
+    const ContactPoints& contactPointsLhs,
+    int& outNewDamage, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
 
     bool addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed);
     bool addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId);
@@ -811,6 +899,7 @@ protected:
     bool transitToDying(const int currRdfId, const CharacterDownsync& currChd, const bool cvInAir, CharacterDownsync* nextChd);
     bool transitToDying(const int currRdfId, const PlayerCharacterDownsync& currPlayer, const bool cvInAir, PlayerCharacterDownsync* nextPlayer);
     bool transitToDying(const int currRdfId, const NpcCharacterDownsync& currNpc, const bool cvInAir, NpcCharacterDownsync* nextNpc);
+    bool transitToDying(const int currRdfId, const Trap& currTp, Trap* nextTp);
 
     void processDelayedBulletSelfVel(const int currRdfId, const CharacterDownsync& currChd, const MassProperties& massProps, const Vec3& currChdFacing, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const bool nextEffInAir, InputInducedMotion* ioInputInducedMotion);
 
@@ -896,12 +985,25 @@ protected:
         }
     }
 
+    inline void ClearBulletImmuneRecords(Trap* mutableTrap) {
+        mutableTrap->set_bir_count(0);
+        if (0 < mutableTrap->bullet_immune_records_size()) {
+            BulletImmuneRecord* toSingle = mutableTrap->mutable_bullet_immune_records(0);
+            ClearBulletImmuneRecord(toSingle);
+        }
+    }
+
     inline void ClearTrigger(Trigger* trigger) {
         trigger->set_id(globalPrimitiveConsts->terminating_trigger_id());
     }
 
     inline void ClearDynamicTrap(Trap* trap) {
+        ClearBulletImmuneRecords(trap);
         trap->set_id(globalPrimitiveConsts->terminating_trap_id());
+        trap->set_hp(0);
+        trap->set_constraint_bias(0);
+        trap->set_damaged_hint_rdf_countdown(0);
+        trap->set_damaged_elemental_attrs(0);
     }
 
     inline void ClearBullet(Bullet* bullet) {
@@ -1699,6 +1801,11 @@ public:
                     Vec3 body1LinearSurfaceVel = inBody1.GetRotation() * (isConveyorBelow ? conveyorInitVel : -conveyorInitVel);
                     Vec3 body2LinearSurfaceVel = inBody2.GetLinearVelocity();
                     ioSettings.mRelativeLinearSurfaceVelocity = (body2LinearSurfaceVel - body1LinearSurfaceVel);
+                } else if (globalPrimitiveConsts->tpts().spring() == trapConfigFromTiled->tpt()) {
+                    if (UDT_PLAYER == udt2 || UDT_NPC == udt2) {
+                        //ioSettings.mCombinedFriction = 0.0f;
+                        //ioSettings.mCombinedRestitution = 1.0f;
+                    }
                 }
 
                 auto& trapConfigs = globalConfigConsts->trap_configs();
@@ -1727,6 +1834,11 @@ public:
                     Vec3 body1LinearSurfaceVel = inBody1.GetLinearVelocity();
                     Vec3 body2LinearSurfaceVel = inBody2.GetRotation() * (isConveyorBelow ? conveyorInitVel : -conveyorInitVel);
                     ioSettings.mRelativeLinearSurfaceVelocity = body2LinearSurfaceVel - body1LinearSurfaceVel;
+                } else if (globalPrimitiveConsts->tpts().spring() == trapConfigFromTiled->tpt()) {
+                    if (UDT_PLAYER == udt1 || UDT_NPC == udt1) {
+                        //ioSettings.mCombinedFriction = 0.0f;
+                        //ioSettings.mCombinedRestitution = 1.0f;
+                    }
                 }
 
                 auto& trapConfigs = globalConfigConsts->trap_configs();

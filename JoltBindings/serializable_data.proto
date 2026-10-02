@@ -921,7 +921,8 @@ message TrapConfig {
     int32 default_cooldown_rdf_count = 30;
 
     float pseudo_kinematic_factor = 31;
-    bool no_x_flip_rendering = 32;
+    float bl_pushback_attenuation = 32;
+    bool no_x_flip_rendering = 33;
 
     string name = 1024;
 }
@@ -968,7 +969,9 @@ message TrapConfigFromTiled {
 
     uint32 subscribes_to_trigger_id = 27;
 
-    optional string name = 28; // Overrides the prefab name to use
+    float render_box_half_size_x = 28;
+    float render_box_half_size_y = 29;
+    optional string name = 30; // Overrides the prefab name to use
 
     // Used for constraint limit assignment
     optional float limit_1 = 128;  
@@ -988,6 +991,8 @@ message BarrierColliderAttr {
     
     bool provides_stairs_p = 7; 
     bool provides_stairs_n = 8; 
+
+    float provides_damage = 9;
 }
 
 /*
@@ -1019,10 +1024,14 @@ message Trap {
     float ang_vel_y = 24;
     float ang_vel_z = 25;
 
+    float constraint_bias = 26;
+
     // For being destructable
-    int32 hp = 26;
-    repeated BulletImmuneRecord bullet_immune_records = 27; 
-    uint32 bir_count = 28;
+    int32 hp = 27;
+    int32 damaged_hint_rdf_countdown = 28;
+    uint32 damaged_elemental_attrs = 29;
+    repeated BulletImmuneRecord bullet_immune_records = 30; 
+    uint32 bir_count = 31;
 }
 
 message PeerUdpAddr {
@@ -1507,7 +1516,9 @@ message TriggerConfigFromTiled {
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
     int32 level_score = 23;
 
-    optional string name = 24; // Overrides the prefab name to use
+    float render_box_half_size_x = 24;
+    float render_box_half_size_y = 25;
+    optional string name = 26; // Overrides the prefab name to use
 
     bool is_story_ready_go = 512; 
     int32 bgm_id = 513;
