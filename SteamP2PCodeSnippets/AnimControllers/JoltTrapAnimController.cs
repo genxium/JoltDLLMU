@@ -38,14 +38,19 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         facingQ.Set(currTrap.QX, currTrap.QY, currTrap.QZ, currTrap.QW);
         Vector3 trapFacing = facingQ * Vector3.right;
 
+        float absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
+        float absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
+
         if (PbPrimitivesOverride.TPT_ROTATING_PLATFORM == currTrap.Tpt) {
             this.gameObject.transform.localRotation = facingQ;
+            scaleHolder.Set(+absScaleX, absScaleY, this.gameObject.transform.localScale.z);
+            this.gameObject.transform.localScale = scaleHolder;
         } else {
             if (0 > trapFacing.x) {
-                scaleHolder.Set(-1.0f, 1.0f, this.gameObject.transform.localScale.z);
+                scaleHolder.Set(-absScaleX, absScaleY, this.gameObject.transform.localScale.z);
                 this.gameObject.transform.localScale = scaleHolder;
             } else if (0 < trapFacing.x) {
-                scaleHolder.Set(+1.0f, 1.0f, this.gameObject.transform.localScale.z);
+                scaleHolder.Set(+absScaleX, absScaleY, this.gameObject.transform.localScale.z);
                 this.gameObject.transform.localScale = scaleHolder;
             }
         }

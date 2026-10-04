@@ -38,11 +38,13 @@ public class JoltTriggerAnimController : AbstractCacheableAnimNode<Trigger, Trig
         }
         facingQ.Set(insConfig.InitQX, insConfig.InitQY, insConfig.InitQZ, insConfig.InitQW);
         Vector3 facing = facingQ * Vector3.right;
+        float absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
+        float absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
         if (0 > facing.x) {
-            scaleHolder.Set(-1.0f, 1.0f, this.gameObject.transform.localScale.z);
+            scaleHolder.Set(-absScaleX, absScaleY, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;
         } else if (0 < facing.x) {
-            scaleHolder.Set(+1.0f, 1.0f, this.gameObject.transform.localScale.z);
+            scaleHolder.Set(+absScaleX, absScaleY, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;
         }
 

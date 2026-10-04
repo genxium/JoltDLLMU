@@ -538,7 +538,7 @@ namespace JoltCSharp {
             BulletConfig BladeGirlDiverImpactHit1 = new BulletConfig {
                 StartupFrames = 5,
                               StartupInvinsibleFrames = 3,
-                              ActiveFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+                              ActiveFrames = primitiveConsts.MagicRdfCntInfinite,
                               HitStunFrames = 18,
                               BlockStunFrames = 8,
                               CooldownFrames = 16,

@@ -86,6 +86,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         return collisionSpacePaddingBottom;
     }
 
+    protected float SFX_ATTENUATION_PIVOT_Z = 16.0f; // Same magnitude as a typical character capsule radius
+
     protected float cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY;
     protected float effInftyFar, npcInterpolationDis2Threshold;
 
@@ -869,7 +871,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         float initAngVelZVal = (null != initAngVelZ && !initAngVelZ.IsEmpty ? initAngVelZ.GetValueAsFloat() : 0);
 
         float sliderAxisXVal = (null != sliderAxisX && !sliderAxisX.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
-        float sliderAxisYVal = (null != sliderAxisY && !sliderAxisY.IsEmpty ? sliderAxisX.GetValueAsFloat() : 0);
+        float sliderAxisYVal = (null != sliderAxisY && !sliderAxisY.IsEmpty ? sliderAxisY.GetValueAsFloat() : 0);
         float sliderAxisZVal = (null != sliderAxisZ && !sliderAxisZ.IsEmpty ? sliderAxisZ.GetValueAsFloat() : 0);
 
         float limit1Val = (null != limit1 && !limit1.IsEmpty ? limit1.GetValueAsFloat() : 0);
@@ -907,7 +909,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
         
 
-        
         TrapConfigFromTiled trapConfigFromTiled = new TrapConfigFromTiled {
             Id = trapId,
             Tpt = tptVal,
@@ -927,7 +928,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             SliderAxisZ = sliderAxisZVal,
             BoxHalfSizeX = boxHalfSizeX,
             BoxHalfSizeY = boxHalfSizeY,
-
+            RenderBoxHalfSizeX = .5f * tileObj.m_Width,
+            RenderBoxHalfSizeY = .5f * tileObj.m_Height,
             SubscribesToTriggerId = subscribesToTriggerIdVal,
             CooldownRdfCount = effCooldownRdfCount,
 
@@ -935,7 +937,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             InitNotMoving = initNotMovingVal
         };
 
-        if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal) {
+        if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal || PbPrimitivesOverride.Instance.getUnderlying().Tpts.Spring == tptVal) {
             if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
                 Assert.IsTrue(limit1Val <= limit2Val);
                 trapConfigFromTiled.Limit1 = limit1Val;
@@ -1099,6 +1101,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             Quota= quotaVal,
             BoxHalfSizeX = boxHalfSizeX,
             BoxHalfSizeY = boxHalfSizeY,
+            RenderBoxHalfSizeX = .5f * tileObj.m_Width,
+            RenderBoxHalfSizeY = .5f * tileObj.m_Height,
             NewRevivalX = newRevivalXVal,
             NewRevivalY = newRevivalYVal,
             PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
@@ -1403,7 +1407,16 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             }
 
             // Add character vfx
-            float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
+            string sfxName = sfxSourceAnimPool.CalcSfxName(currCharacterDownsync, chConfig);
+            if (!String.IsNullOrEmpty(sfxName)) {
+                var (sfxHolder, oldSfxUd) = sfxSourceAnimPool.GetOrCreateAnimNode(playerUd, sfxName, chConfig, underlyingMap.transform);
+                float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
+                float distanceAttenuation = (distanceAttenuationZ < SFX_ATTENUATION_PIVOT_Z) ? 0 : Mathf.Log((distanceAttenuationZ - SFX_ATTENUATION_PIVOT_Z) / SFX_ATTENUATION_PIVOT_Z);
+                sfxHolder.SetRealtimeAttenuation(distanceAttenuation);
+                sfxHolder.updateAnim(rdfId, playerUd, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
+                sfxHolder.gameObject.transform.position = newPosHolder;
+            }
+
             playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chConfig.CapsuleHalfHeight, chAnimCtrl, playerUd, material, false);
         }
 
@@ -1483,6 +1496,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             string sfxName = sfxSourceAnimPool.CalcSfxName(bullet, bulletConfig);
             if (!String.IsNullOrEmpty(sfxName)) {
                 var (sfxHolder, oldUd) = sfxSourceAnimPool.GetOrCreateAnimNode(bulletUd, sfxName, bulletConfig, underlyingMap.transform);
+                float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
+                float distanceAttenuation = (distanceAttenuationZ < SFX_ATTENUATION_PIVOT_Z) ? 0 : Mathf.Log((distanceAttenuationZ-SFX_ATTENUATION_PIVOT_Z)/SFX_ATTENUATION_PIVOT_Z);
+                sfxHolder.SetRealtimeAttenuation(distanceAttenuation);
                 sfxHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
                 sfxHolder.gameObject.transform.position = newPosHolder;
             }
@@ -1493,8 +1509,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                 bulletAnimHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
                 bulletAnimHolder.gameObject.transform.position = newPosHolder;
                 /*
-                float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
-                playBulletSfx(bullet, bulletConfig, isExploding, wx, wy, rdf.Id, distanceAttenuationZ);
                 playBulletVfx(bullet, bulletConfig, isStartup, isExploding, wx, wy, rdf);
                 */
             }
@@ -1524,14 +1538,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             ulong trapUd = Bindings.APP_CalcTrapUserData(tp.Id);
             var tpConfigFromTiled = trapUdToConfigFromTiled[trapUd];
             var (tpAnimCtrl, oldUd) = trapAnimPool.GetOrCreateAnimNode(trapUd, tp.Tpt, tpConfigFromTiled, underlyingMap.transform);
-
+            TrapState effTpState = tp.TrapState;
+            int effFramesInTpState = tp.FramesInTrapState;
             var (wx, wy) = CollisionSpacePositionToWorldPosition(tp.X, tp.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
-
             newPosHolder.Set(wx, wy, trapZ);
 
             tpAnimCtrl.gameObject.transform.position = newPosHolder;
-
-            tpAnimCtrl.updateAnim(rdfId, trapUd, tp, tp.TrapState, tpConfigFromTiled, tp.FramesInTrapState);
+            tpAnimCtrl.updateAnim(rdfId, trapUd, tp, effTpState, tpConfigFromTiled, effFramesInTpState);           
         }
 
         for (int k = 0; k < rdf.TriggerCount; k++) {
