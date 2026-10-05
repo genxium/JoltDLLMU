@@ -1210,6 +1210,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             int vanishingPosAddsCnt = 0;
 
             bool hitOnCharacter = false;
+            bool hitOnDestructibleTrap = false;
             bool hitOnHarderBullet = false;
 
             uint64_t offenderUd = currBl.offender_ud();
@@ -1225,17 +1226,19 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             if (transientUdToCollisionUdHolder.count(ud)) {
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
-                int cntNow = holder->GetCnt_Realtime();
                 uint64_t udRhs;
                 ContactPoints contactPointsLhs;
                 Vec3 worldSpaceNormIntoPeer;
                 BodyID peerBodyID; 
                 SubShapeID peerSubShapeID;
-                for (int j = 0; j < holder->GetCnt_Realtime(); ++j) {
+                int holderCnt = holder->GetCnt_Realtime();
+                for (int j = 0; j < holderCnt; ++j) {
                     bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
                     if (!fetched) continue;
                     uint64_t udtRhs = getUDT(udRhs);
                     hitOnCharacter = (UDT_PLAYER == udtRhs || UDT_NPC == udtRhs);
+                    hitOnDestructibleTrap = (UDT_TRAP == udtRhs);
+
                     switch (udtRhs) {
                     case UDT_PLAYER:
                     case UDT_NPC:
@@ -1244,9 +1247,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     case UDT_TRIGGER:
                         switch (lhsBlConfig->b_type()) {
                         case BulletType::Melee:
-                            if (!lhsBlConfig->remains_upon_hit() && nullptr != offenderNextChd && hitOnCharacter) {
+                            if (!lhsBlConfig->remains_upon_hit()) {
                                 shouldVanish = true;
-                                if (0 < lhsBlConfig->melee_hit_self_stun_frames()) {
+                                if (0 < lhsBlConfig->melee_hit_self_stun_frames() && nullptr != offenderNextChd && (hitOnCharacter || hitOnDestructibleTrap)) {
                                     // [REMINDER] We're in a multi-threaded callback handler, in theory it's NOT thread-safe to update "offenderNextChd" here, but in this specific case it's thread-safe because there'd be AT MOST ONE ACTIVE MELEE bullet satisfying "0 < lhsBlConfig->melee_hit_self_stun_frames()" from an offender at each RenderFrame.     
                                     if (offenderNextChd->ch_state() == lhsSkill->bound_ch_state()) {
                                         offenderNextChd->set_hit_self_stun_frames(lhsBlConfig->melee_hit_self_stun_frames() + lhsBlConfig->cooldown_frames() - 1);
@@ -1435,100 +1438,101 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 const TrapConfig* tpConfig = nullptr;
                 const TrapConfigFromTiled* tpConfigFromTile = nullptr;
                 FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
-                const BodyID effBodyID = *(transientUdToBodyID.at(ud));
+                if (transientUdToBodyID.count(ud)) {
+                    const BodyID effBodyID = *(transientUdToBodyID.at(ud));
 
-                if (!effBodyID.IsInvalid()) {
-                    RVec3 newPos;
-                    Quat newRotFromPhySys;
-                    biNoLock->GetPositionAndRotation(effBodyID, newPos, newRotFromPhySys);
-                    Vec3 newVel, newAngVel;
-                    biNoLock->GetLinearAndAngularVelocity(effBodyID, newVel, newAngVel);
+                    if (!effBodyID.IsInvalid()) {
+                        RVec3 newPos;
+                        Quat newRotFromPhySys;
+                        biNoLock->GetPositionAndRotation(effBodyID, newPos, newRotFromPhySys);
+                        Vec3 newVel, newAngVel;
+                        biNoLock->GetLinearAndAngularVelocity(effBodyID, newVel, newAngVel);
 
-                    JPH_ASSERT(transientUdToNextTrap.count(ud));
-                    Trap* nextTp = transientUdToNextTrap.at(ud);
+                        JPH_ASSERT(transientUdToNextTrap.count(ud));
+                        Trap* nextTp = transientUdToNextTrap.at(ud);
 
-                    int                     newEffDamage = 0;
-                    float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
-                    float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
+                        int                     newEffDamage = 0;
+                        float                   newEffPushbackVelX = globalPrimitiveConsts->no_lock_vel();
+                        float                   newEffPushbackVelY = globalPrimitiveConsts->no_lock_vel();
 
-                    if (transientUdToCollisionUdHolder.count(ud)) {
-                        CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
-                        int cntNow = holder->GetCnt_Realtime();
-                        uint64_t udRhs;
-                        ContactPoints contactPointsLhs;
-                        Vec3 worldSpaceNormIntoPeer;
-                        BodyID peerBodyID;
-                        SubShapeID peerSubShapeID;
-                        int holderCnt = holder->GetCnt_Realtime();
-                        for (int j = 0; j < holderCnt; ++j) {
-                            bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
-                            if (!fetched) continue;
-                            uint64_t udtRhs = getUDT(udRhs);
-                            if (UDT_BL == udtRhs) {
-                                handleLhsTrapCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currTp, tpConfig, tpConfigFromTile, nextTp,
-                                    udRhs, udtRhs, contactPointsLhs,
-                                    newEffDamage, newEffPushbackVelX, newEffPushbackVelY);
+                        if (transientUdToCollisionUdHolder.count(ud)) {
+                            CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
+                            uint64_t udRhs;
+                            ContactPoints contactPointsLhs;
+                            Vec3 worldSpaceNormIntoPeer;
+                            BodyID peerBodyID;
+                            SubShapeID peerSubShapeID;
+                            int holderCnt = holder->GetCnt_Realtime();
+                            for (int j = 0; j < holderCnt; ++j) {
+                                bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
+                                if (!fetched) continue;
+                                uint64_t udtRhs = getUDT(udRhs);
+                                if (UDT_BL == udtRhs) {
+                                    handleLhsTrapCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currTp, tpConfig, tpConfigFromTile, nextTp,
+                                        udRhs, udtRhs, contactPointsLhs,
+                                        newEffDamage, newEffPushbackVelX, newEffPushbackVelY);
+                                }
+                            }
+
+                            if (0 < newEffDamage) {
+                                nextTp->set_hp(nextTp->hp() - newEffDamage);
+                                nextTp->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
+                            }
+                            if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelX) {
+                                newVel.SetX(newEffPushbackVelX);
+                            }
+                            if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelY) {
+                                newVel.SetY(newEffPushbackVelY);
                             }
                         }
-        
-                        if (0 < newEffDamage) {
-                            nextTp->set_hp(nextTp->hp() - newEffDamage);
-                            nextTp->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
-                        }
-                        if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelX) {
-                            newVel.SetX(newEffPushbackVelX);
-                        }
-                        if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelY) {
-                            newVel.SetY(newEffPushbackVelY);
-                        }
-                    }
 
-                    if (globalPrimitiveConsts->tpts().brick() == tpt && 0 >= nextTp->hp()) {
-                        transitToDying(currRdfId, currTp, nextTp);
-                    } 
-
-                    nextTp->set_x(newPos.GetX());
-                    nextTp->set_y(newPos.GetY());
-                    nextTp->set_z(0);
-                    if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt() || globalPrimitiveConsts->tpts().block() == currTp.tpt() || globalPrimitiveConsts->tpts().falling_rock() == currTp.tpt()) {
-                        if (globalPrimitiveConsts->tpts().rotating_platform() != currTp.tpt()) {
-                            // [REMINDER] RotatingPlatform is allowed to rotate by other axis in 3D.
-                            clampRotatedXAxisToXOYPlane(newRotFromPhySys);
+                        if (globalPrimitiveConsts->tpts().brick() == tpt && 0 >= nextTp->hp()) {
+                            transitToDying(currRdfId, currTp, nextTp);
                         }
-                        
-                        nextTp->set_q_x(newRotFromPhySys.GetX());
-                        nextTp->set_q_y(newRotFromPhySys.GetY());
-                        nextTp->set_q_z(newRotFromPhySys.GetZ());
-                        nextTp->set_q_w(newRotFromPhySys.GetW());
-                    }
-                    
-                    nextTp->set_vel_x(IsLengthNearZero(newVel.GetX()* dt) ? 0 : newVel.GetX());
-                    nextTp->set_vel_y(IsLengthNearZero(newVel.GetY()* dt) ? 0 : newVel.GetY());
-                    nextTp->set_vel_z(0);
 
-                    nextTp->set_ang_vel_x(IsAngleNearZero(newAngVel.GetX()* dt) ? 0 : newAngVel.GetX());
-                    nextTp->set_ang_vel_y(IsAngleNearZero(newAngVel.GetY()* dt) ? 0 : newAngVel.GetY());
-                    nextTp->set_ang_vel_z(IsAngleNearZero(newAngVel.GetZ()* dt) ? 0 : newAngVel.GetZ());
+                        nextTp->set_x(newPos.GetX());
+                        nextTp->set_y(newPos.GetY());
+                        nextTp->set_z(0);
+                        if (tpConfigFromTile->allows_rotation_from_phy_sys()) {
+                            if (globalPrimitiveConsts->tpts().rotating_platform() != currTp.tpt()) {
+                                // [REMINDER] RotatingPlatform is allowed to rotate by other axis in 3D.
+                                clampRotatedXAxisToXOYPlane(newRotFromPhySys);
+                            }
 
-                    uint32_t subscribesToTriggerId = tpConfigFromTile->subscribes_to_trigger_id();
-                    bool isTriggerBased = (nullptr != tpConfigFromTile && globalPrimitiveConsts->terminating_trigger_id() != subscribesToTriggerId);
-                    if ((globalPrimitiveConsts->tpts().sliding_platform() == tpt || globalPrimitiveConsts->tpts().rotating_platform() == tpt)  
-                        && isTriggerBased && TpWalking == currTp.trap_state()) {
-                        // Stop by obstacles 
-                        if (globalPrimitiveConsts->tpts().sliding_platform() == currTp.tpt()) {
-                            if (0 == nextTp->vel_x() && 0 == nextTp->vel_y() && 0 == nextTp->vel_z()) {
-                                nextTp->set_trap_state(TpIdle);
-                                nextTp->set_frames_in_trap_state(0);
+                            nextTp->set_q_x(newRotFromPhySys.GetX());
+                            nextTp->set_q_y(newRotFromPhySys.GetY());
+                            nextTp->set_q_z(newRotFromPhySys.GetZ());
+                            nextTp->set_q_w(newRotFromPhySys.GetW());
+                        }
+
+                        nextTp->set_vel_x(IsLengthNearZero(newVel.GetX() * dt) ? 0 : newVel.GetX());
+                        nextTp->set_vel_y(IsLengthNearZero(newVel.GetY() * dt) ? 0 : newVel.GetY());
+                        nextTp->set_vel_z(0);
+
+                        nextTp->set_ang_vel_x(IsAngleNearZero(newAngVel.GetX() * dt) ? 0 : newAngVel.GetX());
+                        nextTp->set_ang_vel_y(IsAngleNearZero(newAngVel.GetY() * dt) ? 0 : newAngVel.GetY());
+                        nextTp->set_ang_vel_z(IsAngleNearZero(newAngVel.GetZ() * dt) ? 0 : newAngVel.GetZ());
+
+                        uint32_t subscribesToTriggerId = tpConfigFromTile->subscribes_to_trigger_id();
+                        bool isTriggerBased = (nullptr != tpConfigFromTile && globalPrimitiveConsts->terminating_trigger_id() != subscribesToTriggerId);
+                        if ((globalPrimitiveConsts->tpts().sliding_platform() == tpt || globalPrimitiveConsts->tpts().rotating_platform() == tpt)
+                            && isTriggerBased && TpWalking == currTp.trap_state()) {
+                            // Stop by obstacles 
+                            if (globalPrimitiveConsts->tpts().sliding_platform() == currTp.tpt()) {
+                                if (0 == nextTp->vel_x() && 0 == nextTp->vel_y() && 0 == nextTp->vel_z()) {
+                                    nextTp->set_trap_state(TpIdle);
+                                    nextTp->set_frames_in_trap_state(0);
 #ifndef NDEBUG
-                                std::ostringstream oss;
-                                oss << "@currRdfId=" << currRdfId << " sliding platform currTp ud=" << ud << " at currPos=(" << currTp.x() << ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "); about to transit from walking to idle due to vel reduced to 0";
-                                Debug::Log(oss.str(), DColor::Orange);
+                                    std::ostringstream oss;
+                                    oss << "@currRdfId=" << currRdfId << " sliding platform currTp ud=" << ud << " at currPos=(" << currTp.x() << ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "); about to transit from walking to idle due to vel reduced to 0";
+                                    Debug::Log(oss.str(), DColor::Orange);
 #endif
-                            }
-                        } else if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
-                            if (0 == nextTp->ang_vel_x() && 0 == nextTp->ang_vel_y() && 0 == nextTp->ang_vel_z()) {
-                                nextTp->set_trap_state(TpIdle);
-                                nextTp->set_frames_in_trap_state(0);
+                                }
+                            } else if (globalPrimitiveConsts->tpts().rotating_platform() == currTp.tpt()) {
+                                if (0 == nextTp->ang_vel_x() && 0 == nextTp->ang_vel_y() && 0 == nextTp->ang_vel_z()) {
+                                    nextTp->set_trap_state(TpIdle);
+                                    nextTp->set_frames_in_trap_state(0);
+                                }
                             }
                         }
                     }
@@ -1558,13 +1562,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             int oldNextRemainingRecurrQuota = nextRemainingRecurQuota;
             if (transientUdToCollisionUdHolder.count(ud)) {
                 CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
-                int cntNow = holder->GetCnt_Realtime();
                 uint64_t udRhs;
                 ContactPoints contactPointsLhs;
                 Vec3 worldSpaceNormIntoPeer;
                 BodyID peerBodyID; 
                 SubShapeID peerSubShapeID;
-                for (int j = 0; j < holder->GetCnt_Realtime(); ++j) {
+                int holderCnt = holder->GetCnt_Realtime();
+                for (int j = 0; j < holderCnt; ++j) {
                     bool fetched = holder->GetUd_NotThreadSafe(j, udRhs, contactPointsLhs, worldSpaceNormIntoPeer, peerBodyID, peerSubShapeID);
                     if (!fetched) continue;
                     uint64_t udtRhs = getUDT(udRhs);
@@ -2083,6 +2087,22 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         int effCooldownRdfCount = (0 >= c.cooldown_rdf_count() ? tpConfig.default_cooldown_rdf_count() : c.cooldown_rdf_count());
         effTrapConfigFromTiled->set_cooldown_rdf_count(effCooldownRdfCount);
 
+        if (!c.has_hp()) {
+            effTrapConfigFromTiled->set_hp(tpConfig.hp());
+        }
+
+        if (!c.has_takes_gravity()) {
+            effTrapConfigFromTiled->set_takes_gravity(tpConfig.takes_gravity());
+        }
+
+        if (!c.has_destructible()) {
+            effTrapConfigFromTiled->set_destructible(tpConfig.destructible());
+        }
+
+        if (!c.has_allows_rotation_from_phy_sys()) {
+            effTrapConfigFromTiled->set_allows_rotation_from_phy_sys(tpConfig.allows_rotation_from_phy_sys());
+        }
+
         Vec3 worldSpaceSliderAxis(c.slider_axis_x(), c.slider_axis_y(), c.slider_axis_z());
         if (0 == worldSpaceSliderAxis.Length()) {
             Vec3 initVel(c.init_vel_x(), c.init_vel_y(), c.init_vel_z());
@@ -2151,6 +2171,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         
         if (!trapConfigFromTileDict.count(tp->id())) continue;
         const TrapConfigFromTiled* c = trapConfigFromTileDict.at(tp->id());
+        tp->set_hp(c->hp());
         tp->set_x(c->init_x());
         tp->set_y(c->init_y());
         tp->set_z(c->init_z());
@@ -4027,19 +4048,18 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
         Vec3 newTrapPos(currTp.x(), currTp.y(), currTp.z());
         Quat newTrapRot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
-
-        if (globalPrimitiveConsts->tpts().boss_door() == tpt) {
-            TrapState currTpState = currTp.trap_state();
-            if (TrapState::TpIdle == currTpState || TrapState::TpActivated == currTpState) {
-                TP_COLLIDER_T* tpCollider = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, newTrapPos, newTrapRot);
-                auto trapBodyID = tpCollider->GetID();
-                if (!tpCollider->IsInBroadPhase()) {
-                    bodyIDsToAdd.push_back(trapBodyID);
-                }
-                bodyIDsToActivate.push_back(trapBodyID);
-            }
-        } else {
+        const TrapState currTpState = currTp.trap_state();
+        if (isTrapCollidable(&currTp, tpt, currTpState)) {
             TP_COLLIDER_T* tpCollider = getOrCreateCachedTrapCollider_NotThreadSafe(ud, immediateBoxHalfSizeX, immediateBoxHalfSizeY, tpConfig, tpConfigFromTile, false, newTrapPos, newTrapRot);
+            if (nullptr != tpConfigFromTile && tpConfigFromTile->has_barrier_attr()) {
+                const BarrierColliderAttr& barrierAttr = tpConfigFromTile->barrier_attr();
+                if (barrierAttr.provides_slip_jump()) {
+                    transientSlipJumpableUds.insert(ud);
+                }
+                if (barrierAttr.prohibits_wall_grabbing()) {
+                    transientWallGrabProhibitingUds.insert(ud);
+                }
+            }
             auto trapBodyID = tpCollider->GetID();
             if (!tpCollider->IsInBroadPhase()) {
                 bodyIDsToAdd.push_back(trapBodyID);
@@ -4047,8 +4067,8 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             bodyIDsToActivate.push_back(trapBodyID);
 
             if (!tpConfig->use_kinematic()) {
-                /* [REMINDER] 
-                    
+                /* [REMINDER]
+
                 To suffice "TwoBodyConstraint.IsActive()", one of the bodies MUST BE DYNAMIC;
 
                 Moreover, in a "TwoBodyConstraint", "Body1" should be the "reference one" and "Body2" should be the "moving one".
@@ -4063,11 +4083,13 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 if (!constraintHelperBody->IsInBroadPhase()) {
                     bodyIDsToAdd.push_back(constraintHelperBodyID);
                 }
-                bodyIDsToActivate.push_back(constraintHelperBodyID);   
+                bodyIDsToActivate.push_back(constraintHelperBodyID);
             }
 
             if (globalPrimitiveConsts->tpts().spring() == tpt) {
                 transientSpringUds.insert(ud);
+            } else if (globalPrimitiveConsts->tpts().brick() == tpt) {
+                transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
             }
         }
     }
@@ -4214,24 +4236,15 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             Vec3 newTpAngVel = Vec3(nextTp->ang_vel_x(), nextTp->ang_vel_y(), nextTp->ang_vel_z());
             TP_COLLIDER_T* tpMainCollider = transientUdToTpCollider.count(ud) ? transientUdToTpCollider.at(ud) : nullptr;
 
-            if (globalPrimitiveConsts->tpts().falling_rock() == tpt) {
-                if (nullptr != tpMainCollider) {
-                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), 1);
-                }
-            } else if (globalPrimitiveConsts->tpts().block() == tpt) {
+            if (globalPrimitiveConsts->tpts().brick() == tpt) {
                 if (nullptr != tpMainCollider) {
                     TP_COLLIDER_T* tpMainCollider = transientUdToTpCollider.at(ud);
-                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), 1);
-                }
-            } else if (globalPrimitiveConsts->tpts().brick() == tpt) {
-                if (nullptr != tpMainCollider) {
-                    TP_COLLIDER_T* tpMainCollider = transientUdToTpCollider.at(ud);
-                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), 1);
+                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), tpConfigFromTile->takes_gravity() ? 1 : 0);
                 }
             } else if (globalPrimitiveConsts->tpts().sliding_platform() == tpt) {
                 JPH_ASSERT(nullptr != tpConfigFromTile);
                 if (nullptr != tpMainCollider) {
-                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), 0);
+                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), tpConfigFromTile->takes_gravity() ? 1 : 0);
                 }
                 int effCooldownRdfCount = tpConfigFromTile->cooldown_rdf_count();
                 Body* constraintHelperBody = transientUdToConstraintHelperBody.at(ud);
@@ -4340,7 +4353,7 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             } else if (globalPrimitiveConsts->tpts().rotating_platform() == tpt) {
                 JPH_ASSERT(nullptr != tpConfigFromTile);
                 if (nullptr != tpMainCollider) {
-                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), 0);
+                    biNoLock->SetGravityFactor(tpMainCollider->GetID(), tpConfigFromTile->takes_gravity() ? 1 : 0);
                 }
                 int effCooldownRdfCount = tpConfigFromTile->cooldown_rdf_count();
 
@@ -7059,7 +7072,6 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     if (transientUdToCollisionUdHolder.count(ud)) {
         CollisionUdHolder_ThreadSafe* holder = transientUdToCollisionUdHolder.at(ud);
-        int cntNow = holder->GetCnt_Realtime();
         uint64_t udRhs;
         ContactPoints contactPointsLhs;
         Vec3 worldSpaceNormIntoPeer;
@@ -7934,6 +7946,8 @@ void BaseBattle::calcSingleBulletEffDamage(const int currRdfId, const Trap* next
     if (globalPrimitiveConsts->tpts().brick() != nextVictimTp->tpt()) {
         return;
     }
+
+    *outBulletEffDamage = rhsBlConfig->damage();
 }
 
 void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
@@ -8018,6 +8032,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
     outNewDamage += effSingleBlDamage; 
     outEffDef1QuotaReduction += effSingleBlDef1QuotaReduction;
+    bool attemptedButFailedToBlowUp = false;
     if (0 < effSingleBlDamage) {
         outShouldSkipGroundServing = true;
         outShouldSkipWallServing = true;
@@ -8038,11 +8053,13 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 #endif
 */
         
-        if (rhsBlConfig->blow_up()) {
+        if (rhsBlConfig->blow_up() || (rhsBlConfig->blow_up_on_air_hit_only() && 0 == currChd->ground_ud())) {
             if (!cc->omit_gravity() && !successfulDef1) {       
                 outNewEffBlownUp = true;
             }
         }
+
+        attemptedButFailedToBlowUp = (rhsBlConfig->blow_up() || rhsBlConfig->blow_up_on_air_hit_only()) && (false == outNewEffBlownUp);
 
         uint64_t rhsOffenderUd = rhsCurrBl->offender_ud();
         uint64_t rhsOffenderUdt = getUDT(rhsCurrBl->offender_ud());
@@ -8103,13 +8120,13 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     );
 
     auto blEffPushbackVelocity = blQ*blInitPushbackVelocity;
-    if (globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_x()) {
+    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_x()) {
         if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelX || std::abs(blEffPushbackVelocity.GetX()) > std::abs(outNewEffPushbackVelX)) {
             outNewEffPushbackVelX =  blEffPushbackVelocity.GetX();
         }
     }
     
-    if (globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_y()) {
+    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_y()) {
         if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelY || std::abs(blEffPushbackVelocity.GetY()) > std::abs(outNewEffPushbackVelY)) {
             outNewEffPushbackVelY = blEffPushbackVelocity.GetY();
         }
@@ -8117,7 +8134,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
     if (!successfulDef1) {
         // [REMINDER] Including "frames_to_recover" extension during "Def1Broken".
-        int effHitStunFramesComparand = (cc->omit_gravity() && rhsBlConfig->blow_up()) ? rhsBlConfig->block_stun_frames() : rhsBlConfig->hit_stun_frames(); 
+        int effHitStunFramesComparand = (attemptedButFailedToBlowUp ? rhsBlConfig->block_stun_frames() : rhsBlConfig->hit_stun_frames()); 
         if (rhsBlConfig->hardness() >= cc->hardness() && effHitStunFramesComparand > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = effHitStunFramesComparand; 
             outShouldSkipGroundServing = true;
@@ -8197,8 +8214,9 @@ void BaseBattle::handleLhsTrapCollisionWithRhsBullet(
 
     bool successfulDef1 = false;
     int effSingleBlDamage = 0;
-    
-    calcSingleBulletEffDamage(currRdfId, nextTp, tpConfig, tpConfigFromTile, rhsCurrBl, rhsBlConfig, &effSingleBlDamage);
+    if (tpConfigFromTile->destructible()) {
+        calcSingleBulletEffDamage(currRdfId, nextTp, tpConfig, tpConfigFromTile, rhsCurrBl, rhsBlConfig, &effSingleBlDamage);
+    }
 
     outNewDamage += effSingleBlDamage; 
 

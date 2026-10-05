@@ -86,6 +86,11 @@ namespace jtshared {
             return this;
         }
 
+        public BulletConfig SetBlockStunFrames(int val) {
+            this.BlockStunFrames = val;
+            return this;
+        }
+
         public BulletConfig SetHitInvinsibleFrames(int val) {
             this.HitInvinsibleFrames = val;
             return this;
@@ -198,6 +203,11 @@ namespace jtshared {
 
         public BulletConfig SetBlowUp(bool val) {
             BlowUp = val;
+            return this;
+        }
+
+        public BulletConfig SetBlowUpOnAirHitOnly(bool val) {
+            BlowUpOnAirHitOnly = val;
             return this;
         }
 

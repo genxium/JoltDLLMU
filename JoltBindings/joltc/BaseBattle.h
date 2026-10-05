@@ -1151,6 +1151,21 @@ protected:
         return !(TrapState::TpDead == trap->trap_state() && globalPrimitiveConsts->dying_frames_to_recover() < trap->frames_in_trap_state());
     }
 
+    inline bool isTrapCollidable(const Trap* trap, const uint32_t tpt, const TrapState trapState) {
+        if (globalPrimitiveConsts->tpts().boss_door() == tpt) {
+            return TrapState::TpIdle == trapState || TrapState::TpActivated == trapState;
+        } else if (globalPrimitiveConsts->tpts().brick() == tpt) {
+            return TrapState::TpIdle == trapState;
+        } else if (globalPrimitiveConsts->tpts().sliding_platform() == tpt 
+            || globalPrimitiveConsts->tpts().rotating_platform() == tpt 
+            || globalPrimitiveConsts->tpts().conveyor_belt() == tpt
+            || globalPrimitiveConsts->tpts().spring() == tpt) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     inline bool isTriggerAlive(const Trigger* trigger, int currRdfId) const {
         return !(TriggerState::TrDead == trigger->state() && globalPrimitiveConsts->dying_frames_to_recover() < trigger->frames_in_state());
     }

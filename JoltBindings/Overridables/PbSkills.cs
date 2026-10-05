@@ -514,7 +514,10 @@ namespace JoltCSharp {
                     );
 
             BulletConfig BladeGirlDragonPunchHit1 = new BulletConfig(BladeGirlGroundSlash1Hit1)
-                .SetBlowUp(true)
+                .SetBlowUp(false)
+                .SetBlowUpOnAirHitOnly(true)
+                .SetHitStunFrames(DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER)
+                .SetBlockStunFrames(10)
                 .SetStartupFrames(5)
                 .SetActiveFrames(21)
                 .SetCooldownFrames(20)

@@ -504,16 +504,18 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         var inMapCollider = barrierChild.GetComponent<EdgeCollider2D>();
                         var tileProps = barrierChild.GetComponent<SuperCustomProperties>();
 
-                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped, prohibitsWallGrabbing;
+                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped, prohibitsWallGrabbing, providesDamage;
                         tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
                         tileProps.TryGetCustomProperty("providesSlipJump", out providesSlipJump);
                         tileProps.TryGetCustomProperty("providesStairsP", out providesStairsP);
                         tileProps.TryGetCustomProperty("providesStairsN", out providesStairsN);
+                        tileProps.TryGetCustomProperty("providesDamage", out providesDamage);
                         tileProps.TryGetCustomProperty("isParallelePiped", out isParallelePiped);
 
                         bool providesSlipJumpVal = null == providesSlipJump || providesSlipJump.IsEmpty ? false : (0 < providesSlipJump.GetValueAsInt());
                         bool providesStairsPVal = null == providesStairsP || providesStairsP.IsEmpty ? false : (0 < providesStairsP.GetValueAsInt());
                         bool providesStairsNVal = null == providesStairsN || providesStairsN.IsEmpty ? false : (0 < providesStairsN.GetValueAsInt());
+                        float providesDamageVal = (null != providesDamage && !providesDamage.IsEmpty) ? providesDamage.GetValueAsFloat() : 0;
                         bool isParallelePipedVal = null == isParallelePiped || isParallelePiped.IsEmpty ? false : (0 < isParallelePiped.GetValueAsInt());
                         bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
 
@@ -566,6 +568,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                                     ProvidesSlipJump = providesSlipJumpVal,
                                     ProvidesStairsP = providesStairsPVal,
                                     ProvidesStairsN = providesStairsNVal,
+                                    ProvidesDamage = providesDamageVal,
                                     ProhibitsWallGrabbing = prohibitsWallGrabbingVal,
                                 }
                             };
@@ -821,10 +824,13 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     }
 
     protected virtual (Trap, TrapConfigFromTiled) parseTrap(SuperObject tileObj, SuperCustomProperties tileProps) {
-        CustomProperty id, tpt, initVelX, initVelY, initVelZ, initAngVelX, initAngVelY, initAngVelZ, prohibitsWallGrabbing, subscribesToTriggerId, cooldownRdfCount, sliderAxisX, sliderAxisY, sliderAxisZ, limit1, limit2, limit3, limit4;
+        CustomProperty id, tpt, initVelX, initVelY, initVelZ, initAngVelX, initAngVelY, initAngVelZ, prohibitsWallGrabbing, providesSlipJump, subscribesToTriggerId, cooldownRdfCount, sliderAxisX, sliderAxisY, sliderAxisZ, limit1, limit2, limit3, limit4;
 
         CustomProperty name;
         CustomProperty initNotMoving;
+        CustomProperty hp;
+        CustomProperty allowsRotationFromPhySys;
+        CustomProperty destructible;
 
         tileProps.TryGetCustomProperty("id", out id);
         tileProps.TryGetCustomProperty("tpt", out tpt);
@@ -833,12 +839,16 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("initVelZ", out initVelZ);
         tileProps.TryGetCustomProperty("name", out name);
         tileProps.TryGetCustomProperty("initNotMoving", out initNotMoving);
+        tileProps.TryGetCustomProperty("hp", out hp);
+        tileProps.TryGetCustomProperty("allowsRotationFromPhySys", out allowsRotationFromPhySys);
+        tileProps.TryGetCustomProperty("destructible", out destructible);
 
         tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
         tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
         tileProps.TryGetCustomProperty("initAngVelZ", out initAngVelZ);
 
         tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
+        tileProps.TryGetCustomProperty("providesSlipJump", out providesSlipJump);
         tileProps.TryGetCustomProperty("subscribesToTriggerId", out subscribesToTriggerId);
         tileProps.TryGetCustomProperty("cooldownRdfCount", out cooldownRdfCount);
         tileProps.TryGetCustomProperty("sliderAxisX", out sliderAxisX);
@@ -879,7 +889,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         float limit3Val = (null != limit3 && !limit3.IsEmpty ? limit3.GetValueAsFloat() : 0);
         float limit4Val = (null != limit4 && !limit4.IsEmpty ? limit4.GetValueAsFloat() : 0);
 
-        bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
+        bool prohibitsWallGrabbingVal = (null == prohibitsWallGrabbing || prohibitsWallGrabbing.IsEmpty) ? false : (0 < prohibitsWallGrabbing.GetValueAsInt());
+        bool providesSlipJumpVal = (null == providesSlipJump || providesSlipJump.IsEmpty) ? false : (0 < providesSlipJump.GetValueAsInt());
 
         bool xFlipped = isXFlipped(tileObj.m_TileId);
         uint subscribesToTriggerIdVal = (null == subscribesToTriggerId || subscribesToTriggerId.IsEmpty ? primitives.TerminatingTriggerId : (uint)subscribesToTriggerId.GetValueAsInt());
@@ -890,19 +901,28 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
         var (boxHalfSizeX, boxHalfSizeY) = (.5f * tileObj.m_Width, .5f * tileObj.m_Height);
 
-        if (null != tileObj.m_SuperTile && null != tileObj.m_SuperTile.m_CollisionObjects) {
-            var collisionObjs = tileObj.m_SuperTile.m_CollisionObjects;
+        var superTile = tileObj.m_SuperTile;
+        if (null != superTile && null != superTile.m_CollisionObjects) {
+            var unscaledWidth = superTile.m_Width;
+            var unscaledHalfSizeX = 0.5f*unscaledWidth;
+            var unscaledHeight = superTile.m_Height;
+            var unscaledHalfSizeY = 0.5f * unscaledHeight;
+            float scaleX = boxHalfSizeX / unscaledHalfSizeX;
+            float scaleY = boxHalfSizeY / unscaledHalfSizeY;
+            var collisionObjs = superTile.m_CollisionObjects;
             foreach (var collisionObj in collisionObjs) {
                 if ("collidingBox".Equals(collisionObj.m_ObjectName)) {
                     // [WARNING] The offset (0, 0) of the tileObj within TSX is the top-left corner, but SuperTiled2Unity converted that to bottom-left corner and reverted y-axis by itself...
-                    tiledRectCenterX += (collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - boxHalfSizeX);
-                    tiledRectCenterY += (collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - boxHalfSizeY);
-                    (boxHalfSizeX, boxHalfSizeY) = (.5f * collisionObj.m_Size.x, .5f * collisionObj.m_Size.y);
+                    tiledRectCenterX += scaleX*(collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - unscaledHalfSizeX);
+                    tiledRectCenterY += scaleY*(collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - unscaledHalfSizeY);
+                    (boxHalfSizeX, boxHalfSizeY) = (.5f * scaleX * collisionObj.m_Size.x, .5f * scaleY * collisionObj.m_Size.y);
                 }
             }
         }
 
         TrapConfig tpConfig = PbTrapsOverride.Instance.getUnderlying()[tptVal];
+
+        int hpVal = (null != hp && !hp.IsEmpty) ? hp.GetValueAsInt() : tpConfig.Hp;
         int effCooldownRdfCount = (0 >= cooldownRdfCountVal ? tpConfig.DefaultCooldownRdfCount : cooldownRdfCountVal);
 
         var nameVal = (null != name && !name.IsEmpty) ? name.GetValueAsString() : tpConfig.Name;
@@ -934,8 +954,28 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             CooldownRdfCount = effCooldownRdfCount,
 
             Name = nameVal,
-            InitNotMoving = initNotMovingVal
+            InitNotMoving = initNotMovingVal,
+            Hp = hpVal,
+            
+            BarrierAttr = new BarrierColliderAttr {
+                ProvidesSlipJump = providesSlipJumpVal,
+                ProhibitsWallGrabbing = prohibitsWallGrabbingVal 
+            }
         };
+
+        if (null != allowsRotationFromPhySys && !allowsRotationFromPhySys.IsEmpty) {
+            bool allowsRotationFromPhySysVal = (0 < allowsRotationFromPhySys.GetValueAsInt());
+            trapConfigFromTiled.AllowsRotationFromPhySys = allowsRotationFromPhySysVal;
+        } else {
+            trapConfigFromTiled.AllowsRotationFromPhySys = tpConfig.AllowsRotationFromPhySys;
+        }
+
+        if (null != destructible && !destructible.IsEmpty) {
+            bool destructibleVal = (0 < destructible.GetValueAsInt());
+            trapConfigFromTiled.Destructible = destructibleVal;
+        } else {
+            trapConfigFromTiled.Destructible = tpConfig.Destructible;
+        }
 
         if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal || PbPrimitivesOverride.Instance.getUnderlying().Tpts.Spring == tptVal) {
             if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
