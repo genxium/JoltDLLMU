@@ -11,6 +11,9 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         SetCacheGroupId(PbPrimitivesOverride.Instance.getUnderlying().Tpts.None);
     }
 
+    protected float absScaleX = 1.0f;
+    protected float absScaleY = 1.0f;
+
     protected override bool lazyInit() {
         if (null != lookUpTable && 0 < lookUpTable.Count) return true;
         lookUpTable = new Dictionary<TrapState, AnimationClip>();
@@ -35,13 +38,17 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
         }
+
+        if (TrapState.TpIdle == newState) {
+            // [REMINDER] The "scale" MUST be calculated w.r.t. the reference frame used in map editor (e.g. Tiled).
+            absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
+            absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
+        }
+
         facingQ.Set(currTrap.QX, currTrap.QY, currTrap.QZ, currTrap.QW);
         Vector3 trapFacing = facingQ * Vector3.right;
 
-        float absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
-        float absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
-
-        if (PbPrimitivesOverride.TPT_ROTATING_PLATFORM == currTrap.Tpt) {
+        if (insConfig.AllowsRotationFromPhySys) {
             this.gameObject.transform.localRotation = facingQ;
             scaleHolder.Set(+absScaleX, absScaleY, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;

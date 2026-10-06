@@ -733,7 +733,10 @@ message BulletConfig {
 
     int32 melee_hit_self_stun_frames = 19; // [WARNING] Exclusive against "remains_upon_hit". 
 
-    int32 active_anim_looping_rdf_offset = 21;  
+    bool blow_up = 20;
+    bool blow_up_on_air_hit_only = 21;
+
+    int32 active_anim_looping_rdf_offset = 22;  
     int32 vanishing_anim_rdf_cnt = 23;
     int32 vanishing_anim_looping_rdf_offset = 24;  
     int32 hit_anim_rdf_cnt = 26; // [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
@@ -760,7 +763,6 @@ message BulletConfig {
     bool remains_upon_hit = 41; 
     bool render_rotation_along_velocity = 42;
 
-    bool blow_up = 46;
     int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
 
     bool mh_vanish_on_melee_hit = 48; // "mh" short for "multihit"
@@ -912,6 +914,8 @@ message TrapConfig {
 
     int32 hp = 13;
 
+    bool takes_gravity = 14;
+
     uint32 atk1_skill_id = 23;
 
     float default_box_half_size_x = 26;
@@ -923,6 +927,8 @@ message TrapConfig {
     float pseudo_kinematic_factor = 31;
     float bl_pushback_attenuation = 32;
     bool no_x_flip_rendering = 33;
+    bool destructible = 34;
+    bool allows_rotation_from_phy_sys = 35;
 
     string name = 1024;
 }
@@ -971,7 +977,12 @@ message TrapConfigFromTiled {
 
     float render_box_half_size_x = 28;
     float render_box_half_size_y = 29;
-    optional string name = 30; // Overrides the prefab name to use
+
+    optional bool takes_gravity = 30;
+    optional int32 hp = 31; 
+    optional bool destructible = 32;
+    optional bool allows_rotation_from_phy_sys = 33;
+    optional string name = 34; // Overrides the prefab name to use
 
     // Used for constraint limit assignment
     optional float limit_1 = 128;  
@@ -1026,7 +1037,7 @@ message Trap {
 
     float constraint_bias = 26;
 
-    // For being destructable
+    // For being destructible
     int32 hp = 27;
     int32 damaged_hint_rdf_countdown = 28;
     uint32 damaged_elemental_attrs = 29;
@@ -1618,11 +1629,9 @@ message TrapTypes {
     uint32 sliding_platform = 1; 
     uint32 rotating_platform = 2; 
     uint32 conveyor_belt = 3; 
-    uint32 falling_rock = 4; 
     uint32 spring = 5; 
-    uint32 brick = 6; // destructable 
+    uint32 brick = 6;  
     uint32 boss_door = 7; 
-    uint32 block = 8; // indestructable 
 
     uint32 none = 2048;
 }

@@ -2894,7 +2894,7 @@ RenderFrame* mockSpringTrapTestStartRdf(google::protobuf::Arena* theAllocator) {
 
     auto player1 = startRdf->mutable_players(0);
     auto playerCh1 = player1->mutable_chd();
-    auto playerCh1Species = chSpecies.bountyhunter();
+    auto playerCh1Species = chSpecies.bladegirl();
     auto cc1 = characterConfigs[playerCh1Species];
     playerCh1->set_x(0);
     playerCh1->set_y(300);
@@ -2922,13 +2922,34 @@ RenderFrame* mockSpringTrapTestStartRdf(google::protobuf::Arena* theAllocator) {
     player1->set_revival_q_z(0);
     player1->set_revival_q_w(1);
 
-    auto dynamicTrap1 = startRdf->add_dynamic_traps();
-    dynamicTrap1->set_id(42);
-    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpts().spring());
-    dynamicTrap1->set_x(0);
-    dynamicTrap1->set_y(+116);
+    auto spring = startRdf->add_dynamic_traps();
+    spring->set_id(42);
+    spring->set_tpt(globalPrimitiveConsts->tpts().spring());
+    spring->set_x(0);
+    spring->set_y(+116);
     ++dynamicTrapCount;
-    
+
+    auto brick1 = startRdf->add_dynamic_traps();
+    brick1->set_id(1);
+    brick1->set_tpt(globalPrimitiveConsts->tpts().brick());
+    brick1->set_x(100);
+    brick1->set_y(+116);
+    ++dynamicTrapCount;
+    /*
+    auto brick2 = startRdf->add_dynamic_traps();
+    brick2->set_id(2);
+    brick2->set_tpt(globalPrimitiveConsts->tpts().brick());
+    brick2->set_x(116);
+    brick2->set_y(+116);
+    ++dynamicTrapCount;
+
+    auto brick3 = startRdf->add_dynamic_traps();
+    brick3->set_id(3);
+    brick3->set_tpt(globalPrimitiveConsts->tpts().brick());
+    brick3->set_x(108);
+    brick3->set_y(+200);
+    ++dynamicTrapCount;
+    */
     startRdf->set_npc_id_counter(npcIdCounter);
     startRdf->set_npc_count(npcIdCounter-1);
 
@@ -3872,7 +3893,25 @@ std::map<int, uint64_t> testCmds43 = {
     {0, 0},
     {3, 0},
     {4, 0},
-    {99, 0},
+    {39, 0},
+    {40, 0},
+    {63, 0},
+    {64, 3},
+    {89, 3},
+    {90, 0},
+    {119, 0},
+    {120, 3},
+    {157, 3},
+    {158, 0},
+    {159, 0},
+    {160, 32},
+    {161, 0},
+    {179, 0},
+    {180, 32},
+    {181, 3},
+    {199, 3},
+    {200, 32},
+    {201, 0},
     {1000, 0},
     {1024, 0},
 };
@@ -6372,7 +6411,7 @@ void initTest37Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs37Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 53;
+        int receivedEdIfdId = 58;
         int receivedStIfdId = 48;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
@@ -6385,8 +6424,8 @@ void initTest37Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs37Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 58;
-        int receivedStIfdId = 57;
+        int receivedEdIfdId = 59;
+        int receivedStIfdId = 58;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
         req->set_join_index(2);
@@ -6398,8 +6437,8 @@ void initTest37Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
         incomingUpsyncSnapshotReqs37Intime[receivedTimerRdfId] = req;
     }
     {
-        int receivedEdIfdId = 70;
-        int receivedStIfdId = 58;
+        int receivedEdIfdId = 69;
+        int receivedStIfdId = 59;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
         req->set_join_index(2);
@@ -6412,7 +6451,7 @@ void initTest37Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     }
     {
         int receivedEdIfdId = 71;
-        int receivedStIfdId = 70;
+        int receivedStIfdId = 69;
         int receivedTimerRdfId = BaseBattle::ConvertToFirstUsedRenderFrameId(receivedStIfdId) - 1;
         WsReq* req = google::protobuf::Arena::Create<WsReq>(theAllocator);
         req->set_join_index(2);
@@ -6630,6 +6669,46 @@ void initTest43Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled1->set_limit_4(0.01f);
     trapConfigFromTiled1->set_slider_axis_y(+1.0f);
     trapConfigFromTiled1->set_init_not_moving(true);
+
+    auto trapConfigFromTiled2 = initializerMapData->add_trap_config_from_tile_list();
+    trapConfigFromTiled2->set_id(startRdf->dynamic_traps(1).id());
+    trapConfigFromTiled2->set_tpt(startRdf->dynamic_traps(1).tpt());
+    trapConfigFromTiled2->set_hp(14);
+    trapConfigFromTiled2->set_box_half_size_x(16.f);
+    trapConfigFromTiled2->set_box_half_size_y(16.f);
+    trapConfigFromTiled2->set_init_x(startRdf->dynamic_traps(1).x());
+    trapConfigFromTiled2->set_init_y(startRdf->dynamic_traps(1).y());
+    trapConfigFromTiled2->set_init_q_x(0);
+    trapConfigFromTiled2->set_init_q_y(0);
+    trapConfigFromTiled2->set_init_q_z(0);
+    trapConfigFromTiled2->set_init_q_w(1);
+    /*
+    auto trapConfigFromTiled3 = initializerMapData->add_trap_config_from_tile_list();
+    trapConfigFromTiled3->set_id(startRdf->dynamic_traps(2).id());
+    trapConfigFromTiled3->set_tpt(startRdf->dynamic_traps(2).tpt());
+    trapConfigFromTiled3->set_hp(30);
+    trapConfigFromTiled3->set_box_half_size_x(16.f);
+    trapConfigFromTiled3->set_box_half_size_y(16.f);
+    trapConfigFromTiled3->set_init_x(startRdf->dynamic_traps(2).x());
+    trapConfigFromTiled3->set_init_y(startRdf->dynamic_traps(2).y());
+    trapConfigFromTiled3->set_init_q_x(0);
+    trapConfigFromTiled3->set_init_q_y(0);
+    trapConfigFromTiled3->set_init_q_z(0);
+    trapConfigFromTiled3->set_init_q_w(1);
+
+    auto trapConfigFromTiled4 = initializerMapData->add_trap_config_from_tile_list();
+    trapConfigFromTiled4->set_id(startRdf->dynamic_traps(3).id());
+    trapConfigFromTiled4->set_tpt(startRdf->dynamic_traps(3).tpt());
+    trapConfigFromTiled4->set_hp(100);
+    trapConfigFromTiled4->set_box_half_size_x(32.f);
+    trapConfigFromTiled4->set_box_half_size_y(32.f);
+    trapConfigFromTiled4->set_init_x(startRdf->dynamic_traps(3).x());
+    trapConfigFromTiled4->set_init_y(startRdf->dynamic_traps(3).y());
+    trapConfigFromTiled4->set_init_q_x(0);
+    trapConfigFromTiled4->set_init_q_y(0);
+    trapConfigFromTiled4->set_init_q_z(0);
+    trapConfigFromTiled4->set_init_q_w(1);
+    */
 }
 
 std::string outStr;
@@ -9938,11 +10017,11 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
  
         if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && (0 == firstDef1BrokenExtendedRdfId || outerTimerRdfId < firstDef1BrokenExtendedRdfId)) {
-            //shouldPrint = true;
+            shouldPrint = true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase37/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
+            std::cout << "TestCase37/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", fr=" << p1Chd.frames_to_recover() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << ", " << p1Chd.vel_z() << ")\n\tp2Chd hp=" << p2Chd.hp() << ", cs=" << p2Chd.ch_state() << ", fc=" << p2Chd.frames_in_ch_state() << ", q=(" << p2Chd.q_x() << ", " << p2Chd.q_y() << ", " << p2Chd.q_z() << ", " << p2Chd.q_w() << "), pos=(" << p2Chd.x() << ", " << p2Chd.y() << ", " << p2Chd.z() << "), vel=(" << p2Chd.vel_x() << ", " << p2Chd.vel_y() << ", " << p2Chd.vel_z() << ")" << std::endl;
         }
 
         if (0 != firstDef1StartedRdfId && firstDef1StartedRdfId <= outerTimerRdfId && (0 == firstDef1AtkedStartedRdfId || outerTimerRdfId < firstDef1AtkedStartedRdfId)) {
@@ -10716,8 +10795,16 @@ bool runTestCase43(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int newChaserRdfId = 0;
 
     int firstLandingRdfId = 0;
+    int secondLandingRdfId = 0;
+    int brickFirstDamagedRdfId = 0;
+    int brickBrokenRdfId = 0;
+    int brickDisappearedRdfId = 0;
     uint64_t oldGroundUd = 0;
     CharacterState oldChState = CharacterState::InAirIdle1NoJump;
+    TrapState oldBrickState = TrapState::TpIdle;
+    int oldBrickHp = 14;
+    int origTrapCount = 2;
+    int oldTrapCount = origTrapCount;
 
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
@@ -10734,12 +10821,30 @@ bool runTestCase43(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& p1Chd = p1.chd();
 
         auto& tp1 = outerTimerRdf->dynamic_traps(0);
+        auto& tp2 = outerTimerRdf->dynamic_traps(1);
         
         int bulletCount = outerTimerRdf->bullet_count();
+        int trapCount = outerTimerRdf->dynamic_trap_count();
 
         if (0 == firstLandingRdfId) {
             if (0 == oldGroundUd && 0 != p1Chd.ground_ud()) {
                 firstLandingRdfId = outerTimerRdfId;
+            }
+        } else if (0 == secondLandingRdfId) {
+            if (0 == oldGroundUd && 0 != p1Chd.ground_ud()) {
+                secondLandingRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (oldBrickHp != tp2.hp()) {
+            if (0 == brickFirstDamagedRdfId) {
+                brickFirstDamagedRdfId = outerTimerRdfId;
+            }
+        }
+
+        if (0 == brickBrokenRdfId) {
+            if (TpDead != oldBrickState && TpDead == tp2.trap_state()) {
+                brickBrokenRdfId = outerTimerRdfId;
             }
         }
 
@@ -10747,26 +10852,57 @@ bool runTestCase43(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
+        if (0 != secondLandingRdfId && secondLandingRdfId < outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
         if (shouldPrint) {
             std::cout << "TestCase43/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << std::endl;
+        }
+
+        if (0 == brickDisappearedRdfId) {
+            if (trapCount != oldTrapCount) {
+                JPH_ASSERT(origTrapCount-1 == trapCount);
+                brickDisappearedRdfId = outerTimerRdfId;
+            }
         }
 
         if (0 != firstLandingRdfId) {
             if (outerTimerRdfId == 1 + firstLandingRdfId) {
                 JPH_ASSERT(1 == p1Chd.remaining_air_jump_quota());
-            } else if (10 + firstLandingRdfId < outerTimerRdfId && outerTimerRdfId < 30 + firstLandingRdfId) {
+            } else if (0 == secondLandingRdfId && 10 + firstLandingRdfId < outerTimerRdfId && outerTimerRdfId < 20 + firstLandingRdfId) {
                 JPH_ASSERT(0 < p1Chd.vel_y());
                 JPH_ASSERT(tp1.y() < p1Chd.y());
+            }
+
+            if (0 != secondLandingRdfId) {
+                JPH_ASSERT(1 == p1Chd.ground_ud());
+            }
+        }
+
+        if (0 != brickBrokenRdfId) {
+            if (origTrapCount == trapCount) {
+                JPH_ASSERT(TpDead == tp2.trap_state());
+            } else {
+                JPH_ASSERT(origTrapCount-1 == trapCount);
             }
         }
 
         oldGroundUd = p1Chd.ground_ud();
         oldChState = p1Chd.ch_state();
+        oldBrickHp = tp2.hp();
+        oldBrickState = tp2.trap_state();
+        oldTrapCount = trapCount;
 
         outerTimerRdfId++;
     }
 
-    std::cout << "Passed TestCase43: Spring trap\n" << std::endl;
+    JPH_ASSERT(0 != brickFirstDamagedRdfId);
+    JPH_ASSERT(0 != brickBrokenRdfId);
+    JPH_ASSERT(0 != brickDisappearedRdfId);
+    JPH_ASSERT(brickFirstDamagedRdfId < brickBrokenRdfId);
+    JPH_ASSERT(brickBrokenRdfId < brickDisappearedRdfId);
+    std::cout << "Passed TestCase43: Spring trap and brick trap\n" << std::endl;
     theAllocator->Reset();
     reusedBattle->Clear();   
 

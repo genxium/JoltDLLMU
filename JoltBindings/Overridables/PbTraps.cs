@@ -39,7 +39,8 @@ namespace JoltCSharp {
                 DefaultBoxHalfSizeX = 100.0f,
                 DefaultBoxHalfSizeY = 100.0f,
                 DefaultLinearSpeed = 0, 
-                DefaultCooldownRdfCount = 60
+                DefaultCooldownRdfCount = 60,
+                AllowsRotationFromPhySys = true,
             };
 
             TrapConfig ConveyorBeltTrap = new TrapConfig {
@@ -78,41 +79,19 @@ namespace JoltCSharp {
                 DefaultCooldownRdfCount = 30,
             };
 
-            TrapConfig FallingRockTrap = new TrapConfig {
-                Tpt = primitiveConsts.Tpts.FallingRock,
-                Name = "FallingRock",
-                NoXFlipRendering = false,
-                UseKinematic = false,
-                PseudoKinematicFactor = 0f,
-                BlPushbackAttenuation = 0.5f,
-                DefaultBoxHalfSizeX = 100.0f,
-                DefaultBoxHalfSizeY = 100.0f,
-                DefaultLinearSpeed = 0, 
-                DefaultCooldownRdfCount = 60
-            };
-
-            TrapConfig BlockTrap = new TrapConfig {
-                Tpt = primitiveConsts.Tpts.Block,
-                Name = "Block",
-                NoXFlipRendering = true,
-                UseKinematic = true,
-                PseudoKinematicFactor = 0.5f,
-                BlPushbackAttenuation = 0.5f,
-                DefaultBoxHalfSizeX = 32.0f,
-                DefaultBoxHalfSizeY = 32.0f,
-                DefaultLinearSpeed = 0,
-            };
-
             TrapConfig BrickTrap = new TrapConfig {
                 Tpt = primitiveConsts.Tpts.Brick,
                 Name = "Brick",
                 NoXFlipRendering = true,
-                UseKinematic = true,
-                PseudoKinematicFactor = 1.0f,
+                UseKinematic = false,
                 BlPushbackAttenuation = 1.0f,
                 DefaultBoxHalfSizeX = 16.0f,
                 DefaultBoxHalfSizeY = 16.0f,
                 DefaultLinearSpeed = 0,
+                Hp = 200,
+                AllowsRotationFromPhySys = true,
+                Destructible = true,
+                TakesGravity = true,
             };
 
             underlying = new MapField<uint, TrapConfig> {
@@ -121,8 +100,6 @@ namespace JoltCSharp {
                 { ConveyorBeltTrap.Tpt, ConveyorBeltTrap },
                 { BossDoorTrap.Tpt, BossDoorTrap },
                 { SpringTrap.Tpt, SpringTrap },
-                { FallingRockTrap.Tpt, FallingRockTrap },
-                { BlockTrap.Tpt, BlockTrap },
                 { BrickTrap.Tpt, BrickTrap },
             };
 
