@@ -144,7 +144,6 @@ namespace JoltCSharp {
             if (null != underlying) return true;
             underlying = new PrimitiveConsts {
               BattleDynamicsFps = BATTLE_DYNAMICS_FPS,
-              DefaultTimeoutForLastAllConfirmedIfd = 10000, // in milliseconds
 
               RoomIdNone = 0,
 
@@ -232,6 +231,10 @@ namespace JoltCSharp {
               DefaultPickableRisingVelY = 8f,
               DefaultPickableStartupFrames = 45,
               DefaultPickableLifetimeRdfCnt = 60 * BATTLE_DYNAMICS_FPS,
+            
+              DefaultPhySysSubstepCnt = 1,
+              DefaultPhySysNumVelSteps = 10u, // If not set, the JoltPhysics default is 10
+              DefaultPhySysNumPosSteps = 2u, // If not set, the JoltPhysics default is 2
 
               DefaultBlockStunFrames = 10,
               DefaultBlownupFramesForFlying = 30,
@@ -364,6 +367,9 @@ namespace JoltCSharp {
 
               DefaultBulletFriction = 0.2f, 
               DefaultBulletRestitution = 0.1f, 
+
+              DefaultTrapFriction = 0.2f, 
+              DefaultTrapRestitution = 0f, 
 
               Elets = new AtkEleTypes {
                   None = 0,

@@ -157,11 +157,6 @@ namespace jtshared {
             return this;
         }
 
-        public BulletConfig SetTakesGravity(bool yesOrNo) {
-            this.TakesGravity = yesOrNo;
-            return this;
-        }
-
         public BulletConfig SetRenderRotationAlongVelocity(bool yesOrNo) {
             RenderRotationAlongVelocity = yesOrNo;
             return this;
@@ -169,11 +164,6 @@ namespace jtshared {
 
         public BulletConfig SetMhType(MultiHitType mhType) {
             MhType = mhType;
-            return this;
-        }
-
-        public BulletConfig SetCollisionTypeMask(ulong val) {
-            CollisionTypeMask = val;
             return this;
         }
 

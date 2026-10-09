@@ -32,6 +32,7 @@ std::unordered_set<uint32_t> trivialTrtSet;
 std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
 std::unordered_set<uint32_t> directSpawnerTrtSet;
 std::unordered_set<uint32_t> collidableTrtSet;
+std::unordered_set<uint32_t> waivingConstraintHelperTpts; 
 
 bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
     if (nullptr != globalPrimitiveConsts) {
@@ -81,6 +82,13 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
         globalPrimitiveConsts->trts().by_movement(),
         globalPrimitiveConsts->trts().by_attack(),
         globalPrimitiveConsts->trts().by_pattern_f(),
+    };
+
+    waivingConstraintHelperTpts = {
+        globalPrimitiveConsts->tpts().conveyor_belt(), 
+        globalPrimitiveConsts->tpts().spring(), 
+        globalPrimitiveConsts->tpts().brick(),  
+        globalPrimitiveConsts->tpts().boss_door(), 
     };
 
     return true;

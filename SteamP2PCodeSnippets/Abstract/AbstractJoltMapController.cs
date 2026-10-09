@@ -831,6 +831,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         CustomProperty hp;
         CustomProperty allowsRotationFromPhySys;
         CustomProperty destructible;
+        CustomProperty friction;
+        CustomProperty restitution;
 
         tileProps.TryGetCustomProperty("id", out id);
         tileProps.TryGetCustomProperty("tpt", out tpt);
@@ -842,6 +844,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("hp", out hp);
         tileProps.TryGetCustomProperty("allowsRotationFromPhySys", out allowsRotationFromPhySys);
         tileProps.TryGetCustomProperty("destructible", out destructible);
+        tileProps.TryGetCustomProperty("friction", out friction);
+        tileProps.TryGetCustomProperty("restitution", out restitution);
 
         tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
         tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
@@ -975,6 +979,16 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             trapConfigFromTiled.Destructible = destructibleVal;
         } else {
             trapConfigFromTiled.Destructible = tpConfig.Destructible;
+        }
+
+        if (null != friction && !friction.IsEmpty) {
+            float frictionVal = friction.GetValueAsFloat();
+            trapConfigFromTiled.Friction = frictionVal;
+        }
+
+        if (null != restitution && !restitution.IsEmpty) {
+            float restitutionVal = restitution.GetValueAsFloat();
+            trapConfigFromTiled.Restitution = restitutionVal;
         }
 
         if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal || PbPrimitivesOverride.Instance.getUnderlying().Tpts.Spring == tptVal) {
@@ -1739,7 +1753,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected void resetLevelIdAndBgm() {
         var mapProps = underlyingMap.GetComponent<SuperCustomProperties>();
         CustomProperty levelIdProp, defaultBgmIdProp;
-        mapProps.TryGetCustomProperty("levelId", out levelIdProp);
+        mapProps.TryGetCustomProperty("levelName", out levelIdProp);
         mapProps.TryGetCustomProperty("bgmId", out defaultBgmIdProp);
        
         int defaultBgmId = (null == defaultBgmIdProp || defaultBgmIdProp.IsEmpty ? PbPrimitivesOverride.Instance.getUnderlying().BgmNoChange : defaultBgmIdProp.GetValueAsInt());

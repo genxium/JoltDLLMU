@@ -146,11 +146,13 @@ public:
 
     /*
     [WARNING] Unlike "AbstractCacheableAnimNodeTemplate", the "activeXxx & cachedXxx" have little to none shared features compared to their GUI counterparts (e.g. handling of "cachedChColliders" is significantly different from that of "cachedTpColliders", and handling of "activeNonContactConstraints & cachedNonContactConstraints" is totally different from all the others), hence NOT suitable for abstracting a shared interface or wrapper class -- at least by the time of writing. 
+
+    Moreover by using this cache approach to manage "JPH::Shape" memory instances (inside each "JPH::Body") I dropped the "shared shapes across bodies" feature of Jolt.
     */
 
     /////////////////////////////////////////////////////Bullet Collider Cache/////////////////////////////////////////////////////
     BL_COLLIDER_Q  activeBlColliders;
-    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, BlCacheKeyHasher > cachedBlColliders; // Key is "{(default state) halfExtent}", where "convexRadius" is determined by "halfExtent"
+    std::unordered_map< BL_CACHE_KEY_T, BL_COLLIDER_Q, BulletCacheKeyHasher > cachedBlColliders;
 
     /////////////////////////////////////////////////////Character Collider Cache/////////////////////////////////////////////////////
     /*
@@ -159,16 +161,8 @@ public:
      While "reverse-order w.r.t. BaseBattle::batchPutIntoPhySysFromCache" being correct might be a coincidence of matching some order-sensitive mechanism in JoltPhysics/PhysicsSystem-Character setters, by the time of writing the cause of misalignment when using other removal orders is yet UNKNOWN. 
     */
     CH_COLLIDER_Q activeChColliders;
-    /*
-    [TODO]
 
-    Make "cachedChColliders" keyed by "CharacterConfig.species_id()" to fit the need of multi-shape character (at different ch_state).
-
-    It's by design that "ScaledShape" is NOT used here, because when mixed with translation and rotation, the order of affine transforms matters but is difficult to keep in mind.
-
-    Moreover, by using this approach to manage multi-shape character I dropped the "shared shapes across bodies" feature of Jolt.
-    */
-    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, VectorFloatHasher > cachedChColliders; // Key is "{(default state) radius, halfHeight}", kindly note that position and orientation of "Character" are mutable during reuse, thus not using "RefConst<>".
+    std::unordered_map< CH_CACHE_KEY_T, CH_COLLIDER_Q, CharacterCacheKeyHasher > cachedChColliders;
 
     /////////////////////////////////////////////////////Trap Collider Cache/////////////////////////////////////////////////////
     TP_COLLIDER_Q  activeTpColliders;
@@ -180,7 +174,7 @@ public:
 
     /////////////////////////////////////////////////////Pickable Collider Cache/////////////////////////////////////////////////////
     PK_COLLIDER_Q  activePickableColliders;
-    std::unordered_map< PK_CACHE_KEY_T, PK_COLLIDER_Q, PkCacheKeyHasher > cachedPickableColliders; 
+    std::unordered_map< PK_CACHE_KEY_T, PK_COLLIDER_Q, PickableCacheKeyHasher > cachedPickableColliders; 
 
     /////////////////////////////////////////////////////HurtboxShieldbox Collider Cache/////////////////////////////////////////////////////
     HB_SB_COLLIDER_Q  activeHbSbColliders;
@@ -613,11 +607,11 @@ public:
     }
     
 protected:
-    CH_CACHE_KEY_T chCacheKeyHolder = { 0, 0 };
-    BL_CACHE_KEY_T blCacheKeyHolder = BL_CACHE_KEY_T(BulletType::Undetermined, 0, 0);
-    TP_CACHE_KEY_T tpCacheKeyHolder = TP_CACHE_KEY_T(cDefaultTpHalfLength, cDefaultTpHalfLength, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
-    TR_CACHE_KEY_T trCacheKeyHolder = { 0, 0 };
-    PK_CACHE_KEY_T pkCacheKeyHolder = { 0, 0, 0 };
+    CH_CACHE_KEY_T chCacheKeyHolder = CH_CACHE_KEY_T(globalPrimitiveConsts->ch_species().none());
+    BL_CACHE_KEY_T blCacheKeyHolder = BL_CACHE_KEY_T(BulletType::Undetermined, EMotionType::Dynamic, false, MyObjectLayers::MOVING);
+    TP_CACHE_KEY_T tpCacheKeyHolder = TP_CACHE_KEY_T(globalPrimitiveConsts->tpts().none(), EMotionType::Dynamic, false, MyObjectLayers::MOVING);
+    TR_CACHE_KEY_T trCacheKeyHolder = TR_CACHE_KEY_T(globalPrimitiveConsts->trts().none(), EMotionType::Static, true, MyObjectLayers::NON_MOVING);
+    PK_CACHE_KEY_T pkCacheKeyHolder = PK_CACHE_KEY_T(globalPrimitiveConsts->pkts().none(), EMotionType::Dynamic, false, MyObjectLayers::MOVING);
     HB_SB_CACHE_KEY_T hbSbCacheKeyHolder = { 0, 0 };
 
     float fallenDeathHeight = 0;
@@ -642,26 +636,26 @@ protected:
 
     int moveForwardLastConsecutivelyAllConfirmedIfdId(int proposedIfdEdFrameId, uint64_t skippableJoinMask = 0);
 
-    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
-    // Unlike DLLMU-v2.3.4, even if "preallocateNpcDict" is empty, "getOrCreateCachedNpcCollider_NotThreadSafe" still works
-    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
     CH_COLLIDER_T* getOrCreateCachedCharacterCollider_NotThreadSafe(const uint64_t ud, const CharacterConfig* inCc, const float newRadius, const float newHalfHeight, const Vec3Arg& newPos, const QuatArg& newRot);
+    CH_COLLIDER_T* getOrCreateCachedPlayerCollider_NotThreadSafe(const uint64_t ud, const PlayerCharacterDownsync& currPlayer, const CharacterConfig* cc, PlayerCharacterDownsync* nextPlayer = nullptr);
+    CH_COLLIDER_T* getOrCreateCachedNpcCollider_NotThreadSafe(const uint64_t ud, const NpcCharacterDownsync& currNpc, const CharacterConfig* cc, NpcCharacterDownsync* nextNpc = nullptr);
 
-    HB_SB_COLLIDER_T* getOrCreateCachedHurtboxCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
-        // TODO
-        return nullptr;
-    }
-    HB_SB_COLLIDER_T* getOrCreateCachedShieldboxCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
-        // TODO
-        return nullptr;
-    }
-
-    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
-    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const bool forConstraintHelperBody, const Vec3Arg& newPos, const QuatArg& newRot);
-    TR_COLLIDER_T* getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
+    BL_COLLIDER_T* getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const BulletConfig* blConfig, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
+    TP_COLLIDER_T* getOrCreateCachedTrapCollider_NotThreadSafe(const uint64_t ud, const TrapConfig* tpConfig, const TrapConfigFromTiled* tpConfigFromTile, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const bool forConstraintHelperBody, const Vec3Arg& newPos, const QuatArg& newRot);
+    TR_COLLIDER_T* getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const uint32_t trt, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
     PK_COLLIDER_T* getOrCreateCachedPickableCollider_NotThreadSafe(const uint64_t ud, const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot);
 
     NON_CONTACT_CONSTRAINT_T* getOrCreateCachedNonContactConstraint_NotThreadSafe(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* body1, Body* body2, JPH::ConstraintSettings* inConstraintSettings);
+
+    HB_SB_COLLIDER_T* getOrCreateCachedHurtboxCollider_NotThreadSafe(const uint64_t ud, const uint32_t speciesId, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+        // TODO
+        return nullptr;
+    }
+
+    HB_SB_COLLIDER_T* getOrCreateCachedShieldboxCollider_NotThreadSafe(const uint64_t ud, const uint32_t speciesId, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
+        // TODO
+        return nullptr;
+    }
 
     std::unordered_map<uint32_t, const TrapConfigFromTiled*> trapConfigFromTileDict;
     std::unordered_map<uint32_t, TriggerConfigFromTiled*> triggerConfigFromTileDict;
@@ -759,38 +753,40 @@ protected:
     }
 
     inline void calcChCacheKey(const CharacterConfig* cc, CH_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey[0] = cc->capsule_radius();
-        ioCacheKey[1] = cc->capsule_half_height();
+        ioCacheKey.speciesId = cc->species_id();
     }
 
-    inline void calcBlCacheKey(const BulletType immediateBType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, BL_CACHE_KEY_T& ioCacheKey) {
+    inline void calcBlCacheKey(const BulletType immediateBType, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, BL_CACHE_KEY_T& ioCacheKey) {
         ioCacheKey.bType = immediateBType;
-        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
-        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
-    }
-
-    inline void calcTpCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, TP_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
-        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
         ioCacheKey.motionType = immediateMotionType;
         ioCacheKey.isSensor = immediateIsSensor;
         ioCacheKey.objLayer = immediateObjLayer;
     }
 
-    inline void calcTrCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, TR_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
-        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+    inline void calcTpCacheKey(const uint32_t immediateTpt, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, TP_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.tpt = immediateTpt;
+        ioCacheKey.motionType = immediateMotionType;
+        ioCacheKey.isSensor = immediateIsSensor;
+        ioCacheKey.objLayer = immediateObjLayer;
     }
 
-    inline void calcPkCacheKey(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, PK_CACHE_KEY_T& ioCacheKey) {
+    inline void calcTrCacheKey(const uint32_t immediateTrt, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, TR_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.trt = immediateTrt;
+        ioCacheKey.motionType = immediateMotionType;
+        ioCacheKey.isSensor = immediateIsSensor;
+        ioCacheKey.objLayer = immediateObjLayer;
+    }
+
+    inline void calcPkCacheKey(const uint32_t pType, const EMotionType immediateMotionType, const bool immediateIsSensor, const ObjectLayer immediateObjLayer, PK_CACHE_KEY_T& ioCacheKey) {
         ioCacheKey.pType = pType;
-        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
-        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+        ioCacheKey.motionType = immediateMotionType;
+        ioCacheKey.isSensor = immediateIsSensor;
+        ioCacheKey.objLayer = immediateObjLayer;
     }
 
-    inline void calcHbSbCacheKey(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, HB_SB_CACHE_KEY_T& ioCacheKey) {
-        ioCacheKey.boxHalfExtentX = immediateBoxHalfSizeX;
-        ioCacheKey.boxHalfExtentY = immediateBoxHalfSizeY;
+    inline void calcHbSbCacheKey(const uint64_t udt, const uint32_t speciesId, HB_SB_CACHE_KEY_T& ioCacheKey) {
+        ioCacheKey.udt = udt;
+        ioCacheKey.speciesId = speciesId;
     }
 
     InputFrameDownsync* getOrPrefabInputFrameDownsync(int inIfdId, uint32_t inSingleJoinIndex, uint64_t inSingleInput, bool fromUdp, bool fromTcp, bool& outExistingInputMutated);
@@ -802,10 +798,12 @@ protected:
     
     - C++11 (or any later version) "new" used in "createDefaultXxx" is thread-safe, but thread-safe "new/delete" will have "lock contention" for the non-thread-safe "sbrk" anyway regardless of thread-local-cache optimization, see https://app.yinxiang.com/fx/b5affa04-b7d0-412f-9c74-6cf5f2bc6def for more information. 
     - Operation "activeXxxColliders.push_back(...)" is not thread-safe, and we can use preallocated vector with an atomic counter to solve this.
-    - Operation "transientUdToXxx[]" is not thread-safe either, espectially the setter "transientUdToXxx[ud] = Xxx", we have to choose a map class which is built thread-safe instead (like ConcurrentHashMap in Java).
+    - Operation "transientUdToXxx[]" is not thread-safe either, especially the setter "transientUdToXxx[ud] = Xxx", we have to choose a map class which is built thread-safe instead (like ConcurrentHashMap in Java).
         - Same applies to "cachedXxColliders[]" and "cachedNonContactConstraints[]". 
     - Failure of "FrontendTest/runTestCase11" might occurr due to multi-threaded randomness of vector traversal of "activeXxxColliders" even if all the above succeeded.
     - Single-threaded traversals in "batchXxx" for just setting positions, activating/deactivating "BodyID"s in batch is already very efficient -- same big-O time comlexity as just dispatching the jobs -- while multi-threaded overhead and the use of "bi" instead of "biNoLock" might be slower when there's no heavy workload like "BroadPhase/NarrowPhaseQuery".
+    - Invocations to "biNoLock->CreateBody(...)", "biNoLock->NotifyShapeChanged(...)" and "biNoLock->SetPositionAndRotation(...)" are most likely to induce QuadTree structure change or re-balancing, and would be expensive in multi-threaded handling too, thus they are currently done in "batchXxx".
+        - Invocations to "bi->SetGravityFactor(...)", "bi->SetFriction(...)" and "bi->SetRestitution(...)" won't induce QuadTree structure change or re-balancing, hence they are currently done in a multi-threaded manner.    
 
     On the contrary, "Body* BodyInterface::CreateBody(const BodyCreationSettings &inSettings)" works well in multi-threaded context because
     - It DOESN'T care about de-duplication w.r.t. my custom definition of "key"s, e.g. the key of "cachedChColliders[]". 
@@ -1059,7 +1057,7 @@ protected:
 
     CH_COLLIDER_T* createDefaultCharacterCollider(const CharacterConfig* cc, const Vec3Arg& newPos, const QuatArg& newRot, const uint64_t newUd, BodyInterface* inBodyInterface);
 
-    inline EMotionType       calcBlMotionType(const BulletType blType) {
+    inline EMotionType calcBlMotionType(const BulletType blType) {
         /*
          Kindly note that in Jolt, "NonDynamics v.s. NonDynamics" (e.g. "Kinematic v.s. Static" or even "Kinematic v.s. Kinematic") WOULDN'T be automatically handled by "ContactConstraintManager" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Constraints/ContactConstraintManager.cpp#L1108). 
          
@@ -1080,7 +1078,7 @@ protected:
         }
     }
 
-    inline bool               calcBlIsSensor(const BulletType blType) {
+    inline bool calcBlIsSensor(const BulletType blType) {
         switch (blType) {
             case BulletType::MechanicalCartridge:
             case BulletType::MechanicalBouncerSpherical:
@@ -1090,7 +1088,7 @@ protected:
         }
     }
 
-    BL_COLLIDER_T* createDefaultBulletCollider(const BulletType blType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const EMotionType motionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
+    BL_COLLIDER_T* createDefaultBulletCollider(const BulletType blType, const ConvexShapeSettings* shapeSettings, const EMotionType motionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
     TP_COLLIDER_T* createDefaultTrapCollider(const Vec3Arg& newHalfExtent, const Vec3Arg& newPos, const QuatArg& newRot, const float newConvexRadius, const EMotionType motionType, const bool isSensor, const ObjectLayer objLayer, BodyInterface* inBodyInterface);
 
@@ -1099,8 +1097,6 @@ protected:
     TR_COLLIDER_T* createDefaultPickableCollider(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface);
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
-
-    void preallocateBodies(const RenderFrame* startRdf, const google::protobuf::Map< uint32_t, uint32_t >& preallocateNpcSpeciesDict);
 
     inline void calcChdShape(const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
 

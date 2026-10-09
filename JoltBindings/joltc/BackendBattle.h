@@ -98,6 +98,14 @@ protected:
             clonedPhySettings.mMaxPenetrationDistance = globalPrimitiveConsts->max_penetration_distance(); 
         }
 
+        if (0u != globalPrimitiveConsts->default_phy_sys_num_vel_steps()) {
+            clonedPhySettings.mNumVelocitySteps = globalPrimitiveConsts->default_phy_sys_num_vel_steps(); 
+        }
+
+        if (0u != globalPrimitiveConsts->default_phy_sys_num_pos_steps()) {
+            clonedPhySettings.mNumPositionSteps = globalPrimitiveConsts->default_phy_sys_num_pos_steps(); 
+        }
+
         phySys->SetPhysicsSettings(clonedPhySettings);
         antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();
         gravityMagnitude = phySys->GetGravity().Length();

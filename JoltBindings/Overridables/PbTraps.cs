@@ -91,7 +91,7 @@ namespace JoltCSharp {
                 Hp = 200,
                 AllowsRotationFromPhySys = true,
                 Destructible = true,
-                TakesGravity = true,
+                GravityFactor = 1.0f,
             };
 
             underlying = new MapField<uint, TrapConfig> {
