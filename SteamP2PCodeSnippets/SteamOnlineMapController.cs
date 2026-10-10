@@ -324,8 +324,8 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         bool inFrozenGracePeriod = (frozenRdfCount >= frozenRdfCountLimit);
                         ifdFrontShouldFreeze = false;
                         fixed (int* newChaserRdfIdPtr = &newChaserRdfId, pToGenIfdId=&toGenIfdId, newLcacIfdIdPtr = &newLcacIfdId, newUdpLcacIfdIdPtr = &newUdpLcacIfdId) {
-                                bool ok1 = Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, newChaserRdfIdPtr, &chaserRdfIdLowerBound, newLcacIfdIdPtr, newUdpLcacIfdIdPtr, pToGenIfdId, &localRequiredIfdId);
-                            Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, newLcacIfdId={newLcacIfdId}, handling DaRegular as owner, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, timerRdfId={timerRdfId}");
+                            bool ok1 = Bindings.FRONTEND_GetRdfAndIfdIds(battle, &timerRdfId, newChaserRdfIdPtr, &chaserRdfIdLowerBound, newLcacIfdIdPtr, newUdpLcacIfdIdPtr, pToGenIfdId, &localRequiredIfdId);
+                            //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, toGenIfdId={toGenIfdId}, newLcacIfdId={newLcacIfdId}, handling DaRegular as owner, chaserRdfIdLowerBound={chaserRdfIdLowerBound}, timerRdfId={timerRdfId}");
                         }
                     }
                     readyGoPanel.hideReady();

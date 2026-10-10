@@ -84,100 +84,33 @@ public:
     }
 };
 
-#define BL_COLLIDER_T JPH::Body
-typedef struct BlCacheKey {
-    BulletType bType;
-    float boxHalfExtentX;
-    float boxHalfExtentY;
-
-    BlCacheKey(const BulletType inBType, const float inBoxHalfExtentX, const float inBoxHalfExtentY) : bType(inBType), boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
-
-    bool operator==(const BlCacheKey& other) const {
-        return bType == other.bType && boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
-    }
-} BL_CACHE_KEY_T;
-
-typedef struct BlCacheKeyHasher {
-    std::size_t operator()(const BlCacheKey& v) const {
-        std::size_t seed = 3;
-        seed ^= std::hash<BulletType>()(v.bType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        return seed;
-    }
-} BlCacheKeyHasher;
-#define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
-
-#define HB_SB_COLLIDER_T JPH::Body
-typedef struct HurtboxShieldboxCacheKey {
-    float boxHalfExtentX;
-    float boxHalfExtentY;
-
-    HurtboxShieldboxCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
-
-    bool operator==(const HurtboxShieldboxCacheKey& other) const {
-        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
-    }
-} HB_SB_CACHE_KEY_T;
-
-typedef struct HbSbCacheKeyHasher {
-    std::size_t operator()(const HurtboxShieldboxCacheKey& v) const {
-        std::size_t seed = 3;
-        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        return seed;
-    }
-} HbSbCacheKeyHasher;
-#define HB_SB_COLLIDER_Q std::vector<HB_SB_COLLIDER_T*>
-
-#define PK_COLLIDER_T JPH::Body
-typedef struct PkCacheKey {
-    uint32_t pType;
-    float boxHalfExtentX;
-    float boxHalfExtentY;
-
-    PkCacheKey(const uint32_t inPType, const float inBoxHalfExtentX, const float inBoxHalfExtentY) : pType(inPType), boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
-
-    bool operator==(const PkCacheKey& other) const {
-        return pType == other.pType && boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
-    }
-} PK_CACHE_KEY_T;
-
-typedef struct PkCacheKeyHasher {
-    std::size_t operator()(const PkCacheKey& v) const {
-        std::size_t seed = 3;
-        seed ^= std::hash<uint32_t>()(v.pType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        return seed;
-    }
-} PkCacheKeyHasher;
-#define PK_COLLIDER_Q std::vector<PK_COLLIDER_T*>
-
-#define CH_CACHE_KEY_T std::vector<float>
-#define CH_COLLIDER_T JPH::Character
-#define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
-
 #define TP_COLLIDER_T JPH::Body
 typedef struct TrapCacheKey {
-    float boxHalfExtentX;
-    float boxHalfExtentY;
+    /*
+     [REMINDER] 
+
+    Traps are very versatile in "size" and "density" while the "shape type (e.g. box, sphere, cylinder)" of any single trap is derivable from "tpt" by design. 
+
+    This "TrapCacheKey" structure matches the usage pattern of "getOrCreateCachedTrapCollider_NotThreadSafe" for a good reuse rate. 
+
+    Moreover, "motionType", "isSensor" and "objLayer" are fields that we want to keep unchanged once a "JPH::Body" is created -- though "motionType" and "isSensor" can be updated in runtime by "BodyInterface", we found it unnecessary most of the time. 
+    */
+    uint32_t tpt;
     EMotionType motionType;
     bool isSensor;
     ObjectLayer objLayer;
 
-    TrapCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
+    TrapCacheKey(const uint32_t inTpt, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : tpt(inTpt), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
 
     bool operator==(const TrapCacheKey& other) const {
-        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
+        return tpt == other.tpt && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
     }
 } TP_CACHE_KEY_T;
 
 typedef struct TrapCacheKeyHasher {
     std::size_t operator()(const TrapCacheKey& v) const {
         std::size_t seed = 4;
-        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>()(v.tpt) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         seed ^= std::hash<ObjectLayer>()(v.objLayer) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -185,6 +118,117 @@ typedef struct TrapCacheKeyHasher {
     }
 } TrapCacheKeyHasher;
 #define TP_COLLIDER_Q std::vector<TP_COLLIDER_T*>
+
+#define BL_COLLIDER_T JPH::Body
+typedef struct BulletCacheKey {
+    // See "TrapCacheKey" for design concerns.
+
+    BulletType bType;
+    EMotionType motionType;
+    bool isSensor;
+    ObjectLayer objLayer;
+
+    BulletCacheKey(const BulletType inBType, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : bType(inBType), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
+
+    bool operator==(const BulletCacheKey& other) const {
+        return bType == other.bType && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
+    }
+} BL_CACHE_KEY_T;
+
+typedef struct BulletCacheKeyHasher {
+    std::size_t operator()(const BulletCacheKey& v) const {
+        std::size_t seed = 4;
+        seed ^= std::hash<BulletType>()(v.bType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<ObjectLayer>()(v.objLayer) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} BulletCacheKeyHasher;
+#define BL_COLLIDER_Q std::vector<BL_COLLIDER_T*>
+
+#define PK_COLLIDER_T JPH::Body
+typedef struct PickableCacheKey {
+    // See "TrapCacheKey" for design concerns.
+
+    uint32_t pType;
+    EMotionType motionType;
+    bool isSensor;
+    ObjectLayer objLayer;
+
+    PickableCacheKey(const uint32_t inPType, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : pType(inPType), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
+
+    bool operator==(const PickableCacheKey& other) const {
+        return pType == other.pType && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
+    }
+} PK_CACHE_KEY_T;
+
+typedef struct PickableCacheKeyHasher {
+    std::size_t operator()(const PickableCacheKey& v) const {
+        std::size_t seed = 3;
+        seed ^= std::hash<uint32_t>()(v.pType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<ObjectLayer>()(v.objLayer) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} PickableCacheKeyHasher;
+#define PK_COLLIDER_Q std::vector<PK_COLLIDER_T*>
+
+#define TR_COLLIDER_T JPH::Body
+typedef struct TriggerCacheKey {
+    // See "TrapCacheKey" for design concerns.
+
+    uint32_t trt;
+    EMotionType motionType;
+    bool isSensor;
+    ObjectLayer objLayer;
+
+    TriggerCacheKey(const uint32_t inTrt, const EMotionType inMotionType, const bool inIsSensor, const ObjectLayer inObjLayer) : trt(inTrt), motionType(inMotionType), isSensor(inIsSensor), objLayer(inObjLayer) {}
+
+    bool operator==(const TriggerCacheKey& other) const {
+        return trt == other.trt && motionType == other.motionType && isSensor == other.isSensor && objLayer == other.objLayer;
+    }
+} TR_CACHE_KEY_T;
+
+typedef struct TriggerCacheKeyHasher {
+    std::size_t operator()(const TriggerCacheKey& v) const {
+        std::size_t seed = 4;
+        seed ^= std::hash<float>()(v.trt) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<EMotionType>()(v.motionType) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<bool>()(v.isSensor) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<ObjectLayer>()(v.objLayer) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} TriggerCacheKeyHasher;
+#define TR_COLLIDER_Q std::vector<TR_COLLIDER_T*>
+
+#define CH_COLLIDER_T JPH::Character
+typedef struct CharacterCacheKey {
+    /*
+     [REMINDER] 
+
+    Even a same character of a same "speciesId" can be versatile in "size" and "friction" depending on "CharacterState", while the "shape type (e.g. capsule, compound)" of any single character is derivable from "speciesId" by design. 
+
+    See "TrapCacheKey" for more design concerns.
+    */
+    uint32_t speciesId;
+
+    CharacterCacheKey(const uint32_t inSpeciesId) : speciesId(inSpeciesId) {}
+
+    bool operator==(const CharacterCacheKey& other) const {
+        return speciesId == other.speciesId;
+    }
+} CH_CACHE_KEY_T;
+
+typedef struct CharacterCacheKeyHasher {
+    std::size_t operator()(const CharacterCacheKey& v) const {
+        std::size_t seed = 1;
+        seed ^= std::hash<uint32_t>()(v.speciesId) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+} CharacterCacheKeyHasher;
+#define CH_COLLIDER_Q std::vector<CH_COLLIDER_T*>
 
 typedef struct NonContactConstraint {
     /* 
@@ -250,27 +294,27 @@ typedef struct NonContactConstraintCacheKeyHasher {
 
 #define NON_CONTACT_CONSTRAINT_Q std::vector<NON_CONTACT_CONSTRAINT_T*>
 
-#define TR_COLLIDER_T JPH::Body
-typedef struct TriggerCacheKey {
-    float boxHalfExtentX;
-    float boxHalfExtentY;
+#define HB_SB_COLLIDER_T JPH::Body
+typedef struct HurtboxShieldboxCacheKey {
+    uint64_t udt;
+    uint32_t speciesId;
 
-    TriggerCacheKey(const float inBoxHalfExtentX, const float inBoxHalfExtentY) : boxHalfExtentX(inBoxHalfExtentX), boxHalfExtentY(inBoxHalfExtentY) {}
+    HurtboxShieldboxCacheKey(const uint64_t inUdt, const uint32_t inSpeciesId) : udt(inUdt), speciesId(inSpeciesId) {}
 
-    bool operator==(const TriggerCacheKey& other) const {
-        return boxHalfExtentX == other.boxHalfExtentX && boxHalfExtentY == other.boxHalfExtentY;
+    bool operator==(const HurtboxShieldboxCacheKey& other) const {
+        return udt == other.udt && speciesId == other.speciesId;
     }
-} TR_CACHE_KEY_T;
+} HB_SB_CACHE_KEY_T;
 
-typedef struct TriggerCacheKeyHasher {
-    std::size_t operator()(const TriggerCacheKey& v) const {
-        std::size_t seed = 3;
-        seed ^= std::hash<float>()(v.boxHalfExtentX) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>()(v.boxHalfExtentY) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+typedef struct HbSbCacheKeyHasher {
+    std::size_t operator()(const HurtboxShieldboxCacheKey& v) const {
+        std::size_t seed = 2;
+        seed ^= std::hash<uint64_t>()(v.udt) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<uint32_t>()(v.speciesId) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         return seed;
     }
-} TriggerCacheKeyHasher;
-#define TR_COLLIDER_Q std::vector<TR_COLLIDER_T*>
+} HbSbCacheKeyHasher;
+#define HB_SB_COLLIDER_Q std::vector<HB_SB_COLLIDER_T*>
 
 static const float      cHalfPI = 0.5*JPH_PI;
 static const JPH::Quat  cIdentityQ = JPH::Quat(0, 0, 0, 1);

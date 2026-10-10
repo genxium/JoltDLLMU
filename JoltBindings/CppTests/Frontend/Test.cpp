@@ -6778,12 +6778,12 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         auto& p2Chd = p2.chd();
         const uint64_t ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
-        if (231 <= outerTimerRdfId && outerTimerRdfId < 251) {
-            //shouldPrint = true;
+        if (227 <= outerTimerRdfId && outerTimerRdfId < 251) {
+            shouldPrint = true;
         }
 
         if (680 <= outerTimerRdfId && outerTimerRdfId < 705) {
-            //shouldPrint = true;
+            shouldPrint = true;
         }
         
         if (770 <= outerTimerRdfId && outerTimerRdfId < 1000) {

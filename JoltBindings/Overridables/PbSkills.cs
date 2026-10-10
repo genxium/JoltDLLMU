@@ -47,7 +47,6 @@ namespace JoltCSharp {
                               HitOnRockSfxName = "Vanishing8",
                               CancellableStFrame = 11,
                               CancellableEdFrame = 19,
-                              CollisionTypeMask = 0 // TODO
             };
 
              BulletConfig BasicPistolBulletGround = new BulletConfig(BasicPistolBulletAir)
@@ -168,7 +167,6 @@ namespace JoltCSharp {
                               HitOnRockSfxName = "Vanishing8",
                               CancellableStFrame = 11,
                               CancellableEdFrame = 19,
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicChargedPistolBulletGround = new BulletConfig(BasicChargedPistolBulletAir)
@@ -284,7 +282,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "SlashEmitSpd1",
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicBladeHit2 = new BulletConfig {
@@ -316,7 +313,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "SlashEmitSpd2",
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicBladeHit3 = new BulletConfig {
@@ -346,7 +342,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "SlashEmitSpd3",
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicBladeCrouchHit1 = new BulletConfig {
@@ -379,7 +374,6 @@ namespace JoltCSharp {
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = false,
                               MeleeHitSelfStunFrames = PbPrimitives.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES,
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicBladeAirHit1 = new BulletConfig(BasicBladeHit1)
@@ -458,7 +452,6 @@ namespace JoltCSharp {
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               BType = BulletType.Melee,
                               CharacterEmitSfxName = "SlashEmitSpd1",
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicAirDashingHit1 = new BulletConfig {
@@ -473,7 +466,6 @@ namespace JoltCSharp {
                               SelfLockVelYWhenFlying = 0,
                               BType = BulletType.Melee,
                               CharacterEmitSfxName = "SlashEmitSpd1",
-                              CollisionTypeMask = 0, // TODO
             };
 
              BulletConfig BasicSlidingHit1 = new BulletConfig {
@@ -488,7 +480,6 @@ namespace JoltCSharp {
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               BType = BulletType.Melee,
                               CharacterEmitSfxName = "SlashEmitSpd2",
-                              CollisionTypeMask = 0, // TODO
             };
 
              Skill BladeGirlSliding = new Skill {
@@ -567,7 +558,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "SlashEmitSpd1",
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = false,
-                              CollisionTypeMask = 0, // TODO
                               MhType = MultiHitType.FromPrevHitAnyway,
             }; 
 
@@ -644,11 +634,9 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "PistolEmit",
                               HitSfxName = "Piercing",
                               HitOnRockSfxName = "Vanishing7",
-                              TakesGravity = false,
                               RenderRotationAlongVelocity = false,
                               MhType = MultiHitType.FromEmission,
                               SimultaneousMultiHitCnt = 3,
-                              CollisionTypeMask = 0 // TODO
             };
 
              BulletConfig BasicRapidFireHit2 = new BulletConfig(BasicRapidFireHit1)
@@ -700,7 +688,6 @@ namespace JoltCSharp {
                               BType = BulletType.Melee,
                               MhType = MultiHitType.FromEmission,
                               NoHitAnim = true,
-                              CollisionTypeMask = 0 // TODO
             };
 
              BulletConfig BasicTimedBombHit1 = new BulletConfig {
@@ -728,7 +715,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "PistolEmit",
                               HitSfxName = "Piercing",
                               HitOnRockSfxName = "Vanishing8",
-                              TakesGravity = true,
                               MhType = MultiHitType.FromPrevHitActualOrActiveTimeUp,
                               InitQ = new PbQuat {
                                   X = cTurn45DegsWrtZAxis.X,
@@ -739,7 +725,6 @@ namespace JoltCSharp {
                               NoHitAnim = true,
                               Restitution = 0.92f,
                               GravityFactor = 0.55f,
-                              CollisionTypeMask = 0 // TODO
             };
 
              BulletConfig BasicTimedBombHit2 = new BulletConfig {
@@ -766,7 +751,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "PistolEmit",
                               HitSfxName = "Piercing",
                               HitOnRockSfxName = "Vanishing8",
-                              CollisionTypeMask = 0 // TODO
             };
 
              Skill BlackThrower1TimedBomb = new Skill{
@@ -876,7 +860,6 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "SlashEmitSpd1",
                               HitSfxName="Melee_Hit2",
                               RemainsUponHit = true,
-                              CollisionTypeMask = 0, // TODO
             };
 
             BulletConfig SlowButPowerfulBladeAirHit1 = new BulletConfig(SlowButPowerfulBladeHit1)

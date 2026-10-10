@@ -331,8 +331,8 @@ message CharacterConfig {
     bool omit_gravity = 47;
     bool omit_soft_pushback = 48;
     bool repel_soft_pushback = 49;
-    uint64 collision_type_mask = 50;
 
+    int32 hardness = 50;
     float vision_offset_x = 51;
     float vision_offset_y = 52;
 	float vision_half_height = 53;
@@ -340,8 +340,7 @@ message CharacterConfig {
 	float vision_bottom_radius = 55;
 
     bool lay_down_to_recover_from_dimmed = 56;
-
-    int32 hardness = 57;
+    bool has_btn_b_charging = 57;
 
     int32 jump_startup_frames = 58;
 
@@ -365,7 +364,6 @@ message CharacterConfig {
     IfaceCat Ifc = 80;
     uint32 ele_weakness = 81;
     uint32 ele_resistance = 82;
-    bool has_btn_b_charging = 83;
 
     bool is_key_ch = 85;
 
@@ -492,7 +490,6 @@ message CharacterDownsync {
 
     int32 mp_regen_rdf_countdown = 30;
 
-    // Kindly note that "collision_type_mask" is NOT GRANULAR ENOUGH for inter-character collision configuration, e.g. same team omission, thus we'd still need the fields "bullet_team_id" and "ch_collision_team_id" here
     int32 bullet_team_id = 31;
     uint32 remaining_air_jump_quota = 32;
     uint32 remaining_air_dash_quota = 33;
@@ -658,7 +655,7 @@ message PatrolCue {
     int32 fd_capture_frames = 8;
     int32 fu_capture_frames = 9;
 
-    uint64 collision_type_mask = 1029; // [COLLISION_NPC_PATROL_CUE_INDEX_PREFIX, COLLISION_TRAP_PATROL_CUE_INDEX_PREFIX]
+    uint64 collision_type_mask = 1029; // e.g. (UDT_TRAP | UDT_NPC)
 }
 
 enum BulletType {
@@ -739,92 +736,88 @@ message BulletConfig {
     int32 active_anim_looping_rdf_offset = 22;  
     int32 vanishing_anim_rdf_cnt = 23;
     int32 vanishing_anim_looping_rdf_offset = 24;  
-    int32 hit_anim_rdf_cnt = 26; // [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
+    int32 hit_anim_rdf_cnt = 25; // [REMINDER] "hit_anim" of a bullet is positioned at the intersection of hurt character
 
-    BulletType b_type = 27;
-    MultiHitType mh_type = 28;
+    BulletType b_type = 26;
+    MultiHitType mh_type = 27;
 
-    uint32 simultaneous_multi_hit_cnt = 29; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
+    uint32 simultaneous_multi_hit_cnt = 28; // marks how many simultaneous bullets are left, default to 0 indicating that the current bullet is the only one to fire 
 
-    float speed = 30; // For speed varying bullets, this is the initial speed
-    float speed_if_not_hit = 31;
+    float speed = 29; // For speed varying bullets, this is the initial speed
+    float speed_if_not_hit = 30;
 
-    int32 hardness = 32;
-    int32 self_extra_hardness = 33;
-    int32 hit_invinsible_frames = 35;
+    int32 hardness = 31;
+    int32 self_extra_hardness = 32;
+    int32 hit_invinsible_frames = 33;
 
-    int32 perp_acc_mag = 37; // acceleration magnitude perpendicular to instantaneous velocity per second
+    int32 perp_acc_mag = 34; // acceleration magnitude perpendicular to instantaneous velocity per second
 
-    bool delay_self_vel_to_active = 38; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
-    bool hit_on_multi_contact = 39; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
+    bool delay_self_vel_to_active = 35; // if true, "self_lock_vel_x" & "self_lock_vel_y" would only be applied when bullet is active 
+    bool hit_on_multi_contact = 36; // often true for "Melee", false for "MechanicalCartridge" or "MagicalFireball")
 
-    bool omit_soft_pushback = 40; // Only used for melee bullets
+    bool omit_soft_pushback = 37; // Only used for melee bullets
 
-    bool remains_upon_hit = 41; 
-    bool render_rotation_along_velocity = 42;
+    bool remains_upon_hit = 38; 
+    bool render_rotation_along_velocity = 39;
 
-    int32 repeat_quota = 47; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
+    int32 repeat_quota = 40; // for long lasting bullet, applicable for "mh_type == (FromPrevHitActual | FromPrevHitAnyway)"
 
-    bool mh_vanish_on_melee_hit = 48; // "mh" short for "multihit"
+    bool mh_vanish_on_melee_hit = 41; // "mh" short for "multihit"
 
-    bool mh_updates_origin_pos = 50; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
-    bool beam_collision = 51; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
+    bool mh_updates_origin_pos = 42; // Default is false, multihit bullets will inherit (originated_virtual_grid_x, originated_virtual_grid_y) from the previous bullet
+    bool beam_collision = 43; // If true, both collision & rendering of the bullet will respect (originated_virtual_grid_x, originated_virtual_grid_y) -> (virtual_grid_x, virtual_grid_y)
 
-    bool for_ally = 52;
+    bool for_ally = 44;
 
-    float hitbox_size_inc_x = 53; // Change of hitbox_size_x per second
-    float hitbox_size_inc_y = 54; // Change of hitbox_size_y per second
+    float hitbox_size_inc_x = 45; // Change of hitbox_size_x per second
+    float hitbox_size_inc_y = 46; // Change of hitbox_size_y per second
 
-    bool allows_walking = 55;
-    bool allows_crouching = 56;
-
-    uint32 elemental_attrs = 59;
-
-    float beam_visual_size_y = 64;
-
-    bool touch_hit_bomb_collision = 65;
+    bool allows_walking = 47;
+    bool allows_crouching = 48;
+    uint32 elemental_attrs = 49;
+    float beam_visual_size_y = 50;
+    bool touch_hit_bomb_collision = 51;
     
-    bool air_riding_ground_wave = 66; // Only applicable to "b_type == GroundWave"
+    bool air_riding_ground_wave = 52; // Only applicable to "b_type == GroundWave"
 
-    bool ground_impact_melee_collision = 67; // Only applicable to "b_type == Melee"
-    bool wall_impact_melee_collision = 68; // Only applicable to "b_type == Melee"
+    bool ground_impact_melee_collision = 53; // Only applicable to "b_type == Melee"
+    bool wall_impact_melee_collision = 54; // Only applicable to "b_type == Melee"
 
-    bool mh_inherits_spin = 69;
-    optional PbQuat init_q = 70;
+    bool mh_inherits_spin = 55;
 
-    optional float friction = 71;
-    optional float restitution = 72; 
-    optional float gravity_factor = 73; 
-    bool no_hit_anim = 74;
+    bool no_hit_anim = 56;
 
-    IfaceCat ifc = 75;
-    bool reflect_fireball_x_if_not_harder = 76;
-    bool reject_reflection_from_another_bullet = 77;
+    IfaceCat ifc = 57;
+    bool reflect_fireball_x_if_not_harder = 58;
+    bool reject_reflection_from_another_bullet = 59;
 
-    bool provides_x_hard_pushback = 78;
-    bool provides_y_hard_pushback_top = 79;
-    bool provides_y_hard_pushback_bottom = 80;
+    bool provides_x_hard_pushback = 60;
+    bool provides_y_hard_pushback_top = 61;
+    bool provides_y_hard_pushback_bottom = 62;
 
-    bool ignore_slope_deceleration = 81;
-    bool rotate_offender_with_spin = 82;
-    bool mh_not_trigger_on_ch_hit = 83;
-    bool mh_not_trigger_on_harder_bullet_hit = 84;
-    bool mh_not_trigger_on_hard_pushback_hit = 85;
-    bool hopper_missile = 86;
-    bool beam_rendering = 87;
-    uint32 missile_search_interval_pow2Minus1 = 88;
+    bool ignore_slope_deceleration = 63;
+    bool rotate_offender_with_spin = 64;
+    bool mh_not_trigger_on_ch_hit = 65;
+    bool mh_not_trigger_on_harder_bullet_hit = 66;
+    bool mh_not_trigger_on_hard_pushback_hit = 67;
+    bool hopper_missile = 68;
+    bool beam_rendering = 69;
+    uint32 missile_search_interval_pow2Minus1 = 70;
 
-    bool use_ch_offset_regardless_of_emission_mh = 89;
+    bool use_ch_offset_regardless_of_emission_mh = 71;
 
-    float gauge_inc_reduction_ratio = 93; // Normally 0 for SuperAtks
-    bool mh_inherits_frames_in_bl_state = 94;
-    int32 guard_breaker_extra_hit_cnt = 95;
+    float gauge_inc_reduction_ratio = 72; // Normally 0 for SuperAtks
+    bool mh_inherits_frames_in_bl_state = 73;
+    int32 guard_breaker_extra_hit_cnt = 74;
         
-    int32 finishing_frames = 97; // Only applicable to "true == ground_impact_melee_collision"
-    bool no_vanish_anim_on_hard_pushback = 98;
+    int32 finishing_frames = 75; // Only applicable to "true == ground_impact_melee_collision"
+    bool no_vanish_anim_on_hard_pushback = 76;
 
-    uint64 collision_type_mask = 1029;
-    bool takes_gravity = 1030; // e.g. a bomb, a ground-wave
+    optional float friction = 77;
+    optional float restitution = 78; 
+    optional float collider_density = 79;
+    optional float gravity_factor = 80; 
+    optional PbQuat init_q = 81;
 
     BuffConfig buff_config = 1031;
 
@@ -908,13 +901,9 @@ message TrapConfig {
 
     bool deactivate_upon_triggered = 10;
 
-    float surface_friction = 11;
-
     bool use_kinematic = 12;
 
     int32 hp = 13;
-
-    bool takes_gravity = 14;
 
     uint32 atk1_skill_id = 23;
 
@@ -929,6 +918,11 @@ message TrapConfig {
     bool no_x_flip_rendering = 33;
     bool destructible = 34;
     bool allows_rotation_from_phy_sys = 35;
+
+    optional float friction = 36;
+    optional float restitution = 37; 
+    optional float collider_density = 38;
+    optional float gravity_factor = 39;
 
     string name = 1024;
 }
@@ -978,11 +972,16 @@ message TrapConfigFromTiled {
     float render_box_half_size_x = 28;
     float render_box_half_size_y = 29;
 
-    optional bool takes_gravity = 30;
-    optional int32 hp = 31; 
-    optional bool destructible = 32;
-    optional bool allows_rotation_from_phy_sys = 33;
-    optional string name = 34; // Overrides the prefab name to use
+    optional int32 hp = 30; 
+    optional bool destructible = 31;
+    optional bool allows_rotation_from_phy_sys = 32;
+
+    optional float friction = 33;
+    optional float restitution = 34; 
+    optional float collider_density = 35;
+    optional float gravity_factor = 36;
+
+    optional string name = 37; // Overrides the prefab name to use
 
     // Used for constraint limit assignment
     optional float limit_1 = 128;  
@@ -1328,17 +1327,17 @@ message PlayerSettings {
 }
 
 message PlayerRegionProgress {
-    int32 region_id = 1;
+    string region_name = 1;
     int32 completed_level_count = 2;
 
     // Any region can be in a state of "partially unlocked"
-    map<int32, bool> remaining_dependencies = 3;
-    map<int32, bool> removed_dependencies = 4;
+    map<string, bool> remaining_dependencies = 3;
+    map<string, bool> removed_dependencies = 4;
 }
 
 message PlayerLevelProgress {
-    int32 region_id = 1;
-    int32 level_id = 2;
+    string region_name = 1;
+    string level_name = 2;
 
     int32 highest_score = 3;
     int32 shortest_finish_time_at_highest_score = 4;
@@ -1349,14 +1348,14 @@ message PlayerLevelProgress {
     uint32 character_species_id_at_shortest_finish_time = 8;
 
     // Any level can be in a state of "partially unlocked", if a record exists in "PlayerStoryProgress.level_progress_dict" with non-empty "remaining_dependencies", then it's locked but visible
-    map<int32, bool> remaining_dependencies = 9;
-    map<int32, bool> removed_dependencies = 10;
+    map<string, bool> remaining_dependencies = 9;
+    map<string, bool> removed_dependencies = 10;
 }
 
 message PlayerChUnlockProgress {
     uint32 species_id = 1;
-    map<int32, bool> remaining_dependencies = 2;
-    map<int32, bool> removed_dependencies = 3;
+    map<string, bool> remaining_dependencies = 2;
+    map<string, bool> removed_dependencies = 3;
 }
 
 enum PlayerStoryModeSelectView {
@@ -1371,11 +1370,11 @@ enum FinishedLvOption {
 }
 
 message PlayerStoryProgress {
-    map<int32, PlayerRegionProgress> region_progress_dict = 1; // Including just unlocked regions with 0 progress
-    map<int32, PlayerLevelProgress> level_progress_dict = 2; // Including just unlocked levels with 0 progress 
+    map<string, PlayerRegionProgress> region_progress_dict = 1; // Including just unlocked regions with 0 progress
+    map<string, PlayerLevelProgress> level_progress_dict = 2; // Including just unlocked levels with 0 progress 
 
-    int32 cursor_region_id = 3;
-    int32 cursor_level_id = 4;
+    string cursor_region_name = 3;
+    string cursor_level_name = 4;
 
     PlayerStoryModeSelectView view = 5;
     uint64 saved_at_gmt_millis = 6;
@@ -1690,7 +1689,7 @@ message DebuffSpecies {
 
 message PrimitiveConsts {
     int32 battle_dynamics_fps = 1;
-    int32 default_timeout_for_last_all_confirmed_ifd = 2; // in milliseconds
+    uint32 upsync_st_ifd_id_tolerance = 2;
 
     // Deliberately NOT using enum for "room states" to make use of "C# CompareAndExchange" 
     int32 room_id_none = 3;
@@ -1781,9 +1780,10 @@ message PrimitiveConsts {
     float default_pickable_rising_vel_y = 72;
     int32 default_pickable_startup_frames = 73;
     int32 default_pickable_lifetime_rdf_cnt = 74;
-
-    int32 default_block_stun_frames = 76;
-    int32 default_blownup_frames_for_flying = 77;
+    
+    int32 default_phy_sys_substep_cnt = 75;
+    uint32 default_phy_sys_num_vel_steps = 76;
+    uint32 default_phy_sys_num_pos_steps = 77;
 
     int32 default_gauge_inc_by_hit = 78;
 
@@ -1806,7 +1806,9 @@ message PrimitiveConsts {
     uint32 no_skill = 90;
     int32 no_skill_hit = 91;
 
-    uint32 upsync_st_ifd_id_tolerance = 93;
+    int32 default_block_stun_frames = 92;
+    int32 default_blownup_frames_for_flying = 93;
+
     float no_lock_vel = 94;
     float crouch_forcing_ceiling_dot_threshold = 95; 
     int32 terminating_render_frame_id = 96;
@@ -1904,8 +1906,11 @@ message PrimitiveConsts {
     float default_bullet_friction = 166; 
     float default_bullet_restitution = 167; 
 
-    float stairs_p_terrain_priority = 168;
-    float regular_slope_terrain_priority = 169;
+    float default_trap_friction = 168;
+    float default_trap_restitution = 169;
+
+    float stairs_p_terrain_priority = 170;
+    float regular_slope_terrain_priority = 171;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;
