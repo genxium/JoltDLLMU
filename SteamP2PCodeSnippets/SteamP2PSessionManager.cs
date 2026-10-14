@@ -783,7 +783,7 @@ public class SteamP2PSessionManager {
 
                                            We used "last-consecutively-all-confirmed-InputFrameDownsync-id (i.e. `FrontendBattle.lcacIfdId`, `FrontendBattle.udpLcacIfdId`)" for lag recognition, hence a "reliable-UDP (i.e. k_nSteamNetworkingSend_Reliable)" is most preferred for overall performance.
 
-                                           When using "dedicated-server as both RenderFrame-authority and UDP-relay", it's easier to get good PvP performance because the TCP delay is so small (often < 128ms) and "raw-UDP" packet-loss-rate is so low such that the "raw-UDP" caveats of high packet-loss-rate or delay-surge are seldom exposed -- backthen I didn't have a convenient "reliable-UDP" option either, otherwise it'd have been a better choice over "raw-UDP" too. 
+                                           When using "authoritative-server as both RenderFrame-authority and UDP-relay", it's easier to get good PvP performance because the TCP delay is so small (often < 128ms) and "raw-UDP" packet-loss-rate is so low such that the "raw-UDP" caveats of high packet-loss-rate or delay-surge are seldom exposed -- backthen I didn't have a convenient "reliable-UDP" option either, otherwise it'd have been a better choice over "raw-UDP" too. 
 
                                            Moreover, we're intentionally NOT using the "k_nSteamNetworkingSend_NoDelay" flag to improve success rate.
                                          */

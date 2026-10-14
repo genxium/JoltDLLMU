@@ -55,7 +55,7 @@ Therefore good synchronization is not all about abstract algorithm design, a mat
 
 Yes, I have a "successful experience" using it with [Steam Lobby](https://partner.steamgames.com/doc/features/multiplayer/matchmaking) and [ISteamNetworkingMessages](https://partner.steamgames.com/doc/api/ISteamNetworkingMessages) via [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET/tree/master). 
 
-By "successful experience" it means an internet competitive PvP experience very similar to the screen-recordings above (which in turn uses a dedicated-server like that of [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4)), with a few tunings or constraints
+By "successful experience" it means an internet competitive PvP experience very similar to the screen-recordings above (which in turn uses a authoritative-server like that of [DelayNoMoreUnity](https://github.com/genxium/DelayNoMoreUnity/tree/v2.3.4)), with a few tunings or constraints
 - total count of players in a single battle is kept no more than 4 (a bigger count of players in a single battle for competitive PvP might NOT be a best use case for P2P, please be careful if you're interested in it) 
 - find a way to break "lag-induced-freezing avalanche across all players" by the "Lobby owner", see `<proj-root>/SteamP2PCodeSnippets/SteamOnlineMapController.cs` for more information 
 

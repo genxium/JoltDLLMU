@@ -88,7 +88,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
     protected float SFX_ATTENUATION_PIVOT_Z = 16.0f; // Same magnitude as a typical character capsule radius
 
-    protected float cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY;
+    protected float cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY; // The active bounds
+    protected float grandCameraCapMinX, grandCameraCapMaxX, grandCameraCapMinY, grandCameraCapMaxY;
+
     protected float effInftyFar, npcInterpolationDis2Threshold;
 
     protected Dictionary<int, BattleResult> unconfirmedBattleResult;
@@ -302,7 +304,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     }
 
     protected int camFovW, camFovH, camPaddingX, camPaddingY;
-    protected void calcCameraCaps() {
+    protected virtual void calcCameraCaps() {
         cameraCapMinX = 0;
         cameraCapMaxX = tilemapHalfWidth + tilemapHalfWidth;
         cameraCapMinY = -tilemapHalfHeight -tilemapHalfHeight;
@@ -311,6 +313,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         foreach (Transform child in grid.transform) {
             switch (child.gameObject.name) {
                 case "GrandCameraBounds": {
+                        // This layer can be absent.
                         foreach (Transform camBoundChild in child) {
                             var tileObj = camBoundChild.GetComponent<SuperObject>();
                             var (candidateCamMinTileX, candidateCamMinY) = (tileObj.m_X, tileObj.m_Y + tileObj.m_Height);
@@ -318,12 +321,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
                             var (candidateCamMinWx, candidateCamMinWy) = TiledLayerPositionToWorldPosition(candidateCamMinTileX, candidateCamMinY);
                             var (candidateCamMaxWx, candidateCamMaxWy) = TiledLayerPositionToWorldPosition(candidateCamMaxTileX, candidateCamMaxY);
-
-                            collisionSpaceHalfWidth = (int)((candidateCamMaxWx - candidateCamMinWx) * .5f);
-                            collisionSpaceHalfHeight = (int)((candidateCamMaxWy - candidateCamMinWy) * .5f);
-                            collisionSpacePaddingLeft = candidateCamMinWx;
-                            collisionSpacePaddingBottom = collisionSpaceHalfHeight + collisionSpaceHalfHeight + candidateCamMinWy;
-                            
+ 
                             // [WARNING] The inequality checks below are NOT typos! They're meant to shrink the default camera range! 
                             if (candidateCamMinWx > cameraCapMinX) {
                                 cameraCapMinX = candidateCamMinWx;
@@ -343,15 +341,26 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             }
         }
 
+        // It's by design that "collisionSpaceHalfWidth & collisionSpaceHalfHeight", "collisionSpacePaddingLeft & collisionSpacePaddingBottom" are calculated based on the values of ""cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY" before they're padded.
+        collisionSpaceHalfWidth = (int)((cameraCapMaxX - cameraCapMinX) * .5f);
+        collisionSpaceHalfHeight = (int)((cameraCapMaxY - cameraCapMinY) * .5f);
+        collisionSpacePaddingLeft = cameraCapMinX;
+        collisionSpacePaddingBottom = collisionSpaceHalfHeight + collisionSpaceHalfHeight + cameraCapMinY;
+
+        // Now pad the camera caps.
         camFovW = (int)(2.0f * gameplayCamera.orthographicSize * gameplayCamera.aspect);
         camFovH = (int)(2.0f * gameplayCamera.orthographicSize);
         camPaddingX = (camFovW >> 1);
         camPaddingY = (camFovH >> 1);
         cameraCapMinX += camPaddingX;
         cameraCapMaxX -= camPaddingX;
-
         cameraCapMinY += camPaddingY;
         cameraCapMaxY -= camPaddingY;
+
+        grandCameraCapMinX = cameraCapMinX;
+        grandCameraCapMaxX = cameraCapMaxX;
+        grandCameraCapMinY = cameraCapMinY;
+        grandCameraCapMaxY = cameraCapMaxY;
 
         effInftyFar = 4f * Math.Max(tilemapHalfWidth, tilemapHalfHeight);
         npcInterpolationDis2Threshold = (effInftyFar * 0.125f) * (effInftyFar * 0.125f);
@@ -475,7 +484,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
     }
 
-    protected WsReq createSelfParsedStartRdf(uint[] speciesIdList) {
+    protected virtual WsReq createSelfParsedStartRdf(uint[] speciesIdList) {
         Debug.Log($"createSelfParsedStartRdf with speciesIdList={ArrToString(speciesIdList)} for selfJoinIndex={selfJoinIndex}");
         triggerUdToConfigFromTiled.Clear();
         trapUdToConfigFromTiled.Clear();
@@ -1234,17 +1243,25 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     protected Vector3 pointInCamViewPortHolder = new Vector3();
     protected Vector2 camDiffDstHolder = new Vector2();
 
-    protected void clampToMapBoundary(ref Vector3 posHolder) {
+    protected virtual void clampToMapBoundary(ref Vector3 posHolder, in float dt) {
         float newX = posHolder.x, newY = posHolder.y, newZ = posHolder.z;
-        if (newX > cameraCapMaxX) newX = cameraCapMaxX;
-        if (newX < cameraCapMinX) newX = cameraCapMinX;
-        if (newY > cameraCapMaxY) newY = cameraCapMaxY;
-        if (newY < cameraCapMinY) newY = cameraCapMinY;
+        if (newX > grandCameraCapMaxX) {
+            newX = grandCameraCapMaxX;
+        }
+        if (newX < grandCameraCapMinX) {
+            newX = grandCameraCapMinX;
+        }
+        if (newY > grandCameraCapMaxY) {
+            newY = grandCameraCapMaxY;
+        }
+        if (newY < grandCameraCapMinY) {
+            newY = grandCameraCapMinY;
+        }
         posHolder.Set(newX, newY, newZ);
     }
 
-    private float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.02125f;
-    private float CROUCH_PEEKING_CAM_SPEED_FACTOR = 1.5f;
+    protected float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.02125f;
+    protected float CROUCH_PEEKING_CAM_SPEED_FACTOR = 1.5f;
     protected float camCurrSpeedPerSecond = 0.0f;
     protected float CAM_SPEED_LINEAR_DAMPING = 0.2f;
     protected float CAM_REGULAR_ACC_PER_SECOND = 6.5f;
@@ -1266,7 +1283,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             chGameObj.transform.position = newPosHolder;
 
             newPosHolder.Set(wx, wy, defaultGameplayCamZ);
-            clampToMapBoundary(ref newPosHolder);
+            clampToMapBoundary(ref newPosHolder, dt);
             gameplayCamera.transform.position = newPosHolder;
             return;
         }
@@ -1336,12 +1353,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             var newMapPosDiff2 = camDiffDstHolder.normalized * stepLength;
             newPosHolder.Set(camOldPos.x + newMapPosDiff2.x, camOldPos.y + newMapPosDiff2.y, defaultGameplayCamZ);
         }
-        clampToMapBoundary(ref newPosHolder);
+        clampToMapBoundary(ref newPosHolder, dt);
 
         gameplayCamera.transform.position = newPosHolder;
     }
 
-    protected void applyRdf(RenderFrame rdf, StepResult? stepResult, float dtSeconds) {
+    protected virtual void applyRdf(RenderFrame rdf, StepResult? stepResult, float dtSeconds) {
         int rdfId = rdf.Id;
         float selfPlayerWx = 0f, selfPlayerWy = 0f;
         activeChdDictionary.Clear();
@@ -1644,11 +1661,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
 
         if (null != stepResultHolder) {
-            /*
-            if (0 < stepResultHolder.AimingRayCount) {
-                Debug.Log($"There's {stepResultHolder.AimingRayCount} aiming rays at csharpTimerRdfId={csharpTimerRdfId}#2");
-            }
-            */
             for (int k = 0; k < stepResultHolder.AimingRayCount; k++) {
                 var aimingRay = stepResultHolder.AimingRays[k];
 
