@@ -1249,6 +1249,13 @@ public:
         }
     }
 
+    virtual bool canForceCrouching(const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const uint64_t udRhs) const {
+        if (transientSlipJumpableUds.count(udRhs)) {
+            return false;
+        }
+        return true;
+    }
+
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const CharacterDownsync* rhsCurrChd) const {
         return JPH::ValidateResult::AcceptContact;
     }
@@ -1927,8 +1934,6 @@ public:
         const JPH::Body& inBody2,
         JPH::RVec3Arg inBaseOffset,
         const JPH::CollideShapeResult& inCollisionResult) override {
-        // Just for simplicity, we'll handle validation elsewhere by following DLLMU-v2.3.4.
-        
         /*
         [TODO]
 

@@ -911,6 +911,66 @@ namespace JoltCSharp {
                 InplacePromptYOffset = (22.0f),
             };
 
+            CharacterConfig RED_RIDINGHOOD = new CharacterConfig {
+                SpeciesId = SPECIES_RED_RIDINGHOOD,
+                SpeciesName = "RedRidinghood",
+                Hp = 150,
+                LayDownFramesToRecover = 16,
+                GetUpInvinsibleFrames = 34,
+                GetUpFramesToRecover = 30,
+                Speed = 2.3f * BATTLE_DYNAMICS_FPS,
+                JumpAccMagY = 4.4f * GRAVITY_Y_MAGNITUDE,
+                JumpStartupFrames = 3,
+                AccMagX = 0.13f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                AngYSpeed = StdYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                DashingEnabled = false,
+                SlidingEnabled = false,
+                OnWallEnabled = false,
+                CrouchingEnabled = false,
+                CrouchingAtkEnabled = false,
+                WallJumpFramesToRecover = 8,
+                WallJumpAccMagX = 0.25f * BATTLE_DYNAMICS_FPS * BATTLE_DYNAMICS_FPS,
+                WallJumpAccMagY = 1.5f * GRAVITY_Y_MAGNITUDE,
+                WallSlideVelY = (-1) * BATTLE_DYNAMICS_FPS,
+                WallAngYSpeed = OnWallYAxisAngularSpeedPerRdf * BATTLE_DYNAMICS_FPS,
+                WallJumpFreeSpeed = 3.0f * BATTLE_DYNAMICS_FPS,
+
+                CapsuleRadius = (8.0f), // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
+                CapsuleHalfHeight = (16.0f),
+                ShrinkedCapsuleRadius = (8.0f),
+                ShrinkedCapsuleHalfHeight = (10.0f),
+                LayDownCapsuleRadius = (8.0f),
+                LayDownCapsuleHalfHeight = (8.0f),
+                DyingCapsuleRadius = (8.0f),
+                DyingCapsuleHalfHeight = (8.0f),
+                HasTurnAroundAnim = false,
+                Hardness = 5,
+                MinFallingVelY = DEFAULT_MIN_FALLING_VEL_Y * BATTLE_DYNAMICS_FPS,
+                DefaultAirDashQuota = 0,
+                DefaultAirJumpQuota = 1,
+                Atk1UsesMagazine = true,
+                Atk1Magazine = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.TimedMagazineIv,
+                    Quota = 15,
+                    FramesToRecover = 25,
+                    BadgeName = "Pistol"
+                },
+                SuperAtkGauge = new InventorySlotConfig {
+                    StockType = InventorySlotStockType.GaugedMagazineIv,
+                    Quota = 5,
+                    GaugeRequired = 120,
+                    FramesToRecover = 60,
+                },
+                GaugeIncWhenExhausted = 80,
+                HasBtnBCharging = false,
+                Ifc = IfaceCat.Flesh,
+                TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
+                InplacePromptYOffset = (28.0f),
+                LoopingChStates = {
+                    {(int)CharacterState.Walking, 15},
+                },
+            };
+
             // BLADEGIRL
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), BladeGirlGroundSlash1Id);
             BLADEGIRL.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), BladeGirlGroundSlash1Id);
@@ -1061,6 +1121,10 @@ namespace JoltCSharp {
             WOLVERINE1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, true, false, false, false), Wolverine1GroundSlash1Id);
             WOLVERINE1_TEST_WITH_VISION.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, true, false, false, false, false, false, false, false), Wolverine1AirSlash1Id);
             underlying.Add(WOLVERINE1_TEST_WITH_VISION.SpeciesId, WOLVERINE1_TEST_WITH_VISION);
+
+            // RED_RIDINGHOOD
+            RED_RIDINGHOOD.InitSkillTransit.Add(EncodePatternForInitSkill(primitiveConsts.PatternB, false, false, false, false, false, false, false, false), RedRidinghoodGroundPistol1Id);
+            underlying.Add(RED_RIDINGHOOD.SpeciesId, RED_RIDINGHOOD);
 
             // POLICE characters
             underlying.Add(PARIS_POLICE_CHIEF.SpeciesId, PARIS_POLICE_CHIEF);

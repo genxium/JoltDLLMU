@@ -361,6 +361,7 @@ public:
     std::atomic<uint32_t>       mNextRdfAimingRayCount = 0;
 
     virtual bool shouldCharacterSeeTrap(const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const uint64_t udRhs, const Body& rhs) const = 0;
+    virtual bool canForceCrouching(const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const uint64_t udRhs) const = 0;
 
     virtual JPH::ValidateResult validateLhsCharacterContact(const CharacterDownsync* lhsCurrChd, const Trigger* rhsCurrTrigger) const = 0;
 

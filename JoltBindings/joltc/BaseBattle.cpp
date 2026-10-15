@@ -2931,6 +2931,11 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
         ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", bodyID=" << chCollider->GetBodyID().GetIndexAndSequenceNumber() << " slip jump triggered at pos=(" << currChd.x() << "," << currChd.y() << "), cs=" << currChd.ch_state() << ", fc=" << currChd.frames_in_ch_state() << ", velCOM=(" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")" << std::endl;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
     } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
         nextChd->set_frames_in_ch_state(0);
@@ -5588,6 +5593,12 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 
 #ifndef NDEBUG
     /*
+    if (InAirIdle1BySlipJump == oldNextChState) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while oldNextChState=" << oldNextChState << ", oldNextEffInAir=" << oldNextEffInAir << ", cvInAir=" << cvInAir << ", currChd.ground_ud=" << currChd.ground_ud() << ", nextChd->ground_ud=" << nextChd->ground_ud();
+        Debug::Log(oss1.str(), DColor::Orange);
+    }
+
     if (Atk7 == nextChd->ch_state() ) {
         std::ostringstream oss1;
         oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state();
@@ -6980,6 +6991,7 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     case BlownUp1:
     case InAirIdle1NoJump:
     case InAirIdle1ByJump:
+    case InAirIdle1BySlipJump:
     case InAirIdle2ByJump:
     case InAirIdle1ByWallJump:
     case InAirWalking:
@@ -6989,9 +7001,6 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     case OnWallAtk1:
     case Sliding:
     case GroundDodged:
-    case CrouchIdle1:
-    case CrouchAtk1:
-    case CrouchAtked1:
     case Dashing:
         outCapsuleRadius = cc->shrinked_capsule_radius();
         outCapsuleHalfHeight = cc->shrinked_capsule_half_height();
@@ -7004,6 +7013,12 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
             outCapsuleRadius = cc->capsule_radius();
             outCapsuleHalfHeight = cc->capsule_half_height();
         }
+        break;
+    case CrouchIdle1:
+    case CrouchAtk1:
+    case CrouchAtked1:
+        outCapsuleRadius = cc->shrinked_capsule_radius();
+        outCapsuleHalfHeight = cc->shrinked_capsule_half_height() * globalPrimitiveConsts->default_crouching_y_shrink_factor(); // [REMINDER] Why is this needed? When slip jumping there's often no "relative y-axis velocity between character and the slippable platform", thus without a shape change we might NOT invoke the expected "OnContactValidate".
         break;
     default:
         outCapsuleRadius = cc->capsule_radius();

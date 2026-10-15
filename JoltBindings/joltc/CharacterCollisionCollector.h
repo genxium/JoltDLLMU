@@ -342,7 +342,7 @@ public:
                         mBi->GetLinearAndAngularVelocity(rhsBodyID, rhsLinearVelocity, rhsAngularVel);
                         Vec3 rhsPointVel = rhsLinearVelocity + rhsAngularVel.Cross(contactPointOn2);
                         
-                        if (rhsPointVel.IsNearZero()) {
+                        if (rhsPointVel.IsNearZero() && mBaseBattleFilter->canForceCrouching(mUd, mUdt, mCurrChd, udRhs)) {
                             // The regular case
                             mCrouchForced = true;
 /*
@@ -358,7 +358,7 @@ public:
                             if (rhsProactivelySqueezingDown1) {
                                 float rhsPointVelNormDot = rhsPointVel.Normalized().Dot(-mUp);
                                 bool rhsProactivelySqueezingDown2 = rhsPointVelNormDot > 0.5;
-                                if (rhsProactivelySqueezingDown2) {
+                                if (rhsProactivelySqueezingDown2 && mBaseBattleFilter->canForceCrouching(mUd, mUdt, mCurrChd, udRhs)) {
                                     mCrouchForced = true;
 /*
 #ifndef NDEBUG

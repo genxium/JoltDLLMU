@@ -15,6 +15,9 @@ namespace JoltCSharp {
         public static uint HunterPistolWallId = 128, HunterPistolId = 129, HunterPistolAirId = 130, HunterPistolWalkingId = 131, HunterDragonPunchId = 132, HunterAirSlashId = 133, HunterSlidingId = 134, HunterGroundBackDashingId = 135, HunterPistolCrouchId = 136, HunterChargedPistolId = 137, HunterChargedPistolAirId = 138, HunterChargedPistolCrouchId = 139, HunterChargedPistolWallId = 140, HunterChargedPistolWalkingId = 141;
         public static float HunterPistolOffsetY = 28f, HunterPistolOffsetYOnWall = 28f, HunterPistolOffsetYAir = 30f, HunterPistolOffsetYCrouch = 20f;
 
+        public static uint RedRidinghoodGroundPistol1Id = 142, RedRidinghoodGroundPistol2Id = 143, RedRidinghoodGroundPistol3Id = 144, RedRidinghoodPistolAirId = 145;
+        public static float RedRidinghoodPistolOffsetY = 28f, RedRidinghoodPistolOffsetYOnWall = 28f, RedRidinghoodPistolOffsetYAir = 30f, RedRidinghoodPistolOffsetYCrouch = 20f;
+
         public static uint BlackSaber1GroundSlash1Id = 1024, BlackSaber1AirSlash1Id = 1025;
 
         public static uint BlackShooter1RapidFireId = 1026;
@@ -59,6 +62,7 @@ namespace JoltCSharp {
         public const uint SPECIES_POLICEMAN1 = 26;
         public const uint SPECIES_POLICEMAN2 = 27;
         public const uint SPECIES_POLICEWOMAN1 = 28;
+        public const uint SPECIES_RED_RIDINGHOOD = 29;
 
         public const uint SPECIES_BLACKSABER1_TEST_NO_VISION = 2049;
         public const uint SPECIES_BLACKSABER1_TEST_WITH_VISION = 2050;
@@ -322,6 +326,8 @@ namespace JoltCSharp {
               StairsPTerrainPriority = 0.35f,
               RegularSlopeTerrainPriority = 0.30f,
 
+              DefaultCrouchingYShrinkFactor = 0.95f,
+
               DefaultRevengeRdfCountdown = 5*BATTLE_DYNAMICS_FPS,
 
               EleWeaknessDefaultYield = 1.5f,
@@ -444,6 +450,7 @@ namespace JoltCSharp {
                   Policeman1 = SPECIES_POLICEMAN1,
                   Policeman2 = SPECIES_POLICEMAN2,
                   Policewoman1 = SPECIES_POLICEWOMAN1,
+                  RedRidinghood = SPECIES_RED_RIDINGHOOD,
 
                   Blacksaber1TestNoVision = SPECIES_BLACKSABER1_TEST_NO_VISION,
                   Blacksaber1TestWithVision = SPECIES_BLACKSABER1_TEST_WITH_VISION,

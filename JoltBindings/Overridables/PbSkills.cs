@@ -491,7 +491,11 @@ namespace JoltCSharp {
                    BoundChState = CharacterState.Sliding
             }.AddHit(
                     new BulletConfig(BasicSlidingHit1)
-                    );
+                    .SetCancellableFrames(11, 19)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternB, false, false, false, false, false), BladeGirlCrouchSlashId)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternDownB, false, false, false, false, false), BladeGirlCrouchSlashId)
+                    )
+            ;
 
              Skill BladeGirlAirDashing = new Skill {
                 Id = BladeGirlAirDashingId,
@@ -889,6 +893,67 @@ namespace JoltCSharp {
                    BoundChState = CharacterState.Atk1
             }.AddHit(SlowButPowerfulBladeHit1);
 
+             Skill RedRidinghoodGroundPistol1 = new Skill {
+                Id = RedRidinghoodGroundPistol1Id,
+                   RecoveryFrames = 60,
+                   RecoveryFramesOnBlock = 60,
+                   RecoveryFramesOnHit = 60,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk1
+            }.AddHit(
+                    new BulletConfig(BasicPistolBulletAir)
+                    .SetHitboxOffsets(16f, RedRidinghoodPistolOffsetY)
+                    .SetStartupFrames(25)
+                    .SetCooldownFrames(35)
+                    .SetHitboxHalfSizes(8f, 8f)
+                    .SetDamage(15)
+                    .SetAnimName("PistolBullet3")
+                    .SetSelfLockVel(0f, primitiveConsts.NoLockVel, 0)
+                    .SetPushbacks(2.0f * BATTLE_DYNAMICS_FPS, primitiveConsts.NoLockVel)
+                    .SetCancellableFrames(40, 60)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternB, false, false, false, false, false), RedRidinghoodGroundPistol2Id)
+            );
+
+             Skill RedRidinghoodGroundPistol2 = new Skill {
+                Id = RedRidinghoodGroundPistol2Id,
+                   RecoveryFrames = 76,
+                   RecoveryFramesOnBlock = 76,
+                   RecoveryFramesOnHit = 76,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk2
+            }.AddHit(
+                    new BulletConfig(BasicPistolBulletAir)
+                    .SetHitboxOffsets(16f, RedRidinghoodPistolOffsetY)
+                    .SetStartupFrames(30)
+                    .SetCooldownFrames(46)
+                    .SetHitboxHalfSizes(8f, 8f)
+                    .SetDamage(15)
+                    .SetAnimName("PistolBullet3")
+                    .SetSelfLockVel(0f, primitiveConsts.NoLockVel, 0)
+                    .SetPushbacks(0f * BATTLE_DYNAMICS_FPS, 8f * BATTLE_DYNAMICS_FPS)
+                    .SetCancellableFrames(40, 76)
+                    .UpsertCancelTransit(EncodePatternForCancelTransit(primitiveConsts.PatternB, false, false, false, false, false), RedRidinghoodGroundPistol3Id)
+                    );
+
+             Skill RedRidinghoodGroundPistol3 = new Skill {
+                Id = RedRidinghoodGroundPistol3Id,
+                   RecoveryFrames = 123,
+                   RecoveryFramesOnBlock = 123,
+                   RecoveryFramesOnHit = 123,
+                   InvocationType = SkillInvocation.RisingEdge,
+                   BoundChState = CharacterState.Atk3
+            }.AddHit(
+                    new BulletConfig(BasicPistolBulletAir) 
+                    .SetHitboxOffsets(16f, RedRidinghoodPistolOffsetY)
+                    .SetStartupFrames(79)
+                    .SetCooldownFrames(44)
+                    .SetHitboxHalfSizes(8f, 8f)
+                    .SetDamage(25)
+                    .SetAnimName("PistolBullet4")
+                    .SetSelfLockVel(0f, primitiveConsts.NoLockVel, 0)
+                    .SetPushbacks(3f * BATTLE_DYNAMICS_FPS, 8f * BATTLE_DYNAMICS_FPS)
+            );
+
             underlying = new MapField<uint, Skill> {
                 { BladeGirlAirSlash1Id, BladeGirlAirSlash1 },
                 { BladeGirlGroundSlash1Id, BladeGirlGroundSlash1 },
@@ -926,6 +991,10 @@ namespace JoltCSharp {
 
                 { Wolverine1GroundSlash1Id, WolverineGroundSlash1 },
                 { Wolverine1AirSlash1Id, WolverineAirSlash1 },
+
+                { RedRidinghoodGroundPistol1Id, RedRidinghoodGroundPistol1 }, 
+                { RedRidinghoodGroundPistol2Id, RedRidinghoodGroundPistol2 }, 
+                { RedRidinghoodGroundPistol3Id, RedRidinghoodGroundPistol3 }, 
             };
 
             return true;
