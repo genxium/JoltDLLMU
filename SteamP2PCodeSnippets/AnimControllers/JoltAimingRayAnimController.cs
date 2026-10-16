@@ -42,7 +42,7 @@ public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, 
             lineRenderer = gameObject.GetComponent<BoxMeshRenderer>();
         }
 
-        lineRenderer.SetHalfExtent(0.5f*(aimingRay.EdX - aimingRay.StX), 0.5f);
+        lineRenderer.SetHalfExtent(0.5f*(aimingRay.EdX - aimingRay.StX), 0.5f/FrontendOnlyGeometry.DEFAULT_PIXELS_PER_UNIT);
 
         return true;
     }

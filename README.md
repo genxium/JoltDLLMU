@@ -51,7 +51,7 @@ I saw lots of `peer character position dragged by interpolation` backthen even a
 
 Therefore good synchronization is not all about abstract algorithm design, a matching set of magic constants is also important. 
 
-# Does this lib work for P2P only topology?
+# Does this lib work for P2P only topology (i.e. no authoritative-server)?
 
 Yes, I have a "successful experience" using it with [Steam Lobby](https://partner.steamgames.com/doc/features/multiplayer/matchmaking) and [ISteamNetworkingMessages](https://partner.steamgames.com/doc/api/ISteamNetworkingMessages) via [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET/tree/master). 
 

@@ -1,6 +1,7 @@
 using jtshared;
 using UnityEngine;
 using JoltCSharp;
+using static FrontendOnlyGeometry;
 
 public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<CharacterDownsync, CharacterState, CharacterConfig, uint> {
 
@@ -9,9 +10,9 @@ public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<Characte
     protected const int HP_PER_SECTION = 100;
     protected float HP_PER_SECTION_F = (float)HP_PER_SECTION;
 
-    protected float DEFAULT_HP100_WIDTH = 32.0f;
-    protected float DEFAULT_HP100_HEIGHT = 5.0f;
-    protected float DEFAULT_HOLDER_PADDING = 5.0f;
+    protected float DEFAULT_HP100_WIDTH = 32.0f / DEFAULT_PIXELS_PER_UNIT;
+    protected float DEFAULT_HP100_HEIGHT = 5.0f / DEFAULT_PIXELS_PER_UNIT;
+    protected float DEFAULT_HOLDER_PADDING = 5.0f / DEFAULT_PIXELS_PER_UNIT;
 
     protected static Color[] hpColors = new Color[] {
         new Color(0x77 / 255f, 0xE9 / 255f, 0x35 / 255f),

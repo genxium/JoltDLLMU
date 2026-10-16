@@ -647,7 +647,7 @@ namespace jtshared {
             "CgR3aW5kGAUgASgNEgsKA2ljZRgGIAEoDRINCgRub25lGIAQIAEoDSJ6Cg1E",
             "ZWJ1ZmZTcGVjaWVzEhQKDHNob3J0X2Zyb3plbhgBIAEoDRIXCg9zaG9ydF9w",
             "YXJhbHl6ZWQYAiABKA0SEwoLbG9uZ19mcm96ZW4YAyABKA0SFgoObG9uZ19w",
-            "YXJhbHl6ZWQYBCABKA0SDQoEbm9uZRiAECABKA0ixzUKD1ByaW1pdGl2ZUNv",
+            "YXJhbHl6ZWQYBCABKA0SDQoEbm9uZRiAECABKA0iuDgKD1ByaW1pdGl2ZUNv",
             "bnN0cxIbChNiYXR0bGVfZHluYW1pY3NfZnBzGAEgASgFEiIKGnVwc3luY19z",
             "dF9pZmRfaWRfdG9sZXJhbmNlGAIgASgNEhQKDHJvb21faWRfbm9uZRgDIAEo",
             "BRIdChVyb29tX3N0YXRlX2ltcG9zc2libGUYBCABKAUSFwoPcm9vbV9zdGF0",
@@ -788,125 +788,133 @@ namespace jtshared {
             "dWx0X3RyYXBfcmVzdGl0dXRpb24YqQEgASgCEiIKGXN0YWlyc19wX3RlcnJh",
             "aW5fcHJpb3JpdHkYqgEgASgCEicKHnJlZ3VsYXJfc2xvcGVfdGVycmFpbl9w",
             "cmlvcml0eRirASABKAISKgohZGVmYXVsdF9jcm91Y2hpbmdfeV9zaHJpbmtf",
-            "ZmFjdG9yGKwBIAEoAhIdChRzcF9hdGtfbG9va3VwX2ZyYW1lcxiACCABKAUS",
-            "IwoaZGVidWZmX2FycmF5X2lkeF9lbGVtZW50YWwYgQggASgFEicKHnRlcm1p",
-            "bmF0aW5nX2xvd2VyX3BhcnRfcmRmX2NudBiCCCABKAUSIwoaZGVmYXVsdF90",
-            "cl9yZWNvdmVyeV9mcmFtZXMYgwggASgFEi0KJGRlZmF1bHRfZmxlZWluZ19n",
-            "cmFjZV9wZXJpb2RfcmRmX2NudBiECCABKAUSJwoeZGVmYXVsdF9mcmFtZXNf",
-            "dG9fc2hvd19kYW1hZ2VkGIUIIAEoBRIpCiBkZWZhdWx0X2ZyYW1lc190b19j",
-            "b250aW51ZV9jb21ibxiGCCABKAUSLgoKY2hfc3BlY2llcxiAECABKAsyGS5q",
-            "dHNoYXJlZC5DaFNwZWNpZXNDb25zdHMSIgoEdHB0cxiBECABKAsyEy5qdHNo",
-            "YXJlZC5UcmFwVHlwZXMSJQoEdHJ0cxiCECABKAsyFi5qdHNoYXJlZC5Ucmln",
-            "Z2VyVHlwZXMSJgoEcGt0cxiDECABKAsyFy5qdHNoYXJlZC5QaWNrYWJsZVR5",
-            "cGVzEiUKBWVsZXRzGIQQIAEoCzIVLmp0c2hhcmVkLkF0a0VsZVR5cGVzEjAK",
-            "DmRlYnVmZl9zcGVjaWVzGIUQIAEoCzIXLmp0c2hhcmVkLkRlYnVmZlNwZWNp",
-            "ZXMiigEKCUFpbWluZ1JheRITCgtvZmZlbmRlcl91ZBgBIAEoBBIUCgxvZmZl",
-            "bmRlcl91ZHQYAiABKAQSDAoEc3RfeBgDIAEoAhIMCgRzdF95GAQgASgCEgwK",
-            "BHN0X3oYBSABKAISDAoEZWRfeBgGIAEoAhIMCgRlZF95GAcgASgCEgwKBGVk",
-            "X3oYCCABKAIigwgKDENvbmZpZ0NvbnN0cxJHChFjaGFyYWN0ZXJfY29uZmln",
-            "cxgBIAMoCzIsLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5DaGFyYWN0ZXJDb25m",
-            "aWdzRW50cnkSPwoNc2tpbGxfY29uZmlncxgCIAMoCzIoLmp0c2hhcmVkLkNv",
-            "bmZpZ0NvbnN0cy5Ta2lsbENvbmZpZ3NFbnRyeRI9CgxidWZmX2NvbmZpZ3MY",
-            "AyADKAsyJy5qdHNoYXJlZC5Db25maWdDb25zdHMuQnVmZkNvbmZpZ3NFbnRy",
-            "eRJBCg5kZWJ1ZmZfY29uZmlncxgEIAMoCzIpLmp0c2hhcmVkLkNvbmZpZ0Nv",
-            "bnN0cy5EZWJ1ZmZDb25maWdzRW50cnkSPQoMdHJhcF9jb25maWdzGAUgAygL",
-            "MicuanRzaGFyZWQuQ29uZmlnQ29uc3RzLlRyYXBDb25maWdzRW50cnkSQwoP",
-            "dHJpZ2dlcl9jb25maWdzGAYgAygLMiouanRzaGFyZWQuQ29uZmlnQ29uc3Rz",
-            "LlRyaWdnZXJDb25maWdzRW50cnkSRQoQcGlja2FibGVfY29uZmlncxgHIAMo",
-            "CzIrLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5QaWNrYWJsZUNvbmZpZ3NFbnRy",
-            "eRpSChVDaGFyYWN0ZXJDb25maWdzRW50cnkSCwoDa2V5GAEgASgNEigKBXZh",
-            "bHVlGAIgASgLMhkuanRzaGFyZWQuQ2hhcmFjdGVyQ29uZmlnOgI4ARpEChFT",
-            "a2lsbENvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SHgoFdmFsdWUYAiABKAsy",
-            "Dy5qdHNoYXJlZC5Ta2lsbDoCOAEaSAoQQnVmZkNvbmZpZ3NFbnRyeRILCgNr",
-            "ZXkYASABKA0SIwoFdmFsdWUYAiABKAsyFC5qdHNoYXJlZC5CdWZmQ29uZmln",
-            "OgI4ARpMChJEZWJ1ZmZDb25maWdzRW50cnkSCwoDa2V5GAEgASgNEiUKBXZh",
-            "bHVlGAIgASgLMhYuanRzaGFyZWQuRGVidWZmQ29uZmlnOgI4ARpIChBUcmFw",
-            "Q29uZmlnc0VudHJ5EgsKA2tleRgBIAEoDRIjCgV2YWx1ZRgCIAEoCzIULmp0",
-            "c2hhcmVkLlRyYXBDb25maWc6AjgBGk4KE1RyaWdnZXJDb25maWdzRW50cnkS",
-            "CwoDa2V5GAEgASgNEiYKBXZhbHVlGAIgASgLMhcuanRzaGFyZWQuVHJpZ2dl",
-            "ckNvbmZpZzoCOAEaUAoUUGlja2FibGVDb25maWdzRW50cnkSCwoDa2V5GAEg",
-            "ASgNEicKBXZhbHVlGAIgASgLMhguanRzaGFyZWQuUGlja2FibGVDb25maWc6",
-            "AjgBKjQKFEJveEludGVycG9sYXRpb25UeXBlEgsKB1VzZVByZXYQABIPCgtJ",
-            "bnRlcnBvbGF0ZRABKlUKCElmYWNlQ2F0EgkKBUVNUFRZEAASCQoFRkxFU0gQ",
-            "ARIJCgVNRVRBTBACEgkKBUZMVUlEEAMSCAoEUk9DSxAEEgkKBUdSQVNTEAUS",
-            "CAoEV09PRBAGKj4KC0J1bGxldFN0YXRlEgsKB1N0YXJ0VXAQABIKCgZBY3Rp",
-            "dmUQARINCglWYW5pc2hpbmcQAhIHCgNIaXQQAyrECAoOQ2hhcmFjdGVyU3Rh",
-            "dGUSEgoOSW52YWxpZENoU3RhdGUQABIJCgVJZGxlMRABEgsKB1dhbGtpbmcQ",
-            "AhIKCgZBdGtlZDEQBBIUChBJbkFpcklkbGUxTm9KdW1wEAUSFAoQSW5BaXJJ",
-            "ZGxlMUJ5SnVtcBAGEhQKEEluQWlySWRsZTJCeUp1bXAQBxIYChRJbkFpcklk",
-            "bGUxQnlXYWxsSnVtcBAIEg8KC0luQWlyQXRrZWQxEAkSDAoIQmxvd25VcDEQ",
-            "ChIMCghMYXlEb3duMRALEgoKBkdldFVwMRAMEgkKBUR5aW5nEA0SCwoHRGFz",
-            "aGluZxAOEgsKB1NsaWRpbmcQDxIKCgZEaW1tZWQQEBIUChBUcmFuc2Zvcm1p",
-            "bmdJbnRvEBESDwoLQmFja0Rhc2hpbmcQEhIQCgxJbkFpcldhbGtpbmcQExId",
-            "ChlUcmFuc2Zvcm1pbmdJbnRvRnJvbURlYXRoEBQSEAoMRmFsbFN0b3BwaW5n",
-            "EBUSCwoHUGFycmllZBAXEgsKB0F3YWtpbmcQGBIQCgxHcm91bmREb2RnZWQQ",
-            "GRIPCgtCYWNrV2Fsa2luZxAaEhAKDEluQWlyRGFzaGluZxAbEhQKEEluQWly",
-            "QmFja0Rhc2hpbmcQHBIYChRJbkFpcklkbGUxQnlTbGlwSnVtcBAeEg4KClR1",
-            "cm5Bcm91bmQQHxIQCgtPbldhbGxJZGxlMRCAARIQCgtDcm91Y2hJZGxlMRCA",
-            "AhIPCgpDcm91Y2hBdGsxEIECEhIKDUNyb3VjaFdhbGtpbmcQggISEQoMQ3Jv",
-            "dWNoQXRrZWQxEIMCEgkKBERlZjEQhAISDwoKRGVmMUF0a2VkMRCFAhIPCgpE",
-            "ZWYxQnJva2VuEIYCEgkKBEF0azEQgAgSCQoEQXRrMhCBCBIJCgRBdGszEIII",
-            "EgkKBEF0azQQgwgSCQoEQXRrNRCECBIJCgRBdGs2EIUIEgkKBEF0azcQhggS",
-            "EgoNQXRrN19DaGFyZ2luZxCHCBIXChJBdGs3X0NoYXJnZVJlbGVhc2UQiAgS",
-            "CQoEQXRrOBCJCBIOCglJbkFpckF0azEQgBASDgoJSW5BaXJBdGsyEIEQEg4K",
-            "CUluQWlyQXRrNhCCEBIQCgtXYWxraW5nQXRrMRCDEBIQCgtXYWxraW5nQXRr",
-            "NBCEEBIVChBJbkFpcldhbGtpbmdBdGsxEIUQEhUKEEluQWlyV2Fsa2luZ0F0",
-            "azQQhhASDwoKT25XYWxsQXRrMRCAGBISCg1BdGsxX0NoYXJnaW5nEIEYEhkK",
-            "FFdhbGtpbmdBdGsxX0NoYXJnaW5nEIIYEh4KGUluQWlyV2Fsa2luZ0F0azFf",
-            "Q2hhcmdpbmcQgxgSFwoSSW5BaXJBdGsxX0NoYXJnaW5nEIQYEhgKE09uV2Fs",
-            "bEF0azFfQ2hhcmdpbmcQhRgSGAoTQ3JvdWNoQXRrMV9DaGFyZ2luZxCGGCrh",
-            "AQoHTnBjR29hbBIJCgVOSWRsZRAAEg8KC05Gb2xsb3dBbGx5EAESCwoHTlBh",
-            "dHJvbBACEhEKDU5IdW50VGhlbklkbGUQAxITCg9OSHVudFRoZW5QYXRyb2wQ",
-            "BBIXChNOSHVudFRoZW5Gb2xsb3dBbGx5EAUSHgoaTklkbGVJZkdvSHVudGlu",
-            "Z1RoZW5QYXRyb2wQBhIPCgtOUGF0aFBhdHJvbBAHEhcKE05IdW50VGhlblBh",
-            "dGhQYXRyb2wQCBIiCh5OSWRsZUlmR29IdW50aW5nVGhlblBhdGhQYXRyb2wQ",
-            "CSpwCglUcmFwU3RhdGUSCgoGVHBJZGxlEAASDQoJVHBXYWxraW5nEAESCgoG",
-            "VHBBdGsxEAISDAoIVHBBdGtlZDEQAxIRCg1UcERlYWN0aXZhdGVkEAQSCgoG",
-            "VHBEZWFkEAUSDwoLVHBBY3RpdmF0ZWQQBirdAQoMVHJpZ2dlclN0YXRlEgsK",
-            "B1RyUmVhZHkQABITCg9UclN1YkN5Y2xlUmVhZHkQARIZChVUclN1YkN5Y2xl",
-            "Q29vbGluZ0Rvd24QAhIYChRUclN1YkN5Y2xlQ29vbGVkRG93bhADEhcKE1Ry",
-            "U3ViQ3ljbGVFeGhhdXN0ZWQQBBIRCg1UckNvb2xpbmdEb3duEAUSEAoMVHJD",
-            "b29sZWREb3duEAYSDwoLVHJFeGhhdXN0ZWQQBxIKCgZUckRlYWQQCBIbChdU",
-            "ckV4aGF1c3RlZFlldExpc3RlbmluZxAJKjwKDVBpY2thYmxlU3RhdGUSCQoF",
-            "UElkbGUQABIRCg1QRGlzYXBwZWFyaW5nEAESDQoJUENvbnN1bWVkEAIqSwoZ",
-            "U3BlY2lhbE1vdmVPdmVycmlkZVN0YXR1cxIMCghTbXVzS2VlcBAAEg4KClNt",
-            "dXNMb2NrZWQQARIQCgxTbXVzVW5sb2NrZWQQAiqHAQoKQnVsbGV0VHlwZRIQ",
-            "CgxVbmRldGVybWluZWQQABIJCgVNZWxlZRABEhcKE01lY2hhbmljYWxDYXJ0",
-            "cmlkZ2UQAhIeChpNZWNoYW5pY2FsQm91bmNlclNwaGVyaWNhbBADEhMKD01h",
-            "Z2ljYWxGaXJlYmFsbBAEEg4KCkdyb3VuZFdhdmUQBSrmAQoMTXVsdGlIaXRU",
-            "eXBlEggKBE5vbmUQABIQCgxGcm9tRW1pc3Npb24QARIWChJGcm9tRmlyc3RI",
-            "aXRBY3R1YWwQAhIWChJGcm9tRmlyc3RIaXRBbnl3YXkQAxIVChFGcm9tUHJl",
-            "dkhpdEFjdHVhbBAEEhUKEUZyb21QcmV2SGl0QW55d2F5EAUSGwoXRnJvbVZp",
-            "c2lvblNlZWtPckRlZmF1bHQQBhIjCh9Gcm9tUHJldkhpdEFjdHVhbE9yQWN0",
-            "aXZlVGltZVVwEAcSGgoWRnJvbUVtaXNzaW9uSnVzdEFjdGl2ZRAIKjIKD1Nr",
-            "aWxsSW52b2NhdGlvbhIOCgpSaXNpbmdFZGdlEAASDwoLRmFsbGluZ0VkZ2UQ",
-            "ASosCg9WZnhEdXJhdGlvblR5cGUSCgoGT25lT2ZmEAASDQoJUmVwZWF0aW5n",
-            "EAEqNwoNVmZ4TW90aW9uVHlwZRIMCghOb01vdGlvbhAAEgsKB0Ryb3BwZWQQ",
-            "ARILCgdUcmFjaW5nEAIqgQEKCVVwc3luY0FjdBILCgdVQV9OT05FEAASCgoG",
-            "VUFfQ01EEAESFgoSVUFfU0VMRl9QQVJTRURfUkRGEAISIwofVUFfSE9MRVBV",
-            "TkNIX0JBQ0tFTkRfVURQX1RVTk5FTBADEh4KGlVBX0hPTEVQVU5DSF9QRUVS",
-            "X1VEUF9BRERSEAQq/wMKC0Rvd25zeW5jQWN0EgsKB0RBX05PTkUQABIOCgpE",
-            "QV9SRUdVTEFSEAESFQoRREFfQkFUVExFX1BSRVBBUkUQAhIcChhEQV9CQVRU",
-            "TEVfUkVBRFlfVE9fU1RBUlQQAxIVChFEQV9CQVRUTEVfU1RBUlRFRBAEEhUK",
-            "EURBX0JBVFRMRV9TVE9QUEVEEAUSGwoXREFfQkFUVExFX1BFRVJfVURQX0FE",
-            "RFIQBhIfChtEQV9CQVRUTEVfUEVFUl9ESVNDT05ORUNURUQQBxIZChVEQV9C",
-            "QVRUTEVfUEVFUl9KT0lORUQQCBIbChdEQV9CQVRUTEVfUEVFUl9SRUpPSU5F",
-            "RBAJEikKJURBX0ZBSUxFRF9UT19KT0lOX0JBVFRMRV9OT1RfSk9JTkFCTEUQ",
-            "ChIlCiFEQV9GQUlMRURfVE9fSk9JTl9BTFJFQURZX0lOX1JPT00QCxItCilE",
-            "QV9GQUlMRURfVE9fUkVKT0lOX0JBVFRMRV9OT1RfUkVKT0lOQUJMRRAMEikK",
-            "JURBX0ZBSUxFRF9UT19SRUpPSU5fTk9UX0ZPVU5EX0lOX1JPT00QDRIsCihE",
-            "QV9GQUlMRURfVE9fUkVKT0lOX1BMQVlFUl9TVEFURV9JTlZBTElEEA4SDgoK",
-            "REFfV1NfT1BFThBAEhAKDERBX1dTX0NMT1NFRBBBKjEKDUJ1ZmZTdG9ja1R5",
-            "cGUSCgoGTm9uZUJmEAASCQoFVGltZWQQARIJCgVRdW90YRACKnEKCkRlYnVm",
-            "ZlR5cGUSCwoHTm9uZURiZhAAEhEKDVNwZWVkRG93bk9ubHkQARIRCg1Db2xk",
-            "U3BlZWREb3duEAISFgoSUG9zaXRpb25Mb2NrZWRPbmx5EAMSGAoURnJvemVu",
-            "UG9zaXRpb25Mb2NrZWQQBCqEAQoWSW52ZW50b3J5U2xvdFN0b2NrVHlwZRIK",
-            "CgZOb25lSXYQABILCgdEdW1teUl2EAESDAoIUG9ja2V0SXYQAhILCgdUaW1l",
-            "ZEl2EAMSCwoHUXVvdGFJdhAEEhMKD1RpbWVkTWFnYXppbmVJdhAFEhQKEEdh",
-            "dWdlZE1hZ2F6aW5lSXYQBio8ChlQbGF5ZXJTdG9yeU1vZGVTZWxlY3RWaWV3",
-            "EggKBE5PTkUQABIKCgZSRUdJT04QARIJCgVMRVZFTBACKjUKEEZpbmlzaGVk",
-            "THZPcHRpb24SDQoJQk9TU19PTkxZEAASEgoOU1RPUllfQU5EX0JPU1MQAUIQ",
-            "SAP4AQGqAghqdHNoYXJlZGIGcHJvdG8z"));
+            "ZmFjdG9yGKwBIAEoAhIfChZkZWZhdWx0X2hhbGZfdGhpY2tuZXNzGK0BIAEo",
+            "AhInCh5kZWZhdWx0X2JhcnJpZXJfaGFsZl90aGlja25lc3MYrgEgASgCEh8K",
+            "FmRlZmF1bHRfYmxfaGFsZl9sZW5ndGgYrwEgASgCEh8KFmRlZmF1bHRfdHBf",
+            "aGFsZl9sZW5ndGgYsAEgASgCEhMKCmxlbmd0aF9lcHMYsQEgASgCEhsKEmxl",
+            "bmd0aF9lcHNfc3F1YXJlZBiyASABKAISHwoWbGVuZ3RoX25lYXJseV9zYW1l",
+            "X2VwcxizASABKAISJwoebGVuZ3RoX25lYXJseV9zYW1lX2Vwc19zcXVhcmVk",
+            "GLQBIAEoAhIiChlkZWZhdWx0X2FpbWluZ19yYXlfbGVuZ3RoGLUBIAEoAhIc",
+            "ChNjb2xsaXNpb25fdG9sZXJhbmNlGLYBIAEoAhIlChxzcGVjdWxhdGl2ZV9j",
+            "b250YWN0X2Rpc3RhbmNlGLcBIAEoAhIdChRzcF9hdGtfbG9va3VwX2ZyYW1l",
+            "cxiACCABKAUSIwoaZGVidWZmX2FycmF5X2lkeF9lbGVtZW50YWwYgQggASgF",
+            "EicKHnRlcm1pbmF0aW5nX2xvd2VyX3BhcnRfcmRmX2NudBiCCCABKAUSIwoa",
+            "ZGVmYXVsdF90cl9yZWNvdmVyeV9mcmFtZXMYgwggASgFEi0KJGRlZmF1bHRf",
+            "ZmxlZWluZ19ncmFjZV9wZXJpb2RfcmRmX2NudBiECCABKAUSJwoeZGVmYXVs",
+            "dF9mcmFtZXNfdG9fc2hvd19kYW1hZ2VkGIUIIAEoBRIpCiBkZWZhdWx0X2Zy",
+            "YW1lc190b19jb250aW51ZV9jb21ibxiGCCABKAUSLgoKY2hfc3BlY2llcxiA",
+            "ECABKAsyGS5qdHNoYXJlZC5DaFNwZWNpZXNDb25zdHMSIgoEdHB0cxiBECAB",
+            "KAsyEy5qdHNoYXJlZC5UcmFwVHlwZXMSJQoEdHJ0cxiCECABKAsyFi5qdHNo",
+            "YXJlZC5UcmlnZ2VyVHlwZXMSJgoEcGt0cxiDECABKAsyFy5qdHNoYXJlZC5Q",
+            "aWNrYWJsZVR5cGVzEiUKBWVsZXRzGIQQIAEoCzIVLmp0c2hhcmVkLkF0a0Vs",
+            "ZVR5cGVzEjAKDmRlYnVmZl9zcGVjaWVzGIUQIAEoCzIXLmp0c2hhcmVkLkRl",
+            "YnVmZlNwZWNpZXMiigEKCUFpbWluZ1JheRITCgtvZmZlbmRlcl91ZBgBIAEo",
+            "BBIUCgxvZmZlbmRlcl91ZHQYAiABKAQSDAoEc3RfeBgDIAEoAhIMCgRzdF95",
+            "GAQgASgCEgwKBHN0X3oYBSABKAISDAoEZWRfeBgGIAEoAhIMCgRlZF95GAcg",
+            "ASgCEgwKBGVkX3oYCCABKAIigwgKDENvbmZpZ0NvbnN0cxJHChFjaGFyYWN0",
+            "ZXJfY29uZmlncxgBIAMoCzIsLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5DaGFy",
+            "YWN0ZXJDb25maWdzRW50cnkSPwoNc2tpbGxfY29uZmlncxgCIAMoCzIoLmp0",
+            "c2hhcmVkLkNvbmZpZ0NvbnN0cy5Ta2lsbENvbmZpZ3NFbnRyeRI9CgxidWZm",
+            "X2NvbmZpZ3MYAyADKAsyJy5qdHNoYXJlZC5Db25maWdDb25zdHMuQnVmZkNv",
+            "bmZpZ3NFbnRyeRJBCg5kZWJ1ZmZfY29uZmlncxgEIAMoCzIpLmp0c2hhcmVk",
+            "LkNvbmZpZ0NvbnN0cy5EZWJ1ZmZDb25maWdzRW50cnkSPQoMdHJhcF9jb25m",
+            "aWdzGAUgAygLMicuanRzaGFyZWQuQ29uZmlnQ29uc3RzLlRyYXBDb25maWdz",
+            "RW50cnkSQwoPdHJpZ2dlcl9jb25maWdzGAYgAygLMiouanRzaGFyZWQuQ29u",
+            "ZmlnQ29uc3RzLlRyaWdnZXJDb25maWdzRW50cnkSRQoQcGlja2FibGVfY29u",
+            "ZmlncxgHIAMoCzIrLmp0c2hhcmVkLkNvbmZpZ0NvbnN0cy5QaWNrYWJsZUNv",
+            "bmZpZ3NFbnRyeRpSChVDaGFyYWN0ZXJDb25maWdzRW50cnkSCwoDa2V5GAEg",
+            "ASgNEigKBXZhbHVlGAIgASgLMhkuanRzaGFyZWQuQ2hhcmFjdGVyQ29uZmln",
+            "OgI4ARpEChFTa2lsbENvbmZpZ3NFbnRyeRILCgNrZXkYASABKA0SHgoFdmFs",
+            "dWUYAiABKAsyDy5qdHNoYXJlZC5Ta2lsbDoCOAEaSAoQQnVmZkNvbmZpZ3NF",
+            "bnRyeRILCgNrZXkYASABKA0SIwoFdmFsdWUYAiABKAsyFC5qdHNoYXJlZC5C",
+            "dWZmQ29uZmlnOgI4ARpMChJEZWJ1ZmZDb25maWdzRW50cnkSCwoDa2V5GAEg",
+            "ASgNEiUKBXZhbHVlGAIgASgLMhYuanRzaGFyZWQuRGVidWZmQ29uZmlnOgI4",
+            "ARpIChBUcmFwQ29uZmlnc0VudHJ5EgsKA2tleRgBIAEoDRIjCgV2YWx1ZRgC",
+            "IAEoCzIULmp0c2hhcmVkLlRyYXBDb25maWc6AjgBGk4KE1RyaWdnZXJDb25m",
+            "aWdzRW50cnkSCwoDa2V5GAEgASgNEiYKBXZhbHVlGAIgASgLMhcuanRzaGFy",
+            "ZWQuVHJpZ2dlckNvbmZpZzoCOAEaUAoUUGlja2FibGVDb25maWdzRW50cnkS",
+            "CwoDa2V5GAEgASgNEicKBXZhbHVlGAIgASgLMhguanRzaGFyZWQuUGlja2Fi",
+            "bGVDb25maWc6AjgBKjQKFEJveEludGVycG9sYXRpb25UeXBlEgsKB1VzZVBy",
+            "ZXYQABIPCgtJbnRlcnBvbGF0ZRABKlUKCElmYWNlQ2F0EgkKBUVNUFRZEAAS",
+            "CQoFRkxFU0gQARIJCgVNRVRBTBACEgkKBUZMVUlEEAMSCAoEUk9DSxAEEgkK",
+            "BUdSQVNTEAUSCAoEV09PRBAGKj4KC0J1bGxldFN0YXRlEgsKB1N0YXJ0VXAQ",
+            "ABIKCgZBY3RpdmUQARINCglWYW5pc2hpbmcQAhIHCgNIaXQQAyrECAoOQ2hh",
+            "cmFjdGVyU3RhdGUSEgoOSW52YWxpZENoU3RhdGUQABIJCgVJZGxlMRABEgsK",
+            "B1dhbGtpbmcQAhIKCgZBdGtlZDEQBBIUChBJbkFpcklkbGUxTm9KdW1wEAUS",
+            "FAoQSW5BaXJJZGxlMUJ5SnVtcBAGEhQKEEluQWlySWRsZTJCeUp1bXAQBxIY",
+            "ChRJbkFpcklkbGUxQnlXYWxsSnVtcBAIEg8KC0luQWlyQXRrZWQxEAkSDAoI",
+            "Qmxvd25VcDEQChIMCghMYXlEb3duMRALEgoKBkdldFVwMRAMEgkKBUR5aW5n",
+            "EA0SCwoHRGFzaGluZxAOEgsKB1NsaWRpbmcQDxIKCgZEaW1tZWQQEBIUChBU",
+            "cmFuc2Zvcm1pbmdJbnRvEBESDwoLQmFja0Rhc2hpbmcQEhIQCgxJbkFpcldh",
+            "bGtpbmcQExIdChlUcmFuc2Zvcm1pbmdJbnRvRnJvbURlYXRoEBQSEAoMRmFs",
+            "bFN0b3BwaW5nEBUSCwoHUGFycmllZBAXEgsKB0F3YWtpbmcQGBIQCgxHcm91",
+            "bmREb2RnZWQQGRIPCgtCYWNrV2Fsa2luZxAaEhAKDEluQWlyRGFzaGluZxAb",
+            "EhQKEEluQWlyQmFja0Rhc2hpbmcQHBIYChRJbkFpcklkbGUxQnlTbGlwSnVt",
+            "cBAeEg4KClR1cm5Bcm91bmQQHxIQCgtPbldhbGxJZGxlMRCAARIQCgtDcm91",
+            "Y2hJZGxlMRCAAhIPCgpDcm91Y2hBdGsxEIECEhIKDUNyb3VjaFdhbGtpbmcQ",
+            "ggISEQoMQ3JvdWNoQXRrZWQxEIMCEgkKBERlZjEQhAISDwoKRGVmMUF0a2Vk",
+            "MRCFAhIPCgpEZWYxQnJva2VuEIYCEgkKBEF0azEQgAgSCQoEQXRrMhCBCBIJ",
+            "CgRBdGszEIIIEgkKBEF0azQQgwgSCQoEQXRrNRCECBIJCgRBdGs2EIUIEgkK",
+            "BEF0azcQhggSEgoNQXRrN19DaGFyZ2luZxCHCBIXChJBdGs3X0NoYXJnZVJl",
+            "bGVhc2UQiAgSCQoEQXRrOBCJCBIOCglJbkFpckF0azEQgBASDgoJSW5BaXJB",
+            "dGsyEIEQEg4KCUluQWlyQXRrNhCCEBIQCgtXYWxraW5nQXRrMRCDEBIQCgtX",
+            "YWxraW5nQXRrNBCEEBIVChBJbkFpcldhbGtpbmdBdGsxEIUQEhUKEEluQWly",
+            "V2Fsa2luZ0F0azQQhhASDwoKT25XYWxsQXRrMRCAGBISCg1BdGsxX0NoYXJn",
+            "aW5nEIEYEhkKFFdhbGtpbmdBdGsxX0NoYXJnaW5nEIIYEh4KGUluQWlyV2Fs",
+            "a2luZ0F0azFfQ2hhcmdpbmcQgxgSFwoSSW5BaXJBdGsxX0NoYXJnaW5nEIQY",
+            "EhgKE09uV2FsbEF0azFfQ2hhcmdpbmcQhRgSGAoTQ3JvdWNoQXRrMV9DaGFy",
+            "Z2luZxCGGCrhAQoHTnBjR29hbBIJCgVOSWRsZRAAEg8KC05Gb2xsb3dBbGx5",
+            "EAESCwoHTlBhdHJvbBACEhEKDU5IdW50VGhlbklkbGUQAxITCg9OSHVudFRo",
+            "ZW5QYXRyb2wQBBIXChNOSHVudFRoZW5Gb2xsb3dBbGx5EAUSHgoaTklkbGVJ",
+            "ZkdvSHVudGluZ1RoZW5QYXRyb2wQBhIPCgtOUGF0aFBhdHJvbBAHEhcKE05I",
+            "dW50VGhlblBhdGhQYXRyb2wQCBIiCh5OSWRsZUlmR29IdW50aW5nVGhlblBh",
+            "dGhQYXRyb2wQCSpwCglUcmFwU3RhdGUSCgoGVHBJZGxlEAASDQoJVHBXYWxr",
+            "aW5nEAESCgoGVHBBdGsxEAISDAoIVHBBdGtlZDEQAxIRCg1UcERlYWN0aXZh",
+            "dGVkEAQSCgoGVHBEZWFkEAUSDwoLVHBBY3RpdmF0ZWQQBirdAQoMVHJpZ2dl",
+            "clN0YXRlEgsKB1RyUmVhZHkQABITCg9UclN1YkN5Y2xlUmVhZHkQARIZChVU",
+            "clN1YkN5Y2xlQ29vbGluZ0Rvd24QAhIYChRUclN1YkN5Y2xlQ29vbGVkRG93",
+            "bhADEhcKE1RyU3ViQ3ljbGVFeGhhdXN0ZWQQBBIRCg1UckNvb2xpbmdEb3du",
+            "EAUSEAoMVHJDb29sZWREb3duEAYSDwoLVHJFeGhhdXN0ZWQQBxIKCgZUckRl",
+            "YWQQCBIbChdUckV4aGF1c3RlZFlldExpc3RlbmluZxAJKjwKDVBpY2thYmxl",
+            "U3RhdGUSCQoFUElkbGUQABIRCg1QRGlzYXBwZWFyaW5nEAESDQoJUENvbnN1",
+            "bWVkEAIqSwoZU3BlY2lhbE1vdmVPdmVycmlkZVN0YXR1cxIMCghTbXVzS2Vl",
+            "cBAAEg4KClNtdXNMb2NrZWQQARIQCgxTbXVzVW5sb2NrZWQQAiqHAQoKQnVs",
+            "bGV0VHlwZRIQCgxVbmRldGVybWluZWQQABIJCgVNZWxlZRABEhcKE01lY2hh",
+            "bmljYWxDYXJ0cmlkZ2UQAhIeChpNZWNoYW5pY2FsQm91bmNlclNwaGVyaWNh",
+            "bBADEhMKD01hZ2ljYWxGaXJlYmFsbBAEEg4KCkdyb3VuZFdhdmUQBSrmAQoM",
+            "TXVsdGlIaXRUeXBlEggKBE5vbmUQABIQCgxGcm9tRW1pc3Npb24QARIWChJG",
+            "cm9tRmlyc3RIaXRBY3R1YWwQAhIWChJGcm9tRmlyc3RIaXRBbnl3YXkQAxIV",
+            "ChFGcm9tUHJldkhpdEFjdHVhbBAEEhUKEUZyb21QcmV2SGl0QW55d2F5EAUS",
+            "GwoXRnJvbVZpc2lvblNlZWtPckRlZmF1bHQQBhIjCh9Gcm9tUHJldkhpdEFj",
+            "dHVhbE9yQWN0aXZlVGltZVVwEAcSGgoWRnJvbUVtaXNzaW9uSnVzdEFjdGl2",
+            "ZRAIKjIKD1NraWxsSW52b2NhdGlvbhIOCgpSaXNpbmdFZGdlEAASDwoLRmFs",
+            "bGluZ0VkZ2UQASosCg9WZnhEdXJhdGlvblR5cGUSCgoGT25lT2ZmEAASDQoJ",
+            "UmVwZWF0aW5nEAEqNwoNVmZ4TW90aW9uVHlwZRIMCghOb01vdGlvbhAAEgsK",
+            "B0Ryb3BwZWQQARILCgdUcmFjaW5nEAIqgQEKCVVwc3luY0FjdBILCgdVQV9O",
+            "T05FEAASCgoGVUFfQ01EEAESFgoSVUFfU0VMRl9QQVJTRURfUkRGEAISIwof",
+            "VUFfSE9MRVBVTkNIX0JBQ0tFTkRfVURQX1RVTk5FTBADEh4KGlVBX0hPTEVQ",
+            "VU5DSF9QRUVSX1VEUF9BRERSEAQq/wMKC0Rvd25zeW5jQWN0EgsKB0RBX05P",
+            "TkUQABIOCgpEQV9SRUdVTEFSEAESFQoRREFfQkFUVExFX1BSRVBBUkUQAhIc",
+            "ChhEQV9CQVRUTEVfUkVBRFlfVE9fU1RBUlQQAxIVChFEQV9CQVRUTEVfU1RB",
+            "UlRFRBAEEhUKEURBX0JBVFRMRV9TVE9QUEVEEAUSGwoXREFfQkFUVExFX1BF",
+            "RVJfVURQX0FERFIQBhIfChtEQV9CQVRUTEVfUEVFUl9ESVNDT05ORUNURUQQ",
+            "BxIZChVEQV9CQVRUTEVfUEVFUl9KT0lORUQQCBIbChdEQV9CQVRUTEVfUEVF",
+            "Ul9SRUpPSU5FRBAJEikKJURBX0ZBSUxFRF9UT19KT0lOX0JBVFRMRV9OT1Rf",
+            "Sk9JTkFCTEUQChIlCiFEQV9GQUlMRURfVE9fSk9JTl9BTFJFQURZX0lOX1JP",
+            "T00QCxItCilEQV9GQUlMRURfVE9fUkVKT0lOX0JBVFRMRV9OT1RfUkVKT0lO",
+            "QUJMRRAMEikKJURBX0ZBSUxFRF9UT19SRUpPSU5fTk9UX0ZPVU5EX0lOX1JP",
+            "T00QDRIsCihEQV9GQUlMRURfVE9fUkVKT0lOX1BMQVlFUl9TVEFURV9JTlZB",
+            "TElEEA4SDgoKREFfV1NfT1BFThBAEhAKDERBX1dTX0NMT1NFRBBBKjEKDUJ1",
+            "ZmZTdG9ja1R5cGUSCgoGTm9uZUJmEAASCQoFVGltZWQQARIJCgVRdW90YRAC",
+            "KnEKCkRlYnVmZlR5cGUSCwoHTm9uZURiZhAAEhEKDVNwZWVkRG93bk9ubHkQ",
+            "ARIRCg1Db2xkU3BlZWREb3duEAISFgoSUG9zaXRpb25Mb2NrZWRPbmx5EAMS",
+            "GAoURnJvemVuUG9zaXRpb25Mb2NrZWQQBCqEAQoWSW52ZW50b3J5U2xvdFN0",
+            "b2NrVHlwZRIKCgZOb25lSXYQABILCgdEdW1teUl2EAESDAoIUG9ja2V0SXYQ",
+            "AhILCgdUaW1lZEl2EAMSCwoHUXVvdGFJdhAEEhMKD1RpbWVkTWFnYXppbmVJ",
+            "dhAFEhQKEEdhdWdlZE1hZ2F6aW5lSXYQBio8ChlQbGF5ZXJTdG9yeU1vZGVT",
+            "ZWxlY3RWaWV3EggKBE5PTkUQABIKCgZSRUdJT04QARIJCgVMRVZFTBACKjUK",
+            "EEZpbmlzaGVkTHZPcHRpb24SDQoJQk9TU19PTkxZEAASEgoOU1RPUllfQU5E",
+            "X0JPU1MQAUIQSAP4AQGqAghqdHNoYXJlZGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::jtshared.BoxInterpolationType), typeof(global::jtshared.IfaceCat), typeof(global::jtshared.BulletState), typeof(global::jtshared.CharacterState), typeof(global::jtshared.NpcGoal), typeof(global::jtshared.TrapState), typeof(global::jtshared.TriggerState), typeof(global::jtshared.PickableState), typeof(global::jtshared.SpecialMoveOverrideStatus), typeof(global::jtshared.BulletType), typeof(global::jtshared.MultiHitType), typeof(global::jtshared.SkillInvocation), typeof(global::jtshared.VfxDurationType), typeof(global::jtshared.VfxMotionType), typeof(global::jtshared.UpsyncAct), typeof(global::jtshared.DownsyncAct), typeof(global::jtshared.BuffStockType), typeof(global::jtshared.DebuffType), typeof(global::jtshared.InventorySlotStockType), typeof(global::jtshared.PlayerStoryModeSelectView), typeof(global::jtshared.FinishedLvOption), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -981,7 +989,7 @@ namespace jtshared {
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PickableTypes), global::jtshared.PickableTypes.Parser, new[]{ "HpSmall", "MpSmall", "InvCRefillSmall", "InvDRefillSmall", "VehicleSedan1", "Coin", "DragonCrystal", "None" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.AtkEleTypes), global::jtshared.AtkEleTypes.Parser, new[]{ "Fire", "Water", "Thunder", "Rock", "Wind", "Ice", "None" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.DebuffSpecies), global::jtshared.DebuffSpecies.Parser, new[]{ "ShortFrozen", "ShortParalyzed", "LongFrozen", "LongParalyzed", "None" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "UpsyncStIfdIdTolerance", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "MagicRdfCntInfinite", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "DefaultSlipJumpGracePeriodRdfCnt", "DefaultMinSpeedForRestitution", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "StickToGroundCorrectionLength", "DefaultPickableHurtboxHalfSizeX", "DefaultPickableHurtboxHalfSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableStartupFrames", "DefaultPickableLifetimeRdfCnt", "DefaultPhySysSubstepCnt", "DefaultPhySysNumVelSteps", "DefaultPhySysNumPosSteps", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "NoLockVel", "CrouchForcingCeilingDotThreshold", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingTriggerGroupId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "PatternF", "PatternL", "PatternR", "DefaultAirLinearDamping", "BaumgarteFactor", "PenetrationSlop", "MaxPenetrationDistance", "DefaultRevengeRdfCountdown", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId", "DefaultChFriction", "DefaultChRestitution", "GroundDashingChFriction", "AntiPushChFriction", "WalkstoppingChFriction", "FallstoppingChFriction", "DefaultBarrierFriction", "DefaultBarrierRestitution", "DefaultBulletFriction", "DefaultBulletRestitution", "DefaultTrapFriction", "DefaultTrapRestitution", "StairsPTerrainPriority", "RegularSlopeTerrainPriority", "DefaultCrouchingYShrinkFactor", "SpAtkLookupFrames", "DebuffArrayIdxElemental", "TerminatingLowerPartRdfCnt", "DefaultTrRecoveryFrames", "DefaultFleeingGracePeriodRdfCnt", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "ChSpecies", "Tpts", "Trts", "Pkts", "Elets", "DebuffSpecies" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.PrimitiveConsts), global::jtshared.PrimitiveConsts.Parser, new[]{ "BattleDynamicsFps", "UpsyncStIfdIdTolerance", "RoomIdNone", "RoomStateImpossible", "RoomStateIdle", "RoomStateWaiting", "RoomStatePrepare", "RoomStateInBattle", "RoomStateInSettlement", "RoomStateStopped", "RoomStateFrontendAwaitingAutoRejoin", "RoomStateFrontendAwaitingManualRejoin", "RoomStateFrontendRejoining", "PlayerBattleStateImpossible", "PlayerBattleStateAddedPendingBattleColliderAck", "PlayerBattleStateReaddedPendingForceResync", "PlayerBattleStateActive", "PlayerBattleStateDisconnected", "PlayerBattleStateLost", "PlayerBattleStateExpelledDuringGame", "PlayerBattleStateExpelledInDismissal", "UpsyncMsgActPlayerColliderAck", "UpsyncMsgActPlayerCmd", "UpsyncMsgActHolepunchBackendUdpTunnel", "UpsyncMsgActHolepunchPeerUdpAddr", "DownsyncMsgActBattleColliderInfo", "DownsyncMsgActInputBatch", "DownsyncMsgActBattleStopped", "DownsyncMsgActForcedResync", "DownsyncMsgActPeerInputBatch", "DownsyncMsgActPeerUdpAddr", "DownsyncMsgActBattleReadyToStart", "DownsyncMsgActBattleStart", "DownsyncMsgActPlayerDisconnected", "DownsyncMsgActPlayerReaddedAndAcked", "DownsyncMsgActPlayerAddedAndAcked", "DownsyncMsgWsClosed", "DownsyncMsgWsOpen", "MagicJoinIndexInvalid", "MagicJoinIndexSrvUdpTunnel", "MagicQuotaInfinite", "MagicRdfCntInfinite", "MagicLastSentInputFrameIdNormalAdded", "MagicLastSentInputFrameIdReadded", "BgmNoChange", "InvalidDefaultPlayerId", "EstimatedSecondsPerRdf", "MaxBtnHoldingRdfCnt", "MaxFlyingRdfCnt", "MaxReversePushbackFramesToRecover", "DefaultSlipJumpGracePeriodRdfCnt", "DefaultMinSpeedForRestitution", "SpeedNotHitNotSpecified", "DefaultPreallocNpcCapacity", "DefaultPreallocBulletCapacity", "DefaultPreallocTrapCapacity", "DefaultPreallocTriggerCapacity", "DefaultPreallocPickableCapacity", "DefaultPerCharacterBuffCapacity", "DefaultPerCharacterDebuffCapacity", "DefaultPerCharacterInventoryCapacity", "DefaultPerCharacterImmuneBulletRecordCapacity", "GravityY", "GravityYJumpHolding", "DefaultPatrolCueWaivingFrames", "NoPatrolCueId", "StickToGroundCorrectionLength", "DefaultPickableHurtboxHalfSizeX", "DefaultPickableHurtboxHalfSizeY", "DefaultPickableDisappearingAnimFrames", "DefaultPickableConsumedAnimFrames", "DefaultPickableRisingVelY", "DefaultPickableStartupFrames", "DefaultPickableLifetimeRdfCnt", "DefaultPhySysSubstepCnt", "DefaultPhySysNumVelSteps", "DefaultPhySysNumPosSteps", "DefaultGaugeIncByHit", "DefaultFramesDelayedOfBossSavepoint", "InputScaleFrames", "InputScale", "InputDelayFrames", "DefaultBackendInputBufferSize", "MaxChasingRenderFramesPerUpdate", "MagicFramesToBeOnWall", "MagicFramesToBeOnWallAirJump", "DyingFramesToRecover", "ParriedFramesToRecover", "ParriedFramesToStartCancellable", "NoSkill", "NoSkillHit", "DefaultBlockStunFrames", "DefaultBlownupFramesForFlying", "NoLockVel", "CrouchForcingCeilingDotThreshold", "TerminatingRenderFrameId", "TerminatingInputFrameId", "TerminatingCharacterId", "TerminatingTrapId", "TerminatingTriggerId", "TerminatingTriggerGroupId", "TerminatingPickableId", "TerminatingBulletId", "TerminatingBulletTeamId", "TerminatingBuffSpeciesId", "TerminatingDebuffSpeciesId", "TerminatingConsumableSpeciesId", "FrontendWsRecvBytelength", "BackendWsRecvBytelength", "JammedBtnHoldingRdfCnt", "BtnBHoldingRdfCntThreshold2", "BtnBHoldingRdfCntThreshold1", "JumpHoldingRdfCntThreshold1", "JumpHoldingIfdCntThreshold1", "JumpHoldingRdfCntThreshold2", "JumpHoldingIfdCntThreshold2", "InAirDashGracePeriodRdfCnt", "InAirJumpGracePeriodRdfCnt", "BtnEHoldingRdfCntThreshold1", "BtnEHoldingIfdCntThreshold1", "PatternIdUnableToOp", "PatternIdNoOp", "PatternB", "PatternUpB", "PatternDownB", "PatternHoldB", "PatternDownA", "PatternReleasedB", "PatternE", "PatternFrontE", "PatternBackE", "PatternUpE", "PatternDownE", "PatternHoldE", "PatternEHoldB", "PatternFrontEHoldB", "PatternBackEHoldB", "PatternUpEHoldB", "PatternDownEHoldB", "PatternHoldEHoldB", "PatternInventorySlotC", "PatternInventorySlotD", "PatternInventorySlotBc", "PatternHoldInventorySlotC", "PatternHoldInventorySlotD", "PatternF", "PatternL", "PatternR", "DefaultAirLinearDamping", "BaumgarteFactor", "PenetrationSlop", "MaxPenetrationDistance", "DefaultRevengeRdfCountdown", "EleWeaknessDefaultYield", "EleResistanceDefaultYield", "StartingRenderFrameId", "StartingInputFrameId", "DefaultChFriction", "DefaultChRestitution", "GroundDashingChFriction", "AntiPushChFriction", "WalkstoppingChFriction", "FallstoppingChFriction", "DefaultBarrierFriction", "DefaultBarrierRestitution", "DefaultBulletFriction", "DefaultBulletRestitution", "DefaultTrapFriction", "DefaultTrapRestitution", "StairsPTerrainPriority", "RegularSlopeTerrainPriority", "DefaultCrouchingYShrinkFactor", "DefaultHalfThickness", "DefaultBarrierHalfThickness", "DefaultBlHalfLength", "DefaultTpHalfLength", "LengthEps", "LengthEpsSquared", "LengthNearlySameEps", "LengthNearlySameEpsSquared", "DefaultAimingRayLength", "CollisionTolerance", "SpeculativeContactDistance", "SpAtkLookupFrames", "DebuffArrayIdxElemental", "TerminatingLowerPartRdfCnt", "DefaultTrRecoveryFrames", "DefaultFleeingGracePeriodRdfCnt", "DefaultFramesToShowDamaged", "DefaultFramesToContinueCombo", "ChSpecies", "Tpts", "Trts", "Pkts", "Elets", "DebuffSpecies" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.AimingRay), global::jtshared.AimingRay.Parser, new[]{ "OffenderUd", "OffenderUdt", "StX", "StY", "StZ", "EdX", "EdY", "EdZ" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::jtshared.ConfigConsts), global::jtshared.ConfigConsts.Parser, new[]{ "CharacterConfigs", "SkillConfigs", "BuffConfigs", "DebuffConfigs", "TrapConfigs", "TriggerConfigs", "PickableConfigs" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, null, })
           }));
@@ -44920,6 +44928,17 @@ namespace jtshared {
       stairsPTerrainPriority_ = other.stairsPTerrainPriority_;
       regularSlopeTerrainPriority_ = other.regularSlopeTerrainPriority_;
       defaultCrouchingYShrinkFactor_ = other.defaultCrouchingYShrinkFactor_;
+      defaultHalfThickness_ = other.defaultHalfThickness_;
+      defaultBarrierHalfThickness_ = other.defaultBarrierHalfThickness_;
+      defaultBlHalfLength_ = other.defaultBlHalfLength_;
+      defaultTpHalfLength_ = other.defaultTpHalfLength_;
+      lengthEps_ = other.lengthEps_;
+      lengthEpsSquared_ = other.lengthEpsSquared_;
+      lengthNearlySameEps_ = other.lengthNearlySameEps_;
+      lengthNearlySameEpsSquared_ = other.lengthNearlySameEpsSquared_;
+      defaultAimingRayLength_ = other.defaultAimingRayLength_;
+      collisionTolerance_ = other.collisionTolerance_;
+      speculativeContactDistance_ = other.speculativeContactDistance_;
       spAtkLookupFrames_ = other.spAtkLookupFrames_;
       debuffArrayIdxElemental_ = other.debuffArrayIdxElemental_;
       terminatingLowerPartRdfCnt_ = other.terminatingLowerPartRdfCnt_;
@@ -47036,6 +47055,138 @@ namespace jtshared {
       }
     }
 
+    /// <summary>Field number for the "default_half_thickness" field.</summary>
+    public const int DefaultHalfThicknessFieldNumber = 173;
+    private float defaultHalfThickness_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float DefaultHalfThickness {
+      get { return defaultHalfThickness_; }
+      set {
+        defaultHalfThickness_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "default_barrier_half_thickness" field.</summary>
+    public const int DefaultBarrierHalfThicknessFieldNumber = 174;
+    private float defaultBarrierHalfThickness_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float DefaultBarrierHalfThickness {
+      get { return defaultBarrierHalfThickness_; }
+      set {
+        defaultBarrierHalfThickness_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "default_bl_half_length" field.</summary>
+    public const int DefaultBlHalfLengthFieldNumber = 175;
+    private float defaultBlHalfLength_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float DefaultBlHalfLength {
+      get { return defaultBlHalfLength_; }
+      set {
+        defaultBlHalfLength_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "default_tp_half_length" field.</summary>
+    public const int DefaultTpHalfLengthFieldNumber = 176;
+    private float defaultTpHalfLength_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float DefaultTpHalfLength {
+      get { return defaultTpHalfLength_; }
+      set {
+        defaultTpHalfLength_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "length_eps" field.</summary>
+    public const int LengthEpsFieldNumber = 177;
+    private float lengthEps_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float LengthEps {
+      get { return lengthEps_; }
+      set {
+        lengthEps_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "length_eps_squared" field.</summary>
+    public const int LengthEpsSquaredFieldNumber = 178;
+    private float lengthEpsSquared_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float LengthEpsSquared {
+      get { return lengthEpsSquared_; }
+      set {
+        lengthEpsSquared_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "length_nearly_same_eps" field.</summary>
+    public const int LengthNearlySameEpsFieldNumber = 179;
+    private float lengthNearlySameEps_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float LengthNearlySameEps {
+      get { return lengthNearlySameEps_; }
+      set {
+        lengthNearlySameEps_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "length_nearly_same_eps_squared" field.</summary>
+    public const int LengthNearlySameEpsSquaredFieldNumber = 180;
+    private float lengthNearlySameEpsSquared_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float LengthNearlySameEpsSquared {
+      get { return lengthNearlySameEpsSquared_; }
+      set {
+        lengthNearlySameEpsSquared_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "default_aiming_ray_length" field.</summary>
+    public const int DefaultAimingRayLengthFieldNumber = 181;
+    private float defaultAimingRayLength_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float DefaultAimingRayLength {
+      get { return defaultAimingRayLength_; }
+      set {
+        defaultAimingRayLength_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "collision_tolerance" field.</summary>
+    public const int CollisionToleranceFieldNumber = 182;
+    private float collisionTolerance_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float CollisionTolerance {
+      get { return collisionTolerance_; }
+      set {
+        collisionTolerance_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "speculative_contact_distance" field.</summary>
+    public const int SpeculativeContactDistanceFieldNumber = 183;
+    private float speculativeContactDistance_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float SpeculativeContactDistance {
+      get { return speculativeContactDistance_; }
+      set {
+        speculativeContactDistance_ = value;
+      }
+    }
+
     /// <summary>Field number for the "sp_atk_lookup_frames" field.</summary>
     public const int SpAtkLookupFramesFieldNumber = 1024;
     private int spAtkLookupFrames_;
@@ -47379,6 +47530,17 @@ namespace jtshared {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(StairsPTerrainPriority, other.StairsPTerrainPriority)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(RegularSlopeTerrainPriority, other.RegularSlopeTerrainPriority)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultCrouchingYShrinkFactor, other.DefaultCrouchingYShrinkFactor)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultHalfThickness, other.DefaultHalfThickness)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultBarrierHalfThickness, other.DefaultBarrierHalfThickness)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultBlHalfLength, other.DefaultBlHalfLength)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultTpHalfLength, other.DefaultTpHalfLength)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LengthEps, other.LengthEps)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LengthEpsSquared, other.LengthEpsSquared)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LengthNearlySameEps, other.LengthNearlySameEps)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LengthNearlySameEpsSquared, other.LengthNearlySameEpsSquared)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DefaultAimingRayLength, other.DefaultAimingRayLength)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(CollisionTolerance, other.CollisionTolerance)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SpeculativeContactDistance, other.SpeculativeContactDistance)) return false;
       if (SpAtkLookupFrames != other.SpAtkLookupFrames) return false;
       if (DebuffArrayIdxElemental != other.DebuffArrayIdxElemental) return false;
       if (TerminatingLowerPartRdfCnt != other.TerminatingLowerPartRdfCnt) return false;
@@ -47571,6 +47733,17 @@ namespace jtshared {
       if (StairsPTerrainPriority != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(StairsPTerrainPriority);
       if (RegularSlopeTerrainPriority != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(RegularSlopeTerrainPriority);
       if (DefaultCrouchingYShrinkFactor != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultCrouchingYShrinkFactor);
+      if (DefaultHalfThickness != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultHalfThickness);
+      if (DefaultBarrierHalfThickness != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultBarrierHalfThickness);
+      if (DefaultBlHalfLength != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultBlHalfLength);
+      if (DefaultTpHalfLength != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultTpHalfLength);
+      if (LengthEps != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LengthEps);
+      if (LengthEpsSquared != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LengthEpsSquared);
+      if (LengthNearlySameEps != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LengthNearlySameEps);
+      if (LengthNearlySameEpsSquared != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LengthNearlySameEpsSquared);
+      if (DefaultAimingRayLength != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DefaultAimingRayLength);
+      if (CollisionTolerance != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(CollisionTolerance);
+      if (SpeculativeContactDistance != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SpeculativeContactDistance);
       if (SpAtkLookupFrames != 0) hash ^= SpAtkLookupFrames.GetHashCode();
       if (DebuffArrayIdxElemental != 0) hash ^= DebuffArrayIdxElemental.GetHashCode();
       if (TerminatingLowerPartRdfCnt != 0) hash ^= TerminatingLowerPartRdfCnt.GetHashCode();
@@ -48289,6 +48462,50 @@ namespace jtshared {
       if (DefaultCrouchingYShrinkFactor != 0F) {
         output.WriteRawTag(229, 10);
         output.WriteFloat(DefaultCrouchingYShrinkFactor);
+      }
+      if (DefaultHalfThickness != 0F) {
+        output.WriteRawTag(237, 10);
+        output.WriteFloat(DefaultHalfThickness);
+      }
+      if (DefaultBarrierHalfThickness != 0F) {
+        output.WriteRawTag(245, 10);
+        output.WriteFloat(DefaultBarrierHalfThickness);
+      }
+      if (DefaultBlHalfLength != 0F) {
+        output.WriteRawTag(253, 10);
+        output.WriteFloat(DefaultBlHalfLength);
+      }
+      if (DefaultTpHalfLength != 0F) {
+        output.WriteRawTag(133, 11);
+        output.WriteFloat(DefaultTpHalfLength);
+      }
+      if (LengthEps != 0F) {
+        output.WriteRawTag(141, 11);
+        output.WriteFloat(LengthEps);
+      }
+      if (LengthEpsSquared != 0F) {
+        output.WriteRawTag(149, 11);
+        output.WriteFloat(LengthEpsSquared);
+      }
+      if (LengthNearlySameEps != 0F) {
+        output.WriteRawTag(157, 11);
+        output.WriteFloat(LengthNearlySameEps);
+      }
+      if (LengthNearlySameEpsSquared != 0F) {
+        output.WriteRawTag(165, 11);
+        output.WriteFloat(LengthNearlySameEpsSquared);
+      }
+      if (DefaultAimingRayLength != 0F) {
+        output.WriteRawTag(173, 11);
+        output.WriteFloat(DefaultAimingRayLength);
+      }
+      if (CollisionTolerance != 0F) {
+        output.WriteRawTag(181, 11);
+        output.WriteFloat(CollisionTolerance);
+      }
+      if (SpeculativeContactDistance != 0F) {
+        output.WriteRawTag(189, 11);
+        output.WriteFloat(SpeculativeContactDistance);
       }
       if (SpAtkLookupFrames != 0) {
         output.WriteRawTag(128, 64);
@@ -49040,6 +49257,50 @@ namespace jtshared {
         output.WriteRawTag(229, 10);
         output.WriteFloat(DefaultCrouchingYShrinkFactor);
       }
+      if (DefaultHalfThickness != 0F) {
+        output.WriteRawTag(237, 10);
+        output.WriteFloat(DefaultHalfThickness);
+      }
+      if (DefaultBarrierHalfThickness != 0F) {
+        output.WriteRawTag(245, 10);
+        output.WriteFloat(DefaultBarrierHalfThickness);
+      }
+      if (DefaultBlHalfLength != 0F) {
+        output.WriteRawTag(253, 10);
+        output.WriteFloat(DefaultBlHalfLength);
+      }
+      if (DefaultTpHalfLength != 0F) {
+        output.WriteRawTag(133, 11);
+        output.WriteFloat(DefaultTpHalfLength);
+      }
+      if (LengthEps != 0F) {
+        output.WriteRawTag(141, 11);
+        output.WriteFloat(LengthEps);
+      }
+      if (LengthEpsSquared != 0F) {
+        output.WriteRawTag(149, 11);
+        output.WriteFloat(LengthEpsSquared);
+      }
+      if (LengthNearlySameEps != 0F) {
+        output.WriteRawTag(157, 11);
+        output.WriteFloat(LengthNearlySameEps);
+      }
+      if (LengthNearlySameEpsSquared != 0F) {
+        output.WriteRawTag(165, 11);
+        output.WriteFloat(LengthNearlySameEpsSquared);
+      }
+      if (DefaultAimingRayLength != 0F) {
+        output.WriteRawTag(173, 11);
+        output.WriteFloat(DefaultAimingRayLength);
+      }
+      if (CollisionTolerance != 0F) {
+        output.WriteRawTag(181, 11);
+        output.WriteFloat(CollisionTolerance);
+      }
+      if (SpeculativeContactDistance != 0F) {
+        output.WriteRawTag(189, 11);
+        output.WriteFloat(SpeculativeContactDistance);
+      }
       if (SpAtkLookupFrames != 0) {
         output.WriteRawTag(128, 64);
         output.WriteInt32(SpAtkLookupFrames);
@@ -49618,6 +49879,39 @@ namespace jtshared {
       if (DefaultCrouchingYShrinkFactor != 0F) {
         size += 2 + 4;
       }
+      if (DefaultHalfThickness != 0F) {
+        size += 2 + 4;
+      }
+      if (DefaultBarrierHalfThickness != 0F) {
+        size += 2 + 4;
+      }
+      if (DefaultBlHalfLength != 0F) {
+        size += 2 + 4;
+      }
+      if (DefaultTpHalfLength != 0F) {
+        size += 2 + 4;
+      }
+      if (LengthEps != 0F) {
+        size += 2 + 4;
+      }
+      if (LengthEpsSquared != 0F) {
+        size += 2 + 4;
+      }
+      if (LengthNearlySameEps != 0F) {
+        size += 2 + 4;
+      }
+      if (LengthNearlySameEpsSquared != 0F) {
+        size += 2 + 4;
+      }
+      if (DefaultAimingRayLength != 0F) {
+        size += 2 + 4;
+      }
+      if (CollisionTolerance != 0F) {
+        size += 2 + 4;
+      }
+      if (SpeculativeContactDistance != 0F) {
+        size += 2 + 4;
+      }
       if (SpAtkLookupFrames != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(SpAtkLookupFrames);
       }
@@ -50184,6 +50478,39 @@ namespace jtshared {
       }
       if (other.DefaultCrouchingYShrinkFactor != 0F) {
         DefaultCrouchingYShrinkFactor = other.DefaultCrouchingYShrinkFactor;
+      }
+      if (other.DefaultHalfThickness != 0F) {
+        DefaultHalfThickness = other.DefaultHalfThickness;
+      }
+      if (other.DefaultBarrierHalfThickness != 0F) {
+        DefaultBarrierHalfThickness = other.DefaultBarrierHalfThickness;
+      }
+      if (other.DefaultBlHalfLength != 0F) {
+        DefaultBlHalfLength = other.DefaultBlHalfLength;
+      }
+      if (other.DefaultTpHalfLength != 0F) {
+        DefaultTpHalfLength = other.DefaultTpHalfLength;
+      }
+      if (other.LengthEps != 0F) {
+        LengthEps = other.LengthEps;
+      }
+      if (other.LengthEpsSquared != 0F) {
+        LengthEpsSquared = other.LengthEpsSquared;
+      }
+      if (other.LengthNearlySameEps != 0F) {
+        LengthNearlySameEps = other.LengthNearlySameEps;
+      }
+      if (other.LengthNearlySameEpsSquared != 0F) {
+        LengthNearlySameEpsSquared = other.LengthNearlySameEpsSquared;
+      }
+      if (other.DefaultAimingRayLength != 0F) {
+        DefaultAimingRayLength = other.DefaultAimingRayLength;
+      }
+      if (other.CollisionTolerance != 0F) {
+        CollisionTolerance = other.CollisionTolerance;
+      }
+      if (other.SpeculativeContactDistance != 0F) {
+        SpeculativeContactDistance = other.SpeculativeContactDistance;
       }
       if (other.SpAtkLookupFrames != 0) {
         SpAtkLookupFrames = other.SpAtkLookupFrames;
@@ -50947,6 +51274,50 @@ namespace jtshared {
           }
           case 1381: {
             DefaultCrouchingYShrinkFactor = input.ReadFloat();
+            break;
+          }
+          case 1389: {
+            DefaultHalfThickness = input.ReadFloat();
+            break;
+          }
+          case 1397: {
+            DefaultBarrierHalfThickness = input.ReadFloat();
+            break;
+          }
+          case 1405: {
+            DefaultBlHalfLength = input.ReadFloat();
+            break;
+          }
+          case 1413: {
+            DefaultTpHalfLength = input.ReadFloat();
+            break;
+          }
+          case 1421: {
+            LengthEps = input.ReadFloat();
+            break;
+          }
+          case 1429: {
+            LengthEpsSquared = input.ReadFloat();
+            break;
+          }
+          case 1437: {
+            LengthNearlySameEps = input.ReadFloat();
+            break;
+          }
+          case 1445: {
+            LengthNearlySameEpsSquared = input.ReadFloat();
+            break;
+          }
+          case 1453: {
+            DefaultAimingRayLength = input.ReadFloat();
+            break;
+          }
+          case 1461: {
+            CollisionTolerance = input.ReadFloat();
+            break;
+          }
+          case 1469: {
+            SpeculativeContactDistance = input.ReadFloat();
             break;
           }
           case 8192: {
@@ -51724,6 +52095,50 @@ namespace jtshared {
           }
           case 1381: {
             DefaultCrouchingYShrinkFactor = input.ReadFloat();
+            break;
+          }
+          case 1389: {
+            DefaultHalfThickness = input.ReadFloat();
+            break;
+          }
+          case 1397: {
+            DefaultBarrierHalfThickness = input.ReadFloat();
+            break;
+          }
+          case 1405: {
+            DefaultBlHalfLength = input.ReadFloat();
+            break;
+          }
+          case 1413: {
+            DefaultTpHalfLength = input.ReadFloat();
+            break;
+          }
+          case 1421: {
+            LengthEps = input.ReadFloat();
+            break;
+          }
+          case 1429: {
+            LengthEpsSquared = input.ReadFloat();
+            break;
+          }
+          case 1437: {
+            LengthNearlySameEps = input.ReadFloat();
+            break;
+          }
+          case 1445: {
+            LengthNearlySameEpsSquared = input.ReadFloat();
+            break;
+          }
+          case 1453: {
+            DefaultAimingRayLength = input.ReadFloat();
+            break;
+          }
+          case 1461: {
+            CollisionTolerance = input.ReadFloat();
+            break;
+          }
+          case 1469: {
+            SpeculativeContactDistance = input.ReadFloat();
             break;
           }
           case 8192: {

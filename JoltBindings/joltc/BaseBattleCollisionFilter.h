@@ -611,19 +611,19 @@ public:
     }
 
     inline static bool IsLengthNearZero(float length) {
-        return -cLengthEps < length && length < cLengthEps;
+        return -globalPrimitiveConsts->length_eps() < length && length < globalPrimitiveConsts->length_eps();
     }
 
     inline static bool IsLengthSquaredNearZero(float lengthSquared) {
-        return cLengthEpsSquared > lengthSquared;
+        return globalPrimitiveConsts->length_eps_squared() > lengthSquared;
     }
 
     inline static bool IsLengthDiffNearlySame(float lengthDiff) {
-        return -cLengthNearlySameEps < lengthDiff && lengthDiff < cLengthNearlySameEps;
+        return -globalPrimitiveConsts->length_nearly_same_eps() < lengthDiff && lengthDiff < globalPrimitiveConsts->length_nearly_same_eps();
     }
 
     inline static bool IsLengthDiffSquaredNearlySame(float lengthDiffSquared) {
-        return cLengthNearlySameEpsSquared > lengthDiffSquared;
+        return globalPrimitiveConsts->length_nearly_same_eps_squared() > lengthDiffSquared;
     }
 
     inline static bool isNearlySame(float lhs, float rhs) {

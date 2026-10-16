@@ -54,7 +54,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     const Vec3 scaling = Vec3::sOne();
     
     CollideShapeSettings settings;
-    settings.mMaxSeparationDistance = cCollisionTolerance;
+    settings.mMaxSeparationDistance = globalPrimitiveConsts->collision_tolerance();
     settings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
     settings.mActiveEdgeMovementDirection = visionDirection;
     settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
@@ -128,7 +128,7 @@ void BaseNpcReaction::postStepDeriveNpcVisionReaction(int currRdfId, const Vec3&
     uint64_t toRevengeOppoUdt = BaseBattleCollisionFilter::getUDT(toRevengeOppoUd);
     if (0 == toHandleOppoChUd && 0 != toRevengeOppoUd && (UDT_PLAYER == toRevengeOppoUdt || UDT_NPC == toRevengeOppoUdt)) {
         toHandleOppoChUd = toRevengeOppoUd;
-        selfPositionDiffForOppoChUd = cLengthEps*visionDirection;
+        selfPositionDiffForOppoChUd = globalPrimitiveConsts->length_eps()*visionDirection;
         RVec3 toRevengeOppoColliderPos = baseBattleFilter->getColliderPositionByUd(toRevengeOppoUd, biNoLock);
         if (!toRevengeOppoColliderPos.IsNaN()) {
             selfPositionDiffForOppoChUd = toRevengeOppoColliderPos - selfPosition;
@@ -802,8 +802,8 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
             }
 
             bool holdableBothForwardAndBackward = (rhsAABBVisionAlignmentMax >= selfAABBVisionAlignmentMax && rhsAABBVisionAlignmentMin <= selfAABBVisionAlignmentMin);
-            bool strictlyUp = (rhsAABBAntiGAlignmentMin + cCollisionTolerance >= selfAABBAntiGAlignmentMax); // the bottom of rhs is higher than self top
-            bool strictlyDown = (rhsAABBAntiGAlignmentMax <= selfAABBAntiGAlignmentMin + cCollisionTolerance); // the top of rhs is lower than self bottom
+            bool strictlyUp = (rhsAABBAntiGAlignmentMin + globalPrimitiveConsts->collision_tolerance() >= selfAABBAntiGAlignmentMax); // the bottom of rhs is higher than self top
+            bool strictlyDown = (rhsAABBAntiGAlignmentMax <= selfAABBAntiGAlignmentMin + globalPrimitiveConsts->collision_tolerance()); // the top of rhs is lower than self bottom
             if (holdableBothForwardAndBackward && (!strictlyUp && !strictlyDown)) {
                 strictlyUp = (rhsAABBAntiGAlignmentMax >= selfAABBAntiGAlignmentMax);
                 if (!strictlyUp) {
@@ -811,8 +811,8 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                 }
             }
 
-            bool strictlyRight = (rhsAABBMvIntentionAlignmentMin + cCollisionTolerance >= selfAABBMvIntentionAlignmentMax); 
-            bool strictlyLeft = (rhsAABBMvIntentionAlignmentMax <= selfAABBMvIntentionAlignmentMin + cCollisionTolerance); 
+            bool strictlyRight = (rhsAABBMvIntentionAlignmentMin + globalPrimitiveConsts->collision_tolerance() >= selfAABBMvIntentionAlignmentMax); 
+            bool strictlyLeft = (rhsAABBMvIntentionAlignmentMax <= selfAABBMvIntentionAlignmentMin + globalPrimitiveConsts->collision_tolerance()); 
             bool holdableBothUpwardAndDownward = (rhsAABBAntiGAlignmentMax >= selfAABBAntiGAlignmentMax && rhsAABBAntiGAlignmentMin <= selfAABBAntiGAlignmentMin);
             if (holdableBothUpwardAndDownward && (!strictlyRight && !strictlyLeft)) {
                 strictlyRight = (rhsAABBMvIntentionAlignmentMax >= selfAABBMvIntentionAlignmentMax);
@@ -901,7 +901,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                     }
                     outMinGapToJump.set_anti_gravity_alignment(strictlyUp ? +1.0f : -1.0f);
                 } else if (strictlyRight || strictlyLeft) {
-                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignmentMin - (selfAABBVisionAlignmentMax + cCollisionTolerance));
+                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignmentMin - (selfAABBVisionAlignmentMax + globalPrimitiveConsts->collision_tolerance()));
                     if (!compositingGap) {
                         outCurrGapToJump.set_anti_gravity_alignment(0); // To avoid unexpected "hasEffectiveMvBlocker" 
                     }
@@ -911,7 +911,7 @@ void BaseNpcReaction::extractKeyEntitiesInVision(int currRdfId, const Vec3& mvIn
                         outMinGapToJump.set_anti_gravity_alignment(outCurrGapToJump.anti_gravity_alignment());
                     }
                 } else {
-                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignmentMin - (selfAABBVisionAlignmentMax + cCollisionTolerance));
+                    outCurrGapToJump.set_vision_alignment(rhsAABBVisionAlignmentMin - (selfAABBVisionAlignmentMax + globalPrimitiveConsts->collision_tolerance()));
                     outCurrGapToJump.set_anti_gravity_alignment(rhsOnTop ? (rhsAABBAntiGAlignmentMin - selfAABBAntiGAlignmentMax) : (selfAABBAntiGAlignmentMin - rhsAABBAntiGAlignmentMax));
 
                     outMinGapToJump.set_vision_alignment(outCurrGapToJump.vision_alignment());

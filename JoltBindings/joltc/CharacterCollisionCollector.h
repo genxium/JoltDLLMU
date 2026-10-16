@@ -237,6 +237,7 @@ private:
     const JPH::BodyInterface*     mBi;
     const uint64_t                mUd;
     const uint64_t                mUdt;
+    const BodyID                  mBodyID;
     const CharacterDownsync* mCurrChd;
     const CharacterConfig* mCc;
     const CharacterDownsync* mNextChd;
@@ -249,13 +250,13 @@ private:
     float				          mGroundBestDot = 0;
     float				          mWallBestDot = FLT_MAX;
 
-    float                         mGroundVelAlignmentScore = -cDefaultAimingRayLength;
-    float                         mGroundRelativePositionScore = -cDefaultAimingRayLength;
+    float                         mGroundVelAlignmentScore = -globalPrimitiveConsts->default_aiming_ray_length();
+    float                         mGroundRelativePositionScore = -globalPrimitiveConsts->default_aiming_ray_length();
 
     Vec3 mInputInducedMotionVelCOMNorm;
 
 public:
-    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter, const InputInducedMotion* chdInputInducedMotion, const bool currIsFlying, JPH::Vec3Arg effChdFacing) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mCurrChd(currChd), mCc(cc), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter), mChdInputInducedMotion(chdInputInducedMotion), mCurrIsFlying(currIsFlying), mEffChdFacing(effChdFacing) {
+    explicit CharacterContactPushbackCollector(const int currRdfId, RenderFrame* nextRdf, const JPH::BodyInterface* bi, const uint64_t ud, const uint64_t udt, const BodyID bodyID, const CharacterDownsync* currChd, const CharacterConfig* cc, CharacterDownsync* nextChd, JPH::Vec3Arg inUp, JPH::Vec3Arg baseOffset, BaseBattleCollisionFilter* filter, const InputInducedMotion* chdInputInducedMotion, const bool currIsFlying, JPH::Vec3Arg effChdFacing) : mCurrRdfId(currRdfId), mNextRdf(nextRdf), mBi(bi), mUd(ud), mUdt(udt), mBodyID(bodyID), mCurrChd(currChd), mCc(cc), mNextChd(nextChd), mBaseOffset(baseOffset), mUp(inUp), mBaseBattleFilter(filter), mChdInputInducedMotion(chdInputInducedMotion), mCurrIsFlying(currIsFlying), mEffChdFacing(effChdFacing) {
         mInputInducedMotionVelCOMNorm = mChdInputInducedMotion->velCOM.IsNearZero() ? mEffChdFacing : mChdInputInducedMotion->velCOM.Normalized();
     }
 
@@ -348,7 +349,11 @@ public:
 /*
 #ifndef NDEBUG
                             std::ostringstream oss;
-                            oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a near-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "])";
+                            const TransformedShape& lhsTs = mBi->GetTransformedShape(mBodyID);
+                            const AABox& lhsAABB = lhsTs.GetWorldSpaceBounds();
+                            const TransformedShape& rhsTs = mBi->GetTransformedShape(rhsBodyID);
+                            const AABox& rhsAABB = rhsTs.GetWorldSpaceBounds();
+                            oss << "@currRdfId=" << mCurrRdfId << ", mCrouchForced is set by lhsAABB=(minX:" << lhsAABB.mMin.GetX() << ", minY:" << lhsAABB.mMin.GetY() << ", maxX:" << lhsAABB.mMax.GetX() << ", maxY:" << lhsAABB.mMax.GetY() << "), rhsAABB=(minX:" << rhsAABB.mMin.GetX() << ", minY: " << rhsAABB.mMin.GetY() << ", maxX:" << rhsAABB.mMax.GetX() << ", maxY:" << rhsAABB.mMax.GetY() << "), (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << " > threshold=" << globalPrimitiveConsts->crouch_forcing_ceiling_dot_threshold() << "), worldSpaceNormalIntoBarrier=(" << worldSpaceNormalIntoBarrier.GetX() << ", " << worldSpaceNormalIntoBarrier.GetY() << "), worldContactPosition=(" << worldContactPosition.GetX() << ", " << worldContactPosition.GetY() << "), rhsCOMPosition=(" << rhsCOMPosition.GetX() << ", " << rhsCOMPosition.GetY() << "), a near-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "])";
                             Debug::Log(oss.str(), DColor::Yellow);
 #endif
 */
@@ -363,7 +368,7 @@ public:
 /*
 #ifndef NDEBUG
                                     std::ostringstream oss;
-                                    oss << "@currRdfId= " << mCurrRdfId << ", mCrouchForced is set to true by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a non-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "], worldSpaceNormalIntoBarrier=[" << worldSpaceNormalIntoBarrier.GetX() << "," << worldSpaceNormalIntoBarrier.GetY() << "])";
+                                    oss << "@currRdfId=" << mCurrRdfId << ", mCrouchForced is set by (udRhs=" << udRhs << ", ceilingDot=" << ceilingDot << ", a non-zero-rhsPointVel=[" << rhsPointVel.GetX() << "," << rhsPointVel.GetY() << "], worldSpaceNormalIntoBarrier=[" << worldSpaceNormalIntoBarrier.GetX() << "," << worldSpaceNormalIntoBarrier.GetY() << "])";
                                     Debug::Log(oss.str(), DColor::Yellow);
 #endif
 */

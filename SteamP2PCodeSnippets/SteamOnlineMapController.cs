@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using static JoltCSharp.Bindings;
 using UnityEngine.AddressableAssets;
+using static FrontendOnlyGeometry;
 
 public class SteamOnlineMapController : AbstractJoltMapController {
     public UISoundSource uiSoundSource;
@@ -338,6 +339,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                         var prevCsharpTimerRdfId = csharpTimerRdfId; 
                         if (FRONTEND_DirectSnatch(battle)) {
                             skipInterpolation = true;
+                            forceCameraTeleport = true;
                             csharpTimerRdfId = downsyncSnapshotHolder.RefRdfId;
                             startFrozenGracePeriod($"[REJOIN SNATCH] @csharpTimerRdfId={prevCsharpTimerRdfId}->{csharpTimerRdfId}, chaserRdfIdLowerBound={downsyncSnapshotHolder.RefRdfId}, lcacIfdId={newLcacIfdId}, lastSentIfdId={lastSentIfdId}, udpLcacIfdId={newUdpLcacIfdId}");
                         }
@@ -563,10 +565,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         playerWaitingPanel.gameObject.SetActive(false);
         characterSelectPanel.gameObject.SetActive(false);
 
-        battleState = PbPrimitivesOverride.ROOM_STATE_PREPARE;
-
         // Debug.Log($"[DaBattlePrepare] with battleState={battleState}, teleport camera to selfPlayer");
-        cameraTrack(cachedWsReqForStartRdf.SelfParsedRdf, null, false, true);
 
         byte[] buffer = cachedWsReqForStartRdf.ToByteArray();
         fixed (byte* bufferPtr = buffer) {
@@ -599,6 +598,10 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         rejoinPrompt.SetCallbacks(this, uiSoundSource, () => {
 
         });
+
+        rdfHolder = cachedWsReqForStartRdf.SelfParsedRdf;
+        forceCameraTeleport = true;
+        battleState = PbPrimitivesOverride.ROOM_STATE_PREPARE;
 
         readyGoPanel.playReadyAnim(() => { }, () => {
             int startedStRdfId = 0, startedEdRdfId = 0;
@@ -737,8 +740,69 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         return true;
     }
 
-    // Update is called once per frame
-    protected unsafe void Update() {
+    protected virtual void Update() {
+        if (PbPrimitivesOverride.ROOM_STATE_PREPARE == battleState) {
+            applyRdf(rdfHolder, stepResultHolder, Time.deltaTime);
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_IMPOSSIBLE == battleState) {
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_STOPPED == battleState) {
+            // For proactive exit
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_IN_SETTLEMENT == battleState) {
+            // For settlement 
+            return;
+        }
+
+        if (0 > csharpTimerRdfId) {
+            return;
+        }
+
+        if (localTimerEnded) {
+            return;
+        }
+
+        applyRdf(rdfHolder, stepResultHolder, Time.deltaTime);
+    }
+
+    protected virtual void LateUpdate() {
+        if (PbPrimitivesOverride.ROOM_STATE_PREPARE == battleState) {
+            cameraTrack(rdfHolder, null);
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_IMPOSSIBLE == battleState) {
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_STOPPED == battleState) {
+            // For proactive exit
+            return;
+        }
+
+        if (PbPrimitivesOverride.ROOM_STATE_IN_SETTLEMENT == battleState) {
+            // For settlement 
+            return;
+        }
+
+        if (0 > csharpTimerRdfId) {
+            return;
+        }
+
+        if (localTimerEnded) {
+            return;
+        }
+
+        cameraTrack(rdfHolder, null);
+    }
+
+    protected virtual unsafe void FixedUpdate() {
         try {
             var disconnectedPeerJoinIndices = p2pSessionManager.GetDisconnectedPeerJoinIndices();
 
@@ -809,7 +873,6 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE != battleState) {
                 return;
             }
-
 
             if (localTimerEnded) {
                 bool rdfAllConfirmed = (newLcacIfdId >= localRequiredIfdId);
@@ -948,6 +1011,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
 
                 if (snatched) {
                     //skipInterpolation = true;
+                    //forceCameraTeleport = true;
                     SteamNetworkDoctor.Instance.LogForceResyncFutureApplied();
                 }           
 
@@ -1034,7 +1098,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
                 readyGoPanel.setCountdown(csharpTimerRdfId, battleDurationFrames);
             }
 
-            bool battleResultIsSet = isBattleResultSet(stepResultHolder);
+            battleResultIsSet = isBattleResultSet(stepResultHolder);
             if (battleResultIsSet) {
                 //settlementRdfId = timerRdfId;
                 OnBattleStopped($"@csharpTimerRdfId={csharpTimerRdfId} battleResultIsSet=true");
@@ -1046,7 +1110,7 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             }
             //throw new NotImplementedException("Intended");
         } catch (Exception ex) {
-            Debug.LogError($"Error during OnlineMap.Update csharpTimerRdfId={csharpTimerRdfId}, battleState={battleState}, calling cleanupNetworkSessionsReentrantSafe for manual rejoin: {ex.StackTrace}");
+            Debug.LogError($"Error during OnlineMap.FixedUpdate csharpTimerRdfId={csharpTimerRdfId}, battleState={battleState}, calling cleanupNetworkSessionsReentrantSafe for manual rejoin: {ex.StackTrace}");
             if (PbPrimitivesOverride.ROOM_STATE_IN_BATTLE == battleState) {
                 battleState = PbPrimitivesOverride.ROOM_STATE_FRONTEND_AWAITING_MANUAL_REJOIN;
                 autoRejoinQuota = 0; // To require manual rejoin.
@@ -1066,12 +1130,14 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         underlyingMap = GameObject.Instantiate(underlyingMapPrefab, this.gameObject.transform);
         var superMap = underlyingMap.GetComponent<SuperMap>();
         int mapWidth = superMap.m_Width, tileWidth = superMap.m_TileWidth, mapHeight = superMap.m_Height, tileHeight = superMap.m_TileHeight;
-        tilemapHalfWidth = (mapWidth * tileWidth) >> 1;
-        tilemapHalfHeight = (mapHeight * tileHeight) >> 1;
-        collisionSpaceHalfWidth = (int)tilemapHalfWidth;
-        collisionSpaceHalfHeight = (int)tilemapHalfHeight;
+        tilemapHalfWidth = ((mapWidth * tileWidth) * 0.5f) / DEFAULT_PIXELS_PER_UNIT;
+        tilemapHalfHeight = ((mapHeight * tileHeight) * 0.5f) / DEFAULT_PIXELS_PER_UNIT;
+        collisionSpaceHalfWidth = tilemapHalfWidth;
+        collisionSpaceHalfHeight = tilemapHalfHeight;
         collisionSpacePaddingLeft = 0;
         collisionSpacePaddingBottom = 0;
+
+        battleResultIsSet = false;
 
         // Reset lockstep
         ifdFrontShouldLockStep = false;

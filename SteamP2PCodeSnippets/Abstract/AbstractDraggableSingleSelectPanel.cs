@@ -59,7 +59,13 @@ public abstract partial class AbstractSingleSelectGroup {
                 }
 
                 var camOldPos = gameplayCamera.transform.position;
-                newPosHolder.Set(camOldPos.x - camDiffDstHolder.x, camOldPos.y - camDiffDstHolder.y, camOldPos.z);
+                if (Vector2.zero.Equals(camDiffDstHolder)) {
+                    return;
+                }
+
+                var diffNorm = camDiffDstHolder.normalized;
+                var diffToMove = diffNorm * Mathf.Min(camDiffDstHolder.magnitude, cameraSpeed * Time.deltaTime);
+                newPosHolder.Set(camOldPos.x - diffToMove.x, camOldPos.y - diffToMove.y, camOldPos.z);
                 clampToMapBoundary(ref newPosHolder);
                 gameplayCamera.transform.position = newPosHolder;
                 dragStartingPos = positionInWindowSpace;
@@ -78,8 +84,7 @@ public abstract partial class AbstractSingleSelectGroup {
         protected Camera cutSceneCamera;
         protected Canvas canvas; // Usually but not always, we'd need a popup anchored on Canvas for "AbstractDraggableSingleSelectPanel".
 
-        protected int spaceOffsetX;
-        protected int spaceOffsetY;
+        protected float spaceOffsetX, spaceOffsetY;
         protected float cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY;
         protected float effectivelyInfinitelyFar;
 
@@ -110,12 +115,15 @@ public abstract partial class AbstractSingleSelectGroup {
         protected Vector3 newPosHolder = new Vector3();
         protected Vector2 camDiffDstHolder = new Vector2();
         protected void calcCameraCaps() {
-            int paddingX = (int)(gameplayCamera.orthographicSize * gameplayCamera.aspect);
-            int paddingY = (int)(gameplayCamera.orthographicSize);
-            cameraCapMinX = 0 + paddingX;
-            cameraCapMaxX = (spaceOffsetX << 1) - paddingX;
+            float camFovW = (2.0f * gameplayCamera.orthographicSize * gameplayCamera.aspect);
+            float camFovH = (2.0f * gameplayCamera.orthographicSize);
 
-            cameraCapMinY = -(spaceOffsetY << 1) + paddingY;
+            float paddingX = 0.5f * camFovW;
+            float paddingY = 0.5f * camFovH;
+            cameraCapMinX = 0 + paddingX;
+            cameraCapMaxX = (spaceOffsetX * 2f) - paddingX;
+
+            cameraCapMinY = -(spaceOffsetY * 2f) + paddingY;
             cameraCapMaxY = 0 - paddingY;
 
             effectivelyInfinitelyFar = 4f * Math.Max(spaceOffsetX, spaceOffsetY);

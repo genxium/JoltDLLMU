@@ -1915,6 +1915,17 @@ message PrimitiveConsts {
     float regular_slope_terrain_priority = 171;
 
     float default_crouching_y_shrink_factor = 172;
+    float default_half_thickness = 173;
+    float default_barrier_half_thickness = 174;
+    float default_bl_half_length = 175;
+    float default_tp_half_length = 176;
+    float length_eps = 177;
+    float length_eps_squared = 178;
+    float length_nearly_same_eps = 179;
+    float length_nearly_same_eps_squared = 180;
+    float default_aiming_ray_length = 181;
+    float collision_tolerance = 182;
+    float speculative_contact_distance = 183;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;

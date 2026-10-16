@@ -327,6 +327,17 @@ namespace JoltCSharp {
               RegularSlopeTerrainPriority = 0.30f,
 
               DefaultCrouchingYShrinkFactor = 0.95f,
+              DefaultHalfThickness = 0.01f,
+              DefaultBarrierHalfThickness = 65536.0f * 0.5f,
+              DefaultBlHalfLength = 0.01f,
+              DefaultTpHalfLength = 0.01f,
+              LengthEps = 0.001f,
+              LengthEpsSquared = 0.000001f,
+              LengthNearlySameEps = 0.001f,
+              LengthNearlySameEpsSquared = 0.000001f,
+              DefaultAimingRayLength = 2048f,
+              CollisionTolerance = 0.05f,
+              SpeculativeContactDistance = 0.02f, // If not set, the JoltPhysics default is 0.02
 
               DefaultRevengeRdfCountdown = 5*BATTLE_DYNAMICS_FPS,
 

@@ -172,6 +172,10 @@ protected:
         if (0u != globalPrimitiveConsts->default_phy_sys_num_pos_steps()) {
             clonedPhySettings.mNumPositionSteps = globalPrimitiveConsts->default_phy_sys_num_pos_steps(); 
         }
+
+        if (0u != globalPrimitiveConsts->speculative_contact_distance()) {
+            clonedPhySettings.mSpeculativeContactDistance = globalPrimitiveConsts->speculative_contact_distance(); 
+        }
       
         phySys->SetPhysicsSettings(clonedPhySettings);
         antiGravityNorm = (-1.0f * phySys->GetGravity()).Normalized();

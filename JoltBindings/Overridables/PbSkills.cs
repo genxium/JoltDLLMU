@@ -804,7 +804,7 @@ namespace JoltCSharp {
                    RecoveryFramesOnHit = SlowBladeAirHit1.StartupFrames+SlowBladeAirHit1.ActiveFrames+SlowBladeAirHit1.CooldownFrames,
                    InvocationType = SkillInvocation.RisingEdge,
                    BoundChState = CharacterState.Atk1
-            }.AddHit(SlowBladeAirHit1);
+            }.AddHit(new BulletConfig(SlowBladeAirHit1).SetDamage(6));
 
              Skill BlackShooter2Cannon = new Skill {
                 Id = BlackShooter2CannonId,

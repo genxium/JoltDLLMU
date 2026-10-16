@@ -783,7 +783,7 @@ void FrontendBattle::postStepSingleChdStateCorrection(const int steppingRdfId, c
 
                 RVec3 potentialBulletStPos(nextChd->x() + blEffOffset.GetX(), nextChd->y() + blEffOffset.GetY(), nextChd->z());
                 Vec3 blEffAiming = offenderEffAimingQ * cXAxis;
-                RVec3 potentialAimingRayFacingVec = cDefaultAimingRayLength * blEffAiming;
+                RVec3 potentialAimingRayFacingVec = globalPrimitiveConsts->default_aiming_ray_length() * blEffAiming;
                 RRayCast ray(potentialBulletStPos, potentialAimingRayFacingVec);
                 bool rayTestPassed = false;
                 RayCastResult rcResult;

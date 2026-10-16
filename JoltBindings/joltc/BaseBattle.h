@@ -1326,7 +1326,6 @@ public:
 /*
 #ifndef NDEBUG
                         std::ostringstream oss;
-                        auto bulletId = getUDPayload(udRhs);
                         oss << "validateLhsCharacterContact/lhsChdShouldCollideStairsPByChStateAndInputInducedMotion returning false for udRhs=" << udRhs << "";
                         Debug::Log(oss.str(), DColor::Orange);
 #endif
@@ -1343,7 +1342,6 @@ public:
 /*
 #ifndef NDEBUG
                             std::ostringstream oss;
-                            auto bulletId = getUDPayload(udRhs);
                             oss << "validateLhsCharacterContact rejecting isStairsP udRhs=" << udRhs << " because (false == lhsRoughlyOnTop && 0 < stairsVelC)";
                             Debug::Log(oss.str(), DColor::Orange);
 #endif
@@ -1477,12 +1475,12 @@ public:
             Debug::Log(oss.str(), DColor::Orange);
 #endif
 */
+
             return true;
         }
 /*
 #ifndef NDEBUG
         std::ostringstream oss;
-        auto bulletId = getUDPayload(udRhs);
         oss << "lhsChdShouldColliderStairsNByPositionRelation returning false for udRhs=" << udRhs << ", eoiC=" << eoiC << ", stairsC=" << stairsC << ", ([stairsC1=" << stairsC1 << "], [stairsC2=" << stairsC2 << "], [stairsC3=" << stairsC3 << "], [stairsC4=" << stairsC4 << "])";
         Debug::Log(oss.str(), DColor::Orange);
 #endif

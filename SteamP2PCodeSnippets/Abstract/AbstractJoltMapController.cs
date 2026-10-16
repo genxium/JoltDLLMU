@@ -70,7 +70,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
     protected long battleState;
     protected float tilemapHalfWidth, tilemapHalfHeight;
-    protected int collisionSpaceHalfWidth, collisionSpaceHalfHeight;
+    protected float collisionSpaceHalfWidth, collisionSpaceHalfHeight;
+    protected bool battleResultIsSet;
+
     public float GetTilemapHalfWidth() {
         return tilemapHalfWidth;
     }
@@ -160,6 +162,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
     public SelfBattleHeading selfBattleHeading;
     public FocusLossPrompt focusLossPrompt;
 
+    protected bool cameraRoundToPixel = true;
+
     public AbstractJoltMapController() {
         rdfFetchBuffer = new byte[pbBufferSizeLimit];
         ifdFetchBuffer = new byte[pbBufferSizeLimit];
@@ -231,7 +235,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
 
         Physics2D.simulationMode = SimulationMode2D.Script;
-        Application.targetFrameRate = PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+        QualitySettings.vSyncCount = 1;
+        Application.targetFrameRate = -1; // Ignored by "vSyncCount = 1"
+        Time.fixedDeltaTime = (1.0f / PbPrimitivesOverride.BATTLE_DYNAMICS_FPS); // Determines the frequency of calling "FixedUpdate"
         Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
         Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
         Application.SetStackTraceLogType(LogType.Error, StackTraceLogType.None);
@@ -303,7 +309,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
     }
 
-    protected int camFovW, camFovH, camPaddingX, camPaddingY;
+    protected float camFovW, camFovH, camPaddingX, camPaddingY;
     protected virtual void calcCameraCaps() {
         cameraCapMinX = 0;
         cameraCapMaxX = tilemapHalfWidth + tilemapHalfWidth;
@@ -316,8 +322,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         // This layer can be absent.
                         foreach (Transform camBoundChild in child) {
                             var tileObj = camBoundChild.GetComponent<SuperObject>();
-                            var (candidateCamMinTileX, candidateCamMinY) = (tileObj.m_X, tileObj.m_Y + tileObj.m_Height);
-                            var (candidateCamMaxTileX, candidateCamMaxY) = (tileObj.m_X + tileObj.m_Width, tileObj.m_Y);
+                            var (candidateCamMinTileX, candidateCamMinY) = (tileObj.m_X/DEFAULT_PIXELS_PER_UNIT, (tileObj.m_Y + tileObj.m_Height)/DEFAULT_PIXELS_PER_UNIT);
+                            var (candidateCamMaxTileX, candidateCamMaxY) = ((tileObj.m_X + tileObj.m_Width)/DEFAULT_PIXELS_PER_UNIT, tileObj.m_Y/DEFAULT_PIXELS_PER_UNIT);
 
                             var (candidateCamMinWx, candidateCamMinWy) = TiledLayerPositionToWorldPosition(candidateCamMinTileX, candidateCamMinY);
                             var (candidateCamMaxWx, candidateCamMaxWy) = TiledLayerPositionToWorldPosition(candidateCamMaxTileX, candidateCamMaxY);
@@ -342,16 +348,16 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
 
         // It's by design that "collisionSpaceHalfWidth & collisionSpaceHalfHeight", "collisionSpacePaddingLeft & collisionSpacePaddingBottom" are calculated based on the values of ""cameraCapMinX, cameraCapMaxX, cameraCapMinY, cameraCapMaxY" before they're padded.
-        collisionSpaceHalfWidth = (int)((cameraCapMaxX - cameraCapMinX) * .5f);
-        collisionSpaceHalfHeight = (int)((cameraCapMaxY - cameraCapMinY) * .5f);
+        collisionSpaceHalfWidth = ((cameraCapMaxX - cameraCapMinX) * .5f);
+        collisionSpaceHalfHeight = ((cameraCapMaxY - cameraCapMinY) * .5f);
         collisionSpacePaddingLeft = cameraCapMinX;
         collisionSpacePaddingBottom = collisionSpaceHalfHeight + collisionSpaceHalfHeight + cameraCapMinY;
 
         // Now pad the camera caps.
-        camFovW = (int)(2.0f * gameplayCamera.orthographicSize * gameplayCamera.aspect);
-        camFovH = (int)(2.0f * gameplayCamera.orthographicSize);
-        camPaddingX = (camFovW >> 1);
-        camPaddingY = (camFovH >> 1);
+        camFovW = (2.0f * gameplayCamera.orthographicSize * gameplayCamera.aspect);
+        camFovH = (2.0f * gameplayCamera.orthographicSize);
+        camPaddingX = (camFovW * .5f);
+        camPaddingY = (camFovH * .5f);
         cameraCapMinX += camPaddingX;
         cameraCapMaxX -= camPaddingX;
         cameraCapMinY += camPaddingY;
@@ -458,6 +464,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             // [REMINDER] Only call "battle = UIntPtr.Zero" after "APP_DestroyBattle(battle)". 
         }
         battleState = PbPrimitivesOverride.ROOM_STATE_STOPPED;
+        battleResultIsSet = false;
     }
     
     protected void enableBattleInput(bool yesOrNo) {
@@ -530,6 +537,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
                         if (null == inMapCollider || 0 >= inMapCollider.pointCount) {
                             var (tiledRectCenterX, tiledRectCenterY) = (barrierTileObj.m_X + barrierTileObj.m_Width * 0.5f, barrierTileObj.m_Y + barrierTileObj.m_Height * 0.5f);
+                            tiledRectCenterX /= DEFAULT_PIXELS_PER_UNIT;
+                            tiledRectCenterY /= DEFAULT_PIXELS_PER_UNIT;
                             var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                             /*
                              [WARNING] 
@@ -538,29 +547,33 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
                             It's noticeable that all the "Collider"s in "CollisionSpace" must be of positive coordinates to work due to the implementation details of "resolv". Thus I'm using a "Collision Space (0, 0)" aligned with the bottom-left of the rendered "TiledMap (via SuperMap)". 
                             */
+                            float barrierWidth = barrierTileObj.m_Width / DEFAULT_PIXELS_PER_UNIT;
+                            float barrierHeight = barrierTileObj.m_Height / DEFAULT_PIXELS_PER_UNIT;
+                            float barrierHalfWidth = barrierWidth * 0.5f;
+                            float barrierHalfHeight = barrierHeight * 0.5f;
                             List<PbVec2> points2 = new List<PbVec2>(); 
                             // upper-left
                             points2.Add(new PbVec2 {
-                                X = rectCx - .5f * barrierTileObj.m_Width,
-                                Y = rectCy + .5f * barrierTileObj.m_Height
+                                X = rectCx - barrierHalfWidth,
+                                Y = rectCy + barrierHalfHeight  
                             });
 
                             // upper-right
                             points2.Add(new PbVec2 {
-                                X = rectCx + .5f * barrierTileObj.m_Width,
-                                Y = rectCy + .5f * barrierTileObj.m_Height
+                                X = rectCx + barrierHalfWidth,
+                                Y = rectCy + barrierHalfHeight
                             });
 
                             // bottom-right
                             points2.Add(new PbVec2 {
-                                X = rectCx + .5f * barrierTileObj.m_Width,
-                                Y = rectCy - .5f * barrierTileObj.m_Height
+                                X = rectCx + barrierHalfWidth,
+                                Y = rectCy - barrierHalfHeight
                             });
 
                             // bottom-left
                             points2.Add(new PbVec2 {
-                                X = rectCx - .5f * barrierTileObj.m_Width,
-                                Y = rectCy - .5f * barrierTileObj.m_Height
+                                X = rectCx - barrierHalfWidth,
+                                Y = rectCy - barrierHalfHeight
                             });
 
                             var srcPolygon = new SerializableConvexPolygon {
@@ -583,29 +596,33 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                             };
                             result.SerializedBarriers.Add(barrierCollider);
                         } else {
-                            var points = inMapCollider.points;
+                            var points = inMapCollider.points; // [REMINDER] "EdgeCollider2D" already handles "Pixels Per Unit" import setting implicitly!
                             List<PbVec2> points2 = new List<PbVec2>();
+                            var (anchorWx, anchorWy) = TiledLayerPositionToCollisionSpacePosition(barrierTileObj.m_X / DEFAULT_PIXELS_PER_UNIT, barrierTileObj.m_Y / DEFAULT_PIXELS_PER_UNIT, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+
                             foreach (var point in points) {
                                 points2.Add(new PbVec2 {
                                     X = point.x,
                                     Y = point.y,
                                 });
                             }
-                            var (anchorCx, anchorCy) = TiledLayerPositionToCollisionSpacePosition(barrierTileObj.m_X, barrierTileObj.m_Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+                            
                             var srcPolygon = new SerializableConvexPolygon {
                                 Anchor = new PbVec2 {
-                                    X = anchorCx,
-                                    Y = anchorCy
+                                    X = anchorWx,
+                                    Y = anchorWy
                                 },
                                 IsParallelepiped = isParallelePipedVal
                             };
+
                             if (isParallelePipedVal) {
                                 for (int i = 0; i < points2.Count; i++) {
-                                    points2[i].X = points2[i].X + anchorCx;
-                                    points2[i].Y = points2[i].Y + anchorCy;
+                                    points2[i].X = points2[i].X + srcPolygon.Anchor.X;
+                                    points2[i].Y = points2[i].Y + srcPolygon.Anchor.Y;
                                 }
                             }
                             srcPolygon.Points.Add(points2);
+
                             var barrierCollider = new SerializedBarrierCollider {
                                 Polygon = srcPolygon,
                                 Attr = new BarrierColliderAttr {
@@ -641,7 +658,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                             continue; // [TODO] Use a dedicated "joinIndex" property!
                         }
                         var dirXVal = null == dirX || dirX.IsEmpty ? +2 : dirX.GetValueAsInt();
-                        var (cx, cy) = TiledLayerPositionToCollisionSpacePosition(posTileObj.m_X, posTileObj.m_Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+                        var (cx, cy) = TiledLayerPositionToCollisionSpacePosition(posTileObj.m_X/DEFAULT_PIXELS_PER_UNIT, posTileObj.m_Y/DEFAULT_PIXELS_PER_UNIT, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                         var chConfig = characters[speciesIdList[j]];
                         var playerChd = startRdf.Players[j];
                         var chd = playerChd.Chd;
@@ -692,10 +709,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     foreach (Transform npcPos in child) {
                         var tileObj = npcPos.gameObject.GetComponent<SuperObject>();
                         var tileProps = npcPos.gameObject.gameObject.GetComponent<SuperCustomProperties>();
-                        var (cx, cy) = TiledLayerPositionToCollisionSpacePosition(tileObj.m_X, tileObj.m_Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+                        var (cx, cy) = TiledLayerPositionToCollisionSpacePosition(tileObj.m_X/DEFAULT_PIXELS_PER_UNIT, tileObj.m_Y/DEFAULT_PIXELS_PER_UNIT, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                         if (0 != tileObj.m_Width) {
                             var (tiledRectCenterX, tiledRectCenterY) = (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f);
-                            (cx, cy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+                            (cx, cy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX/DEFAULT_PIXELS_PER_UNIT, tiledRectCenterY/DEFAULT_PIXELS_PER_UNIT, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                         }
 
                         CustomProperty dirX, speciesId, teamId, initGoal, publishingToTriggerIdUponExhausted, subscribesToTriggerId, exhaustedToDropConsumableSpeciesId, exhaustedToDropBuffSpeciesId, exhaustedToDropPickupSkillId, isMainTowerOfTeam;
@@ -886,6 +903,9 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         float initVelXVal = (null != initVelX && !initVelX.IsEmpty ? initVelX.GetValueAsFloat() : 0);
         float initVelYVal = (null != initVelY && !initVelY.IsEmpty ? initVelY.GetValueAsFloat() : 0);
         float initVelZVal = (null != initVelZ && !initVelY.IsEmpty ? initVelZ.GetValueAsFloat() : 0);
+        initVelXVal /= DEFAULT_PIXELS_PER_UNIT;
+        initVelYVal /= DEFAULT_PIXELS_PER_UNIT;
+        initVelZVal /= DEFAULT_PIXELS_PER_UNIT;
 
         int cooldownRdfCountVal = (null != cooldownRdfCount && !cooldownRdfCount.IsEmpty ? cooldownRdfCount.GetValueAsInt() : 0);
 
@@ -912,6 +932,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
         bool isBottomAnchor = (null != tileObj.m_SuperTile && (null != tileObj.m_SuperTile.m_Sprite || null != tileObj.m_SuperTile.m_AnimationSprites));
         var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
+
         var (boxHalfSizeX, boxHalfSizeY) = (.5f * tileObj.m_Width, .5f * tileObj.m_Height);
 
         var superTile = tileObj.m_SuperTile;
@@ -929,9 +950,15 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                     tiledRectCenterX += scaleX*(collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - unscaledHalfSizeX);
                     tiledRectCenterY += scaleY*(collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - unscaledHalfSizeY);
                     (boxHalfSizeX, boxHalfSizeY) = (.5f * scaleX * collisionObj.m_Size.x, .5f * scaleY * collisionObj.m_Size.y);
+                
                 }
             }
         }
+
+        tiledRectCenterX /= DEFAULT_PIXELS_PER_UNIT;
+        tiledRectCenterY /= DEFAULT_PIXELS_PER_UNIT;
+        boxHalfSizeX /= DEFAULT_PIXELS_PER_UNIT;    
+        boxHalfSizeY /= DEFAULT_PIXELS_PER_UNIT;
 
         TrapConfig tpConfig = PbTrapsOverride.Instance.getUnderlying()[tptVal];
 
@@ -941,7 +968,6 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var nameVal = (null != name && !name.IsEmpty) ? name.GetValueAsString() : tpConfig.Name;
         var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
         
-
         TrapConfigFromTiled trapConfigFromTiled = new TrapConfigFromTiled {
             Id = trapId,
             Tpt = tptVal,
@@ -961,8 +987,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             SliderAxisZ = sliderAxisZVal,
             BoxHalfSizeX = boxHalfSizeX,
             BoxHalfSizeY = boxHalfSizeY,
-            RenderBoxHalfSizeX = .5f * tileObj.m_Width,
-            RenderBoxHalfSizeY = .5f * tileObj.m_Height,
+            RenderBoxHalfSizeX = .5f * tileObj.m_Width / DEFAULT_PIXELS_PER_UNIT,
+            RenderBoxHalfSizeY = .5f * tileObj.m_Height / DEFAULT_PIXELS_PER_UNIT,
             SubscribesToTriggerId = subscribesToTriggerIdVal,
             CooldownRdfCount = effCooldownRdfCount,
 
@@ -1003,8 +1029,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         if (PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform == tptVal || PbPrimitivesOverride.Instance.getUnderlying().Tpts.Spring == tptVal) {
             if (null != limit1 && !limit1.IsEmpty && null != limit2 && !limit2.IsEmpty) {
                 Assert.IsTrue(limit1Val <= limit2Val);
-                trapConfigFromTiled.Limit1 = limit1Val;
-                trapConfigFromTiled.Limit2 = limit2Val;
+                trapConfigFromTiled.Limit1 = limit1Val/DEFAULT_PIXELS_PER_UNIT;
+                trapConfigFromTiled.Limit2 = limit2Val/DEFAULT_PIXELS_PER_UNIT;
             }
             if (null != limit3 && !limit3.IsEmpty) {
                 trapConfigFromTiled.Limit3 = limit3Val;
@@ -1109,11 +1135,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var pickableSpawnerTimeSeqStr = (null != pickableSpawnerTimeSeq && !pickableSpawnerTimeSeq.IsEmpty ? pickableSpawnerTimeSeq.GetValueAsString() : "");
 
         float newRevivalCx = 0, newRevivalCy = 0;
-        int newRevivalXVal = 0, newRevivalYVal = 0;
+        float newRevivalXVal = 0, newRevivalYVal = 0;
         if (null != newRevivalX && !newRevivalX.IsEmpty && null != newRevivalY && !newRevivalY.IsEmpty) {
-            float newRevivalXTiled = newRevivalX.GetValueAsFloat();
-            float newRevivalYTiled = newRevivalY.GetValueAsFloat();
-            (newRevivalCx, newRevivalCy) = TiledLayerPositionToCollisionSpacePosition(newRevivalXTiled, newRevivalYTiled, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+            newRevivalXVal = newRevivalX.GetValueAsFloat()/DEFAULT_PIXELS_PER_UNIT;
+            newRevivalYVal = newRevivalY.GetValueAsFloat()/DEFAULT_PIXELS_PER_UNIT;
+            (newRevivalCx, newRevivalCy) = TiledLayerPositionToCollisionSpacePosition(newRevivalXVal, newRevivalYVal, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
         }
 
         uint publishingToTriggerIdUponExhaustedVal = (null != publishingToTriggerIdUponExhausted && !publishingToTriggerIdUponExhausted.IsEmpty ? (uint)publishingToTriggerIdUponExhausted.GetValueAsInt() : PbPrimitivesOverride.Instance.getUnderlying().TerminatingTriggerId);
@@ -1141,6 +1167,11 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             }
         }
 
+        tiledRectCenterX /= DEFAULT_PIXELS_PER_UNIT;
+        tiledRectCenterY /= DEFAULT_PIXELS_PER_UNIT;
+        boxHalfSizeX /= DEFAULT_PIXELS_PER_UNIT;    
+        boxHalfSizeY /= DEFAULT_PIXELS_PER_UNIT;
+
         var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
 
         var trigger = new Trigger {
@@ -1164,10 +1195,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             Quota= quotaVal,
             BoxHalfSizeX = boxHalfSizeX,
             BoxHalfSizeY = boxHalfSizeY,
-            RenderBoxHalfSizeX = .5f * tileObj.m_Width,
-            RenderBoxHalfSizeY = .5f * tileObj.m_Height,
-            NewRevivalX = newRevivalXVal,
-            NewRevivalY = newRevivalYVal,
+            RenderBoxHalfSizeX = .5f * tileObj.m_Width / DEFAULT_PIXELS_PER_UNIT,
+            RenderBoxHalfSizeY = .5f * tileObj.m_Height / DEFAULT_PIXELS_PER_UNIT,
+            NewRevivalX = newRevivalCx,
+            NewRevivalY = newRevivalCy,
             PublishingToTriggerIdUponExhausted = publishingToTriggerIdUponExhaustedVal,
             BgmId = bgmIdVal,
             Name = nameVal,
@@ -1257,17 +1288,22 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         if (newY < grandCameraCapMinY) {
             newY = grandCameraCapMinY;
         }
+        /*
+        newX = Mathf.Round(newX * DEFAULT_PIXELS_PER_UNIT) / DEFAULT_PIXELS_PER_UNIT;
+        newY = Mathf.Round(newY * DEFAULT_PIXELS_PER_UNIT) / DEFAULT_PIXELS_PER_UNIT;
+        newZ = Mathf.Round(newZ * DEFAULT_PIXELS_PER_UNIT) / DEFAULT_PIXELS_PER_UNIT;
+        */
         posHolder.Set(newX, newY, newZ);
     }
 
-    protected float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.02125f;
+    protected float SQUARED_DISTANCE_NO_MOVE_THRESHOLD = 0.02125f / DEFAULT_PIXELS_PER_UNIT;
     protected float CROUCH_PEEKING_CAM_SPEED_FACTOR = 1.5f;
     protected float camCurrSpeedPerSecond = 0.0f;
     protected float CAM_SPEED_LINEAR_DAMPING = 0.2f;
     protected float CAM_REGULAR_ACC_PER_SECOND = 6.5f;
     protected float CAM_FAST_ACC_PER_SECOND = 8.0f;
 
-    protected virtual void cameraTrack(RenderFrame rdf, RenderFrame prevRdf, bool battleResultIsSet, bool forceTeleport = false) {
+    protected virtual void cameraTrack(RenderFrame rdf, RenderFrame prevRdf) {
         float dt = Time.deltaTime;
         uint targetJoinIndex = selfJoinIndex; // TODO
         ulong playerUd = APP_CalcPlayerUserData(targetJoinIndex);
@@ -1277,7 +1313,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var chConfig = characters[chd.SpeciesId];
         var (chGameObj, oldUd) = playerAnimPool.GetOrCreateAnimNode(playerUd, chd.SpeciesId, chConfig, underlyingMap.transform);
 
-        if (forceTeleport) {
+        if (forceCameraTeleport) {
             var (wx, wy) = CollisionSpacePositionToWorldPosition(chd.X, chd.Y, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
             newPosHolder.Set(wx, wy, chGameObj.transform.position.z);
             chGameObj.transform.position = newPosHolder;
@@ -1285,6 +1321,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             newPosHolder.Set(wx, wy, defaultGameplayCamZ);
             clampToMapBoundary(ref newPosHolder, dt);
             gameplayCamera.transform.position = newPosHolder;
+            forceCameraTeleport = false;
             return;
         }
 
@@ -1297,11 +1334,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         bool isProactivelyJumping = (
                              CharacterState.InAirIdle1ByJump == chd.ChState
                            || CharacterState.InAirIdle2ByJump == chd.ChState
+                           || CharacterState.InAirIdle1BySlipJump == chd.ChState
                            || CharacterState.InAirIdle1ByWallJump == chd.ChState
                             );
         float camMaxSpeedPerSecond = chd.Speed;
         float camEffAccPerSecond = CAM_REGULAR_ACC_PER_SECOND;
-        bool isChdMoving = (float.Epsilon < Mathf.Abs(chd.VelX - chd.GroundVelX) || float.Epsilon < Mathf.Abs(chd.VelY - chd.GroundVelY));
+        bool isChdMoving = (PbPrimitivesOverride.Instance.getUnderlying().LengthEps < Mathf.Abs(chd.VelX - chd.GroundVelX) || PbPrimitivesOverride.Instance.getUnderlying().LengthEps < Mathf.Abs(chd.VelY - chd.GroundVelY));
 
         var camOldPos = gameplayCamera.transform.position;
         newPosHolder.Set(chGameObj.transform.position.x, chGameObj.transform.position.y, defaultGameplayCamZ);
@@ -1488,7 +1526,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                 sfxHolder.gameObject.transform.position = newPosHolder;
             }
 
-            playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chConfig.CapsuleHalfHeight, chAnimCtrl, playerUd, material, false);
+            playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chAnimCtrl, playerUd, material, false);
         }
 
         for (int k = 0; k < rdf.NpcCount; k++) {
@@ -1539,7 +1577,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
             // Add character vfx
             float distanceAttenuationZ = Math.Abs(wx - selfPlayerWx) + Math.Abs(wy - selfPlayerWy);
-            playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chConfig.CapsuleHalfHeight, chAnimCtrl, npcUd, material, false);
+            playCharacterDamagedVfx(rdf.Id, currCharacterDownsync, chConfig, chAnimCtrl.gameObject, wx, wy, chAnimCtrl, npcUd, material, false);
         }
 
         for (int k = 0; k < rdf.BulletCount; k++) {
@@ -1707,12 +1745,12 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         } else if (null != debugColliderAnimPool) {
             debugColliderAnimPool.HideInactiveAnimNodes(rdfId);
         }
-
-        cameraTrack(rdf, null, false);
     }
 #nullable enable
 
     protected bool skipInterpolation = false;
+    protected bool forceCameraTeleport = false;
+
     private float calcEffCharacterZ(CharacterDownsync currCd, CharacterConfig chConfig) {
         bool isNonAttacking = false; // TODO
         if (!isNonAttacking) {
@@ -1791,25 +1829,25 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         return false;
     }
 
-    public void showInplaceHpBar(int rdfId, CharacterDownsync currCharacterDownsync, float wx, float wy, float halfBoxCw, float halfBoxCh, ulong lookupKey, CharacterConfig chConfig) {
+    public void showInplaceHpBar(int rdfId, CharacterDownsync currCharacterDownsync, float wx, float wy, ulong lookupKey, CharacterConfig chConfig) {
         if (hideInplaceHpBars) return;
 
         var (inplaceHpBarAnimCtrl, oldUd) = inplaceHpBarAnimPool.GetOrCreateAnimNode(lookupKey, chConfig.SpeciesId, chConfig, underlyingMap.transform);
 
-        newPosHolder.Set(wx, wy + halfBoxCh + chConfig.InplacePromptYOffset, inplaceHpBarZ);
+        newPosHolder.Set(wx, wy + chConfig.CapsuleRadius + chConfig.CapsuleHalfHeight + chConfig.InplacePromptYOffset, inplaceHpBarZ);
 
         inplaceHpBarAnimCtrl.gameObject.transform.position = newPosHolder;
 
         inplaceHpBarAnimCtrl.updateAnim(rdfId, lookupKey, currCharacterDownsync, currCharacterDownsync.ChState, chConfig, currCharacterDownsync.FramesInChState);
     }
 
-    public bool playCharacterDamagedVfx(int rdfId, CharacterDownsync currCharacterDownsync, CharacterConfig chConfig, GameObject theGameObj, float wx, float wy, float halfBoxCh, JoltCharacterAnimController chAnimCtrl, ulong lookupKey, Material material, bool isActiveBoss) {
+    public bool playCharacterDamagedVfx(int rdfId, CharacterDownsync currCharacterDownsync, CharacterConfig chConfig, GameObject theGameObj, float wx, float wy, JoltCharacterAnimController chAnimCtrl, ulong lookupKey, Material material, bool isActiveBoss) {
         var spr = theGameObj.GetComponent<SpriteRenderer>();
         material.SetFloat("_CrackOpacity", 0f);
 
         if (!hideInplaceHpBars) {
             if (!isActiveBoss && lookupKey != Bindings.APP_CalcPlayerUserData(selfPlayerInfo.JoinIndex) && CharacterState.Dying != currCharacterDownsync.ChState && 0 < currCharacterDownsync.DamagedHintRdfCountdown) {
-                showInplaceHpBar(rdfId, currCharacterDownsync, wx, wy, halfBoxCh, inplaceHpBarZ, lookupKey, chConfig);
+                showInplaceHpBar(rdfId, currCharacterDownsync, wx, wy, lookupKey, chConfig);
             }
         }
 

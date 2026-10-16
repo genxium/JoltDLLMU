@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using JoltCSharp;
+using static FrontendOnlyGeometry;
 
 public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, BulletState, BulletConfig, string> {
     public JoltBulletAnimController() {
@@ -12,8 +13,10 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
     }
 
     private string MATERIAL_REF_THICKNESS = "_Thickness";
-    private float ANCHOR_DAMAGE_DEALED_INDICATOR_H = 10f;
-    private float MAX_DAMAGE_DEALED_INDICATOR_H = 20f;
+    private const float ANCHOR_DAMAGE_DEALED_INDICATOR_H = 10f / DEFAULT_PIXELS_PER_UNIT;
+    private const float MAX_DAMAGE_INDICATOR_H = 20f / DEFAULT_PIXELS_PER_UNIT;
+    private const int MAX_DAMAGE_INDICATOR_RDF_CNT = 20;
+    private const float INV_MAX_DAMAGE_INDICATOR_RDF_CNT = 1f/MAX_DAMAGE_INDICATOR_RDF_CNT;
 
     private static Color DAMAGE_FONT_COLOR = new Color(0xDB / 255f, 0x0E / 255f, 0x37 / 255f); 
     private static Color HP_HEAL_FONT_COLOR = new Color(0x00 / 255f, 0xFF / 255f, 0x00 / 255f); 
@@ -56,6 +59,7 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             return false;
         }
         if (BulletState.Hit == newState) {
+            //Debug.Log($"@currRdfId={currRdfId}, bullet.Id={bullet.Id} typed {bulletConfig.BType} in Hit state is FramesInBlState={bullet.FramesInBlState}");
             if (frameIdxInAnim > bulletConfig.HitAnimRdfCnt) {
                 return false;
             }
@@ -74,14 +78,18 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             } else {
                 damageDealedIndicator.gameObject.SetActive(true);
                 damageDealedIndicator.gameObject.transform.localRotation = spr.transform.localRotation; // To battle rotation induced invisibility.
-                positionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + (bullet.FramesInBlState < MAX_DAMAGE_DEALED_INDICATOR_H ? bullet.FramesInBlState : MAX_DAMAGE_DEALED_INDICATOR_H), 0);
+                positionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + MAX_DAMAGE_INDICATOR_H*Mathf.Clamp01(bullet.FramesInBlState * INV_MAX_DAMAGE_INDICATOR_RDF_CNT), 0);
                 damageDealedIndicator.gameObject.transform.localPosition = positionHolder;
                 if (0 < bullet.DamageDealed) {
-                    damageDealedIndicator.text = ("-" + bullet.DamageDealed.ToString());
-                    damageDealedIndicator.color = DAMAGE_FONT_COLOR;
+                    damageDealedIndicator.text = ($"-{bullet.DamageDealed}");
+                    if (DAMAGE_FONT_COLOR != damageDealedIndicator.color) {
+                        damageDealedIndicator.color = DAMAGE_FONT_COLOR;
+                    }
                 } else if (0 > bullet.DamageDealed) {
-                    damageDealedIndicator.text = ("+" + (-bullet.DamageDealed).ToString());
-                    damageDealedIndicator.color = HP_HEAL_FONT_COLOR;
+                    damageDealedIndicator.text = ($"+{(-bullet.DamageDealed)}");
+                    if (HP_HEAL_FONT_COLOR != damageDealedIndicator.color) {
+                        damageDealedIndicator.color = HP_HEAL_FONT_COLOR;
+                    }
                 } else {
                     damageDealedIndicator.text = "";
                 }

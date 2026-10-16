@@ -236,7 +236,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedCharacterCollider_NotThreadSafe(cons
 BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const uint64_t ud, const BulletType blType, const BulletConfig* blConfig, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
     EMotionType immediateMotionType = calcBlMotionType(blType);
     bool immediateIsSensor = calcBlIsSensor(blType);
-    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     float newConvexRadius = 0;
     BL_COLLIDER_T* blCollider = nullptr;
     calcBlCacheKey(blType, immediateMotionType, immediateIsSensor, MyObjectLayers::MOVING, blCacheKeyHolder);
@@ -248,8 +248,8 @@ BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const u
         }
         default: {
             newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
-            if (cDefaultHalfThickness < newConvexRadius) {
-                newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+            if (globalPrimitiveConsts->default_half_thickness() < newConvexRadius) {
+                newConvexRadius = globalPrimitiveConsts->default_half_thickness(); // Required by the underlying body creation 
             }
             break;
         }
@@ -265,7 +265,7 @@ BL_COLLIDER_T* BaseBattle::getOrCreateCachedBulletCollider_NotThreadSafe(const u
                 break;
             }
             default: {
-                Vec3 newBoxHalfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+                Vec3 newBoxHalfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
                 shapeSettings = new BoxShapeSettings(newBoxHalfExtent, newConvexRadius); // transient, to be discarded after creating "body"
                 break;
             }
@@ -376,10 +376,10 @@ TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t 
 
     const bool immediateIsSensor = forConstraintHelperBody;
     calcTpCacheKey(tpConfig->tpt(), immediateMotionType, immediateIsSensor, immediateObjectLayer, tpCacheKeyHolder);
-    const Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultBarrierHalfThickness);
+    const Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_barrier_half_thickness());
     float newConvexRadius = (newHalfExtent.GetX() + newHalfExtent.GetY()) * 0.5;
-    if (cDefaultBarrierHalfThickness < newConvexRadius) {
-        newConvexRadius = cDefaultBarrierHalfThickness; // Required by the underlying body creation 
+    if (globalPrimitiveConsts->default_barrier_half_thickness() < newConvexRadius) {
+        newConvexRadius = globalPrimitiveConsts->default_barrier_half_thickness(); // Required by the underlying body creation 
     }
 
     float newDensity = forConstraintHelperBody ? 0 : (tpConfigFromTile->has_collider_density() ? tpConfigFromTile->collider_density() : cDefaultTpDensity);
@@ -445,10 +445,10 @@ TP_COLLIDER_T* BaseBattle::getOrCreateCachedTrapCollider_NotThreadSafe(uint64_t 
 
 TR_COLLIDER_T* BaseBattle::getOrCreateCachedTriggerCollider_NotThreadSafe(const uint64_t ud, const uint32_t trt, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
     calcTrCacheKey(trt, EMotionType::Static, true, MyObjectLayers::NON_MOVING, trCacheKeyHolder);
-    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     float newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
-    if (cDefaultHalfThickness < newConvexRadius) {
-        newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+    if (globalPrimitiveConsts->default_half_thickness() < newConvexRadius) {
+        newConvexRadius = globalPrimitiveConsts->default_half_thickness(); // Required by the underlying body creation 
     }
     TR_COLLIDER_T* trCollider = nullptr;
     auto it = cachedTrColliders.find(trCacheKeyHolder);
@@ -506,10 +506,10 @@ TR_COLLIDER_T* BaseBattle::getOrCreateCachedTriggerCollider_NotThreadSafe(const 
 
 PK_COLLIDER_T* BaseBattle::getOrCreateCachedPickableCollider_NotThreadSafe(const uint64_t ud, const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const Vec3Arg& newPos, const QuatArg& newRot) {
     calcPkCacheKey(pType, EMotionType::Dynamic, false, MyObjectLayers::MOVING, pkCacheKeyHolder);
-    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    Vec3 newHalfExtent = Vec3(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     float newConvexRadius = (immediateBoxHalfSizeX + immediateBoxHalfSizeY) * 0.5;
-    if (cDefaultHalfThickness < newConvexRadius) {
-        newConvexRadius = cDefaultHalfThickness; // Required by the underlying body creation 
+    if (globalPrimitiveConsts->default_half_thickness() < newConvexRadius) {
+        newConvexRadius = globalPrimitiveConsts->default_half_thickness(); // Required by the underlying body creation 
     }
     PK_COLLIDER_T* pkCollider = nullptr;
     auto it = cachedPickableColliders.find(pkCacheKeyHolder);
@@ -738,6 +738,21 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
         }
         bi->AddForceAndTorque(bodyID, effForceCOM, inInputInducedMotion->torqueCOM, EActivation::DontActivate);
         bi->SetLinearAndAngularVelocity(bodyID, inInputInducedMotion->velCOM, Vec3::sZero());
+/*
+#ifndef NDEBUG
+        if (Walking == currChd.ch_state()) {
+            std::ostringstream oss;
+            oss << "updateChColliderBeforePhysicsUpdate_ThreadSafe/character ud=" << ud << " is walking by effForceCOM=(" << effForceCOM.GetX() << "," << effForceCOM.GetY() << "), velCOM=(" << inInputInducedMotion->velCOM.GetX() << ", " << inInputInducedMotion->velCOM.GetY() << ")" << std::endl;
+            Debug::Log(oss.str(), DColor::Orange);
+        } else if (CrouchIdle1 == currChd.ch_state()) {
+            std::ostringstream oss;
+            const TransformedShape& lhsTs = bi->GetTransformedShape(bodyID);
+            const AABox& lhsAABB = lhsTs.GetWorldSpaceBounds();
+            oss << "lhs player crouching idle1 at lhsAABB=(minY:" << lhsAABB.mMin.GetY() << ", maxY:" << lhsAABB.mMax.GetY() << ")";
+            Debug::Log(oss.str(), DColor::Yellow);
+        }
+#endif
+*/
         // [REMINDER] "CharacterVirtual" maintains its own "mLinearVelocity" (https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Character/CharacterVirtual.h#L709) -- and experimentally setting velocity of its "mInnerBodyID" doesn't work (if "mInnerBodyID" was even set).
 }
 
@@ -1290,7 +1305,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             CharacterDownsync* offenderNextChd = nullptr;
             if (hitFromCharacter) {
                 offenderNextChd = mutableNextChdFromUd(offenderUd);
-                if (Melee == lhsBlConfig->b_type() && nullptr != nextBl && Vanishing != nextBl->bl_state() && nullptr != offenderNextChd && offenderNextChd->active_skill_id() != currBl.skill_id() && offenderNextChd->active_skill_hit() != currBl.active_skill_hit()) {
+                if (Melee == lhsBlConfig->b_type() && nullptr != nextBl && Hit != nextBl->bl_state() && Vanishing != nextBl->bl_state() && nullptr != offenderNextChd && offenderNextChd->active_skill_id() != currBl.skill_id() && offenderNextChd->active_skill_hit() != currBl.active_skill_hit()) {
                     shouldVanish = true;
                 }
             }
@@ -2383,10 +2398,10 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             const double anchorY = (recalcAnchorY / pointsCnt);
             float xHalfExtent = 0.5f * xExtent, yHalfExtent = 0.5f * yExtent;
             float convexRadius = (xHalfExtent + yHalfExtent) * 0.5;
-            if (cDefaultBarrierHalfThickness < convexRadius) {
-                convexRadius = cDefaultBarrierHalfThickness; // Required by the underlying body creation 
+            if (globalPrimitiveConsts->default_barrier_half_thickness() < convexRadius) {
+                convexRadius = globalPrimitiveConsts->default_barrier_half_thickness(); // Required by the underlying body creation 
             }
-            Vec3 halfExtent(xHalfExtent, yHalfExtent, cDefaultBarrierHalfThickness);
+            Vec3 halfExtent(xHalfExtent, yHalfExtent, globalPrimitiveConsts->default_barrier_half_thickness());
             BoxShapeSettings bodyShapeSettings(halfExtent, convexRadius); // transient, to be discarded after creating "body"
             BoxShapeSettings::ShapeResult shapeResult;
             /*
@@ -2474,8 +2489,8 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                         slopeEdgeBestDot = candidateDot;
                     }
 
-                    parsedPoints.push_back(Vec3(x1, y1, +cDefaultBarrierHalfThickness));
-                    parsedPoints.push_back(Vec3(x1, y1, -cDefaultBarrierHalfThickness));
+                    parsedPoints.push_back(Vec3(x1, y1, +globalPrimitiveConsts->default_barrier_half_thickness()));
+                    parsedPoints.push_back(Vec3(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness()));
                 }
 
                 Vec3 slopeEdgeOutwardNorm = (cTurn90DegsAroundZAxis * slopeEdgeNorm);
@@ -2530,15 +2545,15 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
                     
                     // According to https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/MeshShape.cpp#L440, the surface normal (outward) of a "JPH::Triangle" is "(v3 - v2).Cross(v1 - v2).Normalized()".
                     {
-                        Float3 v1(x1, y1, -cDefaultBarrierHalfThickness);
-                        Float3 v2(x1, y1, +cDefaultBarrierHalfThickness);
-                        Float3 v3(x2, y2, +cDefaultBarrierHalfThickness);
+                        Float3 v1(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness());
+                        Float3 v2(x1, y1, +globalPrimitiveConsts->default_barrier_half_thickness());
+                        Float3 v3(x2, y2, +globalPrimitiveConsts->default_barrier_half_thickness());
                         triangles.push_back(Triangle(v1, v2, v3));
                     }
                     {
-                        Float3 v1(x2, y2, +cDefaultBarrierHalfThickness);
-                        Float3 v2(x2, y2, -cDefaultBarrierHalfThickness);
-                        Float3 v3(x1, y1, -cDefaultBarrierHalfThickness);
+                        Float3 v1(x2, y2, +globalPrimitiveConsts->default_barrier_half_thickness());
+                        Float3 v2(x2, y2, -globalPrimitiveConsts->default_barrier_half_thickness());
+                        Float3 v3(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness());
                         triangles.push_back(Triangle(v1, v2, v3));
                     }
 
@@ -2931,11 +2946,13 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
         ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
+/*
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", bodyID=" << chCollider->GetBodyID().GetIndexAndSequenceNumber() << " slip jump triggered at pos=(" << currChd.x() << "," << currChd.y() << "), cs=" << currChd.ch_state() << ", fc=" << currChd.frames_in_ch_state() << ", velCOM=(" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")" << std::endl;
         Debug::Log(oss.str(), DColor::Orange);
 #endif
+*/
     } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
         nextChd->set_frames_in_ch_state(0);
@@ -6909,7 +6926,7 @@ TP_COLLIDER_T* BaseBattle::createDefaultTrapCollider(const Vec3Arg& newHalfExten
 }
 
 TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
-    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
     bodyCreationSettings.mLinearDamping = 0;
@@ -6926,7 +6943,7 @@ TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBox
 }
 
 TR_COLLIDER_T* BaseBattle::createDefaultPickableCollider(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
-    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, cDefaultHalfThickness);
+    Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
     BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Dynamic, MyObjectLayers::MOVING);
     bodyCreationSettings.mLinearDamping = 0;
@@ -7028,7 +7045,7 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
 }
 
 void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff) {
-    auto bodyID = single->GetBodyID();
+    const BodyID bodyID = single->GetBodyID();
 
     RVec3 newPos;
     Quat newRot;
@@ -7042,7 +7059,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     Vec3 nextChdFacing;
     calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
 
-    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
+    CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, bodyID, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
     
     bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
     bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
@@ -7432,7 +7449,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     const TransformedShape& chdTs = single->GetTransformedShape(false);
 
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
-        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing);
+        CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, bodyID, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing);
 
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());
@@ -7444,12 +7461,11 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nonCrouchingShape.SetEmbedded();
 
         Vec3 newPosIfNonCrouching = newPos + nonCrouchingInnerShapeOffset; // [REMINDER] The y-coordinate of "newPos" is the bottom of both "currInnerShape" and "nonCrouchingInnerShape", due to my choice of anchor in "getOrCreateCachedCharacterCollider_NotThreadSafe/createDefaultCharacterCollider".
-        Mat44 chCOMTransformIfNonCrouching = Mat44::sRotationTranslation(newRot, newPosIfNonCrouching);
-        
+        Mat44 chCOMTransformIfNonCrouching = Mat44::sRotationTranslation(newRot, newPosIfNonCrouching);        
         const AABox& chdAABB = chdTs.GetWorldSpaceBounds();
 
         CollideShapeSettings chNarrowPhaseCollideShapeSettings;
-        chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
+        chNarrowPhaseCollideShapeSettings.mMaxSeparationDistance = globalPrimitiveConsts->collision_tolerance();
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
         chNarrowPhaseCollideShapeSettings.mActiveEdgeMovementDirection = newOverallVel;
         chNarrowPhaseCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
@@ -7491,7 +7507,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         AnyHitCollisionCollector<CollideShapeCollector> chdGroundCollector;
 
         CollideShapeSettings chGroundCollideShapeSettings;
-        chGroundCollideShapeSettings.mMaxSeparationDistance = cCollisionTolerance;
+        chGroundCollideShapeSettings.mMaxSeparationDistance = globalPrimitiveConsts->collision_tolerance();
         chGroundCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideOnlyWithActive;
         chGroundCollideShapeSettings.mActiveEdgeMovementDirection = Vec3::sZero();
         chGroundCollideShapeSettings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
