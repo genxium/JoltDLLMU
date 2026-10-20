@@ -128,6 +128,10 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
                     g = cachedQ.Last.Value;
                     cachedQ.RemoveLast();
                 }
+
+                if (null == g) {
+                    g = CreateAnimNode(cacheGroupId, insConfig, parent, specifiedLayer);
+                }
             }
         }
 

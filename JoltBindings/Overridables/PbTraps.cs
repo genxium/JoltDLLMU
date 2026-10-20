@@ -26,7 +26,8 @@ namespace JoltCSharp {
                 DefaultBoxHalfSizeX = 100.0f,
                 DefaultBoxHalfSizeY = 100.0f,
                 DefaultLinearSpeed = 7.0f*BATTLE_DYNAMICS_FPS, 
-                DefaultCooldownRdfCount = 60
+                DefaultCooldownRdfCount = 60,
+                Friction = 0.7f, 
             };
 
             TrapConfig RotatingPlatformTrap = new TrapConfig {

@@ -235,4 +235,10 @@ const std::unordered_set<std::pair<CharacterState, CharacterState>, ChStatePairH
     std::make_pair<CharacterState, CharacterState>(InAirWalkingAtk1, InAirWalkingAtk1_Charging),
 };
 
+const std::unordered_set<TrapState> terrainSpikeAllowedTrapStateSet = {
+    TrapState::TpIdle,
+    TrapState::TpWalking,
+    TrapState::TpActivated,
+};
+
 #endif

@@ -520,26 +520,22 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                         var inMapCollider = barrierChild.GetComponent<EdgeCollider2D>();
                         var tileProps = barrierChild.GetComponent<SuperCustomProperties>();
 
-                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, isParallelePiped, prohibitsWallGrabbing, providesDamage;
+                        CustomProperty providesSlipJump, providesStairsP, providesStairsN, prohibitsWallGrabbing, providesDamage;
                         tileProps.TryGetCustomProperty("prohibitsWallGrabbing", out prohibitsWallGrabbing);
                         tileProps.TryGetCustomProperty("providesSlipJump", out providesSlipJump);
                         tileProps.TryGetCustomProperty("providesStairsP", out providesStairsP);
                         tileProps.TryGetCustomProperty("providesStairsN", out providesStairsN);
                         tileProps.TryGetCustomProperty("providesDamage", out providesDamage);
-                        tileProps.TryGetCustomProperty("isParallelePiped", out isParallelePiped);
 
                         bool providesSlipJumpVal = null == providesSlipJump || providesSlipJump.IsEmpty ? false : (0 < providesSlipJump.GetValueAsInt());
                         bool providesStairsPVal = null == providesStairsP || providesStairsP.IsEmpty ? false : (0 < providesStairsP.GetValueAsInt());
                         bool providesStairsNVal = null == providesStairsN || providesStairsN.IsEmpty ? false : (0 < providesStairsN.GetValueAsInt());
                         float providesDamageVal = (null != providesDamage && !providesDamage.IsEmpty) ? providesDamage.GetValueAsFloat() : 0;
-                        bool isParallelePipedVal = null == isParallelePiped || isParallelePiped.IsEmpty ? false : (0 < isParallelePiped.GetValueAsInt());
                         bool prohibitsWallGrabbingVal = (null != prohibitsWallGrabbing && !prohibitsWallGrabbing.IsEmpty && 1 == prohibitsWallGrabbing.GetValueAsInt()) ? true : false;
 
                         if (null == inMapCollider || 0 >= inMapCollider.pointCount) {
                             var (tiledRectCenterX, tiledRectCenterY) = (barrierTileObj.m_X + barrierTileObj.m_Width * 0.5f, barrierTileObj.m_Y + barrierTileObj.m_Height * 0.5f);
-                            tiledRectCenterX /= DEFAULT_PIXELS_PER_UNIT;
-                            tiledRectCenterY /= DEFAULT_PIXELS_PER_UNIT;
-                            var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX, tiledRectCenterY, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
+                            var (rectCx, rectCy) = TiledLayerPositionToCollisionSpacePosition(tiledRectCenterX/DEFAULT_PIXELS_PER_UNIT, tiledRectCenterY/DEFAULT_PIXELS_PER_UNIT, tilemapHalfHeight, collisionSpacePaddingLeft, collisionSpacePaddingBottom);
                             /*
                              [WARNING] 
 
@@ -551,36 +547,33 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
                             float barrierHeight = barrierTileObj.m_Height / DEFAULT_PIXELS_PER_UNIT;
                             float barrierHalfWidth = barrierWidth * 0.5f;
                             float barrierHalfHeight = barrierHeight * 0.5f;
-                            List<PbVec2> points2 = new List<PbVec2>(); 
-                            // upper-left
-                            points2.Add(new PbVec2 {
-                                X = rectCx - barrierHalfWidth,
-                                Y = rectCy + barrierHalfHeight  
-                            });
+                            List<PbVec2> points2 = new List<PbVec2> {
+                                // upper-left
+                                new PbVec2 {
+                                    X = rectCx - barrierHalfWidth,
+                                    Y = rectCy + barrierHalfHeight
+                                },
 
-                            // upper-right
-                            points2.Add(new PbVec2 {
-                                X = rectCx + barrierHalfWidth,
-                                Y = rectCy + barrierHalfHeight
-                            });
+                                // upper-right
+                                new PbVec2 {
+                                    X = rectCx + barrierHalfWidth,
+                                    Y = rectCy + barrierHalfHeight
+                                },
 
-                            // bottom-right
-                            points2.Add(new PbVec2 {
-                                X = rectCx + barrierHalfWidth,
-                                Y = rectCy - barrierHalfHeight
-                            });
+                                // bottom-right
+                                new PbVec2 {
+                                    X = rectCx + barrierHalfWidth,
+                                    Y = rectCy - barrierHalfHeight
+                                },
 
-                            // bottom-left
-                            points2.Add(new PbVec2 {
-                                X = rectCx - barrierHalfWidth,
-                                Y = rectCy - barrierHalfHeight
-                            });
+                                // bottom-left
+                                new PbVec2 {
+                                    X = rectCx - barrierHalfWidth,
+                                    Y = rectCy - barrierHalfHeight
+                                }
+                            }; 
 
                             var srcPolygon = new SerializableConvexPolygon {
-                                Anchor = new PbVec2 {
-                                    X = rectCx,
-                                    Y = rectCy
-                                },
                                 IsBox = true
                             };
                             srcPolygon.Points.Add(points2);
@@ -602,25 +595,14 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
                             foreach (var point in points) {
                                 points2.Add(new PbVec2 {
-                                    X = point.x,
-                                    Y = point.y,
+                                    X = point.x + anchorWx,
+                                    Y = point.y + anchorWy,
                                 });
                             }
                             
                             var srcPolygon = new SerializableConvexPolygon {
-                                Anchor = new PbVec2 {
-                                    X = anchorWx,
-                                    Y = anchorWy
-                                },
-                                IsParallelepiped = isParallelePipedVal
                             };
 
-                            if (isParallelePipedVal) {
-                                for (int i = 0; i < points2.Count; i++) {
-                                    points2[i].X = points2[i].X + srcPolygon.Anchor.X;
-                                    points2[i].Y = points2[i].Y + srcPolygon.Anchor.Y;
-                                }
-                            }
                             srcPolygon.Points.Add(points2);
 
                             var barrierCollider = new SerializedBarrierCollider {
@@ -859,6 +841,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         CustomProperty destructible;
         CustomProperty friction;
         CustomProperty restitution;
+        CustomProperty providesDamage;
 
         tileProps.TryGetCustomProperty("id", out id);
         tileProps.TryGetCustomProperty("tpt", out tpt);
@@ -872,6 +855,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         tileProps.TryGetCustomProperty("destructible", out destructible);
         tileProps.TryGetCustomProperty("friction", out friction);
         tileProps.TryGetCustomProperty("restitution", out restitution);
+        tileProps.TryGetCustomProperty("providesDamage", out providesDamage);
 
         tileProps.TryGetCustomProperty("initAngVelX", out initAngVelX);
         tileProps.TryGetCustomProperty("initAngVelY", out initAngVelY);
@@ -934,6 +918,10 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         var (tiledRectCenterX, tiledRectCenterY) = isBottomAnchor ? (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y - tileObj.m_Height * 0.5f) : (tileObj.m_X + tileObj.m_Width * 0.5f, tileObj.m_Y + tileObj.m_Height * 0.5f);
 
         var (boxHalfSizeX, boxHalfSizeY) = (.5f * tileObj.m_Width, .5f * tileObj.m_Height);
+        float providesDamageVal = (null != providesDamage && !providesDamage.IsEmpty) ? providesDamage.GetValueAsFloat() : 0;
+
+        SerializableConvexPolygon? collidingSectionOverride = null;
+        List<SerializableConvexPolygon> damageProvidingSections = new List<SerializableConvexPolygon>();
 
         var superTile = tileObj.m_SuperTile;
         if (null != superTile && null != superTile.m_CollisionObjects) {
@@ -945,12 +933,39 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             float scaleY = boxHalfSizeY / unscaledHalfSizeY;
             var collisionObjs = superTile.m_CollisionObjects;
             foreach (var collisionObj in collisionObjs) {
+                // [WARNING] The offset (0, 0) of the tileObj within TSX is the top-left corner, but SuperTiled2Unity converted that to bottom-left corner and reverted y-axis by itself...
+                SerializableConvexPolygon box = new SerializableConvexPolygon {
+                    IsBox = true,
+                    BoxQX = 0,
+                    BoxQY = 0,
+                    BoxQZ = 0,
+                    BoxQW = 1,
+                };
+                box.Points.Add(new PbVec2 {
+                    X = collisionObj.m_Position.x,
+                    Y = collisionObj.m_Position.y
+                });
+                box.Points.Add(new PbVec2 {
+                    X = collisionObj.m_Position.x + collisionObj.m_Size.x,
+                    Y = collisionObj.m_Position.y
+                });
+                box.Points.Add(new PbVec2 {
+                    X = collisionObj.m_Position.x + collisionObj.m_Size.x,
+                    Y = collisionObj.m_Position.y - collisionObj.m_Size.y
+                });
+                box.Points.Add(new PbVec2 {
+                    X = collisionObj.m_Position.x,
+                    Y = collisionObj.m_Position.y - collisionObj.m_Size.y
+                });
+
+                foreach (var point in box.Points) {
+                    point.X = scaleX * (point.X - unscaledHalfSizeX) / DEFAULT_PIXELS_PER_UNIT;
+                    point.Y = scaleY * (point.Y - unscaledHalfSizeY) / DEFAULT_PIXELS_PER_UNIT;
+                }
                 if ("collidingBox".Equals(collisionObj.m_ObjectName)) {
-                    // [WARNING] The offset (0, 0) of the tileObj within TSX is the top-left corner, but SuperTiled2Unity converted that to bottom-left corner and reverted y-axis by itself...
-                    tiledRectCenterX += scaleX*(collisionObj.m_Position.x + .5f * collisionObj.m_Size.x - unscaledHalfSizeX);
-                    tiledRectCenterY += scaleY*(collisionObj.m_Position.y - .5f * collisionObj.m_Size.y - unscaledHalfSizeY);
-                    (boxHalfSizeX, boxHalfSizeY) = (.5f * scaleX * collisionObj.m_Size.x, .5f * scaleY * collisionObj.m_Size.y);
-                
+                    collidingSectionOverride = box;
+                } else if ("damageProvidingSection".Equals(collisionObj.m_ObjectName)) {
+                    damageProvidingSections.Add(box);
                 }
             }
         }
@@ -1002,6 +1017,15 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             }
         };
 
+        if (0 < providesDamageVal && !damageProvidingSections.IsEmpty()) {
+            trapConfigFromTiled.BarrierAttr.ProvidesDamage = providesDamageVal;
+            trapConfigFromTiled.DamageProvidingSections.Add(damageProvidingSections);
+        }
+    
+        if (null != collidingSectionOverride) {
+            trapConfigFromTiled.CollidingSectionOverride = collidingSectionOverride;
+        }
+
         if (null != allowsRotationFromPhySys && !allowsRotationFromPhySys.IsEmpty) {
             bool allowsRotationFromPhySysVal = (0 < allowsRotationFromPhySys.GetValueAsInt());
             trapConfigFromTiled.AllowsRotationFromPhySys = allowsRotationFromPhySysVal;
@@ -1018,7 +1042,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
 
         if (null != friction && !friction.IsEmpty) {
             float frictionVal = friction.GetValueAsFloat();
-            trapConfigFromTiled.Friction = frictionVal;
+            float frictionScaleFactor = 8.0f / DEFAULT_PIXELS_PER_UNIT;
+            trapConfigFromTiled.Friction = frictionVal*frictionScaleFactor;
         }
 
         if (null != restitution && !restitution.IsEmpty) {

@@ -31,6 +31,8 @@ namespace JoltCSharp {
                 return true;
             }
             bool res = base.lazyInit();
+            var SliderPlatformTrap = underlying[PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform];
+            SliderPlatformTrap.Friction = 0.5f;
 
             rectifyByPPU();
 
@@ -42,6 +44,14 @@ namespace JoltCSharp {
             foreach (var trap in underlying.Values) {
                 trap.DefaultBoxHalfSizeX /= DEFAULT_PIXELS_PER_UNIT;
                 trap.DefaultBoxHalfSizeY /= DEFAULT_PIXELS_PER_UNIT;
+
+
+                /*
+                [REMINDER] Intentionally NOT scaling the following parameters because they're used in special cases where length scaling is not applicable. 
+
+                [TODO]
+                trap.Friction /= DEFAULT_PIXELS_PER_UNIT;
+                */
             }
         }
     }

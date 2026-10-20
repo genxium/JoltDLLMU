@@ -948,7 +948,6 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             }
 
             updateChColliderBeforePhysicsUpdate_ThreadSafe(ud, chCollider, dt, currChd, cc, inputInducedMotion, gravityDirty, frictionDirty);
-
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
     }
@@ -1031,6 +1030,17 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             if (tpConfigFromTile->has_restitution()) {
                 biNoLock->SetRestitution(bodyID, tpConfigFromTile->restitution()); 
+            }
+
+            if (tpConfigFromTile->has_barrier_attr()) {
+                const BarrierColliderAttr& barrierAttr = tpConfigFromTile->barrier_attr();
+                if (barrierAttr.provides_damage()) {
+                    if (terrainSpikeAllowedTrapStateSet.count(currTp.trap_state()) && !transientNonChOffenderUdsHavingBls.count(ud)) {
+                        const Vec3 pos(currTp.x(), currTp.y(), currTp.z());
+                        const Quat rot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
+                        addNewTerrainSpikeToNextFrame(currRdfId, pos, rot, nextRdf, ud, globalPrimitiveConsts->default_trap_bullet_team_id());
+                    }
+                }
             }
         }, 0);
         prePhysicsUpdateMTBarrier->AddJob(handle);
@@ -1235,7 +1245,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
                 if (!noOpSet.count(nextChd->ch_state()) || BlownUp1 == nextChd->ch_state()) {
                     bool notTurningAround = (currChd.q_x() == nextChd->q_x() && currChd.q_y() == nextChd->q_y() && currChd.q_z() == nextChd->q_z() && currChd.q_w() == nextChd->q_w());
-                    if (cc->has_vision_reaction() && notTurningAround) {
+                    if (cc->has_vision_reaction() && notTurningAround && (0 == (cc->vision_search_interval_pow2_minus_1() & currChd.frames_in_ch_state()))) {
                         BaseNpcReaction* npcReaction = globalNpcReactionMap.at(cc->species_id());
                         if (nullptr != npcReaction) {
                             NpcGoal currNpcGoal = currNpc.goal_as_npc();
@@ -1499,7 +1509,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextBl->set_q_z(blEffQ.GetZ());
                     nextBl->set_q_w(blEffQ.GetW());
 
-                    addNewBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
+                    addNewCharacterBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
                 }
             }
         }, 0);
@@ -1526,7 +1536,6 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 FindTrapConfig(tpt, currTp.id(), trapConfigFromTileDict, tpConfig, tpConfigFromTile);
                 if (transientUdToBodyID.count(ud)) {
                     const BodyID effBodyID = *(transientUdToBodyID.at(ud));
-
                     if (!effBodyID.IsInvalid()) {
                         RVec3 newPos;
                         Quat newRotFromPhySys;
@@ -1574,6 +1583,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
                         if (globalPrimitiveConsts->tpts().brick() == tpt && 0 >= nextTp->hp()) {
                             transitToDying(currRdfId, currTp, nextTp);
+                        }
+
+                        if (transientUdToColliderShapeOverrides.count(ud)) {
+                            const Shape* shape = transientUdToColliderShapeOverrides.at(ud);
+                            const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
+                            newPos -= castedShape->GetPosition();
+                            newRotFromPhySys = newRotFromPhySys*(castedShape->GetRotation().Conjugated());
                         }
 
                         nextTp->set_x(newPos.GetX());
@@ -1985,6 +2001,22 @@ void BaseBattle::Clear() {
 
     staticColliderUdToBodyID.clear();
 
+    while (!transientUdToTerrainSpikeShape.empty()) {
+        for (auto it = transientUdToTerrainSpikeShape.begin(); it != transientUdToTerrainSpikeShape.end(); ) {
+            JPH_ASSERT(1 == it->second->GetRefCount());
+            it->second->Release();
+            it = transientUdToTerrainSpikeShape.erase(it);
+        }
+    }
+
+    while (!transientUdToColliderShapeOverrides.empty()) {
+        for (auto it = transientUdToColliderShapeOverrides.begin(); it != transientUdToColliderShapeOverrides.end(); ) {
+            JPH_ASSERT(1 == it->second->GetRefCount());
+            it->second->Release();
+            it = transientUdToColliderShapeOverrides.erase(it);
+        }
+    }
+
     lcacIfdId = -1;
     rdfBuffer.Clear();
     ifdBuffer.Clear();
@@ -2172,6 +2204,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
 
         int effCooldownRdfCount = (0 >= c.cooldown_rdf_count() ? tpConfig.default_cooldown_rdf_count() : c.cooldown_rdf_count());
         effTrapConfigFromTiled->set_cooldown_rdf_count(effCooldownRdfCount);
+        uint64_t ud = calcTrapUserData(c.id());
 
         if (!c.has_hp()) {
             effTrapConfigFromTiled->set_hp(tpConfig.hp());
@@ -2264,6 +2297,21 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             effTrapConfigFromTiled->set_init_not_moving(true);
         }
         trapConfigFromTileDict[c.id()] = effTrapConfigFromTiled;
+        
+        if (effTrapConfigFromTiled->has_barrier_attr() && 0 < effTrapConfigFromTiled->damage_providing_sections_size()) {
+            const BarrierColliderAttr& barrierAttr = effTrapConfigFromTiled->barrier_attr();
+            if (0 < barrierAttr.provides_damage()) {
+                // [TODO] Support compound shape.
+                const SerializableConvexPolygon& convexPolygon = effTrapConfigFromTiled->damage_providing_sections(0);
+                Vec3 slopeEdgeNorm(0, 0, 0);
+                Vec3 anchorPos;
+                Quat anchorQ;
+                Shape::ShapeResult shapeResult;
+                const Shape* bodyShape = calcBodyShapeFromSerializedInput(&convexPolygon, anchorPos, anchorQ, slopeEdgeNorm, shapeResult);
+                const RotatedTranslatedShape* rtShape = new RotatedTranslatedShape(anchorPos, anchorQ, bodyShape);
+                transientUdToTerrainSpikeShape[ud] = rtShape;
+            }
+        }
     }
 
     topoSortTriggerConfigFromTiledList(initializerMapData);
@@ -2343,6 +2391,19 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         }
     }
 
+    mNextRdfBulletIdCounter = effStartRdf->bullet_id_counter();
+    mNextRdfBulletCount = effStartRdf->bullet_count();
+
+    mNextRdfNpcIdCounter = effStartRdf->npc_id_counter();
+    mNextRdfNpcCount = effStartRdf->npc_count();
+
+    mNextRdfPickableIdCounter = effStartRdf->pickable_id_counter();
+    mNextRdfPickableCount = effStartRdf->pickable_count();
+
+    mNextRdfTriggerCount = effStartRdf->trigger_count();
+
+    mNextRdfDynamicTrapCount = effStartRdf->dynamic_trap_count();
+
     prefabbedInputList.assign(playersCnt, 0);
     playerInputFrontIds.assign(playersCnt, 0);
     playerInputFronts.assign(playersCnt, 0);
@@ -2356,6 +2417,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         const BarrierColliderAttr& barrierAttr = barrier->attr(); 
         SerializableConvexPolygon* convexPolygon = barrier->mutable_polygon();
         const uint64_t staticColliderUd = calcStaticColliderUserData(staticColliderId); // As [BodyManager::AddBody](https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Body/BodyManager.cpp#L285) maintains "BodyID" counting by , in rollback netcode with a reused "BaseBattle" instance, even the same "static collider" might NOT get the same "BodyID" at different battles, we MUST use custom ids to distinguish "Body" instances!
+
         if (barrierAttr.provides_slip_jump()) {
             transientSlipJumpableUds.insert(staticColliderUd);
         }
@@ -2363,233 +2425,80 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             transientWallGrabProhibitingUds.insert(staticColliderUd);
         }
         const BodyID* newBodyID = nullptr;
-        int pointsCnt = convexPolygon->points_size();
-        double recalcAnchorX = 0, recalcAnchorY = 0;
+        Vec3 anchorPos;
+        Quat anchorQ;
+        Vec3 slopeEdgeNorm(0, 0, 0), slopeOutwardNorm(0, 0, 0);
+        Shape::ShapeResult shapeResult;
+        const Shape* bodyShape = calcBodyShapeFromSerializedInput(convexPolygon, anchorPos, anchorQ, slopeEdgeNorm, shapeResult);
+
         if (convexPolygon->is_box()) {
-            JPH::Quat boxQ = cIdentityQ;
-            if (0 != convexPolygon->box_q_x()   
-            || 0 != convexPolygon->box_q_y()
-            || 0 != convexPolygon->box_q_z()
-            || 0 != convexPolygon->box_q_w()
-            ) {
-                boxQ = JPH::Quat(convexPolygon->box_q_x(), convexPolygon->box_q_y(), convexPolygon->box_q_z(), convexPolygon->box_q_w());
-            }
+            if (0 < barrierAttr.provides_damage()) {
+                transientUdToTerrainSpikeShape[staticColliderUd] = bodyShape;
+                addNewTerrainSpikeToNextFrame(effStartRdf->id(), anchorPos, anchorQ, effStartRdf, staticColliderUd, globalPrimitiveConsts->default_trap_bullet_team_id());
+            } else {
+                /*
+                    "Body" and "BodyCreationSettings" will handle lifecycle of the following "bodyShape", i.e.
+                    - by "RefConst<Shape> Body::mShape" (note that "Body" does NOT hold a member variable "BodyCreationSettings") or
+                    - by "RefConst<ShapeSettings> BodyCreationSettings::mShape".
 
-            float xExtent = 0.f, yExtent = 0.f;
-            for (int i = 0; i < convexPolygon->points_size(); i++) {
-                auto& pi = convexPolygon->points(i);
-                for (int j = i + 1; j < convexPolygon->points_size(); j++) {
-                    auto& pj = convexPolygon->points(j);
-                    float dxAbs = std::abs(pj.x() - pi.x());
-                    float dyAbs = std::abs(pj.y() - pi.y());
-                    if (dxAbs > xExtent) xExtent = dxAbs;
-                    if (dyAbs > yExtent) yExtent = dyAbs;
+                    See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
+                */
+                const BoxShape* boxShape = static_cast<const BoxShape*>(bodyShape);
+                BodyCreationSettings bodyCreationSettings(boxShape, anchorPos, anchorQ, EMotionType::Static, MyObjectLayers::NON_MOVING);
+                bodyCreationSettings.mUserData = staticColliderUd;
+                bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
+                bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
+                if (barrierAttr.provides_stairs_n()) {
+                    transientUdToStairsN[staticColliderUd] = anchorQ * cYAxis;
                 }
-                recalcAnchorX += pi.x();
-                recalcAnchorY += pi.y();
-
-                if (pi.y() < fallenDeathHeight) {
-                    fallenDeathHeight = pi.y();
+                Body* body = biNoLock->CreateBody(bodyCreationSettings);
+                newBodyID = &(body->GetID());
+                staticColliderBodyIDs.push_back(*newBodyID);
+                const AABox& bodyAABB = body->GetWorldSpaceBounds();
+                if (bodyAABB.mMin.GetY() < fallenDeathHeight) {
+                    fallenDeathHeight = bodyAABB.mMin.GetY(); 
                 }
             }
-            
-            // [REMINDER] When "is_box == true", the anchor (i.e. the mid-center) is rotational invariant 
-            const double anchorX = (recalcAnchorX / pointsCnt);
-            const double anchorY = (recalcAnchorY / pointsCnt);
-            float xHalfExtent = 0.5f * xExtent, yHalfExtent = 0.5f * yExtent;
-            float convexRadius = (xHalfExtent + yHalfExtent) * 0.5;
-            if (globalPrimitiveConsts->default_barrier_half_thickness() < convexRadius) {
-                convexRadius = globalPrimitiveConsts->default_barrier_half_thickness(); // Required by the underlying body creation 
+        } else {
+            slopeOutwardNorm = (cTurn90DegsAroundZAxis * slopeEdgeNorm);
+            if (0 > slopeOutwardNorm.GetY()) {
+                slopeOutwardNorm = -slopeOutwardNorm;
             }
-            Vec3 halfExtent(xHalfExtent, yHalfExtent, globalPrimitiveConsts->default_barrier_half_thickness());
-            BoxShapeSettings bodyShapeSettings(halfExtent, convexRadius); // transient, to be discarded after creating "body"
-            BoxShapeSettings::ShapeResult shapeResult;
-            /*
-                "Body" and "BodyCreationSettings" will handle lifecycle of the following "bodyShape", i.e.
-                - by "RefConst<Shape> Body::mShape" (note that "Body" does NOT hold a member variable "BodyCreationSettings") or
-                - by "RefConst<ShapeSettings> BodyCreationSettings::mShape".
-
-                See "<proj-root>/JoltBindings/RefConst_destructor_trick.md" for details.
-            */
-            const BoxShape* bodyShape = new BoxShape(bodyShapeSettings, shapeResult);
-            BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), boxQ, EMotionType::Static, MyObjectLayers::NON_MOVING);
+            BodyCreationSettings bodyCreationSettings(bodyShape, anchorPos, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
-            bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
             bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
-
-            if (barrierAttr.provides_stairs_n()) {
-                transientUdToStairsN[staticColliderUd] = boxQ*cYAxis;
+            bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
+            
+            if (barrierAttr.provides_stairs_p()) {
+                transientUdToStairsP[staticColliderUd] = slopeOutwardNorm;
+            } else {
+                transientUdToSlope[staticColliderUd] = slopeOutwardNorm;
             }
 
             Body* body = biNoLock->CreateBody(bodyCreationSettings);
             newBodyID = &(body->GetID());
             staticColliderBodyIDs.push_back(*newBodyID);
-        } else {
-            std::vector<PbVec2> effConvexPolygonPoints;
-            effConvexPolygonPoints.reserve(pointsCnt);
-            for (auto& srcPoint : convexPolygon->points()) {
-                effConvexPolygonPoints.push_back(srcPoint);
-                recalcAnchorX += srcPoint.x();
-                recalcAnchorY += srcPoint.y();
-            }
-            const double anchorX = (recalcAnchorX / pointsCnt);
-            const double anchorY = (recalcAnchorY / pointsCnt);
-            std::sort(effConvexPolygonPoints.begin(), effConvexPolygonPoints.end(), [anchorX, anchorY](const PbVec2& a, const PbVec2& b) {
-                const double dxA = (a.x() - anchorX);
-                const double dyA = (a.y() - anchorY);
-                const double dxB = (b.x() - anchorX);
-                const double dyB = (b.y() - anchorY);
-                double crossProduct = dxA * dyB - dyA * dxB;
-
-                if (crossProduct != 0) {
-                    return (crossProduct < 0);
-                } else {
-                    double distA2 = dxA * dxA + dyA * dyA;
-                    double distB2 = dxB * dxB + dyB * dyB;
-                    return (distA2 < distB2);
-                }
-            });
-
-            if (convexPolygon->is_parallelepiped()) {
-                Vec3 slopeEdgeNorm;
-                float slopeEdgeBestDot = FLT_MIN;
-
-                std::vector<JPH::Vec3> parsedPoints;
-                parsedPoints.reserve(2 * pointsCnt);
-                for (int pi = 0; pi < pointsCnt; pi++) {
-                    auto fromI = pi;
-                    auto toI = fromI + 1;
-                    if (toI >= pointsCnt) {
-                        toI = 0;
-                    }
-
-                    auto& p1 = effConvexPolygonPoints[fromI];
-                    if (p1.y() < fallenDeathHeight) {
-                        fallenDeathHeight = p1.y();
-                    }
-
-                    auto& p2 = effConvexPolygonPoints[toI];
-
-                    auto x1 = p1.x() - anchorX;
-                    auto y1 = p1.y() - anchorY;
-                    auto x2 = p2.x() - anchorX;
-                    auto y2 = p2.y() - anchorY;
-
-                    Vec3 candidateSlopeEdge(x2-x1, y2-y1, 0);
-                    Vec3 candidateSlopeEdgeNorm = candidateSlopeEdge.Normalized();
-            
-                    float dot1 = candidateSlopeEdgeNorm.Dot(yTurned45DegsAroundZAxis);
-                    float dot2 = candidateSlopeEdgeNorm.Dot(yTurnedNegative45DegsAroundZAxis);
-                    float dot3 = candidateSlopeEdgeNorm.Dot(yTurned135DegsAroundZAxis);
-                    float dot4 = candidateSlopeEdgeNorm.Dot(yTurnedNegative135DegsAroundZAxis);
-
-                    float candidateDot = max(max(dot1, dot2), max(dot3, dot4));
-                    if (candidateDot > slopeEdgeBestDot) {
-                        slopeEdgeNorm = candidateSlopeEdgeNorm;
-                        slopeEdgeBestDot = candidateDot;
-                    }
-
-                    parsedPoints.push_back(Vec3(x1, y1, +globalPrimitiveConsts->default_barrier_half_thickness()));
-                    parsedPoints.push_back(Vec3(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness()));
-                }
-
-                Vec3 slopeEdgeOutwardNorm = (cTurn90DegsAroundZAxis * slopeEdgeNorm);
-                if (0 > slopeEdgeOutwardNorm.GetY()) {
-                    slopeEdgeOutwardNorm = -slopeEdgeOutwardNorm;
-                }
-
-                ConvexHullShapeSettings bodyShapeSettings(parsedPoints.data(), parsedPoints.size());
-                ConvexHullShapeSettings::ShapeResult shapeResult;
-                const ConvexHullShape* bodyShape = new ConvexHullShape(bodyShapeSettings, shapeResult);
-                BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-                bodyCreationSettings.mUserData = staticColliderUd;
-                bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
-                bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
-                
-                if (barrierAttr.provides_stairs_p()) {
-                    transientUdToStairsP[staticColliderUd] = slopeEdgeOutwardNorm;
-#ifndef NDEBUG
-                    std::ostringstream oss;
-                    oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << " provides p-type staris:\n\t";
-                    for (int pi = 0; pi < effConvexPolygonPoints.size(); pi ++) {
-                        auto& p = effConvexPolygonPoints[pi];
-                        auto x = p.x();
-                        auto y = p.y();
-                        oss << "(" << x << "," << y << ") ";
-                    }
-                    oss << ", slopeEdgeOutwardNorm=(" << slopeEdgeOutwardNorm.GetX() << "," << slopeEdgeOutwardNorm.GetY() << ")";
-                    Debug::Log(oss.str(), DColor::Orange);
-#endif
-                } else {
-                    transientUdToSlope[staticColliderUd] = slopeEdgeOutwardNorm;
-                }
-
-                Body* body = biNoLock->CreateBody(bodyCreationSettings);
-                newBodyID = &(body->GetID());
-                staticColliderBodyIDs.push_back(*newBodyID);
-            } else {
-                TriangleList triangles;
-                for (int pi = 0; pi < pointsCnt; pi++) {
-                    auto fromI = pi;
-                    auto toI = fromI + 1;
-                    if (toI >= pointsCnt) {
-                        toI = 0;
-                    }
-                    auto& p1 = effConvexPolygonPoints[fromI];
-                    auto& p2 = effConvexPolygonPoints[toI];
-
-                    auto x1 = p1.x() - anchorX;
-                    auto y1 = p1.y() - anchorY;
-                    auto x2 = p2.x() - anchorX;
-                    auto y2 = p2.y() - anchorY;
-                    
-                    // According to https://github.com/jrouwe/JoltPhysics/blob/v5.3.0/Jolt/Physics/Collision/Shape/MeshShape.cpp#L440, the surface normal (outward) of a "JPH::Triangle" is "(v3 - v2).Cross(v1 - v2).Normalized()".
-                    {
-                        Float3 v1(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness());
-                        Float3 v2(x1, y1, +globalPrimitiveConsts->default_barrier_half_thickness());
-                        Float3 v3(x2, y2, +globalPrimitiveConsts->default_barrier_half_thickness());
-                        triangles.push_back(Triangle(v1, v2, v3));
-                    }
-                    {
-                        Float3 v1(x2, y2, +globalPrimitiveConsts->default_barrier_half_thickness());
-                        Float3 v2(x2, y2, -globalPrimitiveConsts->default_barrier_half_thickness());
-                        Float3 v3(x1, y1, -globalPrimitiveConsts->default_barrier_half_thickness());
-                        triangles.push_back(Triangle(v1, v2, v3));
-                    }
-
-                    if (p1.y() < fallenDeathHeight) {
-                        fallenDeathHeight = p1.y();
-                    }
-                    if (p2.y() < fallenDeathHeight) {
-                        fallenDeathHeight = p2.y();
-                    }
-                }
-                MeshShapeSettings bodyShapeSettings(triangles);
-                MeshShapeSettings::ShapeResult shapeResult;
-                const MeshShape* bodyShape = new MeshShape(bodyShapeSettings, shapeResult);
-                BodyCreationSettings bodyCreationSettings(bodyShape, Vec3(anchorX, anchorY, 0), JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
-                bodyCreationSettings.mUserData = staticColliderUd;
-                bodyCreationSettings.mFriction = globalPrimitiveConsts->default_barrier_friction();
-                bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
-                Body* body = biNoLock->CreateBody(bodyCreationSettings);
-                newBodyID = &(body->GetID());
-                staticColliderBodyIDs.push_back(*newBodyID);
+            const AABox& bodyAABB = body->GetWorldSpaceBounds();
+            if (bodyAABB.mMin.GetY() < fallenDeathHeight) {
+                fallenDeathHeight = bodyAABB.mMin.GetY(); 
             }
         }
-        staticColliderUdToBodyID[staticColliderUd] = newBodyID;
 
+        if (nullptr != newBodyID) {
+            staticColliderUdToBodyID[staticColliderUd] = newBodyID;
 #ifndef NDEBUG
-        std::ostringstream oss;
-        oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", isParallelepiped=" << convexPolygon->is_parallelepiped() << ", bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ", staticColliderBodyIDs.size()=" << staticColliderBodyIDs.size() << ":\n\t";
-        for (int pi = 0; pi < convexPolygon->points_size(); pi ++) {
-            auto& p = convexPolygon->points(pi);
-            auto x = p.x();
-            auto y = p.y();
-            oss << "(" << x << "," << y << ") ";
-        }
-        Debug::Log(oss.str(), DColor::Orange);
+            std::ostringstream oss;
+            oss << "The " << i + 1 << "-th static collider with ud=" << staticColliderUd << ", isBox=" << convexPolygon->is_box() << ", anchorPos=(" << anchorPos.GetX() << ", " << anchorPos.GetY() << "), slopeOutwardNorm=(" << slopeOutwardNorm.GetX() << ", " << slopeOutwardNorm.GetY() << "), bodyID=" << newBodyID->GetIndexAndSequenceNumber() << ", isStairsP=" << transientUdToStairsP.count(staticColliderUd) << ", isStairsN=" << transientUdToStairsN.count(staticColliderUd) << ", isSlipJumpable=" << transientSlipJumpableUds.count(staticColliderUd) << ":\n\t";
+            for (int pi = 0; pi < convexPolygon->points_size(); pi++) {
+                auto& p = convexPolygon->points(pi);
+                auto x = p.x();
+                auto y = p.y();
+                oss << "(" << x << "," << y << ") ";
+            }
+            Debug::Log(oss.str(), DColor::Orange);
 #endif
-        staticColliderId++;
+            staticColliderId++;
+        }
     }
 
     auto layerState = biNoLock->AddBodiesPrepare(staticColliderBodyIDs.data(), staticColliderBodyIDs.size());
@@ -2611,6 +2520,9 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
     transientUdToNextPickable.reserve(globalPrimitiveConsts->default_prealloc_pickable_capacity());
 
     safeDeactiviatedPosition = Vec3(65535.0, -65535.0, 0);
+
+    effStartRdf->set_bullet_id_counter(mNextRdfBulletIdCounter.load());
+    effStartRdf->set_bullet_count(mNextRdfBulletCount.load());
 
     return true;
 }
@@ -2868,7 +2780,7 @@ void BaseBattle::updateBtnHoldingByInput(const CharacterDownsync& currChd, const
     }
 }
 
-void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const bool currIsFlying, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartUp, const bool currDashing, InputInducedMotion* ioInputInducedMotion) {
+void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync& currChd, const bool currIsFlying, const uint64_t currChdUd, const MassProperties& massProps, const Vec3& currChdFacing, const bool jumpTriggered, const bool slipJumpTriggered, CharacterDownsync* nextChd, const bool currEffInAir, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, const bool currParalyzed, const CH_COLLIDER_T* chCollider, const bool currInJumpStartup, const bool currDashing, InputInducedMotion* ioInputInducedMotion) {
     if (0 < currChd.frames_to_recover()) {
         return;
     }
@@ -2886,7 +2798,7 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
     }
 
     bool currOrNextInSlipJump = (InAirIdle1BySlipJump == currChd.ch_state() || InAirIdle1BySlipJump == nextChd->ch_state());
-    if ((jumpTriggered || currInJumpStartUp) && !currOrNextInSlipJump) {
+    if ((jumpTriggered || currInJumpStartup) && !currOrNextInSlipJump) {
         if ((OnWallIdle1 == currChd.ch_state() && jumpTriggered) || (InAirIdle1ByWallJump == currChd.ch_state() && !jumpTriggered)) {
             if (jumpTriggered) {
                 // [REMINDER] If you are facing (-1, 0, 0) and keep pressing "effDx == +2" to jump on wall, then after "wall_jump_frames_to_recover" you'll smoothly pickup the wall jump inertia to move faster than ground in x-direction -- special clamping in "postStepSingleChdStateCorrection" and "clampChdVel" is applied.
@@ -2946,13 +2858,11 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
         ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
-/*
 #ifndef NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", bodyID=" << chCollider->GetBodyID().GetIndexAndSequenceNumber() << " slip jump triggered at pos=(" << currChd.x() << "," << currChd.y() << "), cs=" << currChd.ch_state() << ", fc=" << currChd.frames_in_ch_state() << ", velCOM=(" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")" << std::endl;
-        Debug::Log(oss.str(), DColor::Orange);
+        oss << "@currRdfId=" << currRdfId << ", groundUd=" << currChd.ground_ud() << " slip jump triggered at pos=(" << currChd.x() << "," << currChd.y() << "), cs=" << currChd.ch_state() << ", fc=" << currChd.frames_in_ch_state() << ", velCOM=(" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")" << std::endl;
+        Debug::Log(oss.str(), DColor::Yellow);
 #endif
-*/
     } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
         nextChd->set_frames_in_ch_state(0);
@@ -3103,10 +3013,6 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
             checkWalkingOnSlope(currChd, forceX, isOnStairsP, isOnRegularSlope, walkingDownSlope, walkingUpSlope, slopeOutwardNorm);
             if (walkingUpSlope || walkingDownSlope) {
                 const Vec3 currChdGroundNorm(currChd.ground_norm_x(), currChd.ground_norm_y(), currChd.ground_norm_z());
-
-                biNoLock->SetGravityFactor(chCollider->GetBodyID(), 0);
-                ioGravityDirty = true;
-
                 const Vec3& origVelCOM = ioInputInducedMotion->velCOM;
                 const Vec3 origVelRelativeToGround(origVelCOM.GetX() - currChd.ground_vel_x(), origVelCOM.GetY() - currChd.ground_vel_y(), origVelCOM.GetZ() - currChd.ground_vel_z());
 
@@ -3125,6 +3031,17 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
                     forceX = newForce.GetX();
                     forceY = newForce.GetY();
                 }
+
+                biNoLock->SetGravityFactor(chCollider->GetBodyID(), 0.0f);
+                ioGravityDirty = true;
+/*
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", characterUd=" << ud << ": walking on slope groundUd=" << currChd.ground_ud() << ", isOnStairsP = " << isOnStairsP << ", slopeOutwardNorm = (" << slopeOutwardNorm.GetX() << ", " << slopeOutwardNorm.GetY() << "), currVelBeforeRectifying = (" << currChd.vel_x() << ", " << currChd.vel_y() << "), newForce = (" << forceX << ", " << forceY << "), newVelCOM = (" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+
             } 
         }
 
@@ -3326,14 +3243,14 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     return true;
 }
 
-bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, bool currParalyzed, bool currEffInAir, const Skill* skillConfig, int activeSkillHit, uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, uint64_t offenderUd, int bulletTeamId) {
+bool BaseBattle::addNewCharacterBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, const bool currParalyzed, const bool currEffInAir, const Skill* skillConfig, const int activeSkillHit, const uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, const uint64_t offenderUd, const int bulletTeamId) {
     JPH_ASSERT(nullptr != currChd || nullptr != referenceBullet);
     if (globalPrimitiveConsts->no_skill_hit() == activeSkillHit || activeSkillHit > skillConfig->hits_size()) return false;
     uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
     if (oldNextRdfBulletCount >= globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
 #ifndef  NDEBUG
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming#1";
+        oss << "addNewCharacterBulletToNextFrame/@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming#1";
         Debug::Log(oss.str(), DColor::Orange);
 #endif // ! NDEBUG
         --mNextRdfBulletCount;
@@ -3427,7 +3344,7 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
 #ifndef  NDEBUG
     if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", a new startup bullet with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
+        oss << "addNewCharacterBulletToNextFrame/@currRdfId=" << currRdfId << ", a new startup bullet with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
         Debug::Log(oss.str(), DColor::Orange);
      } 
 #endif // ! NDEBUG
@@ -3466,19 +3383,76 @@ bool BaseBattle::addNewBulletToNextFrame(const int currRdfId, const CharacterDow
     if (BulletType::MechanicalBouncerSpherical == bulletConfig.b_type()) {
         std::ostringstream oss;
         if (nullptr != referenceBullet) {
-            oss << "@currRdfId=" << currRdfId << ", added new bullet from referenceBullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
+            oss << "addNewCharacterBulletToNextFrame/@currRdfId=" << currRdfId << ", added new bullet from referenceBullet with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
         } else {
-            oss << "@currRdfId=" << currRdfId << ", added new bullet from offenderUd=" << offenderUd << " with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
+            oss << "addNewCharacterBulletToNextFrame/@currRdfId=" << currRdfId << ", added new bullet from offenderUd=" << offenderUd << " with bulletId=" << nextBl->id() << ", pos=(" << nextBl->x() << ", " << nextBl->y() << ", " << nextBl->z() << "), vel=(" << nextBl->vel_x() << ", " << nextBl->vel_y() << ", " << nextBl->vel_z() << "), newBlState=" << (int) nextBl->bl_state() << ", newFramesInBlState=" << nextBl->frames_in_bl_state() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount;
         }
         Debug::Log(oss.str(), DColor::Orange);
     }
 #endif // ! NDEBUG
 */
     if (0 < bulletConfig.simultaneous_multi_hit_cnt() && activeSkillHit < skillConfig->hits_size()) {
-        return addNewBulletToNextFrame(currRdfId, currChd, currChdFacing, cc, currParalyzed, currEffInAir, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
+        return addNewCharacterBulletToNextFrame(currRdfId, currChd, currChdFacing, cc, currParalyzed, currEffInAir, skillConfig, activeSkillHit + 1, activeSkillId, nextRdf, referenceBullet, referenceBulletConfig, offenderUd, bulletTeamId);
     } else {
         return true;
     }
+}
+
+bool BaseBattle::addNewTerrainSpikeToNextFrame(const int currRdfId, const Vec3& pos, const Quat& rot, RenderFrame* nextRdf, const uint64_t offenderUd, const int bulletTeamId) {
+    uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfBulletCount >= globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "addNewTerrainSpikeToNextFrame/@currRdfId=" << currRdfId << ", offenderUd=" << offenderUd << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming#1";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+        --mNextRdfBulletCount;
+        return false;
+    }
+    
+    auto initBlState = BulletState::StartUp;
+    int initFramesInBlState = 0;
+
+    int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfBulletCount > cMaxBulletId) {
+        oldNextRdfBulletCount = 1;
+    }
+    Bullet* nextBl = oldNextRdfBulletCount < nextRdf->bullets_size() ? nextRdf->mutable_bullets(oldNextRdfBulletCount) : nextRdf->add_bullets();
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
+        std::ostringstream oss;
+        oss << "addNewTerrainSpikeToNextFrame/@currRdfId=" << currRdfId << ", a new startup bullet with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+    nextBl->Clear(); // [REMINDER] There's no embedded pb-message field in "Bullet", feel free to clear.
+    nextBl->set_id(oldNextRdfBulletIdCounter);
+    nextBl->set_originated_render_frame_id(currRdfId);
+    nextBl->set_bl_state(initBlState);
+    nextBl->set_frames_in_bl_state(initFramesInBlState);
+    auto ud = calcUserData(*nextBl);
+    nextBl->set_offender_ud(offenderUd);
+    nextBl->set_ud(ud);
+    nextBl->set_originated_x(pos.GetX());
+    nextBl->set_originated_y(pos.GetY());
+    nextBl->set_originated_z(pos.GetZ());
+    nextBl->set_x(pos.GetX());
+    nextBl->set_y(pos.GetY());
+    nextBl->set_z(pos.GetZ());
+    nextBl->set_q_x(rot.GetX());
+    nextBl->set_q_y(rot.GetY());
+    nextBl->set_q_z(rot.GetZ());
+    nextBl->set_q_w(rot.GetW());
+    nextBl->set_team_id(bulletTeamId);
+
+    nextBl->set_vel_x(0);
+    nextBl->set_vel_y(0);
+    nextBl->set_vel_z(0);
+    nextBl->set_skill_id(globalPrimitiveConsts->terrain_spike_skill_id());
+    nextBl->set_active_skill_hit(1);
+    nextBl->set_repeat_quota_left(0);
+
+    return true;
 }
 
 bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx, float qy, float qz, float qw, uint32_t chSpeciesId, int teamId, NpcGoal initGoal, RenderFrame* nextRdf, uint32_t publishingToTriggerIdUponExhausted, uint64_t waveNpcKilledMaskCounter, uint32_t subscribesToTriggerId) {
@@ -4095,56 +4069,6 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
     The callstack "getOrCreateCachedCharacterCollider_NotThreadSafe -> createDefaultCharacterCollider" implicitly adds the "JPH::Character.mBodyID" into "BroadPhase", therefore "bodyIDsToAdd" starts here.
     */ 
     bodyIDsToAdd.clear();
-    for (int i = 0; i < currRdf->bullet_count(); i++) {
-        const Bullet& currBl = currRdf->bullets(i);
-        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
-        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
-        auto ud = calcUserData(currBl);
-        transientUdToCurrBl[ud] = &currBl;
-        transientUdToNextBl[ud] = nextBl;
-        if (0 != currBl.offender_ud()) {
-            uint64_t offenderUdt = getUDT(currBl.offender_ud()); 
-            if (UDT_PLAYER != offenderUdt && UDT_NPC != offenderUdt) {
-                transientNonChOffenderUdsHavingBls.insert(currBl.offender_ud());
-            }
-        }
-        const Skill* skill = nullptr;
-        const BulletConfig* bulletConfig = nullptr;
-        FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
-        if (BulletState::Active == currBl.bl_state()) {
-            Vec3 newPos(currBl.x(), currBl.y(), currBl.z());
-            Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
-            if (Melee == bulletConfig->b_type()) {
-                const CharacterDownsync& currChd = immutableCurrChdFromUd(currBl.offender_ud());
-                Quat currChdQ;
-                Vec3 currChdFacing;
-                BaseBattleCollisionFilter::calcChdFacing(currChd, currChdQ, currChdFacing);
-                JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
-                if (OnWallAtk1 == skill->bound_ch_state()) {
-                    offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
-                }
-                JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
-                Vec3 blInitOffset(bulletConfig->hitbox_offset_x(), bulletConfig->hitbox_offset_y(), 0);
-                Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
-                newPos.SetX(currChd.x() + blEffOffset.GetX());
-                newPos.SetY(currChd.y() + blEffOffset.GetY());
-                if (bulletConfig->has_init_q()) {
-                    auto& initQ = bulletConfig->init_q();
-                    newRot = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
-                } else {
-                    newRot = offenderEffAimingQ;
-                }
-            }
-            auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->b_type(), bulletConfig, bulletConfig->hitbox_half_size_x(), bulletConfig->hitbox_half_size_y(), newPos, newRot);
-            transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
-            auto bodyID = blCollider->GetID();
-            if (!blCollider->IsInBroadPhase()) {
-                bodyIDsToAdd.push_back(bodyID);
-            }
-            bodyIDsToActivate.push_back(bodyID);
-        }
-    }
-
     for (int i = 0; i < currRdf->dynamic_trap_count(); i++) {
         const Trap& currTp = currRdf->dynamic_traps(i);
         if (globalPrimitiveConsts->terminating_trap_id() == currTp.id()) break;
@@ -4158,13 +4082,36 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         transientUdToCurrTrap[ud] = &currTp;
         transientUdToNextTrap[ud] = nextTp;
 
-        const float immediateBoxHalfSizeX = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_x() : tpConfigFromTile->box_half_size_x());
-        const float immediateBoxHalfSizeY = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_y() : tpConfigFromTile->box_half_size_y()); 
-
-        Vec3 newTrapPos(currTp.x(), currTp.y(), currTp.z());
-        Quat newTrapRot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
         const TrapState currTpState = currTp.trap_state();
         if (isTrapCollidable(&currTp, tpt, currTpState)) {
+            float immediateBoxHalfSizeX = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_x() : tpConfigFromTile->box_half_size_x());
+            float immediateBoxHalfSizeY = (nullptr == tpConfigFromTile ? tpConfig->default_box_half_size_y() : tpConfigFromTile->box_half_size_y()); 
+
+            Vec3 newTrapPos(currTp.x(), currTp.y(), currTp.z());
+            Quat newTrapRot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
+
+            if (nullptr != tpConfigFromTile && tpConfigFromTile->has_colliding_section_override()) {
+                const SerializableConvexPolygon& collidingSection = tpConfigFromTile->colliding_section_override(); 
+                if (collidingSection.is_box()) {
+                    if (!transientUdToColliderShapeOverrides.count(ud)) {
+                        Vec3 slopeEdgeNorm(0, 0, 0);
+                        Vec3 anchorPos;
+                        Quat anchorQ;
+                        Shape::ShapeResult shapeResult;
+                        const Shape* bodyShape = calcBodyShapeFromSerializedInput(&collidingSection, anchorPos, anchorQ, slopeEdgeNorm, shapeResult);
+                        const RotatedTranslatedShape* rtShape = new RotatedTranslatedShape(anchorPos, anchorQ, bodyShape);
+                        transientUdToColliderShapeOverrides[ud] = rtShape;
+                    }
+                    const Shape* shape = transientUdToColliderShapeOverrides.at(ud);
+                    const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
+                    const BoxShape* innerShape = static_cast<const BoxShape*>(castedShape->GetInnerShape());
+                    const Vec3 existingHalfExtent = innerShape->GetHalfExtent();
+                    immediateBoxHalfSizeX = existingHalfExtent.GetX();               
+                    immediateBoxHalfSizeY = existingHalfExtent.GetY();
+                    newTrapPos += castedShape->GetPosition();
+                    newTrapRot = newTrapRot*castedShape->GetRotation();
+                }
+            }
             TP_COLLIDER_T* tpCollider = getOrCreateCachedTrapCollider_NotThreadSafe(ud, tpConfig, tpConfigFromTile, immediateBoxHalfSizeX, immediateBoxHalfSizeY, false, newTrapPos, newTrapRot);
             auto trapBodyID = tpCollider->GetID();
             if (nullptr != tpConfigFromTile) {
@@ -4209,6 +4156,82 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
             } else if (globalPrimitiveConsts->tpts().brick() == tpt) {
                 transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
             }
+        }
+    }
+
+    for (int i = 0; i < currRdf->bullet_count(); i++) {
+        const Bullet& currBl = currRdf->bullets(i);
+        if (globalPrimitiveConsts->terminating_bullet_id() == currBl.id()) break;
+        Bullet* nextBl = nextRdf->mutable_bullets(i); // [WARNING] By reaching here, we haven't executed "leftShiftDeadBullets", hence the indices of "currRdf->bullets" and "nextRdf->bullets" are FULLY ALIGNED.
+        auto ud = calcUserData(currBl);
+        transientUdToCurrBl[ud] = &currBl;
+        transientUdToNextBl[ud] = nextBl;
+        uint64_t offenderUd = currBl.offender_ud();
+        uint64_t offenderUdt = getUDT(currBl.offender_ud()); 
+        if (UDT_PLAYER != offenderUdt && UDT_NPC != offenderUdt) {
+            transientNonChOffenderUdsHavingBls.insert(currBl.offender_ud());
+        }
+        const Skill* skill = nullptr;
+        const BulletConfig* bulletConfig = nullptr;
+        FindBulletConfig(currBl.skill_id(), currBl.active_skill_hit(), skill, bulletConfig);
+        if (BulletState::Active == currBl.bl_state()) {
+            Vec3 newPos(currBl.x(), currBl.y(), currBl.z());
+            Quat newRot(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
+            float effHitboxHalfSizeX = bulletConfig->hitbox_half_size_x();
+            float effHitboxHalfSizeY = bulletConfig->hitbox_half_size_y();
+            if (Melee == bulletConfig->b_type()) {
+                const CharacterDownsync& currChd = immutableCurrChdFromUd(currBl.offender_ud());
+                Quat currChdQ;
+                Vec3 currChdFacing;
+                BaseBattleCollisionFilter::calcChdFacing(currChd, currChdQ, currChdFacing);
+                JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                if (OnWallAtk1 == skill->bound_ch_state()) {
+                    offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
+                }
+                JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
+                Vec3 blInitOffset(bulletConfig->hitbox_offset_x(), bulletConfig->hitbox_offset_y(), 0);
+                Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
+                newPos.SetX(currChd.x() + blEffOffset.GetX());
+                newPos.SetY(currChd.y() + blEffOffset.GetY());
+                if (bulletConfig->has_init_q()) {
+                    auto& initQ = bulletConfig->init_q();
+                    newRot = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
+                } else {
+                    newRot = offenderEffAimingQ;
+                }
+            } else if (TerrainMelee == bulletConfig->b_type()) {
+                // [TODO] Support other shapes (e.g. ConvexHullShape)
+                if (UDT_TRAP == offenderUdt && transientUdToCurrTrap.count(offenderUd)) {
+                    const Shape* shape = transientUdToTerrainSpikeShape.at(offenderUd);
+                    const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
+                    const BoxShape* innerShape = static_cast<const BoxShape*>(castedShape->GetInnerShape());
+                    const Vec3 existingHalfExtent = innerShape->GetHalfExtent();
+                    const Trap* currTp = transientUdToCurrTrap.at(offenderUd);
+                    if (globalPrimitiveConsts->tpts().rotating_platform() == currTp->tpt()) {
+                        Quat currTpQ = JPH::Quat(currTp->q_x(), currTp->q_y(), currTp->q_z(), currTp->q_w());
+                        newPos = Vec3(currTp->x(), currTp->y(), currTp->z()) + currTpQ*castedShape->GetPosition();
+                        newRot = currTpQ * castedShape->GetRotation();
+                    } else {
+                        newPos = Vec3(currTp->x(), currTp->y(), currTp->z()) + castedShape->GetPosition();
+                        newRot = castedShape->GetRotation();
+                    }
+                    effHitboxHalfSizeX = existingHalfExtent.GetX();
+                    effHitboxHalfSizeY = existingHalfExtent.GetY();
+                } else if (UDT_OBSTACLE == offenderUdt && staticColliderUdToBodyID.count(offenderUd)) {
+                    const Shape* shape = transientUdToTerrainSpikeShape.at(offenderUd);
+                    const BoxShape* castedShape = static_cast<const BoxShape*>(shape);
+                    const Vec3 existingHalfExtent = castedShape->GetHalfExtent();
+                    effHitboxHalfSizeX = existingHalfExtent.GetX(); 
+                    effHitboxHalfSizeY = existingHalfExtent.GetY();
+                }
+            }
+            auto blCollider = getOrCreateCachedBulletCollider_NotThreadSafe(ud, bulletConfig->b_type(), bulletConfig, effHitboxHalfSizeX, effHitboxHalfSizeY, newPos, newRot);
+            transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
+            auto bodyID = blCollider->GetID();
+            if (!blCollider->IsInBroadPhase()) {
+                bodyIDsToAdd.push_back(bodyID);
+            }
+            bodyIDsToActivate.push_back(bodyID);
         }
     }
 
@@ -4429,11 +4452,13 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     }
                 } else if (mD >= tpConfigFromTile->limit_2()) {
                     if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
+    /*
     #ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << ")";
                         Debug::Log(oss.str(), DColor::Orange);
     #endif
+    */
                         nextTp->set_trap_state(TrapState::TpIdle);
                         nextTp->set_frames_in_trap_state(0);
                         newTpLinearVel = Vec3::sZero();
@@ -4443,13 +4468,11 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                             shouldTransitIntoMoving = true;
                         }
                         if (shouldTransitIntoMoving) {
-    /*
     #ifndef NDEBUG
                             std::ostringstream oss;
                             oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from idle to walking per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                             Debug::Log(oss.str(), DColor::Orange);
     #endif
-    */
                             const Vec3 projectedVel = -std::abs(initVel.Dot(worldSpaceSliderAxis))*worldSpaceSliderAxis;
                             nextTp->set_trap_state(TrapState::TpWalking);
                             nextTp->set_frames_in_trap_state(0);
@@ -4923,7 +4946,7 @@ void BaseBattle::batchRemoveFromPhySysAndCache(const int currRdfId, const Render
     mNextRdfNpcIdCounter = 1;
     mNextRdfNpcCount = 0;
 
-    mNextRdfPickableIdCounter = 0;
+    mNextRdfPickableIdCounter = 1;
     mNextRdfPickableCount = 0;
 
     transientPreparedTriggerUds.clear();
@@ -5435,7 +5458,8 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
 
         const CharacterState oldNextChStateLv2 = nextChd->ch_state();
-        if (cc->crouching_enabled() && inputInducedMotion->crouchForcedWhileSupported && !isCrouching(oldNextChStateLv2, cc)) {
+        bool crouchingForcedOrCommanded = (inputInducedMotion->crouchForcedWhileSupported || (0 == inputInducedMotion->forceCOM.GetX() && 0 > inputInducedMotion->forceCOM.GetY()));
+        if (cc->crouching_enabled() && crouchingForcedOrCommanded && !isCrouching(oldNextChStateLv2, cc)) {
             switch (oldNextChStateLv2) {
             case Idle1:
             case InAirIdle1ByJump:
@@ -5445,15 +5469,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case Walking:
             case GetUp1:
                 nextChd->set_ch_state(CrouchIdle1);
-                nextChd->set_vel_x(nextChd->ground_vel_x());
-                nextChd->set_vel_y(nextChd->ground_vel_y());
-                break;
-            case Atk1:
-                if (cc->crouching_atk_enabled()) {
-                    nextChd->set_ch_state(CrouchAtk1);
-                } else {
-                    nextChd->set_ch_state(CrouchIdle1);
-                }
                 nextChd->set_vel_x(nextChd->ground_vel_x());
                 nextChd->set_vel_y(nextChd->ground_vel_y());
                 break;
@@ -5609,13 +5624,19 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     }
 
 #ifndef NDEBUG
+    if (UDT_TRAP == nextChd->ground_ud()) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/ud=" << ud << ", set nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), groundVel=(" << nextChd->ground_vel_x() << "," << nextChd->ground_vel_y() << "), nextCs = " << nextChd->ch_state() << " and nextFc = " << nextChd->frames_in_ch_state() << "; while oldNextCs = " << oldNextChState << ", oldNextEffInAir = " << oldNextEffInAir << ", cvInAir = " << cvInAir << ", currGroundUd = " << currChd.ground_ud() << ", nextGroundUd = " << nextChd->ground_ud();
+        Debug::Log(oss1.str(), DColor::Orange);
+    }
     /*
     if (InAirIdle1BySlipJump == oldNextChState) {
         std::ostringstream oss1;
-        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while oldNextChState=" << oldNextChState << ", oldNextEffInAir=" << oldNextEffInAir << ", cvInAir=" << cvInAir << ", currChd.ground_ud=" << currChd.ground_ud() << ", nextChd->ground_ud=" << nextChd->ground_ud();
+        oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/ud=" << ud << ", set nextVel=(" << nextChd->vel_x() << "," << nextChd->vel_y() << "), nextCs=" << nextChd->ch_state() << " and nextFc=" << nextChd->frames_in_ch_state() << "; while oldNextCs=" << oldNextChState << ", oldNextEffInAir=" << oldNextEffInAir << ", cvInAir=" << cvInAir << ", currGroundUd=" << currChd.ground_ud() << ", nextGroundUd=" << nextChd->ground_ud();
         Debug::Log(oss1.str(), DColor::Orange);
     }
-
+    */
+    /*
     if (Atk7 == nextChd->ch_state() ) {
         std::ostringstream oss1;
         oss1 << "@currRdfId=" << currRdfId << ", postStepSingleChdStateCorrection/set nextChd ch_state=" << nextChd->ch_state() << " and frames_in_ch_state=" << nextChd->frames_in_ch_state() << "; while vel=(" << nextChd->vel_x() << ", " << nextChd->vel_y() << "), currChState=" << currChd.ch_state() << ", currFramesInChState=" << currChd.frames_in_ch_state();
@@ -5670,14 +5691,14 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
                         publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), 1, 1, targetTriggerInNextFrame);
 #ifndef NDEBUG
                         std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << ", leftShiftDeadBullets/#1, NPC id=" << candidate->id() << " is dead with hp=" << chd->hp() << ", published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
+                        oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#1, NPC id=" << candidate->id() << " is dead with hp=" << chd->hp() << ", published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
                         Debug::Log(oss.str(), DColor::Orange);
 #endif
                     } else {
                         publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
 #ifndef NDEBUG
                         std::ostringstream oss;
-                        oss << "@currRdfId=" << currRdfId << ", leftShiftDeadBullets/#2, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
+                        oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#2, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
                         Debug::Log(oss.str(), DColor::Orange);
 #endif
                     }
@@ -5685,7 +5706,7 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
                     publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
 #ifndef NDEBUG
                     std::ostringstream oss;
-                    oss << "@currRdfId=" << currRdfId << ", leftShiftDeadBullets/#3, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
+                    oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#3, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
                     Debug::Log(oss.str(), DColor::Orange);
 #endif
                 }
@@ -5765,17 +5786,36 @@ bool BaseBattle::isBulletAlive(const Bullet* bullet, const BulletConfig* bc, con
     }
     uint64_t offenderUd = bullet->offender_ud();
     uint64_t offenderUdt = getUDT(offenderUd);
+    bool res = true;
     bool isOffenderUdtCharacter = (UDT_PLAYER == offenderUdt || UDT_NPC == offenderUdt);
-    CharacterDownsync* nextOffenderChd = mutableNextChdFromUd(offenderUdt, offenderUd);
-    if (BulletState::StartUp == bullet->bl_state() && isOffenderUdtCharacter) {
-        if (nullptr == nextOffenderChd) {
-            return false; // The offender might've been dead
+    if (isOffenderUdtCharacter) {
+        CharacterDownsync* nextOffenderChd = mutableNextChdFromUd(offenderUdt, offenderUd);
+        if (BulletState::StartUp == bullet->bl_state() && isOffenderUdtCharacter) {
+            if (nullptr == nextOffenderChd) {
+                return false; // The offender might've been dead
+            }
+            if (atkedSet.count(nextOffenderChd->ch_state()) || noOpSet.count(nextOffenderChd->ch_state())) {
+                return false; // The bullet should be no longer active
+            }
         }
-        if (atkedSet.count(nextOffenderChd->ch_state()) || noOpSet.count(nextOffenderChd->ch_state())) {
-            return false; // The bullet should be no longer active
+        res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+    } else {
+        if (TerrainMelee == bc->b_type()) {
+            if (UDT_TRAP == offenderUdt) {
+                if (!transientUdToNextTrap.count(offenderUd)) {
+                    return false;
+                } 
+                Trap* nextOffenderTp = transientUdToNextTrap.at(offenderUd);
+                if (!terrainSpikeAllowedTrapStateSet.count(nextOffenderTp->trap_state())) {
+                    return false;
+                } 
+                if (globalPrimitiveConsts->magic_rdf_cnt_infinite() != bc->active_frames()) {
+                    res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+                }
+            }
         }
     }
-    bool res = (currRdfId < bullet->originated_render_frame_id() + bc->startup_frames() + bc->active_frames() + bc->cooldown_frames());
+/*
 #ifndef  NDEBUG
     if (false == res && BulletType::MechanicalBouncerSpherical == bc->b_type()) {
         std::ostringstream oss;
@@ -5783,6 +5823,7 @@ bool BaseBattle::isBulletAlive(const Bullet* bullet, const BulletConfig* bc, con
         Debug::Log(oss.str(), DColor::Orange);
      } 
 #endif // ! NDEBUG
+*/
     return res;
 }
 
@@ -5805,7 +5846,15 @@ void BaseBattle::leftShiftDeadBullets(const int currRdfId, RenderFrame* nextRdf)
 #ifndef NDEBUG
             if (BulletType::MechanicalBouncerSpherical == bulletConfig->b_type()) {
                 std::ostringstream oss;
-                oss << "@currRdfId=" << currRdfId << ", bullet with bulletId=" << candidate->id() << ", pos=(" << candidate->x() << ", " << candidate->y() << ", " << candidate->z() << "), vel=(" << candidate->vel_x() << ", " << candidate->vel_y() << ", " << candidate->vel_z() << ") is dead at bl_state=" << (int) candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
+                oss << "@currRdfId=" << currRdfId << ", MechanicalBouncerSpherical bullet with bulletId=" << candidate->id() << ", pos=(" << candidate->x() << ", " << candidate->y() << ", " << candidate->z() << "), vel=(" << candidate->vel_x() << ", " << candidate->vel_y() << ", " << candidate->vel_z() << ") is dead at bl_state=" << (int) candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
+                Debug::Log(oss.str(), DColor::Orange);
+            }
+#endif
+
+#ifndef NDEBUG
+            if (BulletType::TerrainMelee == bulletConfig->b_type()) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", TerrainMelee bullet with bulletId=" << candidate->id() << ", pos=(" << candidate->x() << ", " << candidate->y() << ", " << candidate->z() << "), vel=(" << candidate->vel_x() << ", " << candidate->vel_y() << ", " << candidate->vel_z() << ") is dead at bl_state=" << (int)candidate->bl_state() << ", frames_in_bl_state=" << candidate->frames_in_bl_state();
                 Debug::Log(oss.str(), DColor::Orange);
             }
 #endif
@@ -6839,7 +6888,7 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
 
     const Bullet* referenceBullet = nullptr;
     const BulletConfig* referenceBulletConfig = nullptr;
-    if (addNewBulletToNextFrame(currRdfId, &currChd, currChdFacing, cc, currParalyzed, currEffInAir, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
+    if (addNewCharacterBulletToNextFrame(currRdfId, &currChd, currChdFacing, cc, currParalyzed, currEffInAir, outSkill, nextActiveSkillHit, outSkillId, nextRdf, referenceBullet, referenceBulletConfig, ud, currChd.bullet_team_id())) {
         nextChd->set_active_skill_hit(1 + pivotBulletConfig.simultaneous_multi_hit_cnt());
     }
 
@@ -7008,7 +7057,6 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     case BlownUp1:
     case InAirIdle1NoJump:
     case InAirIdle1ByJump:
-    case InAirIdle1BySlipJump:
     case InAirIdle2ByJump:
     case InAirIdle1ByWallJump:
     case InAirWalking:
@@ -7030,6 +7078,10 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
             outCapsuleRadius = cc->capsule_radius();
             outCapsuleHalfHeight = cc->capsule_half_height();
         }
+        break;
+    case InAirIdle1BySlipJump:
+        outCapsuleRadius = cc->shrinked_capsule_radius() * globalPrimitiveConsts->default_slipjump_x_shrink_factor(); // [REMINDER] Why is this needed? When a character straddles a StairsN/Slipjumpable(ground) and a regular obstacle, its slipjumping capsule should avoid colliding with the regular obstacle.
+        outCapsuleHalfHeight = cc->shrinked_capsule_half_height(); 
         break;
     case CrouchIdle1:
     case CrouchAtk1:
@@ -7061,9 +7113,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     CharacterContactPushbackCollector collector(currRdfId, nextRdf, biNoLock, ud, udt, bodyID, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing); // Aggregates "CharacterBase.mGroundXxx" properties in a same "KernelThread"
     
-    bool inJumpStartUp = isInJumpStartup(*nextChd, cc);
+    bool inJumpStartup = isInJumpStartup(*nextChd, cc);
     bool inBlownUpStartup = isInBlownUpStartup(currChd, cc);
-    inJumpStartupOrJustEnded = (inJumpStartUp || isJumpStartupJustEnded(currChd, nextChd, cc));
+    inJumpStartupOrJustEnded = (inJumpStartup || isJumpStartupJustEnded(currChd, nextChd, cc));
     uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
     int                     newEffDamage = 0;
     bool                    newEffBlownUp = false;
@@ -7188,6 +7240,20 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                         }
                         peerPos += peerPosAdds / peerAddsCnt;
                     }
+#ifndef NDEBUG 
+                    /*
+                    if (InAirIdle1BySlipJump == nextChd->ch_state()) {
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", stepSingleChdState/AddHit/ud=" << ud << ": adding hit from udRhs=" << udRhs << ", worldSpaceNormIntoPeer=(" << worldSpaceNormIntoPeer.GetX() << "," << worldSpaceNormIntoPeer.GetY() << ")";
+                        Debug::Log(oss.str(), DColor::Yellow);
+                    }
+                    if (transientUdToStairsP.count(udRhs)) {
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", stepSingleChdState/AddHit/ud=" << ud << ": adding hit from udRhs=" << udRhs << ", worldSpaceNormIntoPeer=(" << worldSpaceNormIntoPeer.GetX() << "," << worldSpaceNormIntoPeer.GetY() << ")";
+                        Debug::Log(oss.str(), DColor::Yellow);
+                    }
+                    */
+#endif
                     collector.AddHit(udRhs, udtRhs, peerBodyID, peerSubShapeID, peerPos, worldSpaceNormIntoPeer, false, false);
                 }
             }
@@ -7238,9 +7304,16 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     if (cvOnWall || currIsFlying) {
         cvSupported = false; // [WARNING] "cvOnWall" and  "cvSupported" are mutually exclusive in this game!
     } else {
-        cvSupported = (!inBlownUpStartup && !inJumpStartUp && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
+        cvSupported = (!inBlownUpStartup && !inJumpStartup && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
 
-        if (!cvSupported) {
+        if (!cvSupported) { 
+#ifndef NDEBUG 
+            if (0 != currChd.ground_ud()) {
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", ud=" << ud << ": (proposedNewGroundUd=" << newGroundUd << ", inBlownUpStartup=" << inBlownUpStartup << ", inJumpStartup=" << inJumpStartup << "), rushed off currGroundUd=" << currChd.ground_ud() << ", currPos=(" << currChd.x() << "," << currChd.y() << "), currVel=(" << currChd.vel_x() << ", " << currChd.vel_y() << "), upSlope=" << walkingUpSlope << ", downSlope=" << walkingDownSlope << ", onStairsP=" << isOnStairsP << ", slopeOutwardNorm=(" << slopeOutwardNorm.GetX() << ", " << slopeOutwardNorm.GetY() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+            }
+#endif
             if ((walkingUpSlope || walkingDownSlope) && isFreeForGroundReattachment(nextChd->ch_state())) {
                 // Possibly unintended but rushed off the edge of a p-type stairs or a regular slope
                 newGroundUd = currChd.ground_ud();
@@ -7256,10 +7329,24 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                     cvSupported = true;
                 }
             }
+
+            if (!cvSupported) {
+                newGroundUd = 0;
+                newGroundBodyID = BodyID();
+            }
         }
     }
 
     nextChd->set_ground_ud(newGroundUd); // For "GroundImpact" transition regardless of "cvSupported" being true or false.
+
+#ifndef NDEBUG
+    if (InAirIdle1BySlipJump == nextChd->ch_state()) {
+        std::ostringstream oss1;
+        oss1 << "@currRdfId=" << currRdfId << ", stepSingleChdState/set ud=" << ud << ", newGroundUd=" << newGroundUd << ", newOverallVel=(" << newOverallVel.GetX() << "," << newOverallVel.GetY() << "), nextCs=" << nextChd->ch_state() << " and nextFc=" << nextChd->frames_in_ch_state() << ", cvSupported=" << cvSupported << ", cvInAir=" << cvInAir;
+        Debug::Log(oss1.str(), DColor::Orange);
+    }
+#endif
+
 
     if (cvSupported) {
         const TransformedShape& newGroundTs = biNoLock->GetTransformedShape(newGroundBodyID);
@@ -8010,13 +8097,16 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
 
         if (shouldBeImmune) {
             return;
-        }        
+        }
 
         int nextImmuneRcdI = immuneRcdI;
         int terminatingImmuneRcdI = nextImmuneRcdI + 1;
         auto nextImmuneRcd = nextImmuneRcdI < nextChd->bullet_immune_records_size() ? nextChd->mutable_bullet_immune_records(nextImmuneRcdI) : nextChd->add_bullet_immune_records();
         nextImmuneRcd->set_bullet_id(rhsCurrBl->id());
         int effImmuneRdfCnt = 2 + std::min(rhsBlConfig->hit_stun_frames(), rhsBlConfig->active_frames());
+        if (TerrainMelee == rhsBlConfig->b_type()) {
+            effImmuneRdfCnt <<= 2;
+        }
         nextImmuneRcd->set_remaining_lifetime_rdf_count(effImmuneRdfCnt);
 
         if (terminatingImmuneRcdI < nextChd->bullet_immune_records_size()) {
@@ -8114,6 +8204,9 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     }
 
     JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
+    if (TerrainMelee == rhsBlConfig->b_type()) {
+        blQ = cTurnbackAroundYAxis*JPH::Quat(currChd->q_x(), currChd->q_y(), currChd->q_z(), currChd->q_w());
+    }
 
     Vec3Arg blInitPushbackVelocity(
         (successfulDef1 ? cc->def1_damage_yield() : 1.0f)*rhsBlConfig->pushback_vel_x(), 

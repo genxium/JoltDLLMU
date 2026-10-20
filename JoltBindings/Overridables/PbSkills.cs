@@ -954,6 +954,31 @@ namespace JoltCSharp {
                     .SetPushbacks(3f * BATTLE_DYNAMICS_FPS, 8f * BATTLE_DYNAMICS_FPS)
             );
 
+            BulletConfig TerrainSpikeHit = new BulletConfig {
+                  StartupFrames = 1,
+                  ActiveFrames = primitiveConsts.MagicRdfCntInfinite,
+                  HitStunFrames = 18,
+                  BlockStunFrames = 18,
+                  Damage = 8,
+                  PushbackVelX = primitiveConsts.NoLockVel,
+                  PushbackVelY = primitiveConsts.NoLockVel,
+                  AnimName = "MeleeSlash2",
+                  HitAnimRdfCnt = 45,
+                  VanishingAnimRdfCnt = 25,
+                  BType = BulletType.TerrainMelee,
+                  Hardness = 100,
+                  GuardBreakerExtraHitCnt = 100,
+                  CharacterEmitSfxName = "SlashEmitSpd1",
+                  HitSfxName="Melee_Hit2",
+                  RemainsUponHit = true,
+            };
+
+            Skill TerrainSpike = new Skill {
+                Id = TerrainSpikeId,
+                   InvocationType = SkillInvocation.HighLevel,
+                // Other field values don't matter
+            }.AddHit(TerrainSpikeHit);
+
             underlying = new MapField<uint, Skill> {
                 { BladeGirlAirSlash1Id, BladeGirlAirSlash1 },
                 { BladeGirlGroundSlash1Id, BladeGirlGroundSlash1 },
@@ -995,6 +1020,8 @@ namespace JoltCSharp {
                 { RedRidinghoodGroundPistol1Id, RedRidinghoodGroundPistol1 }, 
                 { RedRidinghoodGroundPistol2Id, RedRidinghoodGroundPistol2 }, 
                 { RedRidinghoodGroundPistol3Id, RedRidinghoodGroundPistol3 }, 
+
+                { TerrainSpikeId, TerrainSpike }
             };
 
             return true;

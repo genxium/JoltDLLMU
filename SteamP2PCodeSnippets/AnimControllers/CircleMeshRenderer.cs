@@ -14,7 +14,7 @@ public class CircleMeshRenderer : MonoBehaviour {
 
             Vector3 center = Vector3.zero;
 
-            float step = Mathf.PI / segments;
+            float step = 2*Mathf.PI / segments;
             int v = 0;
 
             // --- Vertices ---
@@ -47,7 +47,7 @@ public class CircleMeshRenderer : MonoBehaviour {
 
     private const int segments = 24;
     private const int vertCount = segments * 1;
-    private const int triCount = segments;
+    private const int triCount = 3 * (vertCount - 1);
     private Vector3[] vertices = new Vector3[vertCount];
     private int[] triangles = new int[triCount];
 

@@ -46,22 +46,22 @@ namespace JoltCSharp {
             underlying.DefaultPickableStartupFrames = 45;
             underlying.DefaultPickableLifetimeRdfCnt = 60 * BATTLE_DYNAMICS_FPS;
 
-            //underlying.DefaultPhySysSubstepCnt = 4; // higher than the default (i.e. 1)
-            //underlying.DefaultPhySysNumVelSteps = 10u; // Roughly the default (i.e. 10)
-            //underlying.DefaultPhySysNumPosSteps = 2u; // Roughly the default (i.e. 2)
-
-            underlying.DefaultPhySysSubstepCnt = 1; // higher than the default (i.e. 1)
+            underlying.DefaultPhySysSubstepCnt = 4; // higher than the default (i.e. 1)
             underlying.DefaultPhySysNumVelSteps = 10u; // Roughly the default (i.e. 10)
             underlying.DefaultPhySysNumPosSteps = 2u; // Roughly the default (i.e. 2)
 
+            //underlying.DefaultPhySysSubstepCnt = 1; // higher than the default (i.e. 1)
+            //underlying.DefaultPhySysNumVelSteps = 10u; // Roughly the default (i.e. 10)
+            //underlying.DefaultPhySysNumPosSteps = 2u; // Roughly the default (i.e. 2)
+
             underlying.DefaultChFriction = 0.05f;
-            underlying.DefaultChRestitution = 0.05f;
+            underlying.DefaultChRestitution = 0.0f;
             underlying.GroundDashingChFriction = 0.001f;
             underlying.AntiPushChFriction = 0.5f;
             underlying.WalkstoppingChFriction = 125.0f;
             underlying.FallstoppingChFriction = 90.0f;
 
-            underlying.BaumgarteFactor = 0.2f; // Roughly the default (i.e. 0.02), set higher for faster contact non-penetration constraint restitution
+            underlying.BaumgarteFactor = 0.5f; // Roughly the default (i.e. 0.2), set higher for faster contact non-penetration constraint restitution
             underlying.PenetrationSlop = 0.02f; // Roughly the default (i.e. 0.02), set higher for tolerating deeper penetrations of falling bricks
             underlying.MaxPenetrationDistance = 0.2f; // Roughly the default (i.e. 0.2)
 
@@ -79,11 +79,11 @@ namespace JoltCSharp {
 
         private void rectifyByPPU() {
             float frictionScaleFactor = 4.0f / DEFAULT_PIXELS_PER_UNIT;
-            underlying.DefaultBarrierFriction *= frictionScaleFactor;
+            //underlying.DefaultBarrierFriction *= frictionScaleFactor;
             underlying.DefaultChFriction *= frictionScaleFactor;
-            underlying.WalkstoppingChFriction *= (4*frictionScaleFactor);
-            underlying.FallstoppingChFriction *= (4*frictionScaleFactor);
-            underlying.AntiPushChFriction *= (4*frictionScaleFactor);
+            underlying.WalkstoppingChFriction *= (8*frictionScaleFactor);
+            underlying.FallstoppingChFriction *= (8*frictionScaleFactor);
+            underlying.AntiPushChFriction *= (8*frictionScaleFactor);
             underlying.GroundDashingChFriction *= frictionScaleFactor;
             underlying.DefaultBulletFriction *= frictionScaleFactor;
             underlying.DefaultTrapFriction *= frictionScaleFactor;
@@ -96,21 +96,25 @@ namespace JoltCSharp {
             underlying.DefaultPickableRisingVelY /= DEFAULT_PIXELS_PER_UNIT;
             underlying.StickToGroundCorrectionLength /= DEFAULT_PIXELS_PER_UNIT;
             underlying.MaxPenetrationDistance /= DEFAULT_PIXELS_PER_UNIT;
-            underlying.PenetrationSlop /= DEFAULT_PIXELS_PER_UNIT;
+            underlying.SpeculativeContactDistance /= DEFAULT_PIXELS_PER_UNIT;
 
             underlying.DefaultHalfThickness /= DEFAULT_PIXELS_PER_UNIT;
             underlying.DefaultBarrierHalfThickness /= DEFAULT_PIXELS_PER_UNIT;
             underlying.DefaultBlHalfLength/= DEFAULT_PIXELS_PER_UNIT;
             underlying.DefaultTpHalfLength/= DEFAULT_PIXELS_PER_UNIT;
 
+            underlying.DefaultAimingRayLength /= DEFAULT_PIXELS_PER_UNIT;
+            
+            /*
+            [REMINDER] Intentionally NOT scaling the following parameters because they're already small enough to match the "magic const sweet spot" of Jolt Physics engine.
+            
+            underlying.CollisionTolerance /= DEFAULT_PIXELS_PER_UNIT;
+            underlying.PenetrationSlop /= DEFAULT_PIXELS_PER_UNIT;
             underlying.LengthEps /= DEFAULT_PIXELS_PER_UNIT;
             underlying.LengthEpsSquared /= (DEFAULT_PIXELS_PER_UNIT * DEFAULT_PIXELS_PER_UNIT);
             underlying.LengthNearlySameEps /= DEFAULT_PIXELS_PER_UNIT;
             underlying.LengthNearlySameEpsSquared /= (DEFAULT_PIXELS_PER_UNIT * DEFAULT_PIXELS_PER_UNIT);
-
-            underlying.DefaultAimingRayLength /= DEFAULT_PIXELS_PER_UNIT;
-            underlying.CollisionTolerance /= DEFAULT_PIXELS_PER_UNIT;
-            underlying.SpeculativeContactDistance /= DEFAULT_PIXELS_PER_UNIT;
+            */
         }
     }
 }

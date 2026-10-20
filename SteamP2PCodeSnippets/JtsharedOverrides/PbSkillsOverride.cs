@@ -100,8 +100,8 @@ namespace JoltCSharp {
             BasicTimedBombHit1.VanishingAnimRdfCnt = 25;
             BasicTimedBombHit1.HitboxOffsetX = 8f;
             BasicTimedBombHit1.HitboxOffsetY = 56f;
-            BasicTimedBombHit1.HitboxHalfSizeX = 5f;
-            BasicTimedBombHit1.HitboxHalfSizeY = 5f;
+            BasicTimedBombHit1.HitboxHalfSizeX = 2.5f;
+            BasicTimedBombHit1.HitboxHalfSizeY = 2.5f;
 
             var BlackShooter1RapidFire = underlying[PbPrimitivesOverride.BlackShooter1RapidFireId];
             var BasicRapidFireHit1 = BlackShooter1RapidFire.Hits[0];
