@@ -122,9 +122,6 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
             case CharacterState.OnWallAtk1:
             case CharacterState.Sliding:
             case CharacterState.GroundDodged:
-            case CharacterState.CrouchIdle1:
-            case CharacterState.CrouchAtk1:
-            case CharacterState.CrouchAtked1:
             case CharacterState.Dashing:
                 outCapsuleRadius = cc.ShrinkedCapsuleRadius;
                 outCapsuleHalfHeight = cc.ShrinkedCapsuleHalfHeight;
@@ -137,6 +134,16 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
                     outCapsuleRadius = cc.CapsuleRadius;
                     outCapsuleHalfHeight = cc.CapsuleHalfHeight;
                 }
+                break;
+            case CharacterState.InAirIdle1BySlipJump:
+                outCapsuleRadius = cc.ShrinkedCapsuleRadius * PbPrimitivesOverride.Instance.getUnderlying().DefaultSlipjumpXShrinkFactor;
+                outCapsuleHalfHeight = cc.ShrinkedCapsuleHalfHeight;
+                break;
+            case CharacterState.CrouchIdle1:
+            case CharacterState.CrouchAtk1:
+            case CharacterState.CrouchAtked1:
+                outCapsuleRadius = cc.ShrinkedCapsuleRadius;
+                outCapsuleHalfHeight = cc.ShrinkedCapsuleHalfHeight * PbPrimitivesOverride.Instance.getUnderlying().DefaultCrouchingYShrinkFactor;
                 break;
             default:
                 outCapsuleRadius = cc.CapsuleRadius;

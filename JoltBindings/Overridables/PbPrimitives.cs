@@ -37,6 +37,8 @@ namespace JoltCSharp {
 
         public static uint Wolverine1GroundSlash1Id = 1034, Wolverine1GroundSlash2Id = 1035, Wolverine1GroundSlash3Id = 1036, Wolverine1AirSlash1Id = 1037, Wolverine1BackDashingId = 1038;
 
+        public static uint TerrainSpikeId = 8192;
+
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
         public const uint SPECIES_BOUNTYHUNTER = 7;
@@ -324,8 +326,12 @@ namespace JoltCSharp {
               MaxPenetrationDistance = 0.2f, // If not set, the JoltPhysics default is 0.2 (unit: meter)
 
               StairsPTerrainPriority = 0.35f,
+              StairsNTerrainPriority = -0.15f,
+              SlipjumpableTerrainPriority = -0.15f,
               RegularSlopeTerrainPriority = 0.30f,
+              LandingCandidateTerrainPriority = 0.40f, // [REMINDER] Slightly higher than "StairsPTerrainPriority" by design.
 
+              DefaultSlipjumpXShrinkFactor = 0.30f,
               DefaultCrouchingYShrinkFactor = 0.95f,
               DefaultHalfThickness = 0.01f,
               DefaultBarrierHalfThickness = 65536.0f * 0.5f,
@@ -387,6 +393,9 @@ namespace JoltCSharp {
 
               DefaultTrapFriction = 0.2f, 
               DefaultTrapRestitution = 0f, 
+
+              TerrainSpikeSkillId = TerrainSpikeId,
+              DefaultTrapBulletTeamId = 1024, 
 
               Elets = new AtkEleTypes {
                   None = 0,

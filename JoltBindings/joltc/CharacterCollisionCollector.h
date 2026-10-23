@@ -273,6 +273,7 @@ public:
     JPH::Vec3               mGroundRelativePosition = JPH::Vec3::sZero();
     JPH::Vec3				mGroundNormal = JPH::Vec3::sZero();
     uint64_t                mGroundUd = 0;
+    uint64_t                mGroundUdt = 0;
     bool                    mCrouchForced = false;
     bool                    mCurrIsFlying = false;
     
@@ -289,8 +290,8 @@ public:
         auto normal = -worldSpaceNormalIntoBarrier;
         float dot = normal.Dot(mUp);
         if (!shouldSkipGroundServing && dot >= cDefaultWallDotThreshold) {
-            float incomingTerrainPriority = mBaseBattleFilter->calcTerrainPriority(udRhs);
-            float existingGroundTerrainPriority = mBaseBattleFilter->calcTerrainPriority(mGroundUd);
+            float incomingTerrainPriority = mBaseBattleFilter->calcTerrainPriority(udRhs, udtRhs, mCurrChd, mChdInputInducedMotion);
+            float existingGroundTerrainPriority = mBaseBattleFilter->calcTerrainPriority(mGroundUd, mGroundUdt, mCurrChd, mChdInputInducedMotion);
             const Vec3 incomingRelativePosition = (worldContactPosition - mBaseOffset);
             const float incomingRelativePositionScore = -(incomingRelativePosition.LengthSq()*0.001f);
             const float incomingVelAlignmentScore = incomingRelativePosition.IsNearZero() ? 0 : mInputInducedMotionVelCOMNorm.Dot(incomingRelativePosition.Normalized());
@@ -298,16 +299,25 @@ public:
             // For determinism in multi-threading
             float incomingScore = incomingTerrainPriority + dot + incomingRelativePositionScore /* + incomingVelAlignmentScore */;
             float existingScore = existingGroundTerrainPriority + mGroundBestDot + mGroundRelativePositionScore /* + mGroundVelAlignmentScore */;
-/*
+
 #ifndef NDEBUG
+            /*
             if (0 != mGroundUd && incomingTerrainPriority != existingGroundTerrainPriority) {
                 std::ostringstream oss;
-                oss << "@currRdfId= " << mCurrRdfId << ", incoming (udRhs=" << udRhs << ", incomingTerrainPriority=" << incomingTerrainPriority << ", incomingGroundNorm=[" << normal.GetX() << "," << normal.GetY() << "], incomingDot=" << dot << ", incomingRelativePosition=[" << incomingRelativePosition.GetX() << "," << incomingRelativePosition.GetY() << "], incomingRelativePositionScore=" << incomingRelativePositionScore << ", incomingVelAlignmentScore=" << incomingVelAlignmentScore << ") v.s. existing (mGroundUd=" << mGroundUd << ", existingGroundTerrainPriority=" << existingGroundTerrainPriority << ", mGroundNormal=[" << mGroundNormal.GetX() << "," << mGroundNormal.GetY() << "], mGroundBestDot=" << mGroundBestDot << ", mGroundRelativePosition=[" << mGroundRelativePosition.GetX() << "," << mGroundRelativePosition.GetY() << "], mGroundRelativePositionScore=" << mGroundRelativePositionScore << ", mGroundVelAlignmentScore=" << mGroundVelAlignmentScore << ")";
+                oss << "@currRdfId=" << mCurrRdfId << ", incoming (udRhs=" << udRhs << ", incomingTerrainPriority=" << incomingTerrainPriority << ", incomingGroundNorm=[" << normal.GetX() << "," << normal.GetY() << "], incomingDot=" << dot << ", incomingRelativePosition=[" << incomingRelativePosition.GetX() << "," << incomingRelativePosition.GetY() << "], incomingRelativePositionScore=" << incomingRelativePositionScore << ", incomingVelAlignmentScore=" << incomingVelAlignmentScore << ") v.s. existing (mGroundUd=" << mGroundUd << ", existingGroundTerrainPriority=" << existingGroundTerrainPriority << ", mGroundNormal=[" << mGroundNormal.GetX() << "," << mGroundNormal.GetY() << "], mGroundBestDot=" << mGroundBestDot << ", mGroundRelativePosition=[" << mGroundRelativePosition.GetX() << "," << mGroundRelativePosition.GetY() << "], mGroundRelativePositionScore=" << mGroundRelativePositionScore << ", mGroundVelAlignmentScore=" << mGroundVelAlignmentScore << ")";
                 Debug::Log(oss.str(), DColor::Yellow);
             }
+            */
 #endif
-*/
+
             if (incomingScore > existingScore) {
+#ifndef NDEBUG
+                if (0 != mGroundUd) {
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << mCurrRdfId << ", accepting incoming (udRhs=" << udRhs << ", incomingTerrainPriority=" << incomingTerrainPriority << ", incomingGroundNorm=[" << normal.GetX() << "," << normal.GetY() << "], incomingDot=" << dot << ", incomingScore=" << incomingScore << ") v.s. existing(mGroundUd=" << mGroundUd << ", existingGroundTerrainPriority=" << existingGroundTerrainPriority << ", mGroundNormal=[" << mGroundNormal.GetX() << "," << mGroundNormal.GetY() << "], mGroundBestDot=" << mGroundBestDot << ", existingScore=" << existingScore << ")";
+                    Debug::Log(oss.str(), DColor::Yellow);
+                }
+#endif
                 // Find the hit that is most aligned with the up vector
                 mGroundBodyID = rhsBodyID;
                 mGroundBodySubShapeID = rhsSubShapeID;
@@ -318,6 +328,7 @@ public:
                 mGroundNormal = normal;
                 mGroundBestDot = dot;
                 mGroundUd = udRhs;
+                mGroundUdt = udtRhs;
             }
         }
 

@@ -373,11 +373,11 @@ public:
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const AABox* lhsAABB,
-        const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+        const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs, const JPH::CollideShapeResult* inCollisionResult = nullptr) const = 0;
 
     virtual ValidateResult validateLhsCharacterContact(const uint64_t udLhs, const uint64_t udtLhs,
         const Body& lhs, // the "Character"
-        const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
+        const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs, const JPH::CollideShapeResult* inCollisionResult = nullptr) const = 0;
 
     virtual ValidateResult validateLhsCharacterAimingRayContact(const uint64_t udtLhs, const CharacterDownsync* lhsCurrChd, const CharacterDownsync* lhsNextChd, const uint64_t udRhs, const uint64_t udtRhs, const Body& rhs) const = 0;
 
@@ -401,7 +401,7 @@ public:
 
     }
 
-    virtual float calcTerrainPriority(const uint64_t ud) const = 0;
+    virtual float calcTerrainPriority(const uint64_t ud, const uint64_t udt, const CharacterDownsync* currChd, const InputInducedMotion* inputInducedMotion) const = 0;
 
     inline const uint64_t calcPublishingToTriggerUd(const NpcCharacterDownsync& npcChd) {
         return calcTriggerUserData(npcChd.publishing_to_trigger_id_upon_exhausted());

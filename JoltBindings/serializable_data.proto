@@ -371,8 +371,8 @@ message CharacterConfig {
     int32 gauge_inc_when_exhausted = 87;
 
     bool jumping_instead_of_walking = 88;
-    uint32 vision_search_interval_pow2Minus1U = 89;
-    int32 vision_search_interval_pow2Minus1 = 90;
+    uint32 vision_search_interval_pow2_minus_1_u = 89;
+    int32 vision_search_interval_pow2_minus_1 = 90;
 
     bool npc_no_default_air_walking = 91;
     bool npc_prioritize_bullet_handling = 92;
@@ -665,6 +665,7 @@ enum BulletType {
     MechanicalBouncerSpherical = 3;
     MagicalFireball = 4;
     GroundWave = 5;
+    TerrainMelee = 6;
 }
 
 enum MultiHitType {
@@ -692,6 +693,8 @@ enum MultiHitType {
 enum SkillInvocation {
     RisingEdge = 0;
     FallingEdge = 1;
+    HighLevel = 2;
+    LowLevel = 3;
 }
 
 enum VfxDurationType {
@@ -990,6 +993,9 @@ message TrapConfigFromTiled {
     optional float limit_4 = 131;  
 
     bool init_not_moving = 512; // thus only moves or rotates after triggered
+
+    SerializableConvexPolygon colliding_section_override = 1024; 
+    repeated SerializableConvexPolygon damage_providing_sections = 1025; 
 }
 
 message BarrierColliderAttr {
@@ -1416,16 +1422,14 @@ message StoryPoint {
 }
 
 message SerializableConvexPolygon {
-    PbVec2 anchor = 1;
-    repeated PbVec2 points = 2; // When "is_box == true", the "points" should be set as if the box were rectilinear.  
-    bool is_box = 3;
-    bool is_parallelepiped = 4;
+    repeated PbVec2 points = 1; // When "is_box == true", the "points" should be set as if the box were rectilinear.  
+    bool is_box = 2;
 
     // The following fields are only meaningful when "is_box == true"
-    float box_q_x = 5;
-    float box_q_y = 6;
-    float box_q_z = 7;
-    float box_q_w = 8;
+    float box_q_x = 3;
+    float box_q_y = 4;
+    float box_q_z = 5;
+    float box_q_w = 6;
 }
 
 message SerializedBarrierCollider {
@@ -1912,20 +1916,24 @@ message PrimitiveConsts {
     float default_trap_restitution = 169;
 
     float stairs_p_terrain_priority = 170;
-    float regular_slope_terrain_priority = 171;
+    float stairs_n_terrain_priority = 171;
+    float slipjumpable_terrain_priority = 172;
+    float regular_slope_terrain_priority = 173;
+    float landing_candidate_terrain_priority = 174;
 
-    float default_crouching_y_shrink_factor = 172;
-    float default_half_thickness = 173;
-    float default_barrier_half_thickness = 174;
-    float default_bl_half_length = 175;
-    float default_tp_half_length = 176;
-    float length_eps = 177;
-    float length_eps_squared = 178;
-    float length_nearly_same_eps = 179;
-    float length_nearly_same_eps_squared = 180;
-    float default_aiming_ray_length = 181;
-    float collision_tolerance = 182;
-    float speculative_contact_distance = 183;
+    float default_slipjump_x_shrink_factor = 175;
+    float default_crouching_y_shrink_factor = 176;
+    float default_half_thickness = 177;
+    float default_barrier_half_thickness = 178;
+    float default_bl_half_length = 179;
+    float default_tp_half_length = 180;
+    float length_eps = 181;
+    float length_eps_squared = 182;
+    float length_nearly_same_eps = 183;
+    float length_nearly_same_eps_squared = 184;
+    float default_aiming_ray_length = 185;
+    float collision_tolerance = 186;
+    float speculative_contact_distance = 187;
 
     int32 sp_atk_lookup_frames = 1024;
     int32 debuff_array_idx_elemental = 1025;
@@ -1934,6 +1942,9 @@ message PrimitiveConsts {
     int32 default_fleeing_grace_period_rdf_cnt = 1028;
     int32 default_frames_to_show_damaged = 1029;
     int32 default_frames_to_continue_combo = 1030;
+
+    uint32 terrain_spike_skill_id = 1031;
+    int32 default_trap_bullet_team_id = 1032;
 
     ChSpeciesConsts ch_species = 2048;
     TrapTypes tpts = 2049;

@@ -34,6 +34,7 @@ namespace JoltCSharp {
 
             BLADEGIRL.AccMagX = 0.25f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BLADEGIRL.AngYSpeed = 1.5f * PbPrimitivesOverride.StdYAxisAngularSpeedPerRdf * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            BLADEGIRL.LoopingChStates.Add((int)CharacterState.Walking, 12);
 
             var BOUNTYHUNTER = underlying[PbPrimitivesOverride.SPECIES_BOUNTYHUNTER];
             BOUNTYHUNTER.AccMagX = 0.13f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;

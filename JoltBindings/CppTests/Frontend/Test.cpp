@@ -2961,6 +2961,64 @@ RenderFrame* mockSpringTrapTestStartRdf(google::protobuf::Arena* theAllocator) {
     return startRdf;
 }
 
+RenderFrame* mockTerrainSpikeStartRdf(google::protobuf::Arena* theAllocator) {
+    auto chSpecies = globalPrimitiveConsts->ch_species();
+    const int roomCapacity = 1;
+    auto* startRdf = TestHelper::NewPreallocatedRdf(roomCapacity, 8, 8, theAllocator);
+    startRdf->set_id(globalPrimitiveConsts->starting_render_frame_id());
+    uint32_t pickableIdCounter = 1;
+    uint32_t npcIdCounter = 1;
+    uint32_t bulletIdCounter = 1;
+    uint32_t dynamicTrapCount = 0;
+
+    auto characterConfigs = globalConfigConsts->character_configs();
+
+    auto player1 = startRdf->mutable_players(0);
+    auto playerCh1 = player1->mutable_chd();
+    auto playerCh1Species = chSpecies.bountyhunter();
+    auto cc1 = characterConfigs[playerCh1Species];
+    playerCh1->set_x(-60);
+    playerCh1->set_y(200);
+    playerCh1->set_speed(cc1.speed());
+    playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
+    playerCh1->set_frames_to_recover(0);
+    playerCh1->set_q_x(0);
+    playerCh1->set_q_y(0);
+    playerCh1->set_q_z(0);
+    playerCh1->set_q_w(1);
+    playerCh1->set_aiming_q_x(0);
+    playerCh1->set_aiming_q_y(0);
+    playerCh1->set_aiming_q_z(0);
+    playerCh1->set_aiming_q_w(1);
+    playerCh1->set_vel_x(0);
+    playerCh1->set_vel_y(0);
+    playerCh1->set_hp(cc1.hp());
+    playerCh1->set_species_id(playerCh1Species);
+    playerCh1->set_bullet_team_id(1);
+    player1->set_join_index(1);
+    player1->set_revival_x(playerCh1->x());
+    player1->set_revival_y(playerCh1->y());
+    player1->set_revival_q_x(0);
+    player1->set_revival_q_y(0);
+    player1->set_revival_q_z(0);
+    player1->set_revival_q_w(1);
+
+    auto dynamicTrap1 = startRdf->add_dynamic_traps();
+    dynamicTrap1->set_id(42);
+    dynamicTrap1->set_tpt(globalPrimitiveConsts->tpts().sliding_platform());
+    ++dynamicTrapCount;
+
+    startRdf->set_npc_id_counter(npcIdCounter);
+    startRdf->set_npc_count(npcIdCounter-1);
+
+    startRdf->set_bullet_id_counter(bulletIdCounter);
+    startRdf->set_pickable_id_counter(pickableIdCounter);
+
+    startRdf->set_dynamic_trap_count(dynamicTrapCount);
+
+    return startRdf;
+}
+
 RenderFrame* mockRefRdf(int refRdfId, google::protobuf::Arena* theAllocator) {
     auto chSpecies = globalPrimitiveConsts->ch_species();
     const int roomCapacity = 2;
@@ -3913,6 +3971,34 @@ std::map<int, uint64_t> testCmds43 = {
     {200, 32},
     {201, 0},
     {1000, 0},
+    {1024, 0},
+};
+
+std::map<int, uint64_t> testCmds44 = {
+    {0, 0},
+    {63, 0},
+    {64, 3},
+    {65, 3},
+    {83, 3},
+    {84, 3},
+    {143, 3},
+    {144, 19},
+    {147, 3},
+    {148, 3},
+    {150, 3},
+    {159, 3},
+    {160, 0},
+    {359, 0},
+    {360, 0},
+    {361, 0},
+    {379, 0},
+    {380, 0},
+    {381, 0},
+    {439, 0},
+    {440, 3},
+    {599, 3},
+    {600, 0},
+    {1023, 0},
     {1024, 0},
 };
 
@@ -6489,9 +6575,6 @@ void initTest39Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     std::vector<bool> slipJumpOptions(hulls.size(), false);
     slipJumpOptions[2] = true;
 
-    std::vector<bool> parallelepipedOptions(hulls.size(), false);
-    parallelepipedOptions[4] = true;
-
     std::vector<bool> boxOptions(hulls.size(), true);
     boxOptions[4] = false;
 
@@ -6503,7 +6586,7 @@ void initTest39Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     std::vector<bool> stairsNOptions(hulls.size(), false);
     stairsNOptions[3] = true;
 
-    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
@@ -6511,10 +6594,6 @@ void initTest40Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     // See digram(s) in "JoltDLLMU/StairsMechanismProposal".
     auto startRdf = mockRegularSlopeStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
-
-    std::vector<bool> parallelepipedOptions(hulls.size(), false);
-    parallelepipedOptions[2] = true;
-    parallelepipedOptions[4] = true;
 
     std::vector<bool> boxOptions(hulls.size(), true);
     boxOptions[2] = false;
@@ -6527,7 +6606,7 @@ void initTest40Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
 
     std::vector<bool> stairsNOptions(hulls.size(), false);
 
-    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 }
 
@@ -6535,13 +6614,12 @@ void initTest41Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     auto startRdf = mockBossRoomStartRdf(theAllocator);
     std::vector<bool> slipJumpOptions(hulls.size(), false);
 
-    std::vector<bool> parallelepipedOptions(hulls.size(), false);
     std::vector<bool> boxOptions(hulls.size(), true);
     std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
     std::vector<bool> stairsPOptions(hulls.size(), false);
     std::vector<bool> stairsNOptions(hulls.size(), false);
 
-    TestHelper::AddHullsToWsReq(initializerMapData, hulls, parallelepipedOptions, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions);
     initializerMapData->set_allocated_self_parsed_rdf(startRdf);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6711,6 +6789,108 @@ void initTest43Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     */
 }
 
+void initTest44Data(WsReq* initializerMapData, std::vector<std::vector<float>>& hulls, google::protobuf::Arena* theAllocator) {
+    auto startRdf = mockTerrainSpikeStartRdf(theAllocator);
+    std::vector<bool> slipJumpOptions(hulls.size(), false);
+    slipJumpOptions[3] = true;
+
+    std::vector<bool> boxOptions(hulls.size(), true);
+
+    std::vector<JPH::Quat> boxQs(hulls.size(), JPH::Quat::sIdentity());
+
+    std::vector<bool> stairsPOptions(hulls.size(), false);
+
+    std::vector<bool> stairsNOptions(hulls.size(), false);
+
+    std::vector<float> providesDamages(hulls.size(), 0.0f);
+    providesDamages[1] = 10.0f;
+
+    TestHelper::AddHullsToWsReq(initializerMapData, hulls, boxOptions, boxQs, slipJumpOptions, stairsPOptions, stairsNOptions, providesDamages);
+    initializerMapData->set_allocated_self_parsed_rdf(startRdf);
+
+    auto trapConfigFromTiled1 = initializerMapData->add_trap_config_from_tile_list();
+    Vec3 initVel(0.5f * globalPrimitiveConsts->battle_dynamics_fps(), 0, 0);
+    trapConfigFromTiled1->set_id(startRdf->dynamic_traps(0).id());
+    trapConfigFromTiled1->set_tpt(startRdf->dynamic_traps(0).tpt());
+    trapConfigFromTiled1->set_linear_speed(initVel.Length());
+    trapConfigFromTiled1->set_box_half_size_x(30.f);
+    trapConfigFromTiled1->set_box_half_size_y(12.f);
+    trapConfigFromTiled1->set_init_q_x(0);
+    trapConfigFromTiled1->set_init_q_y(0);
+    trapConfigFromTiled1->set_init_q_z(0);
+    trapConfigFromTiled1->set_init_q_w(1);
+
+    trapConfigFromTiled1->set_init_vel_x(initVel.GetX());
+    trapConfigFromTiled1->set_init_vel_y(initVel.GetY());
+    trapConfigFromTiled1->set_init_vel_z(initVel.GetZ());
+
+    trapConfigFromTiled1->set_slider_axis_x(1);
+    trapConfigFromTiled1->set_slider_axis_y(0);
+    trapConfigFromTiled1->set_slider_axis_z(0);
+
+    trapConfigFromTiled1->set_init_x(100);
+    trapConfigFromTiled1->set_init_y(130);
+    trapConfigFromTiled1->set_init_z(0);
+
+    trapConfigFromTiled1->set_cooldown_rdf_count(120);
+    trapConfigFromTiled1->set_limit_1(-30.0f);
+    trapConfigFromTiled1->set_limit_2(+30.0f);
+
+    {
+        auto* barrierAttr = trapConfigFromTiled1->mutable_barrier_attr();
+        barrierAttr->set_provides_damage(1.0f);
+
+        {
+            auto* damageProvidingSection = trapConfigFromTiled1->add_damage_providing_sections();
+            damageProvidingSection->set_is_box(true);
+            damageProvidingSection->set_box_q_x(0);
+            damageProvidingSection->set_box_q_y(0);
+            damageProvidingSection->set_box_q_z(0);
+            damageProvidingSection->set_box_q_w(1);
+            
+            auto* p1 = damageProvidingSection->add_points();
+            p1->set_x(+trapConfigFromTiled1->box_half_size_x() - 3.f);
+            p1->set_y(+trapConfigFromTiled1->box_half_size_y());
+
+            auto* p2 = damageProvidingSection->add_points();
+            p2->set_x(+trapConfigFromTiled1->box_half_size_x() - 3.f);
+            p2->set_y(+trapConfigFromTiled1->box_half_size_y() + 5.f);
+
+            auto* p3 = damageProvidingSection->add_points();
+            p3->set_x(-trapConfigFromTiled1->box_half_size_x() + 3.f);
+            p3->set_y(+trapConfigFromTiled1->box_half_size_y() + 5.f);
+
+            auto* p4 = damageProvidingSection->add_points();
+            p4->set_x(-trapConfigFromTiled1->box_half_size_x() + 3.f);
+            p4->set_y(+trapConfigFromTiled1->box_half_size_y());
+        }
+        {
+            auto* collidingSectionOverride = trapConfigFromTiled1->mutable_colliding_section_override();
+            collidingSectionOverride->set_is_box(true);
+            collidingSectionOverride->set_box_q_x(0);
+            collidingSectionOverride->set_box_q_y(0);
+            collidingSectionOverride->set_box_q_z(0);
+            collidingSectionOverride->set_box_q_w(1);
+            
+            auto* p1 = collidingSectionOverride->add_points();
+            p1->set_x(+trapConfigFromTiled1->box_half_size_x());
+            p1->set_y(+trapConfigFromTiled1->box_half_size_y());
+
+            auto* p2 = collidingSectionOverride->add_points();
+            p2->set_x(+trapConfigFromTiled1->box_half_size_x());
+            p2->set_y(-trapConfigFromTiled1->box_half_size_y());
+
+            auto* p3 = collidingSectionOverride->add_points();
+            p3->set_x(-trapConfigFromTiled1->box_half_size_x());
+            p3->set_y(-trapConfigFromTiled1->box_half_size_y());
+
+            auto* p4 = collidingSectionOverride->add_points();
+            p4->set_x(-trapConfigFromTiled1->box_half_size_x());
+            p4->set_y(+trapConfigFromTiled1->box_half_size_y());
+        }
+    }
+}
+
 std::string outStr;
 std::string player1OutStr, player2OutStr;
 std::string referencePlayer1OutStr, referencePlayer2OutStr;
@@ -6779,11 +6959,11 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         const uint64_t ud2 = BaseBattleCollisionFilter::calcPlayerUserData(p2.join_index());
 
         if (227 <= outerTimerRdfId && outerTimerRdfId < 251) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (680 <= outerTimerRdfId && outerTimerRdfId < 705) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
         
         if (770 <= outerTimerRdfId && outerTimerRdfId < 1000) {
@@ -6940,7 +7120,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
                 inheritedWalkingStarterRdfCnt2nd = oldP1FramesInChState;
             }
             
-            shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (WalkingAtk1 == oldP1ChdState && WalkingAtk1 != p1Chd.ch_state()) {
@@ -6949,7 +7129,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             } else if (0 == walkingAtk1ToWalkingTransitionRdfId2nd && Walking == p1Chd.ch_state()) {
                 walkingAtk1ToWalkingTransitionRdfId2nd = outerTimerRdfId;
             }
-            shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (outerTimerRdfId <= 100) {
@@ -10909,6 +11089,71 @@ bool runTestCase43(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     return true;
 }
 
+bool runTestCase44(FrontendBattle* reusedBattle, std::vector<std::vector<float>>& hulls, int inSingleJoinIndex, google::protobuf::Arena* theAllocator) {
+    WsReq* initializerMapData = google::protobuf::Arena::Create<WsReq>(theAllocator);
+    initTest44Data(initializerMapData, hulls, theAllocator);
+    reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
+    int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
+    int loopRdfCnt = 1024;
+    int printIntervalRdfCnt = (1 << 2);
+    int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
+    auto characterConfigs = globalConfigConsts->character_configs();
+    jtshared::RenderFrame* outRdf = google::protobuf::Arena::Create<RenderFrame>(theAllocator);
+    int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
+    int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
+    while (loopRdfCnt > outerTimerRdfId) {
+        uint64_t inSingleInput = getSelfCmdByRdfId(testCmds44, outerTimerRdfId);
+        bool cmdInjected = FRONTEND_UpsertSelfCmd(reusedBattle, inSingleInput, &newChaserRdfId);
+        if (!cmdInjected) {
+            std::cerr << "Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
+            exit(1);
+        }
+        FRONTEND_Step(reusedBattle);
+        auto outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
+        auto& p1 = outerTimerRdf->players(0);
+        auto& p1Chd = p1.chd();
+        auto& p1ChConfig = characterConfigs.at(p1Chd.species_id());
+        auto p1Ud = BaseBattleCollisionFilter::calcPlayerUserData(p1.join_index());
+        auto bulletCount = outerTimerRdf->bullet_count();
+        bool shouldPrint = false;
+
+        auto& tp1 = outerTimerRdf->dynamic_traps(0);
+        auto tp1Ud = BaseBattleCollisionFilter::calcTrapUserData(tp1.id());
+
+        if (400 < outerTimerRdfId && loopRdfCnt >= outerTimerRdfId) {
+            //shouldPrint = true;
+        }
+
+        if (p1Chd.hp() < p1ChConfig.hp()) {
+            //shouldPrint = true;
+        }
+        
+        if (shouldPrint) {
+            std::cout << "TestCase44/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd ud=" << p1Ud << ", hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", q=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), groundUd=" << p1Chd.ground_ud() << "\n\ttrap1 ud=" << tp1Ud << ", pos=(" << tp1.x() << ", " << tp1.y() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << ")" << std::endl;
+        }
+        int p1Hp = p1Chd.hp();
+
+        if (2 <= outerTimerRdfId) {
+            JPH_ASSERT(2 <= bulletCount);
+        }
+
+        if (tp1Ud == p1Chd.ground_ud()) {
+            JPH_ASSERT(p1Hp + 2*8 <= p1ChConfig.hp());
+        }
+        
+        if (outerTimerRdfId+5 >= loopRdfCnt) {
+            JPH_ASSERT(54 == p1Hp);
+        }
+
+        outerTimerRdfId++;
+    }
+
+    std::cout << "Passed TestCase44: Terrain spike\n" << std::endl;
+    theAllocator->Reset();
+    reusedBattle->Clear();
+    return true;
+}
+
 // Program entry point
 int main(int argc, char** argv)
 {
@@ -10975,6 +11220,9 @@ int main(int argc, char** argv)
         200, 0
     };
 
+    std::vector<std::vector<float>> hulls = { hull1, hull2, hull3 };
+    std::vector<std::vector<float>> fallenDeathHulls = { hull1, hull2 };
+
     std::vector<float> npcVisionHull1 = {
         // Lower floor
         -500, 0,
@@ -11031,6 +11279,8 @@ int main(int argc, char** argv)
         100, 500
     };
 
+    std::vector<std::vector<float>> npcVisionHulls = { npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7 };
+
     std::vector<float> wideMapHull1 = {
         // Lower floor
         -500, 0,
@@ -11063,6 +11313,8 @@ int main(int argc, char** argv)
         -320, 100
     };
 
+    std::vector<std::vector<float>> wideMapHulls = { wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4 };
+
     std::vector<float> slipJumpHull1 = {
         -500, 0,
         -500, 100,
@@ -11090,6 +11342,8 @@ int main(int argc, char** argv)
         +80, 166,
         +80, 150
     };
+
+    std::vector<std::vector<float>> slipJumpMapHulls = { slipJumpHull1, slipJumpHull2, slipJumpHull3, slipJumpHull4 };
 
     std::vector<float> trapMapHull1 = {
         // Lower floor
@@ -11131,6 +11385,8 @@ int main(int argc, char** argv)
         500, 900
     };
 
+    std::vector<std::vector<float>> trapMapHulls = { trapMapHull1, trapMapHull2, trapMapHull3, trapMapHull4, trapMapHull5 };
+
     std::vector<float> crouchMapHull1 = {
         // Right pillar
         1920, 528,
@@ -11171,6 +11427,13 @@ int main(int argc, char** argv)
         528, 0
     };
     
+    std::vector<std::vector<float>> crouchMapHulls = {
+       crouchMapHull1
+       , crouchMapHull2
+       , crouchMapHull3
+       , crouchMapHull4
+       , crouchMapHull5 };
+
     std::vector<float> flyingMapHull1 = {
         // Lower floor
         -500, 0,
@@ -11202,6 +11465,8 @@ int main(int argc, char** argv)
         500, 600,
         500, 250
     };
+
+    std::vector<std::vector<float>> flyingMapHulls = { flyingMapHull1, flyingMapHull2, flyingMapHull3, flyingMapHull4 };
 
     std::vector<float> stairsHull1 = {
         // floor
@@ -11236,12 +11501,13 @@ int main(int argc, char** argv)
     };
 
     std::vector<float> stairsHull5 = {
-        // StairsP, should be thick enough such that the incoming character would not penetrate, and also low enough into the floor such that the incoming character would not simply be blocked.
         -100, 80,
         +0, 80,
         +140, 220,
         +40, 220
     };
+
+    std::vector<std::vector<float>> stairsMapHulls = { stairsHull1, stairsHull2, stairsHull3, stairsHull4, stairsHull5 };
 
     std::vector<float> slopeHull1 = {
         // floor
@@ -11283,24 +11549,38 @@ int main(int argc, char** argv)
         532, 80
     };
 
-    std::vector<std::vector<float>> hulls = {hull1, hull2, hull3};
-    std::vector<std::vector<float>> fallenDeathHulls = {hull1, hull2};
-    std::vector<std::vector<float>> npcVisionHulls = {npcVisionHull1, npcVisionHull2, npcVisionHull3, npcVisionHull4, npcVisionHull5, npcVisionHull6, npcVisionHull7};
-    std::vector<std::vector<float>> wideMapHulls = {wideMapHull1, wideMapHull2, wideMapHull3, wideMapHull4};
-    std::vector<std::vector<float>> slipJumpMapHulls = {slipJumpHull1, slipJumpHull2, slipJumpHull3, slipJumpHull4};
-    std::vector<std::vector<float>> trapMapHulls = {trapMapHull1, trapMapHull2, trapMapHull3, trapMapHull4, trapMapHull5};
-    std::vector<std::vector<float>> crouchMapHulls = {
-        crouchMapHull1
-        , crouchMapHull2
-        , crouchMapHull3
-        , crouchMapHull4
-        , crouchMapHull5};
-
-    std::vector<std::vector<float>> flyingMapHulls = { flyingMapHull1, flyingMapHull2, flyingMapHull3, flyingMapHull4 };
-
-    std::vector<std::vector<float>> stairsMapHulls = { stairsHull1, stairsHull2, stairsHull3, stairsHull4, stairsHull5 };
-
     std::vector<std::vector<float>> slopeMapHulls = { slopeHull1, slopeHull2, slopeHull3, slopeHull4, slopeHull5 };
+
+
+    std::vector<float> terrainSpikeHull1 = {
+        -500, 0,
+        -500, 100,
+        500, 100,
+        500, 0
+    };
+
+    std::vector<float> terrainSpikeHull2 = {
+        -80, 100,
+        -80, 120,
+        -40, 120,
+        -40, 100
+    };
+
+    std::vector<float> terrainSpikeHull3 = {
+        -20, 150,
+        -20, 166,
+        +40, 166,
+        +40, 150
+    };
+
+    std::vector<float> terrainSpikeHull4 = {
+        +20, 150,
+        +20, 166,
+        +80, 166,
+        +80, 150
+    };
+
+    std::vector<std::vector<float>> terrainSpikeMapHulls = { terrainSpikeHull1, terrainSpikeHull2, terrainSpikeHull3, terrainSpikeHull4 };
 
     JPH_Init(10*1024*1024);
     std::cout << "Initiated" << std::endl;
@@ -11329,7 +11609,7 @@ int main(int argc, char** argv)
     runTestCase6(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase7(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase8(battle, npcVisionHulls, selfJoinIndex, pbTestCaseDataAllocator);
-    runTestCase9(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase9(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase10(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase11(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase12(battle, fallenDeathHulls, selfJoinIndex, pbTestCaseDataAllocator);
@@ -11364,6 +11644,7 @@ int main(int argc, char** argv)
     runTestCase41(battle, wideMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase42(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
     runTestCase43(battle, hulls, selfJoinIndex, pbTestCaseDataAllocator);
+    runTestCase44(battle, terrainSpikeMapHulls, selfJoinIndex, pbTestCaseDataAllocator);
 
     // clean up
     // [REMINDER] "startRdf" and "startRdf" will be automatically deallocated by the destructor of "wsReq"
