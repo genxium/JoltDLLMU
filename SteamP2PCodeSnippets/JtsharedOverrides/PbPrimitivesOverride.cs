@@ -34,7 +34,7 @@ namespace JoltCSharp {
             bool res = base.lazyInit();
             //underlying.CrouchForcingCeilingDotThreshold = MathF.Cos((float)(Math.PI/8));
             underlying.CrouchForcingCeilingDotThreshold = MathF.Cos((float)(Math.PI / 2 - Math.PI / 720));
-            underlying.InputScaleFrames = 2;
+            underlying.InputScaleFrames = 1;
             underlying.InputScale = (1 << underlying.InputScaleFrames);
             underlying.DefaultFleeingGracePeriodRdfCnt = 2 * BATTLE_DYNAMICS_FPS;
 

@@ -28,13 +28,13 @@ public class FrameLogPrinter {
     public static string stringifyPlayer(PlayerCharacterDownsync pd) {
         if (null == pd) return "";
         var chd = pd.Chd;
-        return $"j:{pd.JoinIndex},x:{chd.X},y:{chd.Y},vx:{chd.VelX},vy:{chd.VelY},gvx:{chd.GroundVelX},gvy:{chd.GroundVelY},fr:{chd.FramesToRecover},cs:{chd.ChState},fc:{chd.FramesInChState},fri:{chd.FramesInvinsible},qx:{chd.QX},qy:{chd.QY},qz:{chd.QZ},qw:{chd.QW},wscd:{chd.WalkstoppingRdfCountdown},fscd:{chd.FallstoppingRdfCountdown},gud:{chd.GroundUd},wud:{chd.WallUd},ahld:{chd.BtnAHoldingRdfCnt},bhld:{chd.BtnBHoldingRdfCnt},chld:{chd.BtnCHoldingRdfCnt},dhld:{chd.BtnDHoldingRdfCnt},ehld:{chd.BtnEHoldingRdfCnt},bim:{stringifyBulletImmuneRecords(chd.BulletImmuneRecords)}";
+        return $"j:{pd.JoinIndex},h:{chd.Hp},x:{chd.X},y:{chd.Y},vx:{chd.VelX},vy:{chd.VelY},gvx:{chd.GroundVelX},gvy:{chd.GroundVelY},fr:{chd.FramesToRecover},cs:{chd.ChState},fc:{chd.FramesInChState},fri:{chd.FramesInvinsible},qx:{chd.QX},qy:{chd.QY},qz:{chd.QZ},qw:{chd.QW},wscd:{chd.WalkstoppingRdfCountdown},fscd:{chd.FallstoppingRdfCountdown},gud:{chd.GroundUd},wud:{chd.WallUd},ahld:{chd.BtnAHoldingRdfCnt},bhld:{chd.BtnBHoldingRdfCnt},chld:{chd.BtnCHoldingRdfCnt},dhld:{chd.BtnDHoldingRdfCnt},ehld:{chd.BtnEHoldingRdfCnt},bim:{stringifyBulletImmuneRecords(chd.BulletImmuneRecords)}";
     }
 
     public static string stringifyNpc(NpcCharacterDownsync npc) {
         if (null == npc) return "";
         var chd = npc.Chd;
-        return $"i:{npc.Id},x:{chd.X},y:{chd.Y},vx:{chd.VelX},vy:{chd.VelY},gvx:{chd.GroundVelX},gvy:{chd.GroundVelY},fr:{chd.FramesToRecover},cs:{chd.ChState},fc:{chd.FramesInChState},fri:{chd.FramesInvinsible},qx:{chd.QX},qy:{chd.QY},qz:{chd.QZ},qw:{chd.QW},wscd:{chd.WalkstoppingRdfCountdown},fscd:{chd.FallstoppingRdfCountdown},gud:{chd.GroundUd},ahld:{chd.BtnAHoldingRdfCnt},bhld:{chd.BtnBHoldingRdfCnt},chld:{chd.BtnCHoldingRdfCnt},dhld:{chd.BtnDHoldingRdfCnt},ehld:{chd.BtnEHoldingRdfCnt},bim:{stringifyBulletImmuneRecords(chd.BulletImmuneRecords)}";
+        return $"i:{npc.Id},h:{chd.Hp},x:{chd.X},y:{chd.Y},vx:{chd.VelX},vy:{chd.VelY},gvx:{chd.GroundVelX},gvy:{chd.GroundVelY},fr:{chd.FramesToRecover},cs:{chd.ChState},fc:{chd.FramesInChState},fri:{chd.FramesInvinsible},qx:{chd.QX},qy:{chd.QY},qz:{chd.QZ},qw:{chd.QW},wscd:{chd.WalkstoppingRdfCountdown},fscd:{chd.FallstoppingRdfCountdown},gud:{chd.GroundUd},ahld:{chd.BtnAHoldingRdfCnt},bhld:{chd.BtnBHoldingRdfCnt},chld:{chd.BtnCHoldingRdfCnt},dhld:{chd.BtnDHoldingRdfCnt},ehld:{chd.BtnEHoldingRdfCnt},bim:{stringifyBulletImmuneRecords(chd.BulletImmuneRecords)}";
     }
 
     public static string stringifyBullet(Bullet bl) {

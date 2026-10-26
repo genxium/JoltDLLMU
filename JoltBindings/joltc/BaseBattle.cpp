@@ -7476,12 +7476,13 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     bool successfulDef1OrDef1BrokenExtended = (0 < newEffDef1QuotaReduction || Def1Broken == currChd.ch_state());
     bool framesToRecoverIncreased = (newEffFramesToRecover > oldEffFramesToRecover);
+    bool wasNotAtked = !atkedSet.count(currChd.ch_state());
     if (0 < newEffDamage) {
         jamBtnHolding(nextChd);
         if (!successfulDef1OrDef1BrokenExtended) {
             if (newEffBlownUp) {
                 nextChd->set_ch_state(BlownUp1);
-            } else if (framesToRecoverIncreased) {
+            } else if (framesToRecoverIncreased || wasNotAtked) {
                 // [REMINDER] Covers "hardness induced ch_state continuation when hit"
                 if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
                     nextChd->set_ch_state(InAirAtked1);

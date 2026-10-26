@@ -41,6 +41,10 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum,
 
     protected override bool updateAnimUnderlying(in int currRdfId, in IMessage ins, in Enum newTargetState, in IMessage insConfig, in int frameIdxInAnim) {
         audioSource.volume = PlayerSettingsManager.Instance.GetSfxVolume() * (1.0f - realtimeAttenuation);
+        if (currRdfId <= GetLastActiveRdfId()) {
+            // Could be induced by rollback-chasing
+            return false;
+        }
         float timeInSecond = frameIdxInAnim * PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf;
         if (audioSource.isPlaying) {
             if (timeInSecond > audioClip.length) {
