@@ -10207,7 +10207,7 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
  
         if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && (0 == firstDef1BrokenExtendedRdfId || outerTimerRdfId < firstDef1BrokenExtendedRdfId)) {
-            shouldPrint = true;
+            //shouldPrint = true;
         }
 
         if (shouldPrint) {

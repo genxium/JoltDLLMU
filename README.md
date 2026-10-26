@@ -61,7 +61,7 @@ By "successful experience" it means an internet competitive PvP experience very 
 
 Essential code snippets from a closed-source project are put in `<proj-root>/SteamP2PCodeSnippets/` folder for your reference. 
 
-Please make sure that you enabled `Steam Networking` in `Steam/Settings/In Game` as shown in the screenshot below (`Always` is not necessary for everyone, I'm just being lazy).
+Please make sure that you enabled `Steam Networking` in `Steam/Settings/In Game` as shown in the screenshot below (`Always` is not necessary for everyone, I'm just being lazy -- and `Default` might even work better for host-migration).
 
 ![EnableSteamNetworking](./Screenshots/SteamNetworkingSetup.png)
 

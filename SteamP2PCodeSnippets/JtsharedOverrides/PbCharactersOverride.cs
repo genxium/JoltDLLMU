@@ -110,6 +110,7 @@ namespace JoltCSharp {
                 ch.MinFallingVelY /= DEFAULT_PIXELS_PER_UNIT;
                 ch.WallSlideVelY /= DEFAULT_PIXELS_PER_UNIT;
                 ch.Speed /= DEFAULT_PIXELS_PER_UNIT;
+                ch.WallJumpFreeSpeed /= DEFAULT_PIXELS_PER_UNIT;
                 ch.AccMagX /= DEFAULT_PIXELS_PER_UNIT;
                 ch.JumpAccMagY /= DEFAULT_PIXELS_PER_UNIT;
                 ch.WallJumpAccMagX /= DEFAULT_PIXELS_PER_UNIT;
