@@ -287,9 +287,10 @@ public:
         if (UDT_TRIGGER == udtRhs || UDT_PICKABLE == udtRhs) {
             return;
         }
+        const bool currChdNotFlyingAndRisingInProactiveJumping = !mCurrIsFlying && (mCurrChd->ground_vel_y() < mCurrChd->vel_y()) && proactiveJumpingSet.count(mCurrChd->ch_state());
         auto normal = -worldSpaceNormalIntoBarrier;
         float dot = normal.Dot(mUp);
-        if (!shouldSkipGroundServing && dot >= cDefaultWallDotThreshold) {
+        if (!shouldSkipGroundServing && dot >= cDefaultWallDotThreshold && !currChdNotFlyingAndRisingInProactiveJumping) {
             float incomingTerrainPriority = mBaseBattleFilter->calcTerrainPriority(udRhs, udtRhs, mCurrChd, mChdInputInducedMotion);
             float existingGroundTerrainPriority = mBaseBattleFilter->calcTerrainPriority(mGroundUd, mGroundUdt, mCurrChd, mChdInputInducedMotion);
             const Vec3 incomingRelativePosition = (worldContactPosition - mBaseOffset);
@@ -311,6 +312,7 @@ public:
 #endif
 
             if (incomingScore > existingScore) {
+/*
 #ifndef NDEBUG
                 if (0 != mGroundUd) {
                     std::ostringstream oss;
@@ -318,6 +320,7 @@ public:
                     Debug::Log(oss.str(), DColor::Yellow);
                 }
 #endif
+*/
                 // Find the hit that is most aligned with the up vector
                 mGroundBodyID = rhsBodyID;
                 mGroundBodySubShapeID = rhsSubShapeID;

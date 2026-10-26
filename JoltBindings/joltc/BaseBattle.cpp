@@ -978,6 +978,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             if (blConfig->has_gravity_factor()) {
                 bi->SetGravityFactor(bodyID, blConfig->gravity_factor());
+/*
+#ifndef NDEBUG
+                std::ostringstream oss;
+                oss << "@currRdfId=" << currRdfId << ", bullet id=" << currBl.id() << " has gFactory=" << blConfig->gravity_factor() << ", frames_in_bl_state=" << currBl.frames_in_bl_state() << ", set vel=(" << nextBl->vel_x() << "," << nextBl->vel_y() << ")";
+                Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
             } else {
                 bi->SetGravityFactor(bodyID, 0);
             }
@@ -1498,17 +1505,10 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 nextBl->set_vel_y(0);
                 nextBl->set_vel_z(0);
 
-                if (BulletType::MechanicalBouncerSpherical == lhsBlConfig->b_type()) {
-                    JPH::Quat refQ(currBl.q_x(), currBl.q_y(), currBl.q_z(), currBl.q_w());
-                    BaseBattleCollisionFilter::clampChdQ(refQ, currBl.vel_x());
-                    Vec3 blFacing;
-                    BaseBattleCollisionFilter::calcQFacing(currBl, refQ, blFacing);
-                    JPH::Quat blEffQ = 0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
-                    nextBl->set_q_x(blEffQ.GetX());
-                    nextBl->set_q_y(blEffQ.GetY());
-                    nextBl->set_q_z(blEffQ.GetZ());
-                    nextBl->set_q_w(blEffQ.GetW());
-
+                if (MultiHitType::FromPrevHitAnyway == lhsBlConfig->mh_type()
+                    || 
+                    MultiHitType::FromPrevHitActualOrActiveTimeUp == lhsBlConfig->mh_type()
+                   ) {
                     addNewCharacterBulletToNextFrame(currRdfId, nullptr, Vec3::sZero(), nullptr, false, false, lhsSkill, currBl.active_skill_hit() + 1, currBl.skill_id(), nextRdf, &currBl, lhsBlConfig, currBl.offender_ud(), currBl.team_id());
                 }
             }
@@ -3283,13 +3283,14 @@ bool BaseBattle::addNewCharacterBulletToNextFrame(const int currRdfId, const Cha
             BaseBattleCollisionFilter::clampChdQ(refQ, referenceBullet->vel_x());
             Vec3 blFacing;
             BaseBattleCollisionFilter::calcQFacing(*referenceBullet, refQ, blFacing);
-            blEffQ = 0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+            blEffQ = (0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis);
+            if (bulletConfig.has_init_q()) {
+                auto& initQ = bulletConfig.init_q();
+                blEffQ = blEffQ*JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
+            }
             blEffOffset = blEffQ*blInitOffset; 
         }
-        if (bulletConfig.has_init_q()) {
-            auto& initQ = bulletConfig.init_q();
-            blEffQ = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * blEffQ;
-        }
+        
     } else {
         JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
         if (OnWallAtk1 == skillConfig->bound_ch_state()) {
@@ -3299,7 +3300,7 @@ bool BaseBattle::addNewCharacterBulletToNextFrame(const int currRdfId, const Cha
         blEffOffset = offenderEffAimingQ*blInitOffset; 
         if (bulletConfig.has_init_q()) {
             auto& initQ = bulletConfig.init_q();
-            blEffQ = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
+            blEffQ = offenderEffAimingQ*JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
         } else {
             blEffQ = offenderEffAimingQ;
         }
@@ -7118,6 +7119,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     inJumpStartupOrJustEnded = (inJumpStartup || isJumpStartupJustEnded(currChd, nextChd, cc));
     uint32_t                newEffDebuffSpeciesId = globalPrimitiveConsts->terminating_debuff_species_id();
     int                     newEffDamage = 0;
+    bool                    newEffAtked = false;
     bool                    newEffBlownUp = false;
     int                     oldEffFramesToRecover = nextChd->frames_to_recover();
     int                     newEffFramesToRecover = oldEffFramesToRecover;
@@ -7147,7 +7149,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 bool shouldSkipWallServing = true;
                 handleLhsCharacterCollisionWithRhsBullet(currRdfId, nextRdf, ud, udt, &currChd, currIsFlying, nextChd, nextChdFacing,
                     udRhs, udtRhs, contactPointsLhs,
-                    newEffDebuffSpeciesId, newEffDamage, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderBulletTeamId, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
+                    newEffDebuffSpeciesId, newEffDamage, newEffAtked, newEffBlownUp, newEffFramesToRecover, newEffDef1QuotaReduction, newEffPushbackVelX, newEffPushbackVelY, outClosestOffenderUd, outClosestOffenderBulletTeamId, outClosestOffenderScore, outClosestOffenderPosDiff, shouldSkipGroundServing, shouldSkipWallServing);
                 if (!shouldSkipGroundServing || !shouldSkipWallServing) {
                     Vec3 peerPos(newPos);
                     if (0 < contactPointsLhs.size()) {
@@ -7306,7 +7308,8 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     } else {
         cvSupported = (!inBlownUpStartup && !inJumpStartup && !newGroundBodyID.IsInvalid() && !groundBodyIsChCollider);
 
-        if (!cvSupported) { 
+        if (!cvSupported && !groundBodyIsChCollider) { 
+/*
 #ifndef NDEBUG 
             if (0 != currChd.ground_ud()) {
                 std::ostringstream oss;
@@ -7314,6 +7317,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
                 Debug::Log(oss.str(), DColor::Orange);
             }
 #endif
+*/
             if ((walkingUpSlope || walkingDownSlope) && isFreeForGroundReattachment(nextChd->ch_state())) {
                 // Possibly unintended but rushed off the edge of a p-type stairs or a regular slope
                 newGroundUd = currChd.ground_ud();
@@ -7429,6 +7433,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_vel_z(0);
         break; 
     }
+
     // [WARNING] Intentionally NOT setting "nextChd->q_*" here by "newRot", but in "processSingleCharacterInput" instead.
     if (cvSupported) {
         nextChd->set_ground_vel_x(newGroundVel.GetX());
@@ -7475,23 +7480,13 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     }
 
     bool successfulDef1OrDef1BrokenExtended = (0 < newEffDef1QuotaReduction || Def1Broken == currChd.ch_state());
-    bool framesToRecoverIncreased = (newEffFramesToRecover > oldEffFramesToRecover);
-    bool wasNotAtked = !atkedSet.count(currChd.ch_state());
     if (0 < newEffDamage) {
         jamBtnHolding(nextChd);
         if (!successfulDef1OrDef1BrokenExtended) {
             if (newEffBlownUp) {
                 nextChd->set_ch_state(BlownUp1);
-            } else if (framesToRecoverIncreased || wasNotAtked) {
-                // [REMINDER] Covers "hardness induced ch_state continuation when hit"
-                if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
-                    nextChd->set_ch_state(InAirAtked1);
-                } else {
-                    nextChd->set_ch_state(Atked1);
-                }
             }
-        }
-       
+        } 
         nextChd->set_hp(nextChd->hp() - newEffDamage);
         nextChd->set_damaged_hint_rdf_countdown(globalPrimitiveConsts->default_frames_to_show_damaged());
     }
@@ -7514,7 +7509,18 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_remaining_def1_quota(newRemainingDef1Quota);
     }
 
+    bool notYetInAtkedChState = !atkedSet.count(nextChd->ch_state()) && BlownUp1 != nextChd->ch_state() && Def1Broken != nextChd->ch_state();
+    if (notYetInAtkedChState && newEffAtked) {
+        // [REMINDER] Covers "hardness induced ch_state continuation when hit"
+        if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
+            nextChd->set_ch_state(InAirAtked1);
+        } else {
+            nextChd->set_ch_state(Atked1);
+        }
+    }
+
 #ifndef NDEBUG
+    bool framesToRecoverIncreased = (newEffFramesToRecover > oldEffFramesToRecover);
     if (Def1Broken == currChd.ch_state() && framesToRecoverIncreased) {
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " newEffFramesToRecover=" << newEffFramesToRecover << " extended from oldEffFramesToRecover=" << oldEffFramesToRecover << " during Def1Broken" << std::endl;
@@ -8046,7 +8052,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, const bool currIsFlying, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
     const uint64_t udRhs, const uint64_t udtRhs, 
     const ContactPoints& contactPointsLhs,
-    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
+    uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffAtked, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool &outShouldSkipGroundServing, bool &outShouldSkipWallServing) {
 
     if (!transientUdToCurrBl.count(udRhs)) {
 #ifndef NDEBUG
@@ -8205,44 +8211,63 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     }
 
     JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
+    
     if (TerrainMelee == rhsBlConfig->b_type()) {
         blQ = cTurnbackAroundYAxis*JPH::Quat(currChd->q_x(), currChd->q_y(), currChd->q_z(), currChd->q_w());
-    }
-
-    Vec3Arg blInitPushbackVelocity(
-        (successfulDef1 ? cc->def1_damage_yield() : 1.0f)*rhsBlConfig->pushback_vel_x(), 
-        (successfulDef1 ? (currIsFlying ? cc->def1_damage_yield() : 0.0f) : 1.0f)*rhsBlConfig->pushback_vel_y(), 
-        0
-    );
-
-    auto blEffPushbackVelocity = blQ*blInitPushbackVelocity;
-    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_x()) {
-        if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelX || std::abs(blEffPushbackVelocity.GetX()) > std::abs(outNewEffPushbackVelX)) {
-            outNewEffPushbackVelX =  blEffPushbackVelocity.GetX();
-        }
+    } else {
+        BaseBattleCollisionFilter::clampChdQ(blQ, rhsCurrBl->vel_x());
+        Vec3 blFacing;
+        BaseBattleCollisionFilter::calcQFacing(*rhsCurrBl, blQ, blFacing);
+        blQ = (0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis);
     }
     
-    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_y()) {
-        if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelY || std::abs(blEffPushbackVelocity.GetY()) > std::abs(outNewEffPushbackVelY)) {
-            outNewEffPushbackVelY = blEffPushbackVelocity.GetY();
-        }
-    }
+    float pushbackVelYieldX = 1.0f;
+    float pushbackVelYieldY = 1.0f; 
 
     if (!successfulDef1) {
         // [REMINDER] Including "frames_to_recover" extension during "Def1Broken".
-        int effHitStunFramesComparand = (attemptedButFailedToBlowUp ? rhsBlConfig->block_stun_frames() : rhsBlConfig->hit_stun_frames()); 
-        if (rhsBlConfig->hardness() >= cc->hardness() && effHitStunFramesComparand > outNewEffFramesToRecover) {
-            outNewEffFramesToRecover = effHitStunFramesComparand; 
-            outShouldSkipGroundServing = true;
-            outShouldSkipWallServing = true;
+        if (rhsBlConfig->hardness() >= cc->hardness()) {
+            int effHitStunFramesComparand = (attemptedButFailedToBlowUp ? rhsBlConfig->block_stun_frames() : rhsBlConfig->hit_stun_frames()); 
+            if (0 < effHitStunFramesComparand) {
+                outNewEffAtked = true;
+            }
+            if (effHitStunFramesComparand > outNewEffFramesToRecover) {
+                outNewEffFramesToRecover = effHitStunFramesComparand; 
+                outShouldSkipGroundServing = true;
+                outShouldSkipWallServing = true;
+            }
+        } else {
+            //pushbackVelYieldX = cc->def1_damage_yield(); 
+            //pushbackVelYieldY = (currIsFlying ? cc->def1_damage_yield() : 0.0f); 
         }
     } else {
+        pushbackVelYieldX = cc->def1_damage_yield(); 
+        pushbackVelYieldY = (currIsFlying ? cc->def1_damage_yield() : 0.0f); 
         if (rhsBlConfig->block_stun_frames() > outNewEffFramesToRecover) {
             outNewEffFramesToRecover = rhsBlConfig->block_stun_frames(); 
             outShouldSkipGroundServing = true;
             outShouldSkipWallServing = true;
         }
         // [REMINDER] "Def1 -> Def1Broken" is handled separated after all "handleLhsCharacterCollisionWithRhsBullet" are called for the current character.
+    }
+
+    Vec3Arg blInitPushbackVelocity(
+        pushbackVelYieldX*rhsBlConfig->pushback_vel_x(), 
+        pushbackVelYieldY*rhsBlConfig->pushback_vel_y(), 
+        0
+    );
+
+    Vec3 blEffPushbackVelocity = blQ*blInitPushbackVelocity;
+    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_x()) {
+        if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelX || std::fabs(blEffPushbackVelocity.GetX()) > std::fabs(outNewEffPushbackVelX)) {
+            outNewEffPushbackVelX =  blEffPushbackVelocity.GetX();
+        }
+    }
+    
+    if (!attemptedButFailedToBlowUp && globalPrimitiveConsts->no_lock_vel() != rhsBlConfig->pushback_vel_y()) {
+        if (globalPrimitiveConsts->no_lock_vel() == outNewEffPushbackVelY || std::fabs(blEffPushbackVelocity.GetY()) > std::fabs(outNewEffPushbackVelY)) {
+            outNewEffPushbackVelY = blEffPushbackVelocity.GetY();
+        }
     }
 }
 

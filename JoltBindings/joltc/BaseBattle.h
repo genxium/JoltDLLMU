@@ -999,7 +999,7 @@ protected:
         const uint64_t udLhs, const uint64_t udtLhs, const CharacterDownsync* currChd, const bool currIsFlying, CharacterDownsync* nextChd, const Vec3& nextChdFacing,
         const uint64_t udRhs, const uint64_t udtRhs,
         const ContactPoints& inContactPoints,
-        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
+        uint32_t& outNewEffDebuffSpeciesId, int& outNewDamage, bool& outNewEffAtked, bool& outNewEffBlownUp, int& outNewEffFramesToRecover, int& outEffDef1QuotaReduction, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff, bool& outShouldSkipGroundServing, bool& outShouldSkipWallServing);
 
     void handleLhsTrapCollisionWithRhsBullet(
     const int currRdfId, 

@@ -673,31 +673,10 @@ namespace JoltCSharp {
                 .AddHit(BasicRapidFireHit3) 
                 .AddHit(BasicRapidFireHit4); 
 
-             BulletConfig BasicTimedBombHit0 = new BulletConfig {
-                StartupFrames = 80,
-                              ActiveFrames = 1,
-                              HitStunFrames = 0,
-                              BlockStunFrames = 0,
-                              CooldownFrames = 0,
-                              Damage = 0,
-                              PushbackVelX = primitiveConsts.NoLockVel,
-                              PushbackVelY = primitiveConsts.NoLockVel,
-                              SelfLockVelX = 0,
-                              SelfLockVelY = primitiveConsts.NoLockVel,
-                              SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
-                              HitboxOffsetX = 16f,
-                              HitboxOffsetY = 14f,
-                              HitboxHalfSizeX = 1f,
-                              HitboxHalfSizeY = 1f,
-                              BType = BulletType.Melee,
-                              MhType = MultiHitType.FromEmission,
-                              NoHitAnim = true,
-            };
-
              BulletConfig BasicTimedBombHit1 = new BulletConfig {
                 StartupFrames = 80,
                               ActiveFrames = 180,
-                              HitStunFrames = 4,
+                              HitStunFrames = 0,
                               BlockStunFrames = 4,
                               CooldownFrames = 40,
                               Damage = 0,
@@ -712,7 +691,7 @@ namespace JoltCSharp {
                               HitboxHalfSizeY = 5f,
                               AnimName = "TimedBomb1",
                               Speed = 3.5f * BATTLE_DYNAMICS_FPS,
-                              Hardness = 7,
+                              Hardness = 1,
                               HitAnimRdfCnt = 45,
                               VanishingAnimRdfCnt = 25,
                               BType = BulletType.MechanicalBouncerSpherical,
@@ -755,6 +734,7 @@ namespace JoltCSharp {
                               CharacterEmitSfxName = "PistolEmit",
                               HitSfxName = "Piercing",
                               HitOnRockSfxName = "Vanishing8",
+                              MhInheritsSpin = true,
             };
 
              Skill BlackThrower1TimedBomb = new Skill{

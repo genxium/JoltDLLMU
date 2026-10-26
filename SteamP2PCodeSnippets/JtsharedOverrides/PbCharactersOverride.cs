@@ -62,6 +62,7 @@ namespace JoltCSharp {
 
             var WOLVERINE1 = underlying[PbPrimitivesOverride.SPECIES_WOLVERINE1];
 
+            WOLVERINE1.Hardness = 7;
             WOLVERINE1.CapsuleRadius = (12.0f); // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             WOLVERINE1.CapsuleHalfHeight = (18.0f);
             WOLVERINE1.ShrinkedCapsuleRadius = (12.0f);

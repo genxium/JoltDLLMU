@@ -9416,7 +9416,7 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     reusedBattle->ResetStartRdf(initializerMapData, inSingleJoinIndex, selfPlayerId, selfCmdAuthKey);
 
     int outerTimerRdfId = globalPrimitiveConsts->starting_render_frame_id();
-    int loopRdfCnt = 1200;
+    int loopRdfCnt = 900;
     int printIntervalRdfCnt = (1 << 5);
 
     int printIntervalRdfCntMinus1 = printIntervalRdfCnt - 1;
@@ -9452,12 +9452,12 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             //shouldPrint = true;
         }
 
-        if (955 <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
+        if (666 <= outerTimerRdfId && outerTimerRdfId < loopRdfCnt) {
             //shouldPrint = true;
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase29/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), ground_vel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", mp=" << npc1Chd.mp() << ", cs=" << npc1Chd.ch_state() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << std::endl;
+            std::cout << "TestCase29/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1Chd hp=" << p1Chd.hp() << ", cs=" << p1Chd.ch_state() << ", fr=" << p1Chd.frames_to_recover() << ", fc=" << p1Chd.frames_in_ch_state() << ", gud=" << p1Chd.ground_ud() << ", dir=(" << p1Chd.q_x() << ", " << p1Chd.q_y() << ", " << p1Chd.q_z() << ", " << p1Chd.q_w() << "), pos=(" << p1Chd.x() << ", " << p1Chd.y() << "), vel=(" << p1Chd.vel_x() << ", " << p1Chd.vel_y() << "), gv=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\tnpc1Chd hp=" << npc1Chd.hp() << ", mp=" << npc1Chd.mp() << ", cs=" << npc1Chd.ch_state() << ", fr=" << npc1Chd.frames_to_recover() << ", fc=" << npc1Chd.frames_in_ch_state() << ", dir=(" << npc1Chd.q_x() << ", " << npc1Chd.q_y() << ", " << npc1Chd.q_z() << ", " << npc1Chd.q_w() << "), pos=(" << npc1Chd.x() << ", " << npc1Chd.y() << "), vel=(" << npc1Chd.vel_x() << ", " << npc1Chd.vel_y() << "), cuedCmd=" << npc1.cached_cue_cmd() << ", toRevengeUd=" << npc1.to_revenge_ud() << ", lockingOnUd=" << npc1Chd.locking_on_ud() << std::endl;
         }
 
 
@@ -9492,11 +9492,21 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(Active == bl1.bl_state());
             JPH_ASSERT(1 == bl1.team_id());
             JPH_ASSERT(1 == bl1.active_skill_hit());
-        } else if (700 == outerTimerRdfId) {
+        } else if (666 == outerTimerRdfId) {
+            // Check NPC1 revenge attacking states
             npc1NotEnoughMpX = npc1Chd.x();
+            JPH_ASSERT(Atk1 == npc1Chd.ch_state());
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.vel_x());
+        } else if (716 == outerTimerRdfId) {
+            // Check NPC1 emitted TimedBomb states
+            const Bullet& bl1 = outerTimerRdf->bullets(0);
+            JPH_ASSERT(4 == bl1.id());
+            JPH_ASSERT(Active == bl1.bl_state());
+            JPH_ASSERT(2 == bl1.team_id());
+            JPH_ASSERT(1 == bl1.active_skill_hit());
+            JPH_ASSERT(0 < bl1.vel_y());
         } else if (760 == outerTimerRdfId) {
             JPH_ASSERT(npc1NotEnoughMpX == npc1Chd.x());
             JPH_ASSERT(0 == npc1.cached_cue_cmd());

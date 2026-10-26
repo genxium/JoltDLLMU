@@ -94,7 +94,7 @@ namespace JoltCSharp {
 
             var BlackThrower1TimedBomb = underlying[PbPrimitivesOverride.BlackThrower1TimedBombId];
             var BasicTimedBombHit1 = BlackThrower1TimedBomb.Hits[0];
-            BasicTimedBombHit1.Speed = 4.5f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            //BasicTimedBombHit1.Speed = 4.5f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BasicTimedBombHit1.Hardness = 7;
             BasicTimedBombHit1.HitAnimRdfCnt = 45;
             BasicTimedBombHit1.VanishingAnimRdfCnt = 25;
