@@ -274,7 +274,8 @@ public:
     JPH::Vec3				mGroundNormal = JPH::Vec3::sZero();
     uint64_t                mGroundUd = 0;
     uint64_t                mGroundUdt = 0;
-    bool                    mCrouchForced = false;
+    uint64_t                mCrouchForcerUd = 0;
+    uint64_t                mCrouchForcerUdt = 0;
     bool                    mCurrIsFlying = false;
     
     virtual void		AddHit(const JPH::CollideShapeResult& inResult) override {
@@ -359,7 +360,8 @@ public:
                         
                         if (rhsPointVel.IsNearZero() && mBaseBattleFilter->canForceCrouching(mUd, mUdt, mCurrChd, udRhs)) {
                             // The regular case
-                            mCrouchForced = true;
+                            mCrouchForcerUd = udRhs;
+                            mCrouchForcerUdt = udtRhs;
 /*
 #ifndef NDEBUG
                             std::ostringstream oss;
@@ -378,7 +380,8 @@ public:
                                 float rhsPointVelNormDot = rhsPointVel.Normalized().Dot(-mUp);
                                 bool rhsProactivelySqueezingDown2 = rhsPointVelNormDot > 0.5;
                                 if (rhsProactivelySqueezingDown2 && mBaseBattleFilter->canForceCrouching(mUd, mUdt, mCurrChd, udRhs)) {
-                                    mCrouchForced = true;
+                                    mCrouchForcerUd = udRhs;
+                                    mCrouchForcerUdt = udtRhs;
 /*
 #ifndef NDEBUG
                                     std::ostringstream oss;

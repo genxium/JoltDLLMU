@@ -1,4 +1,5 @@
 using jtshared;
+using System.Collections.Generic;
 using static FrontendOnlyGeometry;
 
 namespace JoltCSharp {
@@ -25,6 +26,11 @@ namespace JoltCSharp {
         private static PbCharactersOverride _instance = null;
         private static readonly object _padLock = new object();
         private bool _initialized = false;
+        private Dictionary<string, CharacterConfig> nameToCc = new Dictionary<string, CharacterConfig>();
+        public CharacterConfig GetCharacterConfig(in string name) {
+            return nameToCc[name];
+        }
+
         protected override bool lazyInit() {
             if (_initialized) {
                 return true;
@@ -35,6 +41,9 @@ namespace JoltCSharp {
             BLADEGIRL.AccMagX = 0.25f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BLADEGIRL.AngYSpeed = 1.5f * PbPrimitivesOverride.StdYAxisAngularSpeedPerRdf * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BLADEGIRL.LoopingChStates.Add((int)CharacterState.Walking, 12);
+            BLADEGIRL.LayDownFramesToRecover = 18;
+            BLADEGIRL.GetUpInvinsibleFrames = 20;
+            BLADEGIRL.GetUpFramesToRecover = 18;
 
             var BOUNTYHUNTER = underlying[PbPrimitivesOverride.SPECIES_BOUNTYHUNTER];
             BOUNTYHUNTER.AccMagX = 0.13f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
@@ -51,6 +60,7 @@ namespace JoltCSharp {
             BLACKTHROWER1.Hp = 60;
             BLACKTHROWER1.JumpAccMagY = 0;
             BLACKTHROWER1.JumpStartupFrames = 0;
+            BLACKTHROWER1.InplacePromptYOffset = 42f;
 
             var BLACKSABER1 = underlying[PbPrimitivesOverride.SPECIES_BLACKSABER1];
             BLACKSABER1.VisionOffsetX = (8.0f);
@@ -62,7 +72,7 @@ namespace JoltCSharp {
 
             var WOLVERINE1 = underlying[PbPrimitivesOverride.SPECIES_WOLVERINE1];
 
-            WOLVERINE1.Hardness = 7;
+            WOLVERINE1.Hardness = 3;
             WOLVERINE1.CapsuleRadius = (12.0f); // [WARNING] Being too "wide" can make "CrouchIdle1" bouncing on slopes!
             WOLVERINE1.CapsuleHalfHeight = (18.0f);
             WOLVERINE1.ShrinkedCapsuleRadius = (12.0f);
@@ -77,13 +87,23 @@ namespace JoltCSharp {
             WOLVERINE1.VisionTopRadius = (16.0f);
             WOLVERINE1.VisionBottomRadius = (64.0f);
             WOLVERINE1.HasAwakingAnim = true;
+            WOLVERINE1.AlwaysDef1 = true;
+            WOLVERINE1.DefaultDef1Quota = 12;
+            WOLVERINE1.Def1DamageYield = 0.9f;
+            WOLVERINE1.DefaultDef1BrokenFramesToRecover = 3*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             //WOLVERINE1.HasTurnAroundAnim = false;
             WOLVERINE1.AwakingFramesToRecover = 135;
             WOLVERINE1.AwakingFramesInvinsible = 135;
             WOLVERINE1.InplacePromptYOffset = 48f;
-
             rectifyByPPU();
 
+            foreach (var ch in underlying.Values) {
+                if (ch.IsTestCh) {
+                    continue;
+                }
+                nameToCc.Add(ch.SpeciesName, ch);
+            }
+            
             _initialized = true;
             return _initialized;
         }

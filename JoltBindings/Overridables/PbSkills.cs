@@ -140,7 +140,7 @@ namespace JoltCSharp {
              BulletConfig BasicChargedPistolBulletAir = new BulletConfig {
                 StartupFrames = 6,
                               ActiveFrames = 360,
-                              HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+                              HitStunFrames = MAGIC_RDF_CNT_INFINITE,
                               BlowUp = true,
                               BlockStunFrames = 18,
                               CooldownFrames = 11,
@@ -511,7 +511,7 @@ namespace JoltCSharp {
             BulletConfig BladeGirlDragonPunchHit1 = new BulletConfig(BladeGirlGroundSlash1Hit1)
                 .SetBlowUp(false)
                 .SetBlowUpOnAirHitOnly(true)
-                .SetHitStunFrames(DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER)
+                .SetHitStunFrames(MAGIC_RDF_CNT_INFINITE)
                 .SetBlockStunFrames(10)
                 .SetStartupFrames(5)
                 .SetActiveFrames(21)
@@ -713,7 +713,7 @@ namespace JoltCSharp {
              BulletConfig BasicTimedBombHit2 = new BulletConfig {
                 StartupFrames = 4,
                               ActiveFrames = 8,
-                              HitStunFrames = DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER,
+                              HitStunFrames = MAGIC_RDF_CNT_INFINITE,
                               BlowUp = true,
                               BlockStunFrames = 60,
                               CooldownFrames = 12,

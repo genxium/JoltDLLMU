@@ -10,6 +10,9 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     protected Animator animator;
     protected SpriteRenderer spr;
+    public SpriteRenderer GetSpriteRenderer() { 
+        return spr; 
+    }
     protected Material material; // [REMINDER] Keeping a reference here to allow "AnimNode-scope material specification"
 
     private ulong ud = 0;
@@ -89,5 +92,9 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     public string identifier() {
         return $"(class={this.GetType().Name}, ud={ud}, cachedGroupId={cacheGroupId})";
+    }
+
+    public virtual void hideSelfCleanUp() {
+
     }
 }

@@ -6978,7 +6978,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId < 80) {
             int p1Expectedfc = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -6990,7 +6990,7 @@ bool runTestCase1(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(CharacterState::Atk1 == p1Chd.ch_state());
             JPH_ASSERT(p1Expectedfc == p1Chd.frames_in_ch_state());
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
-        } else if (81 == outerTimerRdfId) {
+        } else if (80 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (231 <= outerTimerRdfId && outerTimerRdfId <= 250) {
             JPH_ASSERT(CharacterState::InAirIdle1ByJump == p1Chd.ch_state());
@@ -7144,7 +7144,7 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
         } else if (62 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
-        } else if (63 <= outerTimerRdfId && outerTimerRdfId <= 80) {
+        } else if (63 <= outerTimerRdfId && outerTimerRdfId < 80) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
             int p1Expectedfc = outerTimerRdfId - 63;
             const Skill* skill = nullptr;
@@ -7153,10 +7153,12 @@ bool runTestCase2(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             int p1ChdActiveSkillHit = p1Chd.active_skill_hit();
             BaseBattle::FindBulletConfig(p1ChdActiveSkillId, p1ChdActiveSkillHit, skill, bulletConfig);
             JPH_ASSERT(nullptr != skill && nullptr != bulletConfig);
-        } else if (81 == outerTimerRdfId) {
+        } else if (80 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (326 <= outerTimerRdfId && outerTimerRdfId <= 340) {
+        } else if (326 <= outerTimerRdfId && outerTimerRdfId < 340) {
             JPH_ASSERT(CharacterState::WalkingAtk1 == p1Chd.ch_state());
+        } else if (340 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::Walking == p1Chd.ch_state());
         }
 
         if (0 != walkingToWalkingAtk1TransitionRdfId1st && walkingToWalkingAtk1TransitionRdfId1st < outerTimerRdfId && WalkingAtk1 == p1Chd.ch_state() 
@@ -7766,7 +7768,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
         if (50 <= outerTimerRdfId && outerTimerRdfId <= 100) {
             JPH_ASSERT(0 < tp1.x() && tp1.x() < 500);
             JPH_ASSERT(initTrapY == tp1.y());
-        } else if (231 <= outerTimerRdfId && outerTimerRdfId <= 248) {
+        } else if (231 <= outerTimerRdfId && outerTimerRdfId < 248) {
             int p1Expectedfc = outerTimerRdfId - 231;
             const Skill* skill = nullptr;
             const BulletConfig* bulletConfig = nullptr;
@@ -7780,7 +7782,7 @@ bool runTestCase9(FrontendBattle* reusedBattle, std::vector<std::vector<float>>&
             JPH_ASSERT(p1ExpectedFramesToRecover == p1Chd.frames_to_recover());
             JPH_ASSERT(500 <= tp1.x());
             JPH_ASSERT(initTrapY == tp1.y());
-        } else if (249 == outerTimerRdfId) {
+        } else if (248 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
         } else if (303 < outerTimerRdfId && outerTimerRdfId <= 420) {
             JPH_ASSERT(0 < tp1.x() && tp1.x() < 501);
@@ -8096,16 +8098,18 @@ bool runTestCase13(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         } else if (70 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Atked1 == npc1Chd.ch_state());
             //JPH_ASSERT(0 < npc1Chd.bir_count());
-        } else if (103 <= outerTimerRdfId && outerTimerRdfId <= 124) {
+        } else if (103 <= outerTimerRdfId && outerTimerRdfId < 124) {
             JPH_ASSERT(CharacterState::Sliding == p1Chd.ch_state());
             int expectedFc = outerTimerRdfId-103;
             JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFc);
-        } else if (125 == outerTimerRdfId) {
+        } else if (124 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::Idle1 == p1Chd.ch_state());
-        } else if (247 <= outerTimerRdfId && outerTimerRdfId <= 268) {
+        } else if (247 <= outerTimerRdfId && outerTimerRdfId < 268) {
             JPH_ASSERT(CharacterState::InAirDashing == p1Chd.ch_state());
             int expectedFc = outerTimerRdfId-247;
             JPH_ASSERT(p1Chd.frames_in_ch_state() == expectedFc);
+        } else if (268 == outerTimerRdfId) {
+            JPH_ASSERT(CharacterState::InAirIdle1NoJump == p1Chd.ch_state());
         } else if (1023 == outerTimerRdfId) {
             JPH_ASSERT(CharacterState::OnWallIdle1 == p1Chd.ch_state());
         }
@@ -9499,7 +9503,7 @@ bool runTestCase29(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(0 == npc1.cached_cue_cmd());
             JPH_ASSERT(NpcGoal::NIdleIfGoHuntingThenPatrol == npc1.goal_as_npc());
             JPH_ASSERT(0 == npc1Chd.vel_x());
-        } else if (716 == outerTimerRdfId) {
+        } else if (715 == outerTimerRdfId) {
             // Check NPC1 emitted TimedBomb states
             const Bullet& bl1 = outerTimerRdf->bullets(0);
             JPH_ASSERT(4 == bl1.id());
@@ -10126,6 +10130,7 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int thirdDef1EndedRdfId = 0;
 
     CharacterState oldP1ChdState = Idle1;
+    int oldP1Def1BrokenRdfCountdown = 0;
     int oldP1ChdHp = 0;
     int oldP1ChdFramesToRecover = 0;
     uint64_t oldGroundUd = 0;
@@ -10146,7 +10151,6 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             std::cerr << "TestCase37/Failed to inject cmd for outerTimerRdfId=" << outerTimerRdfId << ", inSingleInput=" << inSingleInput << std::endl;
             exit(1);
         }
-        FRONTEND_ChaseRolledBackRdfs(reusedBattle, &newChaserRdfId, true);
         FRONTEND_Step(reusedBattle);
 
         RenderFrame* outerTimerRdf = reusedBattle->rdfBuffer.GetByFrameId(outerTimerRdfId);
@@ -10166,17 +10170,17 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             }
         }
 
-        if (Def1 == oldP1ChdState && Def1Broken == p1Chd.ch_state()) {
+        if (Def1 == oldP1ChdState && 0 < p1Chd.def1_broken_rdf_countdown()) {
             firstDef1BrokenRdfId = outerTimerRdfId;
         }
 
-        if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && Def1Broken == oldP1ChdState) {
+        if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && 0 < oldP1Def1BrokenRdfCountdown) {
             if (0 == firstDef1BrokenExtendedRdfId && oldP1ChdFramesToRecover < p1Chd.frames_to_recover()) {
                 firstDef1BrokenExtendedRdfId = outerTimerRdfId;
             }
         }
 
-        if (0 != firstDef1BrokenExtendedRdfId && firstDef1BrokenExtendedRdfId <= outerTimerRdfId && Def1Broken == oldP1ChdState) {
+        if (0 != firstDef1BrokenExtendedRdfId && firstDef1BrokenExtendedRdfId <= outerTimerRdfId && 0 < oldP1Def1BrokenRdfCountdown) {
             if (0 == firstDef1BrokenRecoveredRdfId && !atkedSet.count(p1Chd.ch_state()) && !noOpSet.count(p1Chd.ch_state())) {
                 firstDef1BrokenRecoveredRdfId = outerTimerRdfId;
             }
@@ -10231,7 +10235,9 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
         } else if (0 != firstDef1BrokenRdfId && firstDef1BrokenRdfId <= outerTimerRdfId && (0 == firstDef1BrokenExtendedRdfId || outerTimerRdfId < firstDef1BrokenExtendedRdfId)) {
             // i.e. "Def1Broken"
-            JPH_ASSERT(CharacterState::Def1Broken == p1Chd.ch_state());
+            JPH_ASSERT(0 < p1Chd.def1_broken_rdf_countdown());
+            JPH_ASSERT(p1Chd.def1_broken_rdf_countdown() == p1Chd.frames_to_recover());
+            JPH_ASSERT(atkedSet.count(p1Chd.ch_state()));
             if (firstDef1BrokenRdfId == outerTimerRdfId) {
                 JPH_ASSERT(50 == p1Chd.frames_to_recover());
                 JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
@@ -10240,7 +10246,7 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(p1Cc.hp() > p1Chd.hp());
         } else if (0 != firstDef1BrokenExtendedRdfId && firstDef1BrokenExtendedRdfId <= outerTimerRdfId && (0 == firstDef1BrokenRecoveredRdfId || outerTimerRdfId < firstDef1BrokenRecoveredRdfId)) {
             // i.e. "Def1Broken" extended due to being hit
-            JPH_ASSERT(CharacterState::Def1Broken == p1Chd.ch_state());
+            JPH_ASSERT(p1Chd.def1_broken_rdf_countdown() == p1Chd.frames_to_recover());
             if (firstDef1BrokenExtendedRdfId == outerTimerRdfId) {
                 JPH_ASSERT(oldP1ChdFramesToRecover < p1Chd.frames_to_recover());
                 JPH_ASSERT(0 < p1Chd.damaged_hint_rdf_countdown());
@@ -10285,7 +10291,7 @@ bool runTestCase37(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         oldP1ChdState = p1Chd.ch_state();
         oldP1ChdHp = p1Chd.hp();
         oldP1ChdFramesToRecover = p1Chd.frames_to_recover();
-
+        oldP1Def1BrokenRdfCountdown = p1Chd.def1_broken_rdf_countdown();
         outerTimerRdfId++;
     }
 
@@ -10778,7 +10784,7 @@ bool runTestCase41(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
 
         if (npcAwakenedRdfId > outerTimerRdfId) {
             JPH_ASSERT(Dimmed == npc1Chd.ch_state());
-        } else if (0 != npcAwakenedRdfId && npcAwakenedRdfId <= outerTimerRdfId && outerTimerRdfId < 190) {
+        } else if (0 != npcAwakenedRdfId && npcAwakenedRdfId <= outerTimerRdfId && outerTimerRdfId < 189) {
             JPH_ASSERT(Awaking == npc1Chd.ch_state());
             JPH_ASSERT((outerTimerRdfId-npcAwakenedRdfId) == npc1Chd.frames_in_ch_state());
         } else if (0 != npcAwakenedRdfId && 190 < outerTimerRdfId) {

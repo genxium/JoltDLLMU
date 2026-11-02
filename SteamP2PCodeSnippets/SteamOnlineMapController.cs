@@ -12,7 +12,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using static JoltCSharp.Bindings;
 using UnityEngine.AddressableAssets;
-using static FrontendOnlyGeometry;
 
 public class SteamOnlineMapController : AbstractJoltMapController {
     public UISoundSource uiSoundSource;
@@ -1122,20 +1121,12 @@ public class SteamOnlineMapController : AbstractJoltMapController {
         if (null != underlyingMap) {
             Destroy(underlyingMap);
         }
-        string path = $"Tiled/{theme}/map";
+        string path = $"LevelMaps/{theme}/map";
         GameObject underlyingMapPrefab = Addressables.LoadAssetAsync<GameObject>(path).WaitForCompletion();
         if (null == underlyingMapPrefab) {
             Debug.LogError($"underlyingMapPrefab is null for theme={theme}");
         }
         underlyingMap = GameObject.Instantiate(underlyingMapPrefab, this.gameObject.transform);
-        var superMap = underlyingMap.GetComponent<SuperMap>();
-        int mapWidth = superMap.m_Width, tileWidth = superMap.m_TileWidth, mapHeight = superMap.m_Height, tileHeight = superMap.m_TileHeight;
-        tilemapHalfWidth = ((mapWidth * tileWidth) * 0.5f) / DEFAULT_PIXELS_PER_UNIT;
-        tilemapHalfHeight = ((mapHeight * tileHeight) * 0.5f) / DEFAULT_PIXELS_PER_UNIT;
-        collisionSpaceHalfWidth = tilemapHalfWidth;
-        collisionSpaceHalfHeight = tilemapHalfHeight;
-        collisionSpacePaddingLeft = 0;
-        collisionSpacePaddingBottom = 0;
 
         battleResultIsSet = false;
 

@@ -92,7 +92,7 @@ namespace JoltCSharp {
         public const uint TPT_BOSS_DOOR = 6;
         public const uint TPT_SPRING = 8;
 
-        public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (1 << INPUT_SCALE_FRAMES);
+        public const int   DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = (BATTLE_DYNAMICS_FPS / 15);
         public const float DEFAULT_MIN_FALLING_VEL_Y = -4.5f;
 
         public const uint VISION_SEARCH_INTERVAL_IMMEDIATE_U = (1u << 0);
@@ -105,7 +105,8 @@ namespace JoltCSharp {
         public const int VISION_SEARCH_INTERVAL_SLOW = (int)VISION_SEARCH_INTERVAL_SLOW_U;
 
         public const int BATTLE_DYNAMICS_FPS = 60;
-        public const int DEFAULT_BLOW_UP_RDF_CNT_TO_RECOVER = 1024*BATTLE_DYNAMICS_FPS;
+        public const int MAGIC_QUOTA_INFINITE = 65535;
+        public const int MAGIC_RDF_CNT_INFINITE = 65535;
 
         public const int INPUT_SCALE_FRAMES = 2;
         public const int INPUT_SCALE = (1 << INPUT_SCALE_FRAMES);
@@ -198,16 +199,14 @@ namespace JoltCSharp {
 
               MagicJoinIndexInvalid = 0xFFFFFFFF,
               MagicJoinIndexSrvUdpTunnel = 0,
-              MagicQuotaInfinite = 65535,
-              MagicRdfCntInfinite = 65535,
+              MagicQuotaInfinite = MAGIC_QUOTA_INFINITE,
+              MagicRdfCntInfinite = MAGIC_RDF_CNT_INFINITE,
 
               MagicLastSentInputFrameIdNormalAdded = -1,
               MagicLastSentInputFrameIdReadded = -2,
 
-              BgmNoChange = 0,
-
-              MaxBtnHoldingRdfCnt = 999999999,
-              MaxFlyingRdfCnt = 999999999,
+              MaxBtnHoldingRdfCnt = MAGIC_RDF_CNT_INFINITE,
+              MaxFlyingRdfCnt = MAGIC_RDF_CNT_INFINITE,
               DefaultSlipJumpGracePeriodRdfCnt = 15,
               DefaultMinSpeedForRestitution = 1.0f * BATTLE_DYNAMICS_FPS, // i.e. "1 pixel per RenderFrame" 
               MaxReversePushbackFramesToRecover = 30,
@@ -246,7 +245,7 @@ namespace JoltCSharp {
               DefaultBlownupFramesForFlying = 30,
 
               DefaultGaugeIncByHit = 5,
-              DefaultFramesDelayedOfBossSavepoint = 8,
+              DefaultAwakingFrames = 8,
               InputDelayFrames = 2, // in the count of render frames
               InputScaleFrames = INPUT_SCALE_FRAMES, // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
               MaxChasingRenderFramesPerUpdate = (3 << INPUT_SCALE_FRAMES),

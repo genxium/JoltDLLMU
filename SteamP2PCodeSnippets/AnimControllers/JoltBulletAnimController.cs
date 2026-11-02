@@ -54,6 +54,8 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
         return true;
     }
 
+    protected Vector3 damageDealedPositionHolder = Vector3.zero;
+
     protected override bool updateAnimUnderlying(in int currRdfId, in Bullet bullet, in BulletState newState, in BulletConfig bulletConfig, in int frameIdxInAnim) {
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
@@ -78,8 +80,8 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             } else {
                 damageDealedIndicator.gameObject.SetActive(true);
                 damageDealedIndicator.gameObject.transform.localRotation = spr.transform.localRotation; // To battle rotation induced invisibility.
-                positionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + MAX_DAMAGE_INDICATOR_H*Mathf.Clamp01(bullet.FramesInBlState * INV_MAX_DAMAGE_INDICATOR_RDF_CNT), 0);
-                damageDealedIndicator.gameObject.transform.localPosition = positionHolder;
+                damageDealedPositionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + MAX_DAMAGE_INDICATOR_H*Mathf.Clamp01(bullet.FramesInBlState * INV_MAX_DAMAGE_INDICATOR_RDF_CNT), 0);
+                damageDealedIndicator.gameObject.transform.localPosition = damageDealedPositionHolder;
                 if (0 < bullet.DamageDealed) {
                     damageDealedIndicator.text = ($"-{bullet.DamageDealed}");
                     if (DAMAGE_FONT_COLOR != damageDealedIndicator.color) {
@@ -143,5 +145,9 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
         }
 
         return true;
+    }
+
+    public new void hideSelfCleanUp() {
+        damageDealedIndicator.transform.localPosition = Vector3.zero;
     }
 }
