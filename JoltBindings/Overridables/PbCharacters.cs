@@ -186,6 +186,7 @@ namespace JoltCSharp {
             };
 
             CharacterConfig BLACKSABER1_TEST_NO_VISION = new CharacterConfig {
+                IsTestCh = true,
                 SpeciesId = SPECIES_BLACKSABER1_TEST_NO_VISION,
                 SpeciesName = "BlackSaber1",
                 Hp = 10,
@@ -215,6 +216,7 @@ namespace JoltCSharp {
             };
 
             CharacterConfig BLACKSABER1_TEST_WITH_VISION = new CharacterConfig {
+                IsTestCh = true,
                 SpeciesId = SPECIES_BLACKSABER1_TEST_WITH_VISION,
                 SpeciesName = "BlackSaber1",
                 Hp = 10,
@@ -338,6 +340,7 @@ namespace JoltCSharp {
             };
 
             CharacterConfig BLACKTHROWER1_TEST_WITH_VISION = new CharacterConfig {
+                IsTestCh = true,
                 SpeciesId = SPECIES_BLACKTHROWER1_TEST_WITH_VISION,
                 SpeciesName = "BlackThrower1",
                 Hp = 40,
@@ -513,6 +516,7 @@ namespace JoltCSharp {
             };
 
             CharacterConfig BAT1_TEST_WITH_VISION = new CharacterConfig {
+                IsTestCh = true,
                 SpeciesId = SPECIES_BAT1_TEST_WITH_VISION,
                 SpeciesName = "Bat1",
                 Hp = 9,
@@ -651,6 +655,7 @@ namespace JoltCSharp {
             };
 
             CharacterConfig WOLVERINE1_TEST_WITH_VISION = new CharacterConfig {
+                IsTestCh = true,
                 SpeciesId = SPECIES_WOLVERINE1_TEST_WITH_VISION,
                 SpeciesName = "Wolverine1",
                 Hp = 220,

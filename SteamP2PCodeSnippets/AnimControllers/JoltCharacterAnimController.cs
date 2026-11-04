@@ -38,14 +38,8 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         WalkingAtk1Charging,
         InAirWalkingAtk1Charging,
         InAirWalking,
-        InAirIdle1NoJump,
-        InAirIdle1ByJump,
-        InAirIdle1ByWallJump,
-        BlownUp1,
-        LayDown1,
-        GetUp1,
         OnWallIdle1,
-        TurnAround,
+        Def1Broken,
     };
 
     public Material GetMaterial() {
@@ -166,7 +160,7 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
             break;
             case InAirIdle2ByJump:
             case InAirIdle1ByWallJump:
-            if (hasInAirIdleCharging && rdfCharacter.FramesInChState >= chConfig.TrailingRdfChargeableChStates[(int)newCharacterState]) {
+            if (hasInAirIdleCharging && framesInNewState >= chConfig.TrailingRdfChargeableChStates[(int)newCharacterState]) {
                 effNewChState = InAirAtk1Charging;
             }
             break;
@@ -188,27 +182,38 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
                 effNewChState = InAirIdle1ByJump;
             }
         }
+        
+        if (0 < rdfCharacter.Def1BrokenRdfCountdown) {
+            effNewChState = Def1Broken;
+            //Debug.Log($"@currRdfId={rdfId}, ud={GetUd()} playing framesInNewState={framesInNewState} and newCharacterState={newCharacterState}/effNewChState={effNewChState}, def1BrokenRdfCountdown={rdfCharacter.Def1BrokenRdfCountdown}");
+        }
+        
         int targetLayer = 0; // We have only 1 layer, i.e. the baseLayer, playing at any time
         int targetClipIdx = 0; // We have only 1 frame anim playing at any time
         var curClip = animator.GetCurrentAnimatorClipInfo(targetLayer)[targetClipIdx].clip;
         var playingAnimName = curClip.name;
-        if ((BlownUp1 == effNewChState || LayDown1 == effNewChState || GetUp1 == effNewChState) && !lookUpTable.ContainsKey(effNewChState)) {
+        if ((Def1Broken == effNewChState || BlownUp1 == effNewChState || LayDown1 == effNewChState || GetUp1 == effNewChState) && !lookUpTable.ContainsKey(effNewChState)) {
             effNewChState = InAirAtked1; // Fallback
         }
         if (InAirAtked1 == effNewChState && !lookUpTable.ContainsKey(effNewChState)) {
             effNewChState = Atked1; // Fallback
         }
         if (!lookUpTable.ContainsKey(effNewChState)) {
-            //Debug.LogWarning(chConfig.SpeciesName + " does not have effNewChState = " + effNewChState + "@FramesInChState=" + rdfCharacter.FramesInChState);
+            //Debug.LogWarning(chConfig.SpeciesName + " does not have effNewChState = " + effNewChState + "@FramesInChState=" + framesInNewState);
             effNewChState = Idle1; // Ultimate Fallback
         }
         var targetClip = lookUpTable[effNewChState];
+        /*
+        if (BlownUp1 == newCharacterState || LayDown1 == newCharacterState || GetUp1 == newCharacterState) {
+            Debug.Log($"@currRdfId={rdfId}, ud={GetUd()} playing framesInNewState={framesInNewState} and newCharacterState={newCharacterState}/effNewChState={effNewChState} while playingAnimName={playingAnimName}");
+        }
+        */
         if (null == chConfig.LoopingChStates || !chConfig.LoopingChStates.ContainsKey(((int)effNewChState))) {
             if (playingAnimName.Equals(targetClip.name) && INTERRUPT_WAIVE_SET.Contains(effNewChState)) {
                 return true;
             }
 
-            var frameIdxInAnim = (Def1Atked1 == newCharacterState ? frameIdxToPlayDef1Atked : rdfCharacter.FramesInChState);    
+            var frameIdxInAnim = (Def1Atked1 == newCharacterState ? frameIdxToPlayDef1Atked : framesInNewState);    
             var estimatedSecondsInAnim = PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf*frameIdxInAnim;
             float normalizedTime = (estimatedSecondsInAnim / targetClip.length); // TODO: Anyway to avoid using division here?
             if (1.0f < normalizedTime) {
@@ -218,7 +223,7 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         } else {
             var totRdfCnt = (PbPrimitivesOverride.Instance.getUnderlying().BattleDynamicsFps * targetClip.length);
             int animLoopingRdfOffset = chConfig.LoopingChStates[((int)effNewChState)];
-            var frameIdxInAnim = rdfCharacter.FramesInChState;
+            var frameIdxInAnim = framesInNewState;
             if (frameIdxInAnim > animLoopingRdfOffset) {    
                 var frameIdxInAnimFloat = animLoopingRdfOffset + ((frameIdxInAnim - animLoopingRdfOffset) % (totRdfCnt - animLoopingRdfOffset));
                 float normalizedTime = (frameIdxInAnimFloat / totRdfCnt); // TODO: Anyway to avoid using division here?

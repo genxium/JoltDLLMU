@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Google.Protobuf.Collections;
+
 namespace jtshared {
     public class PbBuilders {
         public static int EncodePatternForCancelTransit(int patternId, bool currEffInAir, bool currCrouching, bool currOnWall, bool currDashing, bool currWalking) {
@@ -252,6 +255,27 @@ namespace jtshared {
     public sealed partial class BuffConfig {
         public BuffConfig AddAssociatedDebuff(uint val) {
             AssociatedDebuffs.Add(val);
+            return this;
+        }
+    }
+
+    public sealed partial class SerializableConvexPolygon {
+        public SerializableConvexPolygon AddPoints(List<PbVec2> points) {
+            Points.Add(points);
+            return this;
+        }
+
+        public SerializableConvexPolygon AddPoints(RepeatedField<PbVec2> points) {
+            Points.Add(points);
+            return this;
+        }
+
+        public SerializableConvexPolygon SetBox(bool isBox, float qx, float qy, float qz, float qw) {
+            IsBox = isBox;
+            BoxQX = qx;
+            BoxQY = qy;
+            BoxQZ = qz;
+            BoxQW = qw;
             return this;
         }
     }

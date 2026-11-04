@@ -115,7 +115,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedPlayerCollider_NotThreadSafe(const u
     JPH_ASSERT(0 != ud);
     float capsuleRadius = 0, capsuleHalfHeight = 0;
     const CharacterDownsync& chd = currPlayer.chd();
-    calcChdShape(chd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+    calcChdShape(&chd, chd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
     Vec3 newPos(chd.x(), chd.y(), chd.z());
     Quat newRot(chd.q_x(), chd.q_y(), chd.q_z(), chd.q_w());
     auto res = getOrCreateCachedCharacterCollider_NotThreadSafe(ud, cc, capsuleRadius, capsuleHalfHeight, newPos, newRot);
@@ -131,7 +131,7 @@ CH_COLLIDER_T* BaseBattle::getOrCreateCachedNpcCollider_NotThreadSafe(const uint
     JPH_ASSERT(0 != ud);
     float capsuleRadius = 0, capsuleHalfHeight = 0;
     const CharacterDownsync& chd = currNpc.chd();
-    calcChdShape(chd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+    calcChdShape(&chd, chd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
     Vec3 newPos(chd.x(), chd.y(), chd.z());
     Quat newRot(chd.q_x(), chd.q_y(), chd.q_z(), chd.q_w());
     auto res = getOrCreateCachedCharacterCollider_NotThreadSafe(ud, cc, capsuleRadius, capsuleHalfHeight, newPos, newRot);
@@ -662,6 +662,7 @@ bool BaseBattle::transitToDying(const int currRdfId, const CharacterDownsync& cu
     nextChd->set_frames_in_ch_state(0);
     nextChd->set_frames_to_recover(globalPrimitiveConsts->dying_frames_to_recover());
     nextChd->set_frames_invinsible(0);
+    nextChd->set_def1_broken_rdf_countdown(0);
     nextChd->set_hp(0);
     if (!cvInAir) {
         nextChd->set_vel_x(currChd.ground_vel_x());
@@ -942,8 +943,8 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     nextNpc->set_activated_rdf_id(currRdfId);
                     nextChd->set_ch_state(Awaking);
                     nextChd->set_frames_in_ch_state(0);
-                    nextChd->set_frames_invinsible(0 >= cc->awaking_frames_invinsible() ? globalPrimitiveConsts->default_frames_delayed_of_boss_savepoint() : cc->awaking_frames_invinsible());
-                    nextChd->set_frames_to_recover(0 >= cc->awaking_frames_to_recover() ? globalPrimitiveConsts->default_frames_delayed_of_boss_savepoint() : cc->awaking_frames_to_recover());
+                    nextChd->set_frames_invinsible(0 >= cc->awaking_frames_invinsible() ? globalPrimitiveConsts->default_awaking_frames() : cc->awaking_frames_invinsible());
+                    nextChd->set_frames_to_recover(0 >= cc->awaking_frames_to_recover() ? globalPrimitiveConsts->default_awaking_frames() : cc->awaking_frames_to_recover());
                 }
             }
 
@@ -1029,14 +1030,20 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             if (tpConfigFromTile->has_gravity_factor()) {
                 biNoLock->SetGravityFactor(bodyID, tpConfigFromTile->gravity_factor()); 
+            } else {
+                biNoLock->SetGravityFactor(bodyID, 0); 
             }
 
             if (tpConfigFromTile->has_friction()) {
                 biNoLock->SetFriction(bodyID, tpConfigFromTile->friction()); 
+            } else {
+                biNoLock->SetFriction(bodyID, globalPrimitiveConsts->default_trap_friction()); 
             }
 
             if (tpConfigFromTile->has_restitution()) {
                 biNoLock->SetRestitution(bodyID, tpConfigFromTile->restitution()); 
+            } else {
+                biNoLock->SetRestitution(bodyID, globalPrimitiveConsts->default_trap_restitution()); 
             }
 
             if (tpConfigFromTile->has_barrier_attr()) {
@@ -1045,6 +1052,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                     if (terrainSpikeAllowedTrapStateSet.count(currTp.trap_state()) && !transientNonChOffenderUdsHavingBls.count(ud)) {
                         const Vec3 pos(currTp.x(), currTp.y(), currTp.z());
                         const Quat rot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
+                        // [REMINDER] Colliding box offsets will be calculated in bullet handling code snippets.
                         addNewTerrainSpikeToNextFrame(currRdfId, pos, rot, nextRdf, ud, globalPrimitiveConsts->default_trap_bullet_team_id());
                     }
                 }
@@ -1061,7 +1069,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             const CharacterDownsync& pickerChd = immutableCurrChdFromUd(currPk.picker_ud());
             const CharacterConfig* cc = getCc(pickerChd.species_id());
             float capsuleRadius = 0, capsuleHalfHeight = 0;
-            calcChdShape(pickerChd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+            calcChdShape(&pickerChd, pickerChd.ch_state(), cc, capsuleRadius, capsuleHalfHeight);
             nextPk->set_x(pickerChd.x());
             nextPk->set_y(pickerChd.y() + capsuleHalfHeight);
             nextPk->set_z(pickerChd.z());
@@ -1129,7 +1137,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
 
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_PLAYER, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderBulletTeamId, closestOffenderScore, closestOffenderPosDiff);
 
-            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+            postStepSingleChdStateCorrection(currRdfId, UDT_PLAYER, ud, single, currChd, currIsFlying, nextChd, cc, chOverride, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             if (isDead) {
                 if (CharacterState::Dying != nextChd->ch_state()) {
@@ -1142,6 +1150,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
         #endif
                     nextChd->set_hp(cc->hp());
                     nextChd->set_mp(cc->mp());
+                    if (cc->always_def1()) {
+                        nextChd->set_remaining_def1_quota(cc->default_def1_quota());
+                    }
                     nextChd->set_ch_state(CharacterState::Idle1);
                     nextChd->set_frames_in_ch_state(0);
 
@@ -1214,7 +1225,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             const bool currIsFlying = (currChd.omit_gravity() || cc->omit_gravity());
 
             stepSingleChdState(currRdfId, currRdf, nextRdf, dt, ud, UDT_NPC, cc, chOverride, single, currChd, currIsFlying, nextChd, groundBodyIsChCollider, isDead, cvOnWall, cvSupported, cvInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, closestOffenderUd, closestOffenderBulletTeamId, closestOffenderScore, closestOffenderPosDiff);
-            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, currIsFlying, nextChd, cc, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
+            postStepSingleChdStateCorrection(currRdfId, UDT_NPC, ud, single, currChd, currIsFlying, nextChd, cc, chOverride, cvSupported, cvInAir, cvOnWall, currNotDashing, currEffInAir, oldNextNotDashing, oldNextEffInAir, inJumpStartupOrJustEnded, cvGroundState, inputInducedMotion, stepResult);
 
             Quat currChdQ;
             Vec3 currChdFacing;
@@ -1352,11 +1363,17 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         case BulletType::Melee:
                             if (!lhsBlConfig->remains_upon_hit()) {
                                 shouldVanish = true;
-                                if (0 < lhsBlConfig->melee_hit_self_stun_frames() && nullptr != offenderNextChd && (hitOnCharacter || hitOnDestructibleTrap)) {
-                                    // [REMINDER] We're in a multi-threaded callback handler, in theory it's NOT thread-safe to update "offenderNextChd" here, but in this specific case it's thread-safe because there'd be AT MOST ONE ACTIVE MELEE bullet satisfying "0 < lhsBlConfig->melee_hit_self_stun_frames()" from an offender at each RenderFrame.     
-                                    if (offenderNextChd->ch_state() == lhsSkill->bound_ch_state()) {
-                                        offenderNextChd->set_hit_self_stun_frames(lhsBlConfig->melee_hit_self_stun_frames() + lhsBlConfig->cooldown_frames() - 1);
-                                        offenderNextChd->set_frames_to_recover(1);
+                            }
+
+                            if (0 < lhsBlConfig->melee_hit_self_stun_frames() && nullptr != offenderNextChd && (hitOnCharacter || hitOnDestructibleTrap)) {
+                                // [REMINDER] We're in a multi-threaded callback handler (already protected by "postPhysicsUpdateMTBarrier1", in theory it's NOT thread-safe to update "offenderNextChd" here, but in this specific case it's thread-safe because there'd be AT MOST ONE ACTIVE MELEE bullet satisfying "0 < lhsBlConfig->melee_hit_self_stun_frames()" from an offender at each RenderFrame.     
+                                if (offenderNextChd->ch_state() == lhsSkill->bound_ch_state()) {
+                                    int newHitSelfStunFrames = lhsBlConfig->melee_hit_self_stun_frames();
+                                    offenderNextChd->set_hit_self_stun_frames(newHitSelfStunFrames);
+                                    int oldFramesToRecover = offenderNextChd->frames_to_recover(); 
+                                    if (oldFramesToRecover < newHitSelfStunFrames) {
+                                        // [REMINDER] Extend "frames_to_recover" by "hit_self_stun_frames" if needed.
+                                        offenderNextChd->set_frames_to_recover(newHitSelfStunFrames);
                                     }
                                 }
                             }
@@ -1462,6 +1479,15 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 biNoLock->GetPositionAndRotation(bodyID, newPos, newRotFromPhySys);
                 Vec3 newVel(currBl.vel_x(), currBl.vel_y(), currBl.vel_z());
                 Vec3 newVelFromPhySys = biNoLock->GetLinearVelocity(bodyID);
+/*
+#ifndef NDEBUG
+                if (MechanicalBouncerSpherical == lhsBlConfig->b_type()) {
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", MechanicalBouncerSpherical bullet ud=" << ud << ", newVel=(" << newVel.GetX() << "," << newVel.GetY() << "), newVelFromPhySys=(" << newVelFromPhySys.GetX() << "," << newVelFromPhySys.GetY() << ")" << std::endl;
+                    Debug::Log(oss.str(), DColor::Orange);
+                } 
+#endif
+*/
                 if (MultiHitType::FromPrevHitActualOrActiveTimeUp == lhsBlConfig->mh_type()) {
                     newVel.SetX(newVelFromPhySys.GetX());
                 }
@@ -1495,11 +1521,24 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 if (0 < vanishingPosAddsCnt) {
                     vanishingPos += (vanishingPosAdds / vanishingPosAddsCnt);
                 }
+
+                Quat blEffQ(nextBl->q_x(), nextBl->q_y(), nextBl->q_z(), nextBl->q_w());
+                if (!lhsBlConfig->render_rotation_along_velocity()) {
+                    Vec3 blFacing;
+                    BaseBattleCollisionFilter::calcQFacing(*nextBl, blEffQ, blFacing);
+                    blEffQ = (0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis);
+                }
+
                 nextBl->set_bl_state(BulletState::Vanishing);
                 nextBl->set_frames_in_bl_state(0);
                 nextBl->set_x(vanishingPos.GetX());
                 nextBl->set_y(vanishingPos.GetY());
-                nextBl->set_z(0);
+                nextBl->set_z(vanishingPos.GetZ());
+
+                nextBl->set_q_x(blEffQ.GetX());
+                nextBl->set_q_y(blEffQ.GetY());
+                nextBl->set_q_z(blEffQ.GetZ());
+                nextBl->set_q_w(blEffQ.GetW());
 
                 nextBl->set_vel_x(0);
                 nextBl->set_vel_y(0);
@@ -1542,7 +1581,13 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                         biNoLock->GetPositionAndRotation(effBodyID, newPos, newRotFromPhySys);
                         Vec3 newVel, newAngVel;
                         biNoLock->GetLinearAndAngularVelocity(effBodyID, newVel, newAngVel);
-
+/*
+#ifndef NDEBUG
+                        std::ostringstream oss;
+                        oss << "@currRdfId=" << currRdfId << ", trap ud=" << ud << " after phySys collision, newPos=(" << newPos.GetX() << "," << newPos.GetY() << "), newVel=(" << newVel.GetX() << "," << newVel.GetY() << ")" << std::endl;
+                        Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
                         JPH_ASSERT(transientUdToNextTrap.count(ud));
                         Trap* nextTp = transientUdToNextTrap.at(ud);
 
@@ -1585,11 +1630,23 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                             transitToDying(currRdfId, currTp, nextTp);
                         }
 
-                        if (transientUdToColliderShapeOverrides.count(ud)) {
-                            const Shape* shape = transientUdToColliderShapeOverrides.at(ud);
-                            const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
-                            newPos -= castedShape->GetPosition();
-                            newRotFromPhySys = newRotFromPhySys*(castedShape->GetRotation().Conjugated());
+                        if (tpConfigFromTile->has_colliding_section_override()) {
+                            const SerializableConvexPolygon& collidingSection = tpConfigFromTile->colliding_section_override(); 
+                            if (collidingSection.is_box()) {
+                                if (transientUdToColliderShapeOverrides.count(ud)) {
+                                    const Shape* shape = transientUdToColliderShapeOverrides.at(ud);
+                                    const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
+/*
+#ifndef NDEBUG
+                                    std::ostringstream oss;
+                                    oss << "@currRdfId=" << currRdfId << ", trap ud=" << ud << " after phySys collision, subtracting newTrapPos=(" << newPos.GetX() << "," << newPos.GetY() << ") by (" << castedShape->GetPosition().GetX() << "," << castedShape->GetPosition().GetY() << ")" << std::endl;
+                                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+                                    newPos -= castedShape->GetPosition();
+                                    newRotFromPhySys = newRotFromPhySys*(castedShape->GetRotation().Conjugated());
+                                }
+                            }
                         }
 
                         nextTp->set_x(newPos.GetX());
@@ -2182,6 +2239,10 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         mutableChd->set_mp(chConfig->mp());
         auto* ccOverride = getChOverride(ud);
         FillInventoryFromConfig(chConfig, mutableChd, ccOverride);
+        
+        if (chConfig->always_def1()) {
+            mutableChd->set_remaining_def1_quota(chConfig->default_def1_quota());
+        }
     }
 
     for (int i = 0; i < startRdf->npc_count(); i++) {
@@ -2193,6 +2254,15 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
         mutableChd->set_mp(chConfig->mp());
         auto* ccOverride = getChOverride(ud);
         FillInventoryFromConfig(chConfig, mutableChd, ccOverride);
+
+        if (chConfig->always_def1()) {
+            mutableChd->set_remaining_def1_quota(chConfig->default_def1_quota());
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "ResetStartRdf/NPC ud=" << ud << " (always_def1) initialized remaining_def1_quota=" << mutableChd->remaining_def1_quota() << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+#endif
+        }
     }
 
     auto& trapConfigs = globalConfigConsts->trap_configs();
@@ -2464,7 +2534,7 @@ bool BaseBattle::ResetStartRdf(WsReq* initializerMapData) {
             if (0 > slopeOutwardNorm.GetY()) {
                 slopeOutwardNorm = -slopeOutwardNorm;
             }
-            BodyCreationSettings bodyCreationSettings(bodyShape, anchorPos, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+            BodyCreationSettings bodyCreationSettings(bodyShape, anchorPos, Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
             bodyCreationSettings.mUserData = staticColliderUd;
             bodyCreationSettings.mRestitution = globalPrimitiveConsts->default_barrier_restitution();
             bodyCreationSettings.mFriction = 5.0f*globalPrimitiveConsts->default_barrier_friction();
@@ -2858,11 +2928,13 @@ void BaseBattle::prepareJumpStartup(const int currRdfId, const CharacterDownsync
         nextChd->set_frames_in_ch_state(0);
         ioInputInducedMotion->slipJumpTriggered = true;
         ioInputInducedMotion->velCOM.SetY(currChd.ground_vel_y());
+/*
 #ifndef NDEBUG
         std::ostringstream oss;
         oss << "@currRdfId=" << currRdfId << ", groundUd=" << currChd.ground_ud() << " slip jump triggered at pos=(" << currChd.x() << "," << currChd.y() << "), cs=" << currChd.ch_state() << ", fc=" << currChd.frames_in_ch_state() << ", velCOM=(" << ioInputInducedMotion->velCOM.GetX() << ", " << ioInputInducedMotion->velCOM.GetY() << ")" << std::endl;
         Debug::Log(oss.str(), DColor::Yellow);
 #endif
+*/
     } else if (currIsFlying && !cc->omit_gravity() && cc->jump_holding_to_fly() && 0 >= currChd.flying_rdf_countdown()) {
         nextChd->set_ch_state(InAirIdle1NoJump);
         nextChd->set_frames_in_ch_state(0);
@@ -2930,7 +3002,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
         return;
     }
 
-    if (0 < currChd.frames_to_recover() || effInAir || !cc->has_def1() || 0 >= effDy) {
+    if (0 < nextChd->frames_to_recover() || effInAir || !cc->has_def1() || 0 >= effDy) {
         return;
     }
 
@@ -2970,7 +3042,7 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
     
     bool isInWalkingAtk = walkingAtkSet.count(currChd.ch_state());
     bool isInWalkingAtkAndNotRecovered = false;
-    if (0 < currChd.frames_to_recover()) {
+    if (0 < nextChd->frames_to_recover()) {
         if (!isInWalkingAtk) {
             return;
         } else {
@@ -3072,7 +3144,7 @@ void BaseBattle::processInertiaWalking(const int currRdfId, float dt, const Char
     bool recoverable3 = noOpSet.count(currChd.ch_state());
     bool recoverable4 = !nonAttackingSet.count(currChd.ch_state());
     bool recoverable5 = currDashing;
-    bool recoverable6 = ((Def1 == currChd.ch_state() || Def1Broken == currChd.ch_state()) && 0 >= effDy);
+    bool recoverable6 = cc->has_def1() && (Def1 == currChd.ch_state() && 0 >= effDy);
     if (currChd.ch_state() == nextChd->ch_state() && (recoverable1 || recoverable2 || recoverable3 || recoverable4 || recoverable5 || recoverable6)) {
         // Wrap up if none of the above conditions helped transit an attacking or attacked state into Idle1/Walking
         if (!isInWalkingAtkAndNotRecovered) {
@@ -3121,7 +3193,7 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
  
     bool isInWalkingAtk = walkingAtkSet.count(currChd.ch_state());
     bool isInWalkingAtkAndNotRecovered = false;
-    if (0 < currChd.frames_to_recover()) {
+    if (0 < nextChd->frames_to_recover()) {
         if (!isInWalkingAtk) {
             shouldReturnEarly = true;
         } else {
@@ -3175,11 +3247,11 @@ void BaseBattle::processInertiaFlying(const int currRdfId, float dt, const Chara
         }
     }
 
-    bool recoverable2 = atkedSet.count(currChd.ch_state());
-    bool recoverable3 = noOpSet.count(currChd.ch_state());
-    bool recoverable4 = !nonAttackingSet.count(currChd.ch_state());
-    bool recoverable5 = currDashing;
-    if (currChd.ch_state() == nextChd->ch_state() && (recoverable2 || recoverable3 || recoverable4 || recoverable5)) {
+    bool recoverable1 = atkedSet.count(currChd.ch_state());
+    bool recoverable2 = noOpSet.count(currChd.ch_state());
+    bool recoverable3 = !nonAttackingSet.count(currChd.ch_state());
+    bool recoverable4 = currDashing;
+    if (currChd.ch_state() == nextChd->ch_state() && (recoverable1 || recoverable2 || recoverable3 || recoverable4)) {
         // Wrap up if none of the above conditions helped transit an attacking or attacked state into Idle1/Walking
         if (!isInWalkingAtkAndNotRecovered) {
             if (0 != ioInputInducedMotion->forceCOM.GetX() || 0 != ioInputInducedMotion->forceCOM.GetY()) {
@@ -3205,6 +3277,7 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     }
 
     float newOriginatedX = newPos.GetX(), newOriginatedY = newPos.GetY(), newX = newPos.GetX(), newY = newPos.GetY();
+
     float dstQx = referenceBullet->q_x();
     float dstQy = referenceBullet->q_y();
     float dstQz = referenceBullet->q_z();
@@ -3273,34 +3346,34 @@ bool BaseBattle::addNewCharacterBulletToNextFrame(const int currRdfId, const Cha
 
     Vec3 blInitOffset(bulletConfig.hitbox_offset_x(), bulletConfig.hitbox_offset_y(), 0);
     Vec3 blEffOffset = Vec3::sZero();
-    JPH::Quat blEffQ = JPH::Quat::sIdentity();
+    Quat blEffQ = Quat::sIdentity();
     if (nullptr != referenceBullet) {
         if (bulletConfig.mh_inherits_spin()) {
             blEffQ.Set(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
             blEffOffset = blEffQ*blInitOffset; 
         } else {
-            JPH::Quat refQ(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
+            Quat refQ(referenceBullet->q_x(), referenceBullet->q_y(), referenceBullet->q_z(), referenceBullet->q_w());
             BaseBattleCollisionFilter::clampChdQ(refQ, referenceBullet->vel_x());
             Vec3 blFacing;
             BaseBattleCollisionFilter::calcQFacing(*referenceBullet, refQ, blFacing);
             blEffQ = (0 < blFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis);
             if (bulletConfig.has_init_q()) {
                 auto& initQ = bulletConfig.init_q();
-                blEffQ = blEffQ*JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
+                blEffQ = blEffQ*Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
             }
             blEffOffset = blEffQ*blInitOffset; 
         }
         
     } else {
-        JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+        Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
         if (OnWallAtk1 == skillConfig->bound_ch_state()) {
             offenderEffQ = cTurnbackAroundYAxis * offenderEffQ;
         }
-        JPH::Quat offenderEffAimingQ = JPH::Quat(currChd->aiming_q_x(), currChd->aiming_q_y(), currChd->aiming_q_z(), currChd->aiming_q_w()) * offenderEffQ;
+        Quat offenderEffAimingQ = Quat(currChd->aiming_q_x(), currChd->aiming_q_y(), currChd->aiming_q_z(), currChd->aiming_q_w()) * offenderEffQ;
         blEffOffset = offenderEffAimingQ*blInitOffset; 
         if (bulletConfig.has_init_q()) {
             auto& initQ = bulletConfig.init_q();
-            blEffQ = offenderEffAimingQ*JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
+            blEffQ = offenderEffAimingQ*Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w());
         } else {
             blEffQ = offenderEffAimingQ;
         }
@@ -3504,6 +3577,10 @@ bool BaseBattle::addNewNpcToNextFrame(int currRdfId, float x, float y, float qx,
     nextChd->set_hp(chConfig->hp());
     nextChd->set_mp(chConfig->mp());
 
+    if (chConfig->always_def1()) {
+        nextChd->set_remaining_def1_quota(chConfig->default_def1_quota());
+    }
+
     Quat nextChdQ;
     Vec3 nextChdFacing;
     BaseBattleCollisionFilter::calcChdFacing((*nextChd), nextChdQ, nextChdFacing);
@@ -3694,36 +3771,68 @@ void BaseBattle::elapse1RdfForNpcChd(const int currRdfId, NpcCharacterDownsync* 
 
 void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, CharacterDownsync* cd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* characterOverride) {
     if (0 < cd->hit_self_stun_frames()) {
-        cd->set_hit_self_stun_frames(cd->hit_self_stun_frames() - 1);
+        int newHitSelfStunFrames = cd->hit_self_stun_frames() - 1;
+/*
+#ifndef NDEBUG
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << " characterUd=" << ud << " setting hit_self_stun_frames to " << newHitSelfStunFrames;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+        cd->set_hit_self_stun_frames(newHitSelfStunFrames);
     } else {
-        int newFramesInChState = cd->frames_in_ch_state();
+        cd->set_hit_self_stun_frames(0);
+    }
+    
+    int newFramesInChState = cd->frames_in_ch_state();
+    if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > cd->frames_to_recover()) {
+        // The regular case
+        cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
+        ++newFramesInChState; // Regardless of "MagicRdfCntInfinite <= newFramesInChState" or not, this is for playing cooldown animation of GroundImpact or WallImpact skills.
+    } else {
+        // "cd->frames_to_recover()" remains unchanged
+        if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > newFramesInChState) {
+            ++newFramesInChState;
+        } // Otherwise saturates but no need to rotate
+    }
+    cd->set_frames_in_ch_state(newFramesInChState);
+
+    int oldDef1BrokenRdfCountdown = cd->def1_broken_rdf_countdown();
+    int newDef1BrokenRdfCountdown = oldDef1BrokenRdfCountdown - 1;
+    if (0 > newDef1BrokenRdfCountdown) {
+        newDef1BrokenRdfCountdown = 0;
+    }
+    cd->set_def1_broken_rdf_countdown(newDef1BrokenRdfCountdown);
+    if (0 < oldDef1BrokenRdfCountdown && 0 >= newDef1BrokenRdfCountdown) {
+        if (cc->always_def1()) {
+            cd->set_remaining_def1_quota(cc->default_def1_quota());
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", replenished remaining_def1_quota=" << cd->remaining_def1_quota() << " due to Def1Broken countdown finsihed" << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+        } else {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", Def1Broken countdown finsihed" << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+#endif
+        }
+        
+    }
+
+    if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
+        int newLowerPartRdfCnt = cd->lower_part_rdf_cnt();
         if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > cd->frames_to_recover()) {
             // The regular case
-            cd->set_frames_to_recover((0 < cd->frames_to_recover() ? cd->frames_to_recover() - 1 : 0));
-            ++newFramesInChState; // Regardless of "MagicRdfCntInfinite <= newFramesInChState" or not, this is for playing cooldown animation of GroundImpact or WallImpact skills.
+            ++newLowerPartRdfCnt;
         } else {
-            // "cd->frames_to_recover()" remains unchanged
-            if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > newFramesInChState) {
-                ++newFramesInChState;
+            if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > newLowerPartRdfCnt) {
+                ++newLowerPartRdfCnt;
             } // Otherwise saturates but no need to rotate
         }
 
-        cd->set_frames_in_ch_state(newFramesInChState);
-
-        if (globalPrimitiveConsts->terminating_lower_part_rdf_cnt() != cd->lower_part_rdf_cnt()) {  
-            int newLowerPartRdfCnt = cd->lower_part_rdf_cnt();
-            if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > cd->frames_to_recover()) {
-                // The regular case
-                ++newLowerPartRdfCnt;
-            } else {
-                if (globalPrimitiveConsts->magic_rdf_cnt_infinite() > newLowerPartRdfCnt) {
-                    ++newLowerPartRdfCnt;
-                } // Otherwise saturates but no need to rotate
-            }
-
-            cd->set_lower_part_rdf_cnt(newLowerPartRdfCnt);
-        }
+        cd->set_lower_part_rdf_cnt(newLowerPartRdfCnt);
     }
+
     cd->set_walkstopping_rdf_countdown(0 < cd->walkstopping_rdf_countdown() ? cd->walkstopping_rdf_countdown() - 1 : 0);
     cd->set_fallstopping_rdf_countdown(0 < cd->fallstopping_rdf_countdown() ? cd->fallstopping_rdf_countdown() - 1 : 0);
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
@@ -4090,6 +4199,9 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
             Vec3 newTrapPos(currTp.x(), currTp.y(), currTp.z());
             Quat newTrapRot(currTp.q_x(), currTp.q_y(), currTp.q_z(), currTp.q_w());
+            
+            Vec3 collidingSectionOverridePos(0, 0, 0);
+            Quat collidingSectionOverrideRot(0, 0, 0, 1);
 
             if (nullptr != tpConfigFromTile && tpConfigFromTile->has_colliding_section_override()) {
                 const SerializableConvexPolygon& collidingSection = tpConfigFromTile->colliding_section_override(); 
@@ -4109,10 +4221,21 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                     const Vec3 existingHalfExtent = innerShape->GetHalfExtent();
                     immediateBoxHalfSizeX = existingHalfExtent.GetX();               
                     immediateBoxHalfSizeY = existingHalfExtent.GetY();
-                    newTrapPos += castedShape->GetPosition();
-                    newTrapRot = newTrapRot*castedShape->GetRotation();
+/*
+#ifndef NDEBUG
+                    std::ostringstream oss;
+                    oss << "@currRdfId=" << currRdfId << ", trap ud=" << ud << " before phySys collision, adding newTrapPos=(" << newTrapPos.GetX() << "," << newTrapPos.GetY() << ") by (" << castedShape->GetPosition().GetX() << "," << castedShape->GetPosition().GetY() << "), updated immediateBoxHalfSize=(" << immediateBoxHalfSizeX << "," << immediateBoxHalfSizeY << ")" << std::endl;
+                    Debug::Log(oss.str(), DColor::Orange);
+#endif
+*/
+                    collidingSectionOverridePos = castedShape->GetPosition();
+                    collidingSectionOverrideRot = castedShape->GetRotation(); 
                 }
             }
+
+            newTrapPos += collidingSectionOverridePos;
+            newTrapRot = newTrapRot*collidingSectionOverrideRot;
+
             TP_COLLIDER_T* tpCollider = getOrCreateCachedTrapCollider_NotThreadSafe(ud, tpConfig, tpConfigFromTile, immediateBoxHalfSizeX, immediateBoxHalfSizeY, false, newTrapPos, newTrapRot);
             auto trapBodyID = tpCollider->GetID();
             if (nullptr != tpConfigFromTile) {
@@ -4142,8 +4265,12 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 The "constraintHelperBody" is added into "activeTpColliders", hence it will be deactivated by "BaseBattle::batchRemoveFromPhySysAndCache" and deallocated by "BaseBattle::Clear" too.
                 */
                 JPH_ASSERT(nullptr != tpConfigFromTile);
-                Vec3Arg newHelperPos(tpConfigFromTile->init_x(), tpConfigFromTile->init_y(), tpConfigFromTile->init_z());
-                QuatArg newHelperRot(tpConfigFromTile->init_q_x(), tpConfigFromTile->init_q_y(), tpConfigFromTile->init_q_z(), tpConfigFromTile->init_q_w());
+                Vec3 newHelperPos(tpConfigFromTile->init_x(), tpConfigFromTile->init_y(), tpConfigFromTile->init_z());
+                Quat newHelperRot(tpConfigFromTile->init_q_x(), tpConfigFromTile->init_q_y(), tpConfigFromTile->init_q_z(), tpConfigFromTile->init_q_w());
+
+                newHelperPos += collidingSectionOverridePos;
+                newHelperRot = newHelperRot*collidingSectionOverrideRot;
+
                 TP_COLLIDER_T* constraintHelperBody = getOrCreateCachedTrapCollider_NotThreadSafe(ud, tpConfig, tpConfigFromTile, immediateBoxHalfSizeX, immediateBoxHalfSizeY, true, newHelperPos, newHelperRot);
                 auto constraintHelperBodyID = constraintHelperBody->GetID();
                 if (!constraintHelperBody->IsInBroadPhase()) {
@@ -4185,18 +4312,18 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                 Quat currChdQ;
                 Vec3 currChdFacing;
                 BaseBattleCollisionFilter::calcChdFacing(currChd, currChdQ, currChdFacing);
-                JPH::Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
+                Quat offenderEffQ = 0 < currChdFacing.GetX() ? cIdentityQ : cTurnbackAroundYAxis;
                 if (OnWallAtk1 == skill->bound_ch_state()) {
                     offenderEffQ = cTurnbackAroundYAxis*offenderEffQ;
                 }
-                JPH::Quat offenderEffAimingQ = JPH::Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
+                Quat offenderEffAimingQ = Quat(currChd.aiming_q_x(), currChd.aiming_q_y(), currChd.aiming_q_z(), currChd.aiming_q_w())*offenderEffQ;
                 Vec3 blInitOffset(bulletConfig->hitbox_offset_x(), bulletConfig->hitbox_offset_y(), 0);
                 Vec3 blEffOffset = offenderEffAimingQ*blInitOffset; 
                 newPos.SetX(currChd.x() + blEffOffset.GetX());
                 newPos.SetY(currChd.y() + blEffOffset.GetY());
                 if (bulletConfig->has_init_q()) {
                     auto& initQ = bulletConfig->init_q();
-                    newRot = JPH::Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
+                    newRot = Quat(initQ.x(), initQ.y(), initQ.z(), initQ.w()) * offenderEffAimingQ;
                 } else {
                     newRot = offenderEffAimingQ;
                 }
@@ -4209,7 +4336,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
                     const Vec3 existingHalfExtent = innerShape->GetHalfExtent();
                     const Trap* currTp = transientUdToCurrTrap.at(offenderUd);
                     if (globalPrimitiveConsts->tpts().rotating_platform() == currTp->tpt()) {
-                        Quat currTpQ = JPH::Quat(currTp->q_x(), currTp->q_y(), currTp->q_z(), currTp->q_w());
+                        Quat currTpQ = Quat(currTp->q_x(), currTp->q_y(), currTp->q_z(), currTp->q_w());
                         newPos = Vec3(currTp->x(), currTp->y(), currTp->z()) + currTpQ*castedShape->GetPosition();
                         newRot = currTpQ * castedShape->GetRotation();
                     } else {
@@ -4251,10 +4378,42 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         if (!collidableTrtSet.count(currTr.trt())) continue;
         
         auto* triggerConfigFromTile = triggerConfigFromTileDict.at(currTr.id()); 
+        float immediateBoxHalfSizeX = triggerConfigFromTile->box_half_size_x();
+        float immediateBoxHalfSizeY = triggerConfigFromTile->box_half_size_y(); 
+
+        Vec3 collidingSectionOverridePos(0, 0, 0);
+        Quat collidingSectionOverrideRot(0, 0, 0, 1);
+
+        if (nullptr != triggerConfigFromTile && triggerConfigFromTile->has_colliding_section_override()) {
+            const SerializableConvexPolygon& collidingSection = triggerConfigFromTile->colliding_section_override(); 
+            if (collidingSection.is_box()) {
+                if (!transientUdToColliderShapeOverrides.count(ud)) {
+                    Vec3 slopeEdgeNorm(0, 0, 0);
+                    Vec3 anchorPos;
+                    Quat anchorQ;
+                    Shape::ShapeResult shapeResult;
+                    const Shape* bodyShape = calcBodyShapeFromSerializedInput(&collidingSection, anchorPos, anchorQ, slopeEdgeNorm, shapeResult);
+                    const RotatedTranslatedShape* rtShape = new RotatedTranslatedShape(anchorPos, anchorQ, bodyShape);
+                    transientUdToColliderShapeOverrides[ud] = rtShape;
+                }
+                const Shape* shape = transientUdToColliderShapeOverrides.at(ud);
+                const RotatedTranslatedShape* castedShape = static_cast<const RotatedTranslatedShape*>(shape);
+                const BoxShape* innerShape = static_cast<const BoxShape*>(castedShape->GetInnerShape());
+                const Vec3 existingHalfExtent = innerShape->GetHalfExtent();
+                immediateBoxHalfSizeX = existingHalfExtent.GetX();               
+                immediateBoxHalfSizeY = existingHalfExtent.GetY();
+                collidingSectionOverridePos = castedShape->GetPosition();
+                collidingSectionOverrideRot = castedShape->GetRotation(); 
+            }
+        }
 
         Vec3 newPos(currTr.x(), currTr.y(), currTr.z());
         Quat newRot(triggerConfigFromTile->init_q_x(), triggerConfigFromTile->init_q_y(), triggerConfigFromTile->init_q_z(), triggerConfigFromTile->init_q_w());
-        auto trCollider = getOrCreateCachedTriggerCollider_NotThreadSafe(ud, currTr.trt(), triggerConfigFromTile->box_half_size_x(), triggerConfigFromTile->box_half_size_y(), newPos, newRot);
+
+        newPos += collidingSectionOverridePos;
+        newRot = newRot*collidingSectionOverrideRot;
+
+        auto trCollider = getOrCreateCachedTriggerCollider_NotThreadSafe(ud, currTr.trt(), immediateBoxHalfSizeX, immediateBoxHalfSizeY, newPos, newRot);
         transientUdToCollisionUdHolder[ud] = collisionUdHolderStockCache.Take_ThreadSafe();
         auto bodyID = trCollider->GetID();
         if (!trCollider->IsInBroadPhase()) {
@@ -4424,13 +4583,13 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     }
                 } else if (mD <= tpConfigFromTile->limit_1()) {
                     if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
-/*
+
 #ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit1=" << tpConfigFromTile->limit_1() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << "), worldSpaceSliderAxis=(" << worldSpaceSliderAxis.GetX() << ", " << worldSpaceSliderAxis.GetY() << ")";
                         Debug::Log(oss.str(), DColor::Orange);
 #endif
-*/
+
                         nextTp->set_trap_state(TrapState::TpIdle);
                         nextTp->set_frames_in_trap_state(0);
                         newTpLinearVel = Vec3::sZero();
@@ -4453,13 +4612,11 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
                     }
                 } else if (mD >= tpConfigFromTile->limit_2()) {
                     if (TrapState::TpWalking == currTp.trap_state() && (effCooldownRdfCount < globalPrimitiveConsts->magic_rdf_cnt_infinite() && effCooldownRdfCount <= currTp.frames_in_trap_state())) {
-    /*
-    #ifndef NDEBUG
+#ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << " currTp ud=" << ud << " at currPos=(" << currTp.x() <<  ", " << currTp.y() << "), currQ=(" << currTp.q_x() << ", " << currTp.q_y() << ", " << currTp.q_z() << ", " << currTp.q_w() << "), mD=" << mD << ", vel=(" << currTp.vel_x() << ", " << currTp.vel_y() << ")" << "; about to transit from walking to idle per limit2=" << tpConfigFromTile->limit_2() << ", initVel=(" << initVel.GetX() << ", " << initVel.GetY() << ")";
                         Debug::Log(oss.str(), DColor::Orange);
-    #endif
-    */
+#endif
                         nextTp->set_trap_state(TrapState::TpIdle);
                         nextTp->set_frames_in_trap_state(0);
                         newTpLinearVel = Vec3::sZero();
@@ -4967,11 +5124,7 @@ void BaseBattle::deriveCharacterOpPattern(const int currRdfId, const CharacterDo
     updateBtnHoldingByInput(currChd, ifDecoded, nextChd);
 
     // Jumping is partially allowed within "CapturedByInertia", but moving is only allowed when "0 == frames_to_recover()" (constrained later in "stepSingleChdState")
-    if (0 >= currChd.frames_to_recover()) {
-        outEffDx = ifDecoded.dx();
-        outEffDy = ifDecoded.dy();
-    } else if (!currEffInAir && 1 >= currChd.frames_to_recover() && 0 > ifDecoded.dy() && cc->crouching_enabled()) {
-        // to favor smooth crouching transition
+    if (1 >= currChd.frames_to_recover()) {
         outEffDx = ifDecoded.dx();
         outEffDy = ifDecoded.dy();
     } else if (WalkingAtk1 == currChd.ch_state() || WalkingAtk4 == currChd.ch_state()) {
@@ -5202,8 +5355,8 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
         }
             
         Quat currChdQRaw(currChd.q_x(), currChd.q_y(), currChd.q_z(), currChd.q_w());
-        const JPH::Quat newYRot = JPH::Quat::sRotation(cYAxis, dt*ioInputInducedMotion->angVelCOM.GetY()); 
-        JPH::Quat nextChdQ = newYRot*currChdQRaw; 
+        const Quat newYRot = Quat::sRotation(cYAxis, dt*ioInputInducedMotion->angVelCOM.GetY()); 
+        Quat nextChdQ = newYRot*currChdQRaw; 
 /*
 #ifndef NDEBUG 
         if (onWallSet.count(currChd.ch_state()) && 0 != effDx) {
@@ -5338,7 +5491,7 @@ void BaseBattle::processDelayedBulletSelfVel(const int currRdfId, const Characte
     }
 }
 
-void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
+void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult) {
 
     CharacterState oldNextChState = nextChd->ch_state();
 
@@ -5361,9 +5514,9 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             switch (oldNextChState) {
             case Idle1:
             case CrouchIdle1:
+            case CrouchWalking:
             case Def1:
             case Walking:
-            case CrouchWalking:
                 if (Walking == oldNextChState) {
                     if (cc->omit_gravity()) {
                         // [WARNING] No need to distinguish in this case.
@@ -5397,9 +5550,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                     // [REMINDER] There's no "air-defense" by design
                     nextChd->set_remaining_def1_quota(0);
                 }
-                break;
-            case Def1Broken:
-                nextChd->set_ch_state(InAirAtked1);
                 break;
             }
         }
@@ -5442,7 +5592,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
             case LayDown1:
             case GetUp1:
             case Def1:
-            case Def1Broken:
                 // Not changing anything.
                 break;
             case InAirWalking:
@@ -5474,7 +5623,6 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
                 nextChd->set_vel_y(nextChd->ground_vel_y());
                 break;
             case Atked1:
-            case Def1Broken:
                 nextChd->set_ch_state(CrouchAtked1);
                 nextChd->set_vel_x(nextChd->ground_vel_x());
                 nextChd->set_vel_y(nextChd->ground_vel_y());
@@ -5512,12 +5660,23 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     // Remove any active skill if not attacking
     bool notDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
     if (nonAttackingSet.count(nextChd->ch_state()) && notDashing) {
+/*
+#ifndef NDEBUG
+        if (UDT_PLAYER == udt) {
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << " characterUd=" << ud << " setting hit_self_stun_frames 0 because original nextChdChState=" << nextChd->ch_state() << ", nextFc=" << nextChd->frames_in_ch_state();
+            Debug::Log(oss.str(), DColor::Yellow);
+        }
+#endif
+*/
         nextChd->set_hit_self_stun_frames(0);
         nextChd->set_active_skill_id(globalPrimitiveConsts->no_skill());
         nextChd->set_active_skill_hit(globalPrimitiveConsts->no_skill_hit());
     }
 
-    if ((InAirAtked1 == nextChd->ch_state() || CrouchAtked1 == nextChd->ch_state() || Atked1 == nextChd->ch_state()) && (UINT_MAX >> 1) < nextChd->frames_to_recover()) {
+    if (atkedSet.count(nextChd->ch_state()) 
+        && (globalPrimitiveConsts->magic_rdf_cnt_infinite() >> 1) < nextChd->frames_to_recover()
+    ) {
         nextChd->set_ch_state(BlownUp1);
         if (nextChd->omit_gravity()) {
             if (cc->omit_gravity()) {
@@ -5528,7 +5687,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
         }
     }
 
-    if (Def1 != nextChd->ch_state()) {
+    if (Def1 != nextChd->ch_state() && !cc->always_def1()) {
         nextChd->set_remaining_def1_quota(0);
     } else {
         if (Def1 != currChd.ch_state()) {
@@ -6187,9 +6346,13 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
 
     chd->set_wall_ud(0);
 
+    chd->set_crouch_forcer_ud(0);
+
     chd->set_frames_to_recover(0);
 
     chd->set_new_birth_rdf_countdown(0);
+
+    chd->set_def1_broken_rdf_countdown(0);
 
     chd->set_frames_invinsible(0);
 
@@ -6520,11 +6683,15 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
 
     to->set_wall_ud(from->wall_ud());
 
+    to->set_crouch_forcer_ud(from->crouch_forcer_ud());
+
     to->set_frames_to_recover(from->frames_to_recover());
 
     to->set_hit_self_stun_frames(from->hit_self_stun_frames());
 
     to->set_new_birth_rdf_countdown(from->new_birth_rdf_countdown());
+
+    to->set_def1_broken_rdf_countdown(from->def1_broken_rdf_countdown());
 
     to->set_frames_invinsible(from->frames_invinsible());
 
@@ -6725,12 +6892,10 @@ bool BaseBattle::useSkill(const int currRdfId, RenderFrame* nextRdf, const Chara
             return false;
         }
 
-        int effFramesInChState = currChd.frames_in_ch_state() + (activeBulletConfig->melee_hit_self_stun_frames() - currChd.hit_self_stun_frames());
-
         bool activeSkillHitCancellable = (
-                                            activeBulletConfig->cancellable_st_frame() <= effFramesInChState  
+                                            activeBulletConfig->cancellable_st_frame() <= currChd.frames_in_ch_state()   
                                             && 
-                                            effFramesInChState <= activeBulletConfig->cancellable_ed_frame()
+                                            currChd.frames_in_ch_state() <= activeBulletConfig->cancellable_ed_frame()
                                          ); 
 
         if (false == activeSkillHitCancellable) {
@@ -6946,7 +7111,7 @@ CH_COLLIDER_T* BaseBattle::createDefaultCharacterCollider(const CharacterConfig*
 }
 
 BL_COLLIDER_T* BaseBattle::createDefaultBulletCollider(const BulletType blType, const ConvexShapeSettings* shapeSettings, const EMotionType immediateMotionType, const bool isSensor, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
-    BodyCreationSettings bodyCreationSettings(shapeSettings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
+    BodyCreationSettings bodyCreationSettings(shapeSettings, safeDeactiviatedPosition, Quat::sIdentity(), immediateMotionType, MyObjectLayers::MOVING);
     bodyCreationSettings.mAllowDynamicOrKinematic = true;
     bodyCreationSettings.mLinearDamping = 0; // [TODO] The default is "0.05".
     bodyCreationSettings.mIsSensor = isSensor;
@@ -6978,7 +7143,7 @@ TP_COLLIDER_T* BaseBattle::createDefaultTrapCollider(const Vec3Arg& newHalfExten
 TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
     Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
-    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
+    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, Quat::sIdentity(), EMotionType::Static, MyObjectLayers::NON_MOVING);
     bodyCreationSettings.mLinearDamping = 0;
     bodyCreationSettings.mGravityFactor = 0; 
     bodyCreationSettings.mIsSensor = true;
@@ -6995,7 +7160,7 @@ TR_COLLIDER_T* BaseBattle::createDefaultTriggerCollider(const float immediateBox
 TR_COLLIDER_T* BaseBattle::createDefaultPickableCollider(const uint32_t pType, const float immediateBoxHalfSizeX, const float immediateBoxHalfSizeY, const float newConvexRadius, const Vec3Arg& newPos, const QuatArg& newRot, BodyInterface* inBodyInterface) {
     Vec3 halfExtent(immediateBoxHalfSizeX, immediateBoxHalfSizeY, globalPrimitiveConsts->default_half_thickness());
     BoxShapeSettings* settings = new BoxShapeSettings(halfExtent, newConvexRadius); // transient, to be discarded after creating "body"
-    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, JPH::Quat::sIdentity(), EMotionType::Dynamic, MyObjectLayers::MOVING);
+    BodyCreationSettings bodyCreationSettings(settings, safeDeactiviatedPosition, Quat::sIdentity(), EMotionType::Dynamic, MyObjectLayers::MOVING);
     bodyCreationSettings.mLinearDamping = 0;
     bodyCreationSettings.mGravityFactor = 1.0f; // [TODO] Make it customizable 
     bodyCreationSettings.mIsSensor = false;
@@ -7044,7 +7209,7 @@ NON_CONTACT_CONSTRAINT_T* BaseBattle::createDefaultNonContactConstraint(const EC
     return nullptr;
 }
 
-void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight) {
+void BaseBattle::calcChdShape(const CharacterDownsync* chd, const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight) {
     switch (chState) {
     case LayDown1:
     case GetUp1:
@@ -7062,7 +7227,6 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
     case InAirIdle1ByWallJump:
     case InAirWalking:
     case InAirAtk1:
-    case InAirAtked1:
     case OnWallIdle1:
     case OnWallAtk1:
     case Sliding:
@@ -7090,6 +7254,15 @@ void BaseBattle::calcChdShape(const CharacterState chState, const CharacterConfi
         outCapsuleRadius = cc->shrinked_capsule_radius();
         outCapsuleHalfHeight = cc->shrinked_capsule_half_height() * globalPrimitiveConsts->default_crouching_y_shrink_factor(); // [REMINDER] Why is this needed? When slip jumping there's often no "relative y-axis velocity between character and the slippable platform", thus without a shape change we might NOT invoke the expected "OnContactValidate".
         break;
+    case Atked1:
+        if (0 == chd->ground_ud()) {
+            // i.e. InAirAtked1
+            outCapsuleRadius = cc->shrinked_capsule_radius();
+            outCapsuleHalfHeight = cc->shrinked_capsule_half_height();
+        } else {
+            outCapsuleRadius = cc->capsule_radius();
+            outCapsuleHalfHeight = cc->capsule_half_height();
+        }
     default:
         outCapsuleRadius = cc->capsule_radius();
         outCapsuleHalfHeight = cc->capsule_half_height();
@@ -7108,7 +7281,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     /*
     [TODO] For damage taking, calculate all "hurtboxUds (by BaseBattleCollisionFilter::calcXxxHurtboxUserData)" and "sheldboxUds (by BaseBattleCollisionFilter::calcXxxShieldboxUserData)", then traverse and aggregate over "transientUdToCollisionUdHolder[each hurtboxUd/shieldboxUd]".
     */
-    JPH::Quat nextChdQ;
+    Quat nextChdQ;
     Vec3 nextChdFacing;
     calcChdFacing(*nextChd, nextChdQ, nextChdFacing);
 
@@ -7343,6 +7516,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 
     nextChd->set_ground_ud(newGroundUd); // For "GroundImpact" transition regardless of "cvSupported" being true or false.
 
+/*
 #ifndef NDEBUG
     if (InAirIdle1BySlipJump == nextChd->ch_state()) {
         std::ostringstream oss1;
@@ -7350,7 +7524,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         Debug::Log(oss1.str(), DColor::Orange);
     }
 #endif
-
+*/
 
     if (cvSupported) {
         const TransformedShape& newGroundTs = biNoLock->GetTransformedShape(newGroundBodyID);
@@ -7479,7 +7653,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         nextChd->set_x(currChd.x()); // [WARNING] compensation for this known caveat of Jolt with horizontal-position change while GroundNormal is kept unchanged 
     }
 
-    bool successfulDef1OrDef1BrokenExtended = (0 < newEffDef1QuotaReduction || Def1Broken == currChd.ch_state());
+    bool successfulDef1OrDef1BrokenExtended = (0 < newEffDef1QuotaReduction || 0 < currChd.def1_broken_rdf_countdown());
     if (0 < newEffDamage) {
         jamBtnHolding(nextChd);
         if (!successfulDef1OrDef1BrokenExtended) {
@@ -7498,36 +7672,42 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
             if (cc->default_def1_broken_frames_to_recover() > newEffFramesToRecover) {
                 newEffFramesToRecover = cc->default_def1_broken_frames_to_recover();
             }
+            nextChd->set_ch_state(Atked1);
+            nextChd->set_def1_broken_rdf_countdown(newEffFramesToRecover);
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " Def1Broken from oldNextChState=" << nextChd->ch_state() << ", newEffFramesToRecover=" << newEffFramesToRecover << std::endl;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", Def1Broken from oldNextChState=" << nextChd->ch_state() << ", newEffFramesToRecover=" << newEffFramesToRecover << std::endl;
             Debug::Log(oss.str(), DColor::Yellow);
 #endif
             newRemainingDef1Quota = 0;
-            nextChd->set_ch_state(Def1Broken);
         }
         nextChd->set_remaining_def1_quota(newRemainingDef1Quota);
-    }
-
-    bool notYetInAtkedChState = !atkedSet.count(nextChd->ch_state()) && BlownUp1 != nextChd->ch_state() && Def1Broken != nextChd->ch_state();
-    if (notYetInAtkedChState && newEffAtked) {
-        // [REMINDER] Covers "hardness induced ch_state continuation when hit"
-        if (cvOnWall || cvInAir || inAirSet.count(currChd.ch_state()) || inAirSet.count(nextChd->ch_state())) {
-            nextChd->set_ch_state(InAirAtked1);
-        } else {
-            nextChd->set_ch_state(Atked1);
-        }
-    }
 
 #ifndef NDEBUG
-    bool framesToRecoverIncreased = (newEffFramesToRecover > oldEffFramesToRecover);
-    if (Def1Broken == currChd.ch_state() && framesToRecoverIncreased) {
         std::ostringstream oss;
-        oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << ", bodyId=" << single->GetBodyID().GetIndexAndSequenceNumber() << " newEffFramesToRecover=" << newEffFramesToRecover << " extended from oldEffFramesToRecover=" << oldEffFramesToRecover << " during Def1Broken" << std::endl;
-        Debug::Log(oss.str(), DColor::Yellow);
-    }
+        oss << "@currRdfId=" << currRdfId << "/stepSingleChdState/newEffDef1QuotaReduction=" << newEffDef1QuotaReduction << ", character ud=" << ud << " with newEffDamage=" << newEffDamage << ", newEffFramesToRecover=" << newEffFramesToRecover << ", newRemainingDef1Quota=" << nextChd->remaining_def1_quota() << std::endl;
+        Debug::Log(oss.str(), DColor::Orange);
 #endif
+    }
+
+    bool notYetInAtkedChState = !atkedSet.count(nextChd->ch_state()) && BlownUp1 != nextChd->ch_state();
+    if (notYetInAtkedChState && newEffAtked) {
+        // [REMINDER] Covers "hardness induced ch_state continuation when hit"
+        nextChd->set_ch_state(Atked1);
+    }
+
     nextChd->set_frames_to_recover(newEffFramesToRecover);
+    if (0 < currChd.def1_broken_rdf_countdown()) {
+        int oldDef1BrokenRdfCountdown = currChd.def1_broken_rdf_countdown(); 
+        if (oldDef1BrokenRdfCountdown < newEffFramesToRecover) {
+            nextChd->set_def1_broken_rdf_countdown(newEffFramesToRecover);
+#ifndef NDEBUG
+            std::ostringstream oss;
+            oss << "@currRdfId=" << currRdfId << ", character ud=" << ud << " newEffFramesToRecover=" << newEffFramesToRecover << " extended from oldDef1BrokenRdfCountdown=" << oldDef1BrokenRdfCountdown << " during Def1Broken" << std::endl;
+            Debug::Log(oss.str(), DColor::Yellow);
+#endif
+        } 
+    }
 
     if (globalPrimitiveConsts->no_lock_vel() != newEffPushbackVelX) {
         nextChd->set_vel_x(newEffPushbackVelX);
@@ -7542,9 +7722,10 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
     CharacterState oldNextChState = nextChd->ch_state();
     const TransformedShape& chdTs = single->GetTransformedShape(false);
 
+    nextChd->set_crouch_forcer_ud(0);
+
     if (!isDead && cc->crouching_enabled() && cvSupported && isCrouching(currChd.ch_state(), cc) && !isCrouching(oldNextChState, cc)) {
         CharacterContactPushbackCollector crouchCollector(currRdfId, nextRdf, biNoLock, ud, udt, bodyID, &currChd, cc, nextChd, single->GetUp(), newPos, this, inputInducedMotion, currIsFlying, nextChdFacing);
-
         const RotatedTranslatedShape* currShape = static_cast<const RotatedTranslatedShape*>(single->GetShape());
         const CapsuleShape* currInnerShape = static_cast<const CapsuleShape*>(currShape->GetInnerShape());
 
@@ -7566,9 +7747,9 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
         ChdPostPhysicsNarrowPhaseBodyFilter chBodyFilter(&chdAABB, &currChd, nextChd, bodyID, ud, udt, this);
 
         narrowPhaseQueryNoLock->CollideShape(&nonCrouchingShape, Vec3::sOne(), chCOMTransformIfNonCrouching, chNarrowPhaseCollideShapeSettings, newPos, crouchCollector, defaultBplf, defaultOlf, chBodyFilter);
-
-        if (crouchCollector.mCrouchForced) {
+        if (0 != crouchCollector.mCrouchForcerUd) {
             inputInducedMotion->crouchForcedWhileSupported = true;
+            nextChd->set_crouch_forcer_ud(crouchCollector.mCrouchForcerUd);
 /*
 #ifndef NDEBUG
             std::ostringstream oss;
@@ -7578,7 +7759,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 */
         }
     } else {
-        if (cvSupported && collector.mCrouchForced) {
+        if (cvSupported && 0 != collector.mCrouchForcerUd) {
 /*
 #ifndef NDEBUG
             std::ostringstream oss;
@@ -7587,6 +7768,7 @@ void BaseBattle::stepSingleChdState(const int currRdfId, const RenderFrame* curr
 #endif
 */
             inputInducedMotion->crouchForcedWhileSupported = true;
+            nextChd->set_crouch_forcer_ud(collector.mCrouchForcerUd);
         }
     }
 
@@ -8003,9 +8185,12 @@ void BaseBattle::calcSingleBulletEffDamage(const int currRdfId, const CharacterD
 
     Vec3 rhsCurrBlFacing = Quat(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w())*Vec3::sAxisX();
 
-    bool bulletInFrontOfVictim = (0 > nextVictimFacing.GetX()*rhsCurrBlFacing.GetX());
-
-    *outSuccessfulDef1 = (Def1 == nextVictimChd->ch_state() && nextVictimCc->def1_startup_frames() < nextVictimChd->frames_in_ch_state() && 0 < nextVictimChd->remaining_def1_quota() && bulletInFrontOfVictim);
+    const bool bulletInFrontOfVictim = (0 > nextVictimFacing.GetX()*rhsCurrBlFacing.GetX());
+    const bool inEffDef1Attempt = (bulletInFrontOfVictim && Def1 == nextVictimChd->ch_state() && nextVictimCc->def1_startup_frames() < nextVictimChd->frames_in_ch_state())
+                                    ||
+                                  (nextVictimCc->always_def1() && !noOpSet.count(nextVictimChd->ch_state()) && !atkedSet.count(nextVictimChd->ch_state()));
+    
+    *outSuccessfulDef1 = (inEffDef1Attempt && 0 < nextVictimChd->remaining_def1_quota());
     bool eleWeaknessHit = 0 < (nextVictimCc->ele_weakness() & rhsBlConfig->elemental_attrs());
     bool eleResistanceHit = 0 < (nextVictimCc->ele_resistance() & rhsBlConfig->elemental_attrs());
     if (eleWeaknessHit && !nextVictimCc->def1_defies_ele_weakness()) {
@@ -8141,12 +8326,12 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         if (UDT_PLAYER == udtLhs) {
             std::ostringstream oss;
             auto bulletId = rhsCurrBl->id();
-            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", bulletId=" << bulletId << " hits Player ud=" << udLhs << " with effDamage=" << effDamage << std::endl;
+            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", bulletId=" << bulletId << " hits Player ud=" << udLhs << " with effSingleBlDamage=" << effSingleBlDamage << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
         } else if (UDT_NPC == udtLhs) {
             std::ostringstream oss;
             auto bulletId = rhsCurrBl->id();
-            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", bulletId=" << bulletId << " hits Npc ud=" << udLhs << " with effDamage=" << effDamage << std::endl;
+            oss << "handleLhsCharacterCollision/nextBl with currRdfId=" << currRdfId << ", bulletId=" << bulletId << " hits Npc ud=" << udLhs << " with effSingleBlDamage=" << effSingleBlDamage << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
         }
 #endif
@@ -8192,7 +8377,7 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
     }
 
     float capsuleRadius = 0, capsuleHalfHeight = 0;
-    calcChdShape(currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
+    calcChdShape(currChd, currChd->ch_state(), cc, capsuleRadius, capsuleHalfHeight);
     Vec3 hitPos(currChd->x(), currChd->y() + capsuleRadius + capsuleHalfHeight, currChd->z()); 
     Vec3 hitPosAdds(0, 0, 0); 
     int hitPosAddsCnt = 0; 
@@ -8210,10 +8395,10 @@ void BaseBattle::handleLhsCharacterCollisionWithRhsBullet(
         addBlHitToNextFrame(currRdfId, nextRdf, rhsCurrBl, hitPos, effSingleBlDamage);
     }
 
-    JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
+    Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
     
     if (TerrainMelee == rhsBlConfig->b_type()) {
-        blQ = cTurnbackAroundYAxis*JPH::Quat(currChd->q_x(), currChd->q_y(), currChd->q_z(), currChd->q_w());
+        blQ = cTurnbackAroundYAxis*Quat(currChd->q_x(), currChd->q_y(), currChd->q_z(), currChd->q_w());
     } else {
         BaseBattleCollisionFilter::clampChdQ(blQ, rhsCurrBl->vel_x());
         Vec3 blFacing;
@@ -8359,7 +8544,7 @@ void BaseBattle::handleLhsTrapCollisionWithRhsBullet(
     }
 
     if (rhsBlConfig->hardness() > tpConfig->hardness() && 1.0f > tpConfig->bl_pushback_attenuation()) {
-        JPH::Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
+        Quat blQ(rhsCurrBl->q_x(), rhsCurrBl->q_y(), rhsCurrBl->q_z(), rhsCurrBl->q_w());
 
         Vec3Arg blInitPushbackVelocity(
             rhsBlConfig->pushback_vel_x() * (1.0f - tpConfig->bl_pushback_attenuation()), 

@@ -30,7 +30,7 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
     protected Dictionary<ulong, A> activeAnimNodes;
     protected Dictionary<G, LinkedList<A>> cachedAnimNodes;
 
-    public void HideInactiveAnimNodes(int atTheEndOfRdfId) {
+    public virtual void HideInactiveAnimNodes(int atTheEndOfRdfId) {
         transientActiveAnimNodeKeysToRemove.Clear();
         transientActiveAnimNodeKeysToRemove.AddRange(activeAnimNodes.Keys);
         foreach (var ud in transientActiveAnimNodeKeysToRemove) {
@@ -41,13 +41,13 @@ public abstract class AbstractCacheableAnimNodePool<T, S, C, G, A> where A : Abs
             G cacheGroupId = g.GetCacheGroupId();
             positionHolder.Set(effectivelyInfinitelyFar, effectivelyInfinitelyFar, g.gameObject.transform.position.z);
             g.gameObject.transform.position = positionHolder;
+            g.hideSelfCleanUp();
             if (!cachedAnimNodes.ContainsKey(cacheGroupId)) {
                 cachedAnimNodes[cacheGroupId] = new LinkedList<A>();
             }
             var cachedQ = cachedAnimNodes[cacheGroupId];
             cachedQ.AddLast(g);
         }
-        transientActiveAnimNodeKeysToRemove.Clear();
     }
 
     public void ResetUponBattlePreparation(int rdfId, int specifiedLayer = -1) {

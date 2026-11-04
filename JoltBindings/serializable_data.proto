@@ -150,7 +150,6 @@ enum CharacterState {
     InAirIdle1ByJump = 6;
     InAirIdle2ByJump = 7;
     InAirIdle1ByWallJump = 8;
-    InAirAtked1 = 9;
 
     BlownUp1 = 10;
     LayDown1 = 11;
@@ -187,11 +186,9 @@ enum CharacterState {
     CrouchIdle1 = 256; 
     CrouchAtk1 = 257; 
     CrouchWalking = 258; 
-    CrouchAtked1 = 259;
+    CrouchAtked1 = 259; // [REMINDER] Unlike "InAirAtked1", "Def1Atked1" or "Def1Broken", the transition into "CrouchAtked1" can be induced by both proactive crouching (e.g. "CrouchIdle1 -> CrouchAtked1" or by a passive forcer (e.g. "Atked1 -> CrouchAtked1"), and while a character is in "CrouchAtked1" state its capsule collider size might also need a change from its previous state.
 
     Def1 = 260;
-    Def1Atked1 = 261;
-    Def1Broken = 262;
 
     Atk1 = 1024;
     Atk2 = 1025;
@@ -221,6 +218,11 @@ enum CharacterState {
     InAirAtk1_Charging = 3076;
     OnWallAtk1_Charging = 3077;
     CrouchAtk1_Charging = 3078;
+
+    // Auxiliary states only for rendering
+    InAirAtked1 = 4096;
+    Def1Atked1 = 4098;
+    Def1Broken = 4099;
 }
 
 enum NpcGoal {
@@ -267,10 +269,9 @@ enum PickableState {
 
 message CharacterConfig {
     uint32 species_id = 1;
-
-    int32 hp = 3;
-    int32 mp = 4;
-
+    int32 hp = 2;
+    int32 mp = 3;
+    
     int32 lay_down_frames_to_recover = 6;
 
     int32 get_up_invinsible_frames = 7;
@@ -350,6 +351,7 @@ message CharacterConfig {
 
     bool isolated_air_jump_and_dash_quota = 62; // default is false, in most cases Air_jump and Air_dash quotas are deduced together (but default initial quota can be different) 
 
+    bool always_def1 = 63;
     uint32 transform_into_species_id_upon_death = 66;
     bool jump_holding_to_fly = 67;
     bool has_def1 = 68;
@@ -364,7 +366,8 @@ message CharacterConfig {
     IfaceCat Ifc = 80;
     uint32 ele_weakness = 81;
     uint32 ele_resistance = 82;
-
+    
+    bool is_test_ch = 83;
     bool is_key_ch = 85;
 
     bool allows_same_team_soft_pushback = 86; 
@@ -477,8 +480,9 @@ message CharacterDownsync {
 
     uint32 species_id = 22; // For evolution during battle
 
-    uint64 ground_ud = 24;
-    uint64 wall_ud = 25;
+    uint64 ground_ud = 23;
+    uint64 wall_ud = 24;
+    uint64 crouch_forcer_ud = 25;
 
     int32 frames_to_recover = 26;
 
@@ -533,29 +537,31 @@ message CharacterDownsync {
     float ground_norm_y = 61;
     float ground_norm_z = 62;
 
+    int32 def1_broken_rdf_countdown = 63;
+
     /*
     [REMINDER] Repeated or collection fields of "CharacterDownsync" are not necessarily operated atomically, thus not necessary to preallocate.
 
     However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
     */
 
-    InventorySlot atk1_magazine = 63; 
-    InventorySlot super_atk_gauge = 64; 
+    InventorySlot atk1_magazine = 64; 
+    InventorySlot super_atk_gauge = 65; 
 
-    repeated Buff buff_list = 65; 
-    uint32 buff_count = 66;
+    repeated Buff buff_list = 66; 
+    uint32 buff_count = 67;
 
-    repeated Debuff debuff_list = 67; 
-    uint32 debuff_count = 68;
+    repeated Debuff debuff_list = 68; 
+    uint32 debuff_count = 69;
 
-    repeated InventorySlot inventory_slots = 69;
-    uint32 ivs_count = 70;
+    repeated InventorySlot inventory_slots = 70;
+    uint32 ivs_count = 71;
 
-    repeated BulletImmuneRecord bullet_immune_records = 71; 
-    uint32 bir_count = 72;
+    repeated BulletImmuneRecord bullet_immune_records = 72; 
+    uint32 bir_count = 73;
 
-    repeated float kinematic_knobs = 73; // including both forward-kinematics and inverse-kinematics   
-    uint32 kk_count = 74;
+    repeated float kinematic_knobs = 74; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 75;
 }
 
 message PlayerCharacterDownsync {
@@ -569,10 +575,10 @@ message PlayerCharacterDownsync {
     float revival_y = 6;
     float revival_z = 7;
 
-    int32 revival_q_x = 8;
-    int32 revival_q_y = 9;
-    int32 revival_q_z = 10;
-    int32 revival_q_w = 11;
+    float revival_q_x = 8;
+    float revival_q_y = 9;
+    float revival_q_z = 10;
+    float revival_q_w = 11;
 
     int32 not_enough_mp_hint_rdf_countdown = 12;
 
@@ -731,7 +737,7 @@ message BulletConfig {
     float hitbox_half_size_x = 17;
     float hitbox_half_size_y = 18;
 
-    int32 melee_hit_self_stun_frames = 19; // [WARNING] Exclusive against "remains_upon_hit". 
+    int32 melee_hit_self_stun_frames = 19; 
 
     bool blow_up = 20;
     bool blow_up_on_air_hit_only = 21;
@@ -1236,6 +1242,9 @@ message DebuffConfig {
     int32 arr_idx = 5;
     int32 impact_per_interval = 6;
     int32 impact_interval = 7;
+
+    string vfx_name_on_emitter = 8;
+    string vfx_name_on_receiver = 9;
 }
 
 message BuffConfig {
@@ -1264,10 +1273,11 @@ message BuffConfig {
     bool repel_soft_pushback = 14;
     bool omit_gravity = 15;
 
-    // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
-    repeated uint32 associated_debuffs = 17;   
+    string vfx_name_on_emitter = 16;
+    string vfx_name_on_receiver = 17;
 
-    string character_vfx_anim_name = 18;
+    // [WARNING] The following field previously had type "repeated DebuffConfig" and the reason given was "to reduce the count of heap-RAM access when stepping battle dynamics", it was not a bad reason yet such complicated type imposed a heavy burden on serialization/deserialization of "RenderFrame" which would be used frequently when we use "backend forceResync" for "active slow ticker" or "recovery upon reconnection". See "ConcerningEdgeCases.md" for details.
+    repeated uint32 associated_debuffs = 512;   
 }
 
 message Buff {
@@ -1389,8 +1399,6 @@ message PlayerStoryProgress {
 
     uint32 coin_count = 8;
     uint32 dragon_crystal_count = 9;
-
-    CharacterDownsync player_lounge_position = 10;
 
     map<string, bool> finished_story_points = 11;
 }
@@ -1522,22 +1530,17 @@ message TriggerConfigFromTiled {
     uint64 publishing_mask_upon_exhausted = 17; // [WARNING] NOT to be configured from UI/Story Editor. 
     uint32 publishing_to_trigger_id_upon_exhausted = 18; // [WARNING] Points to a "topo_lv" smaller than itself, and "A.topo_lv < B.topo_lv" means "A" is an ancestor of "B".  
 
-    int32 force_ctrl_rdf_count = 19;
-    uint64 force_ctrl_cmd = 20;
-
     uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
 
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
-    int32 level_score = 23;
 
-    float render_box_half_size_x = 24;
-    float render_box_half_size_y = 25;
-    optional string name = 26; // Overrides the prefab name to use
+    bool should_render = 24;
+    float render_box_half_size_x = 25;
+    float render_box_half_size_y = 26;
 
-    bool is_story_ready_go = 512; 
-    int32 bgm_id = 513;
-    bool is_boss_savepoint = 514; 
-    map<uint32, bool> boss_species_set = 515;   
+    SerializableConvexPolygon colliding_section_override = 27; 
+
+    optional string name = 514; // Overrides the prefab name to use
 
     repeated CharacterSpawnerConfig character_spawner_time_seq = 1024; // MUST Be configured by increasing "cutoff_rdf_id"!
     repeated PickableSpawnerConfig pickable_spawner_time_seq = 1025; // MUST Be configured by increasing "cutoff_rdf_id"!
@@ -1748,8 +1751,6 @@ message PrimitiveConsts {
     int32 magic_last_sent_input_frame_id_normal_added = 43;
     int32 magic_last_sent_input_frame_id_readded = 44;
 
-    int32 bgm_no_change = 45;
-
     string invalid_default_player_id = 46;
     float estimated_seconds_per_rdf = 47;
 
@@ -1792,8 +1793,8 @@ message PrimitiveConsts {
     uint32 default_phy_sys_num_pos_steps = 77;
 
     int32 default_gauge_inc_by_hit = 78;
+    int32 default_awaking_frames = 79;
 
-    int32 default_frames_delayed_of_boss_savepoint = 79;
     // [WARNING] Experimentally having an input rate > 15 (e.g., 60 >> 2) doesn't improve multiplayer smoothness, in fact higher input rate often results in higher packet loss (both TCP and UDP) thus higher wrong prediction rate!
     int32 input_scale_frames = 80; // inputDelayedAndScaledFrameId = ((originalFrameId - InputDelayFrames) >> InputScaleFrames)
     int32 input_scale = 81;

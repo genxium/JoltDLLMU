@@ -34,15 +34,17 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
         return true;
     }
 
+    public void SetAbsScale(in float renderBoxHalfWidth, in float renderBoxHalfHeight) {
+        if (!lazyInit()) {
+            return;
+        } 
+        absScaleX = 2.0f * renderBoxHalfWidth/spr.size.x;
+        absScaleY = 2.0f * renderBoxHalfHeight/spr.size.y;
+    }
+
     protected override bool updateAnimUnderlying(in int currRdfId, in Trap currTrap, in TrapState newState, in TrapConfigFromTiled insConfig, in int frameIdxInAnim) {
         if (!lookUpTable.ContainsKey(newState)) {
             return false;
-        }
-
-        if (TrapState.TpIdle == newState) {
-            // [REMINDER] The "scale" MUST be calculated w.r.t. the reference frame used in map editor (e.g. Tiled).
-            absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
-            absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
         }
 
         facingQ.Set(currTrap.QX, currTrap.QY, currTrap.QZ, currTrap.QW);

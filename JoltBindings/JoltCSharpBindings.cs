@@ -112,6 +112,9 @@ namespace JoltCSharp {
         public static extern int APP_ConvertToLastUsedRenderFrameId(int inputFrameId);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void APP_CalcChdShape(int inputFrameId);
+
+        [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern UIntPtr FRONTEND_CreateBattle(int rdfBufferSize, [MarshalAs(UnmanagedType.U1)] bool isOnlineArenaMode);
 
         [DllImport(JOLT_LIB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

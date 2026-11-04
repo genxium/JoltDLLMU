@@ -34,16 +34,18 @@ public class JoltTriggerAnimController : AbstractCacheableAnimNode<Trigger, Trig
         return true;
     }
 
+    public void SetAbsScale(in float renderBoxHalfWidth, in float renderBoxHalfHeight) {
+        if (!lazyInit()) {
+            return;
+        }
+        absScaleX = 2.0f * renderBoxHalfWidth / spr.size.x;
+        absScaleY = 2.0f * renderBoxHalfHeight / spr.size.y;
+    }
+
     protected override bool updateAnimUnderlying(in int currRdfId, in Trigger currTrigger, in TriggerState newState, in TriggerConfigFromTiled insConfig, in int frameIdxInAnim) {
         var effNewState = newState;
         if (!lookUpTable.ContainsKey(newState)) {
             effNewState = TriggerState.TrCoolingDown;
-        }
-
-        if (TriggerState.TrReady == effNewState) {
-            // [REMINDER] The "scale" MUST be calculated w.r.t. the reference frame used in map editor (e.g. Tiled).
-            absScaleX = 2.0f * insConfig.RenderBoxHalfSizeX / spr.size.x;
-            absScaleY = 2.0f * insConfig.RenderBoxHalfSizeY / spr.size.y;
         }
 
         facingQ.Set(insConfig.InitQX, insConfig.InitQY, insConfig.InitQZ, insConfig.InitQW);

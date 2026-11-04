@@ -296,13 +296,13 @@ public:
         const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
         const float minVelY = -cc->speed();
         if (ioVel.GetY() > maxVelY) {
+/*
 #ifndef  NDEBUG
-            /*
             std::ostringstream oss;
             oss << "clampFlyingChdVel/speciesId=" << cc->species_id() << ", clamped flying maxVelY from ioVel.GetY=" << ioVel.GetY() << "." << std::endl;
             Debug::Log(oss.str(), DColor::Yellow);
-            */
 #endif // ! NDEBUG
+*/
             ioVel.SetY(maxVelY);
         } else if (ioVel.GetY() < minVelY) {
             ioVel.SetY(minVelY);
@@ -942,11 +942,11 @@ protected:
     }
 
     inline bool isStaticCrouching(const CharacterState chState) {
-        return (CrouchIdle1 == chState || CrouchAtk1 == chState || CrouchAtked1 == chState);
+        return (CrouchIdle1 == chState || CrouchAtk1 == chState);
     }
 
     inline bool isCrouching(const CharacterState chState, const CharacterConfig* cc) {
-        return (CrouchIdle1 == chState || CrouchAtk1 == chState || CrouchAtked1 == chState || (Sliding == chState && cc->crouching_enabled()));
+        return (CrouchIdle1 == chState || CrouchAtk1 == chState || (Sliding == chState && cc->crouching_enabled()));
     }
 
     inline bool isEffInAir(const CharacterDownsync& chd, bool notDashing) {
@@ -1029,7 +1029,7 @@ protected:
 
     virtual void stepSingleChdState(const int currRdfId, const RenderFrame* currRdf, RenderFrame* nextRdf, const float dt, const uint64_t ud, const uint64_t udt, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, CH_COLLIDER_T* single, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, bool& groundBodyIsChCollider, bool& isDead, bool& cvOnWall, bool& cvSupported, bool& cvInAir, bool& inJumpStartupOrJustEnded, CharacterBase::EGroundState& cvGroundState, InputInducedMotion* inputInducedMotion, uint64_t& outClosestOffenderUd, int& outClosestOffenderBulletTeamId, float& outClosestOffenderScore, Vec3& outClosestOffenderPosDiff);
 
-    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult);
+    virtual void postStepSingleChdStateCorrection(const int currRdfId, const uint64_t udt, const uint64_t ud, const CH_COLLIDER_T* chCollider, const CharacterDownsync& currChd, const bool currIsFlying, CharacterDownsync* nextChd, const CharacterConfig* cc, const CharacterBattleSpecificConfig* chOverride, bool cvSupported, bool cvInAir, bool cvOnWall, bool currNotDashing, bool currEffInAir, bool oldNextNotDashing, bool oldNextEffInAir, bool inJumpStartupOrJustEnded, CharacterBase::EGroundState cvGroundState, const InputInducedMotion* inputInducedMotion, StepResult* stepResult);
 
     virtual void topoSortTriggerConfigFromTiledList(WsReq* initializerMapData);
     virtual void stepOtherSingleTriggerState(const int currRdfId, const Trigger& currTrigger, Trigger* nextTrigger, RenderFrame* nextRdf, StepResult* stepResult);
@@ -1194,8 +1194,8 @@ protected:
             case BulletType::MagicalFireball:
             case BulletType::Melee:
                 return EMotionType::Kinematic;
-            case BulletType::MechanicalBouncerSpherical:
             case BulletType::MechanicalCartridge:
+            case BulletType::MechanicalBouncerSpherical:
             case BulletType::GroundWave:
                 return EMotionType::Dynamic;
             default:
@@ -1223,7 +1223,7 @@ protected:
 
     NON_CONTACT_CONSTRAINT_T*  createDefaultNonContactConstraint(const EConstraintType nonContactConstraintType, const EConstraintSubType nonContactConstraintSubType, Body* inBody1, Body* inBody2, JPH::ConstraintSettings* inConstraintSettings);
 
-    inline void calcChdShape(const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
+    inline void calcChdShape(const CharacterDownsync* chd, const CharacterState chState, const CharacterConfig* cc, float& outCapsuleRadius, float& outCapsuleHalfHeight);
 
     inline float lerp(float from, float to, float step) {
         float diff = (to - from);
@@ -2085,7 +2085,39 @@ public:
             ioSettings.mInvMassScale1 = max(0.f, 1.f - pseudoKinematicFactor1);
             ioSettings.mInvMassScale2 = max(0.f, 1.f - pseudoKinematicFactor2);
         }
+/*
+#ifndef NDEBUG
+        const Bullet* nextBl = nullptr;
+        const Skill* skill = nullptr;
+        const BulletConfig* blConfig = nullptr;
+        uint64_t blUd = 0, obstableUd = 0;
+        Vec3 blPhySysVel = Vec3::sZero();
+        if ((UDT_BL == udt1)) {
+            if (transientUdToNextBl.count(ud1)) {
+                nextBl = transientUdToNextBl.at(ud1);
+            }
+            blPhySysVel = inBody1.GetLinearVelocity();
+            blUd = ud1;
+            obstableUd = ud2;
+        } else if ((UDT_BL == udt2)) {
+            if (transientUdToNextBl.count(ud2)) {
+                nextBl = transientUdToNextBl.at(ud2);
+            }
+            blPhySysVel = inBody2.GetLinearVelocity();
+            blUd = ud2;
+            obstableUd = ud1;
+        }
 
+        if (nullptr != nextBl) {
+            FindBulletConfig(nextBl->skill_id(), nextBl->active_skill_hit(), skill, blConfig);
+            if (MechanicalBouncerSpherical == blConfig->b_type()) {
+                std::ostringstream oss;
+                oss << "MechanicalBouncerSpherical bullet collides with obstable, blUd=" << blUd << ", obstableUd=" << obstableUd << ", nextBlVel=(" << nextBl->vel_x() << "," << nextBl->vel_y() << "), blPhySysVel = (" << blPhySysVel.GetX() << ", " << blPhySysVel.GetY() << "), penetration worldSpaceNormal = (" << inManifold.mWorldSpaceNormal.GetX() << ", " << inManifold.mWorldSpaceNormal.GetY() << "), penetration depth = " << inManifold.mPenetrationDepth << ", (combinedRestitution = " << ioSettings.mCombinedRestitution << ", combinedFriction = " << ioSettings.mCombinedFriction << ", mInvMassScale1 = " << ioSettings.mInvMassScale1 << ", mInvMassScale2 = " << ioSettings.mInvMassScale2 << ")" << std::endl;
+                Debug::Log(oss.str(), DColor::Yellow);
+            }
+        }
+#endif // !NDEBUG
+*/
         // Others are intentionally left blank by the time of writing.
     }
 

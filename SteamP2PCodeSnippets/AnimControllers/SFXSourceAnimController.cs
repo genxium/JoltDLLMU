@@ -1,6 +1,7 @@
 using Google.Protobuf;
 using JoltCSharp;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -36,6 +37,8 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum,
         audioClip = handle.WaitForCompletion();
         audioSource.clip = audioClip;
 
+        loopingSfxNames.Add("FootStep1");
+
         return true;
     }
 
@@ -45,17 +48,23 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum,
             // Could be induced by rollback-chasing
             return false;
         }
-        float timeInSecond = frameIdxInAnim * PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf;
-        if (audioSource.isPlaying) {
-            if (timeInSecond > audioClip.length) {
-                audioSource.Stop();
-            } else {
-                audioSource.time = timeInSecond;
+        if (loopingSfxNames.Contains(audioClip.name)) {
+            if (!audioSource.isPlaying) {
+                audioSource.Play();
             }
         } else {
-            if (timeInSecond <= audioClip.length) {
-               audioSource.time = timeInSecond;
-               audioSource.Play();
+            float timeInSecond = frameIdxInAnim * PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf;
+            if (audioSource.isPlaying) {
+                if (timeInSecond >= audioClip.length) {
+                    audioSource.Stop();
+                } else {
+                    audioSource.time = timeInSecond;
+                }
+            } else {
+                if (timeInSecond < audioClip.length) {
+                    audioSource.time = timeInSecond;
+                    audioSource.Play();
+                }
             }
         }
 
@@ -69,4 +78,12 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum,
 
     protected AudioClip audioClip;
     protected AudioSource audioSource;
+
+    protected HashSet<string> loopingSfxNames = new HashSet<string>(); 
+
+    public new void hideSelfCleanUp() {
+        if (null != audioSource) {
+            audioSource.Stop();
+        }
+    }
 }

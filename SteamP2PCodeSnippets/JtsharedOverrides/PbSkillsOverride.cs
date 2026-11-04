@@ -1,9 +1,13 @@
 
 using jtshared;
+using UnityEngine;
 using static FrontendOnlyGeometry;
 
 namespace JoltCSharp {
     public class PbSkillsOverride : PbSkills {
+
+        public static System.Numerics.Quaternion cTurn75DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, Mathf.Deg2Rad*75);
+
         /////////////////////////////////////////////////////////////////////////////////////////
         public PbSkillsOverride(PrimitiveConsts primitiveConsts) : base(primitiveConsts) {
         }
@@ -47,12 +51,19 @@ namespace JoltCSharp {
             BladeGirlDiverImpactHit1.HitboxHalfSizeX = 12f;
             BladeGirlDiverImpactHit1.HitboxHalfSizeY = 8f;
             BladeGirlDiverImpactHit1.SelfLockVelY = -32.0f* PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            BladeGirlDiverImpactHit1.HitSfxName = "SlashHit2";
+            BladeGirlDiverImpactHit1.CharacterEmitSfxName = "Whoosh1";
+            BladeGirlDiverImpactHit1.RemainsUponHit = false;
+            BladeGirlDiverImpactHit1.MeleeHitSelfStunFrames = PbPrimitivesOverride.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES;
 
             BladeGirlGroundSlash1Hit1.Damage = 8;
             BladeGirlGroundSlash1Hit1.HitboxOffsetX = 18f;
             BladeGirlGroundSlash1Hit1.HitboxOffsetY = 20f;
             BladeGirlGroundSlash1Hit1.HitboxHalfSizeX = 16f;
             BladeGirlGroundSlash1Hit1.HitboxHalfSizeY = 16f;
+            BladeGirlGroundSlash1Hit1.HitSfxName = "SlashHit1";
+            BladeGirlGroundSlash1Hit1.CharacterEmitSfxName = "Whoosh1";
+            BladeGirlGroundSlash1Hit1.MeleeHitSelfStunFrames = 0;
 
             var BladeGirlGroundSlash2 = underlying[PbPrimitivesOverride.BladeGirlGroundSlash2Id];
             var BladeGirlGroundSlash2Hit1 = BladeGirlGroundSlash2.Hits[0];
@@ -61,6 +72,14 @@ namespace JoltCSharp {
             BladeGirlGroundSlash2Hit1.HitboxOffsetY = 18f;
             BladeGirlGroundSlash2Hit1.HitboxHalfSizeX = 16f;
             BladeGirlGroundSlash2Hit1.HitboxHalfSizeY = 16f;
+            BladeGirlGroundSlash2Hit1.HitSfxName = "SlashHit1";
+            BladeGirlGroundSlash2Hit1.CharacterEmitSfxName = "Whoosh1";
+            BladeGirlGroundSlash2Hit1.StartupFrames = 6;
+            BladeGirlGroundSlash2Hit1.ActiveFrames = 8;
+            BladeGirlGroundSlash2Hit1.CooldownFrames = 8;
+            BladeGirlGroundSlash2.RecoveryFrames = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
+            BladeGirlGroundSlash2.RecoveryFramesOnBlock = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
+            BladeGirlGroundSlash2.RecoveryFramesOnHit = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
 
             var BladeGirlGroundSlash3 = underlying[PbPrimitivesOverride.BladeGirlGroundSlash3Id];
             var BladeGirlGroundSlash3Hit1 = BladeGirlGroundSlash3.Hits[0];
@@ -68,6 +87,14 @@ namespace JoltCSharp {
             BladeGirlGroundSlash3Hit1.HitboxOffsetY = 18f;
             BladeGirlGroundSlash3Hit1.HitboxHalfSizeX = 23f;
             BladeGirlGroundSlash3Hit1.HitboxHalfSizeY = 18f;
+            BladeGirlGroundSlash3Hit1.HitSfxName = "SlashHit1";
+            BladeGirlGroundSlash3Hit1.CharacterEmitSfxName = "Whoosh2";
+            BladeGirlGroundSlash3Hit1.MeleeHitSelfStunFrames = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS/12);
+            BladeGirlGroundSlash3Hit1.StartupFrames = 18;
+            BladeGirlGroundSlash3Hit1.ActiveFrames = 16;
+            BladeGirlGroundSlash3.RecoveryFrames = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
+            BladeGirlGroundSlash3.RecoveryFramesOnBlock = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
+            BladeGirlGroundSlash3.RecoveryFramesOnHit = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
 
             var BladeGirlAirSlash1 = underlying[PbPrimitivesOverride.BladeGirlAirSlash1Id];
             var BladeGirlAirSlash1Hit1 = BladeGirlAirSlash1.Hits[0];
@@ -76,13 +103,24 @@ namespace JoltCSharp {
             BladeGirlAirSlash1Hit1.HitboxOffsetY = 30f;
             BladeGirlAirSlash1Hit1.HitboxHalfSizeX = 16f;
             BladeGirlAirSlash1Hit1.HitboxHalfSizeY = 18f;
+            BladeGirlAirSlash1Hit1.HitSfxName = "SlashHit2";
+            BladeGirlAirSlash1Hit1.CharacterEmitSfxName = "Whoosh2";
+            BladeGirlAirSlash1Hit1.RemainsUponHit = false;
+            BladeGirlAirSlash1Hit1.MeleeHitSelfStunFrames = PbPrimitivesOverride.DEFAULT_MELEE_HIT_SELF_STUN_FRAMES;
 
             var BlackSaber1GroundSlash1 = underlying[PbPrimitivesOverride.BlackSaber1GroundSlash1Id];
             var BlackSaber1GroundSlash1Hit1 = BlackSaber1GroundSlash1.Hits[0];
+            BlackSaber1GroundSlash1Hit1.Damage = 4;
             BlackSaber1GroundSlash1Hit1.HitboxOffsetX = 11f;
             BlackSaber1GroundSlash1Hit1.HitboxOffsetY = 17f;
             BlackSaber1GroundSlash1Hit1.HitboxHalfSizeX = 12f;
             BlackSaber1GroundSlash1Hit1.HitboxHalfSizeY = 8f;
+            BlackSaber1GroundSlash1Hit1.StartupFrames = 48;
+            BlackSaber1GroundSlash1Hit1.ActiveFrames = 6;
+            BlackSaber1GroundSlash1Hit1.CooldownFrames = 18;
+            BlackSaber1GroundSlash1.RecoveryFrames = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
+            BlackSaber1GroundSlash1.RecoveryFramesOnBlock = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
+            BlackSaber1GroundSlash1.RecoveryFramesOnHit = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
 
             var WolverineGroundSlash1 = underlying[PbPrimitivesOverride.Wolverine1GroundSlash1Id];
             var WolverineGroundSlash1Hit1 = WolverineGroundSlash1.Hits[0];
@@ -100,8 +138,11 @@ namespace JoltCSharp {
             BasicTimedBombHit1.VanishingAnimRdfCnt = 25;
             BasicTimedBombHit1.HitboxOffsetX = 8f;
             BasicTimedBombHit1.HitboxOffsetY = 56f;
-            BasicTimedBombHit1.HitboxHalfSizeX = 2.5f;
-            BasicTimedBombHit1.HitboxHalfSizeY = 2.5f;
+            BasicTimedBombHit1.HitboxHalfSizeX = 5.0f;
+            BasicTimedBombHit1.HitboxHalfSizeY = 5.0f;
+            BasicTimedBombHit1.Friction = 0;
+            BasicTimedBombHit1.GravityFactor = 1.0f;
+            BasicTimedBombHit1.Speed *= 1.2f;
 
             var BlackShooter1RapidFire = underlying[PbPrimitivesOverride.BlackShooter1RapidFireId];
             var BasicRapidFireHit1 = BlackShooter1RapidFire.Hits[0];

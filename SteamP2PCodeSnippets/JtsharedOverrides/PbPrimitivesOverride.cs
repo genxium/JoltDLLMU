@@ -6,6 +6,8 @@ using static FrontendOnlyGeometry;
 namespace JoltCSharp {
     public class PbPrimitivesOverride : PbPrimitives {
 
+        public new const int DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = BATTLE_DYNAMICS_FPS/3;
+
         /////////////////////////////////////////////////////////////////////////////////////////
 
         public static PbPrimitivesOverride Instance {
@@ -46,13 +48,17 @@ namespace JoltCSharp {
             underlying.DefaultPickableStartupFrames = 45;
             underlying.DefaultPickableLifetimeRdfCnt = 60 * BATTLE_DYNAMICS_FPS;
 
-            underlying.DefaultPhySysSubstepCnt = 4; // higher than the default (i.e. 1)
-            underlying.DefaultPhySysNumVelSteps = 10u; // Roughly the default (i.e. 10)
-            underlying.DefaultPhySysNumPosSteps = 2u; // Roughly the default (i.e. 2)
+            underlying.DefaultPhySysSubstepCnt = 1;
+            underlying.DefaultPhySysNumVelSteps = 10u;
+            underlying.DefaultPhySysNumPosSteps = 2u;
 
-            //underlying.DefaultPhySysSubstepCnt = 1; // higher than the default (i.e. 1)
-            //underlying.DefaultPhySysNumVelSteps = 10u; // Roughly the default (i.e. 10)
-            //underlying.DefaultPhySysNumPosSteps = 2u; // Roughly the default (i.e. 2)
+            /*
+             // The physics system defaults
+             
+             underlying.DefaultPhySysSubstepCnt = 1; 
+             underlying.DefaultPhySysNumVelSteps = 10u; 
+             underlying.DefaultPhySysNumPosSteps = 2u; 
+             */
 
             underlying.DefaultChFriction = 0.05f;
             underlying.DefaultChRestitution = 0.0f;
@@ -62,8 +68,8 @@ namespace JoltCSharp {
             underlying.FallstoppingChFriction = 90.0f;
 
             underlying.BaumgarteFactor = 0.5f; // Roughly the default (i.e. 0.2), set higher for faster contact non-penetration constraint restitution
-            underlying.PenetrationSlop = 0.02f; // Roughly the default (i.e. 0.02), set higher for tolerating deeper penetrations of falling bricks
-            underlying.MaxPenetrationDistance = 0.2f; // Roughly the default (i.e. 0.2)
+            underlying.PenetrationSlop = 0.01f; // Roughly the default (i.e. 0.02), set higher for tolerating deeper penetrations of falling bricks
+            underlying.MaxPenetrationDistance = 0.1f; // Roughly the default (i.e. 0.2)
 
             underlying.DefaultBarrierFriction = 0.2f;
             underlying.DefaultBarrierRestitution = 0f;
@@ -90,6 +96,7 @@ namespace JoltCSharp {
 
             underlying.GravityY /= DEFAULT_PIXELS_PER_UNIT;
             underlying.GravityYJumpHolding /= DEFAULT_PIXELS_PER_UNIT;
+            underlying.DefaultMinSpeedForRestitution /= DEFAULT_PIXELS_PER_UNIT;
 
             underlying.DefaultPickableHurtboxHalfSizeX /= DEFAULT_PIXELS_PER_UNIT;
             underlying.DefaultPickableHurtboxHalfSizeY /= DEFAULT_PIXELS_PER_UNIT;

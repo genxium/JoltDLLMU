@@ -84,14 +84,14 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
                 case MeshType.Capsule:
                     break;
             }
-        } else if (newTargetConfig is CharacterConfig chConfig && newTargetState is CharacterState newChState) {
+        } else if (target is CharacterDownsync chd && newTargetConfig is CharacterConfig chConfig && newTargetState is CharacterState newChState) {
             if (null == capsule2DRenderer) {
                 capsule2DRenderer = gameObject.AddComponent<CapsuleMeshRenderer>();
             } else {
                 capsule2DRenderer = gameObject.GetComponent<CapsuleMeshRenderer>();
             }
             float capsuleRadius = 0, capsuleHalfHeight = 0;
-            calcChdShape(newChState, chConfig, out capsuleRadius, out capsuleHalfHeight);
+            calcChdShape(chd, newChState, chConfig, out capsuleRadius, out capsuleHalfHeight);
             capsule2DRenderer.SetRadiusAndHalfHeight(capsuleRadius, capsuleHalfHeight);
             meshRenderer.sharedMaterial = hurtboxMateria;
         }
@@ -99,7 +99,7 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
         return true;
     }
 
-    void calcChdShape(in CharacterState chState, in CharacterConfig cc, out float outCapsuleRadius, out float outCapsuleHalfHeight) {
+    void calcChdShape(in CharacterDownsync chd, in CharacterState chState, in CharacterConfig cc, out float outCapsuleRadius, out float outCapsuleHalfHeight) {
         switch (chState) {
             case CharacterState.LayDown1:
             case CharacterState.GetUp1:
@@ -117,7 +117,6 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
             case CharacterState.InAirIdle1ByWallJump:
             case CharacterState.InAirWalking:
             case CharacterState.InAirAtk1:
-            case CharacterState.InAirAtked1:
             case CharacterState.OnWallIdle1:
             case CharacterState.OnWallAtk1:
             case CharacterState.Sliding:
@@ -144,6 +143,15 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
             case CharacterState.CrouchAtked1:
                 outCapsuleRadius = cc.ShrinkedCapsuleRadius;
                 outCapsuleHalfHeight = cc.ShrinkedCapsuleHalfHeight * PbPrimitivesOverride.Instance.getUnderlying().DefaultCrouchingYShrinkFactor;
+                break;
+            case CharacterState.Atked1:
+                if (0 == chd.GroundUd) {
+                    outCapsuleRadius = cc.ShrinkedCapsuleRadius;
+                    outCapsuleHalfHeight = cc.ShrinkedCapsuleHalfHeight;
+                } else {
+                    outCapsuleRadius = cc.CapsuleRadius;
+                    outCapsuleHalfHeight = cc.CapsuleHalfHeight;
+                }
                 break;
             default:
                 outCapsuleRadius = cc.CapsuleRadius;
