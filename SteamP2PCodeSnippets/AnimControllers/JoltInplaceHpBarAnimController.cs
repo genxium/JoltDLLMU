@@ -1,7 +1,7 @@
 using jtshared;
 using UnityEngine;
 using JoltCSharp;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<CharacterDownsync, CharacterState, CharacterConfig, uint> {
 

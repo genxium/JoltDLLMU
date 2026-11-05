@@ -14,7 +14,7 @@ public class CircleMeshRenderer : MonoBehaviour {
 
             Vector3 center = Vector3.zero;
 
-            float step = 2*Mathf.PI / segments;
+            float step = 2 * Mathf.PI / segments;
             int v = 0;
 
             // --- Vertices ---
@@ -71,9 +71,9 @@ public class CircleMeshRenderer : MonoBehaviour {
 
     private void rebuild() {
         var meshFilter = GetComponent<MeshFilter>();
-        var mesh = meshFilter.mesh;   
+        var mesh = meshFilter.mesh;
         mesh.Clear();
-        
+
         int vertOffset = 0; // For future batch rendering use
 
         Circle2DGeometry.Generate(radius,

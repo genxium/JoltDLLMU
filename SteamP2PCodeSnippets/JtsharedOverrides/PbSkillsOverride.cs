@@ -1,12 +1,11 @@
-
 using jtshared;
-using UnityEngine;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public class PbSkillsOverride : PbSkills {
 
-        public static System.Numerics.Quaternion cTurn75DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, Mathf.Deg2Rad*75);
+        public static float cDeg2Rad = (System.MathF.PI / 180.0f);
+        public static System.Numerics.Quaternion cTurn75DegsWrtZAxis = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitZ, cDeg2Rad * 75);
 
         /////////////////////////////////////////////////////////////////////////////////////////
         public PbSkillsOverride(PrimitiveConsts primitiveConsts) : base(primitiveConsts) {

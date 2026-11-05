@@ -34,5 +34,5 @@ fi
 # This long "configuration & build" command is intentionally written to fit both "single-configuration" and "multi-configuration" build systems, within each some parameters might be ignored.
 cd $cmakeprojdir && \
     cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_CONFIGURATION_TYPES="Debug;Release;MinSizeRel;RelWithDebInfo" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $basedir && \
-    cmake --build $cmakeprojdir --config $1 -j 8 && \
-    cmake --install $cmakeprojdir --prefix=$unity_package_output_basedir --config $1 -j 8   
+    cmake --build $cmakeprojdir --config $1 -j 32 && \
+    cmake --install $cmakeprojdir --prefix=$unity_package_output_basedir --config $1 -j 32   
