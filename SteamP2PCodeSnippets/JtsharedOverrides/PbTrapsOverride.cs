@@ -1,5 +1,5 @@
 using jtshared;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public class PbTrapsOverride : PbTraps {

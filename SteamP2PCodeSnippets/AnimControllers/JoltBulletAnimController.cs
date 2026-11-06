@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using JoltCSharp;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, BulletState, BulletConfig, string> {
     public JoltBulletAnimController() {
@@ -148,6 +148,9 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
     }
 
     public new void hideSelfCleanUp() {
-        damageDealedIndicator.transform.localPosition = Vector3.zero;
+        if (null != damageDealedIndicator) {
+            damageDealedIndicator.transform.localPosition = Vector3.zero;
+            SetHideDamageIndicator(true);
+        }
     }
 }

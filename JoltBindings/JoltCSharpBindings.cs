@@ -366,6 +366,14 @@ namespace JoltCSharp {
             chd.GroundNormX = 0; 
             chd.GroundNormY = 0; 
             chd.GroundNormZ = 0; 
+        
+            chd.GroundUd = 0;
+            chd.WallUd = 0;
+            chd.CrouchForcerUd = 0;
+
+            chd.WalkstoppingRdfCountdown = 0;
+            chd.FallstoppingRdfCountdown = 0;
+            chd.HitSelfStunFrames = 0;
     
             chd.Speed = 0;
             chd.SpeciesId = PbPrimitives.SPECIES_NONE_CH;
@@ -395,6 +403,8 @@ namespace JoltCSharp {
             chd.DamagedElementalAttrs = 0;
 
             chd.RemainingDef1Quota = 0;
+            chd.Def1BrokenRdfCountdown = 0;
+            chd.LowerPartRdfCnt = 0;
 
             chd.ComboHitCnt = 0;
             chd.ComboFramesRemained = 0;

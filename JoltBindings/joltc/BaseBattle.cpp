@@ -737,6 +737,13 @@ void BaseBattle::updateChColliderBeforePhysicsUpdate_ThreadSafe(uint64_t ud, CH_
                 }
             }
         }
+    
+        if (!inFrictionDirty) {
+            if (atkedSet.count(currChd.ch_state()) || noOpSet.count(currChd.ch_state())) {
+                bi->SetFriction(bodyID, globalPrimitiveConsts->walkstopping_ch_friction());
+            }
+        }
+
         bi->AddForceAndTorque(bodyID, effForceCOM, inInputInducedMotion->torqueCOM, EActivation::DontActivate);
         bi->SetLinearAndAngularVelocity(bodyID, inInputInducedMotion->velCOM, Vec3::sZero());
 /*
@@ -3836,6 +3843,8 @@ void BaseBattle::elapse1RdfForChd(const int currRdfId, const uint64_t ud, Charac
     cd->set_walkstopping_rdf_countdown(0 < cd->walkstopping_rdf_countdown() ? cd->walkstopping_rdf_countdown() - 1 : 0);
     cd->set_fallstopping_rdf_countdown(0 < cd->fallstopping_rdf_countdown() ? cd->fallstopping_rdf_countdown() - 1 : 0);
     cd->set_frames_invinsible(0 < cd->frames_invinsible() ? cd->frames_invinsible() - 1 : 0);
+
+    cd->set_parry_prep_rdf_cnt_down(0 < cd->parry_prep_rdf_cnt_down() ? cd->parry_prep_rdf_cnt_down() - 1 : 0);
     cd->set_mp_regen_rdf_countdown(0 < cd->mp_regen_rdf_countdown() ? cd->mp_regen_rdf_countdown() - 1 : 0);
     auto mp = cd->mp();
     if (0 >= cd->mp_regen_rdf_countdown() && 0 < cc->mp_regen_per_interval()) {
@@ -5690,7 +5699,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
     if (Def1 != nextChd->ch_state() && !cc->always_def1()) {
         nextChd->set_remaining_def1_quota(0);
     } else {
-        if (Def1 != currChd.ch_state()) {
+        if (Def1 != currChd.ch_state() && !cc->always_def1() && !atkedSet.count(currChd.ch_state())) {
             nextChd->set_damaged_hint_rdf_countdown(0); // Clean up for correctly animating "Def1Atked1"
             nextChd->set_damaged_elemental_attrs(0);
         }

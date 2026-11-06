@@ -1,10 +1,12 @@
 
 
 using System;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public class PbPrimitivesOverride : PbPrimitives {
+
+        public const uint DEFAULT_PIXELS_PER_UNIT = 32;
 
         public new const int DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = BATTLE_DYNAMICS_FPS/3;
 

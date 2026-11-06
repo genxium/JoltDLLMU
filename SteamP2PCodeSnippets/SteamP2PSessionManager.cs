@@ -6,6 +6,7 @@ using Steamworks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -105,6 +106,54 @@ public class SteamP2PSessionManager {
         }
     }
 
+    private WsReq peerHolePuncher = new WsReq {
+        Act = UpsyncAct.UaHolepunchPeerUdpAddr,
+    };
+
+    public void PunchPeers() {
+        // [REMINDER] Helps avoid "effectively long blocking `SteamNetworkingMessages.ReceiveMessagesOnChannel`" described below due to "P2PICE". 
+        senderBuffer.Add(peerHolePuncher.ToByteArray());
+    }
+
+    /**
+    [REMINDER] The underlying "Steam GameNetworkingSockets C++ implementation" is multithreaded, but the "wrapper APIs" is still BAD to be used in Unity main thread.
+                
+    - The underlying C++ implementation (https://github.com/ValveSoftware/GameNetworkingSockets/blob/v1.6.1/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp#L4314 -> https://github.com/ValveSoftware/GameNetworkingSockets/blob/v1.6.1/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp#L3439) loops in a background pthread named "service thread"; 
+                
+    - "SteamNetworkingMessages.ReceiveMessagesOnChannel" is non-blocking, yet 
+        -- it MIGHT IMPLICITLY ALLOCATE MEMORY AT each "messagePointers[i]" with certain placement-new tricks
+        -- it occasionally takes a few hundred milliseconds, which would cause an exhausted time budget for several skipped "Update()" calls if put in "Unity main thread"
+
+    - "SteamNetworkingMessages.SendMessageToUser" is also non-blocking in the same sense.
+
+    Here's a piece of captured debug log in practice.
+    ```
+    SteamNetworkingSockets lock held for 1128.9ms
+
+    ServiceThread
+    CProcessP2PSignalFromSteamBackend
+    InternalReceivedP2PSignal
+    BeginFetchNetworkConfig
+    P2P DestroyICENow
+    BRecvCryptoHandshake
+    BFinishCryptoHandshake
+    CSteamNetworkConnectionP2P::CheckInitICE
+    P2PICE::Init
+    CConnectionTransportP2PICE::Init
+    ```
+
+    Moreover as I use "Steamworks.Constants.k_nSteamNetworkingSend_Reliable" for most cases, it's quite possible that "SteamNetworkingMessages.ReceiveMessagesOnChannel" and "SteamNetworkingMessages.SendMessageToUser" might have a race-condition for flow-control if they're called from different threads.
+    */
+    protected ConcurrentQueue<byte[]> localDownsyncSnapshotBytesBuffer;
+    public bool DequeLocalDownsyncSnapshotBytesBuffer(out byte[] recvBytes) {
+        return localDownsyncSnapshotBytesBuffer.TryDequeue(out recvBytes);
+    }
+
+    protected ConcurrentQueue<byte[]> localUpsyncSnapshotBytesBuffer;
+    public bool DequeLocalUpsyncSnapshotBytesBuffer(out byte[] recvBytes) {
+        return localUpsyncSnapshotBytesBuffer.TryDequeue(out recvBytes);
+    }
+
     protected BlockingCollection<byte[]> senderBuffer;
     public void EnqueSenderBuffer(in byte[] bytes) {
         senderBuffer.Add(bytes);
@@ -113,16 +162,6 @@ public class SteamP2PSessionManager {
     protected BlockingCollection<byte[]> ownerSignalSenderBuffer;
     public void EnqueOwnerSignalSenderBuffer(in byte[] bytes) {
         ownerSignalSenderBuffer.Add(bytes);
-    }
-
-    protected Queue<byte[]> localDownsyncSnapshotBytesBuffer;
-    public bool DequeLocalDownsyncSnapshotBytesBuffer(out byte[] recvBytes) {
-        return localDownsyncSnapshotBytesBuffer.TryDequeue(out recvBytes);
-    }
-
-    protected Queue<byte[]> localUpsyncSnapshotBytesBuffer;
-    public bool DequeLocalUpsyncSnapshotBytesBuffer(out byte[] recvBytes) {
-        return localUpsyncSnapshotBytesBuffer.TryDequeue(out recvBytes);
     }
 
     protected int sendBufferReadTimeoutMillis = 512;
@@ -141,19 +180,26 @@ public class SteamP2PSessionManager {
         lockedLobbyMemberBindings = null;
         lockedMemberIdentities = null;
         lockedLobbyMemberUlSteamIdToJoinIndex = null;
+        
         localDownsyncSnapshotBytesBuffer.Clear();
         localUpsyncSnapshotBytesBuffer.Clear();
         disconnectedPeerJoinIndices.Clear();
+
         setPassiveCallbacks();
 
         Debug.Log($"{motivation}: Called `ResetP2PSession` at thread ud={Thread.CurrentThread.ManagedThreadId}.");
     }
 
-    public async Task OpenSession(CancellationToken sessionCancellationToken) {
+    public async Task OpenSession(CancellationToken sessionCancellationToken, CancellationTokenSource sessionCancellationTokenSource) {
         try {
             ++localSeqNo;
             Debug.Log($"OpenSession#1: thread ud={Thread.CurrentThread.ManagedThreadId}...");
-            await Task.WhenAll(Task.Run(async () => send(sessionCancellationToken)), Task.Run(async () => ownerSignalSend(sessionCancellationToken)));
+            await Task.WhenAll(
+                Task.Run(async () => send(sessionCancellationToken))
+                , Task.Run(async () => ownerSignalSend(sessionCancellationToken))
+                , Task.Run(async () => downsyncSnapshotRecv(sessionCancellationToken, sessionCancellationTokenSource))
+                , Task.Run(async () => upsyncSnapshotRecv(sessionCancellationToken, sessionCancellationTokenSource))
+            );
             Debug.Log($"All p2pSession tasks are ended @localSeqNo={localSeqNo}.");
         } catch (Exception ex) {
             Debug.LogError($"Error opening p2pSession @localSeqNo={localSeqNo}: {ex}");
@@ -223,7 +269,7 @@ public class SteamP2PSessionManager {
     protected byte[] chatRecvBuff = new byte[PbPrimitivesOverride.Instance.getUnderlying().FrontendWsRecvBytelength];
 
     public void SetLockedLobbyMemberBindingsWhenWaiting(RepeatedField<SteamBinding> lockedLobbyMemberBindingsFromOwner) {
-        int cap = (lockedLobbyMemberBindingsFromOwner.Count < lobbyCapacity ? lockedLobbyMemberBindingsFromOwner.Count : lobbyCapacity); 
+        int cap = (lockedLobbyMemberBindingsFromOwner.Count < lobbyCapacity ? lockedLobbyMemberBindingsFromOwner.Count : lobbyCapacity);
         lockedLobbyMemberBindings = new SteamBinding[cap];
         lockedMemberIdentities = new SteamNetworkingIdentity[cap];
         lockedLobbyMemberUlSteamIdToJoinIndex = new Dictionary<ulong, uint>();
@@ -389,7 +435,7 @@ public class SteamP2PSessionManager {
                         lockedMemberIdentities[i] = new SteamNetworkingIdentity();
                         lockedMemberIdentities[i].SetSteamID64(lockedLobbyMemberBindings[i].UlSteamId);
                         lockedLobbyMemberUlSteamIdToJoinIndex[lockedLobbyMemberBindings[i].UlSteamId] = (uint)i + 1u;
-                        Debug.Log($"\t`lockedLobbyMemberBindings` peerJoinIndex={i+1}, chSpeciesId={lockedLobbyMemberBindings[i].ChSpeciesId}");
+                        Debug.Log($"\t`lockedLobbyMemberBindings` peerJoinIndex={i + 1}, chSpeciesId={lockedLobbyMemberBindings[i].ChSpeciesId}");
                     }
                     Debug.Log($"[I am OWNER] Updated `lockedLobbyMemberBindings`, will start the match in LobbyDataUpdate_t from incomingLobbyId={incomingLobbyId}, now lobbyMembersCnt={lobbyMembersCnt}");
                 }
@@ -524,7 +570,6 @@ public class SteamP2PSessionManager {
         Buffer.BlockCopy(chatRecvBuff, 0, copiedDownsyncSnapshot, 0, copiedDownsyncSnapshot.Length);
 
         //Debug.Log($"Received LobbyChatMsg_t in incomingLobbyId={incomingLobbyId} of fromMemberSteamID={fromMemberSteamID}, chatID={callback.m_iChatID}, nBytes={nBytes}, chatEntryType={chatEntryType}");
-
         localDownsyncSnapshotBytesBuffer.Enqueue(copiedDownsyncSnapshot);
     }
 
@@ -571,7 +616,7 @@ public class SteamP2PSessionManager {
                 }
             }
         }
-        
+
         if (shouldAccept && SteamNetworkingMessages.AcceptSessionWithUser(ref remoteUser)) {
             // Accepted the session. This accepts ALL incoming packet types from this user.         
             uint peerJoinIndex = GetJoinIndexInLobby(peerUlSteamID);
@@ -602,7 +647,7 @@ public class SteamP2PSessionManager {
         if (null != lockedLobbyMemberUlSteamIdToJoinIndex && lockedLobbyMemberUlSteamIdToJoinIndex.ContainsKey(fromPeerUlSteamID) && null != map) {
             uint peerJoinIndex = lockedLobbyMemberUlSteamIdToJoinIndex[fromPeerUlSteamID];
             var battleState = map.GetBattleState();
-           
+
             //Debug.Log($"onConnectionStatusChanged: fromPeerUlSteamID={fromPeerUlSteamID}, peerJoinIndex={peerJoinIndex}, battleState={battleState}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
         } else {
             //Debug.Log($"onConnectionStatusChanged: remoteUser={fromPeerUlSteamID}, oldEState={oldEState}, newEState={newEState}, POPRemote={connInfo.m_idPOPRemote}, POPRelay={connInfo.m_idPOPRelay}, reason={connInfo.m_eEndReason}");
@@ -620,10 +665,18 @@ public class SteamP2PSessionManager {
 
         senderBuffer = new BlockingCollection<byte[]>();
         ownerSignalSenderBuffer = new BlockingCollection<byte[]>();
-        localDownsyncSnapshotBytesBuffer = new Queue<byte[]>();
-        localUpsyncSnapshotBytesBuffer = new Queue<byte[]>();
+        localDownsyncSnapshotBytesBuffer = new ConcurrentQueue<byte[]>();
+        localUpsyncSnapshotBytesBuffer = new ConcurrentQueue<byte[]>();
 
         m_LobbyMatchList = CallResult<LobbyMatchList_t>.Create(onLobbyMatchList);
+
+#if DEBUG
+        SteamNetworkingUtils.SetDebugOutputFunction(ESteamNetworkingSocketsDebugOutputType.k_ESteamNetworkingSocketsDebugOutputType_Verbose, OnSteamNetworkingDebug);
+#endif
+    }
+
+    public static void OnSteamNetworkingDebug(ESteamNetworkingSocketsDebugOutputType nType, System.Text.StringBuilder pszMsg) {
+        Debug.Log($"[SteamNet {nType}] {pszMsg}");
     }
 
     protected void onLobbyCreated(LobbyCreated_t callback) {
@@ -631,7 +684,7 @@ public class SteamP2PSessionManager {
             m_currentLobbyId = new CSteamID(callback.m_ulSteamIDLobby);
             m_currentLobbyOwnerId = SteamUser.GetSteamID();
             m_isCurrentLobbyOwner = true;
-            
+
             Debug.Log($"Lobby created successfully! ID: {m_currentLobbyId} with owner steam id={m_currentLobbyOwnerId}");
 
             // Set metadata variables so other clients can search/identify your Lobby
@@ -644,6 +697,24 @@ public class SteamP2PSessionManager {
             Debug.LogError($"Steam rejected lobby creation request. Error code: {callback.m_eResult}");
             if (null != map) {
                 map.OnLobbyCreateFailed();
+            }
+        }
+    }
+
+    protected void clearMessagePointers(in bool skipDownsync, in bool skipUpsync) {
+        for (int i = 0; i < MAX_MSG_COUNT_PER_POLL; i++) {
+            if (!skipDownsync) {
+                if (IntPtr.Zero != downsyncSnapshotMessagePointers[i]) {
+                    SteamNetworkingMessage_t.Release(downsyncSnapshotMessagePointers[i]);
+                    downsyncSnapshotMessagePointers[i] = IntPtr.Zero;
+                }
+            }
+
+            if (!skipUpsync) {
+                if (IntPtr.Zero != upsyncSnapshotMessagePointers[i]) {
+                    SteamNetworkingMessage_t.Release(upsyncSnapshotMessagePointers[i]);
+                    upsyncSnapshotMessagePointers[i] = IntPtr.Zero;
+                }
             }
         }
     }
@@ -711,9 +782,90 @@ public class SteamP2PSessionManager {
         m_connectionStatusChangedCallback = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(onConnectionStatusChanged);
     }
 
+    protected const int MAX_MSG_COUNT_PER_POLL = 8;
+    protected static IntPtr[] downsyncSnapshotMessagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL]; // [WARNING] Using "static" intentionally such that "SteamNetworkingMessages.ReceiveMessagesOnChannel(0, downsyncSnapshotMessagePointers, MAX_MSG_COUNT_PER_POLL)" would NOT crash due to "downsyncSnapshotMessagePointers" being deallocated by another thread (e.g. when application quits).
+
+    protected void downsyncSnapshotRecv(CancellationToken sessionCancellationToken, CancellationTokenSource sessionCancellationTokenSource) {
+        Debug.Log($"Starts p2pSession 'downsyncSnapshotRecv' loop, now localDownsyncSnapshotBytesBuffer.Count={localDownsyncSnapshotBytesBuffer.Count}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        try {
+            while (!sessionCancellationToken.IsCancellationRequested) {
+                int messageCount = 0;
+                do {
+                    // [REMINDER] Mostly native-method wrappers, no need to use try-catch-finally or try-finally
+                    messageCount = SteamNetworkingMessages.ReceiveMessagesOnChannel(SteamP2PSessionManager.DOWNSYNC_SNAPSHOT_IO_CHANNEL, downsyncSnapshotMessagePointers, MAX_MSG_COUNT_PER_POLL);
+
+                    if (0 < messageCount) {
+                        for (int i = 0; i < messageCount; i++) {
+                            SteamNetworkingMessage_t netMessage = Marshal.PtrToStructure<SteamNetworkingMessage_t>(downsyncSnapshotMessagePointers[i]);
+                            CSteamID fromSteamID = netMessage.m_identityPeer.GetSteamID();
+                            if (fromSteamID == GetCurrentLobbyOwnerId()) {
+                                byte[] copiedDownsyncSnapshot = new byte[netMessage.m_cbSize];
+                                Marshal.Copy(netMessage.m_pData, copiedDownsyncSnapshot, 0, copiedDownsyncSnapshot.Length);
+                                localDownsyncSnapshotBytesBuffer.Enqueue(copiedDownsyncSnapshot);
+                                //Debug.Log($"localDownsyncSnapshotBytesBuffer.Enqueue called, now localDownsyncSnapshotBytesBuffer.Count={localDownsyncSnapshotBytesBuffer.Count}");
+                            } // else check why it's coming here
+                            SteamNetworkingMessage_t.Release(downsyncSnapshotMessagePointers[i]);
+                            downsyncSnapshotMessagePointers[i] = IntPtr.Zero;
+                        }
+                    }
+                } while (messageCount >= MAX_MSG_COUNT_PER_POLL);
+            }
+        } catch (ObjectDisposedException ex1) {
+
+        } catch (Exception ex) {
+            Debug.LogWarning($"p2pSession is stopping for 'downsyncSnapshotRecv' upon exception @localSeqNo={localSeqNo}; ex={ex}");
+            if (!sessionCancellationToken.IsCancellationRequested) {
+                sessionCancellationTokenSource.Cancel(); // To cancel the "Send" loop
+            }
+        } finally {
+            clearMessagePointers(false, true);
+            localDownsyncSnapshotBytesBuffer.Clear();
+            Debug.Log($"Ends p2pSession 'downsyncSnapshotRecv' loop @localSeqNo={localSeqNo}");
+        }
+    }
+
+    protected static IntPtr[] upsyncSnapshotMessagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL]; 
+    protected void upsyncSnapshotRecv(CancellationToken sessionCancellationToken, CancellationTokenSource sessionCancellationTokenSource) {
+        Debug.Log($"Starts p2pSession 'upsyncSnapshotRecv' loop, now localUpsyncSnapshotBytesBuffer.Count={localUpsyncSnapshotBytesBuffer.Count}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
+        try {
+            while (!sessionCancellationToken.IsCancellationRequested) {
+                int messageCount = 0;
+                do {
+                    // [REMINDER] Mostly native-method wrappers, no need to use try-catch-finally or try-finally
+                    messageCount = SteamNetworkingMessages.ReceiveMessagesOnChannel(SteamP2PSessionManager.UPSYNC_SNAPSHOT_IO_CHANNEL, upsyncSnapshotMessagePointers, MAX_MSG_COUNT_PER_POLL);
+
+                    if (0 < messageCount) {
+                        for (int i = 0; i < messageCount; i++) {
+                            SteamNetworkingMessage_t netMessage = Marshal.PtrToStructure<SteamNetworkingMessage_t>(upsyncSnapshotMessagePointers[i]);
+                            ulong fromUllSteamID = netMessage.m_identityPeer.GetSteamID64();
+                            uint fromJoinIndex = GetJoinIndexInLobby(fromUllSteamID);
+                            if (PbPrimitivesOverride.Instance.getUnderlying().MagicJoinIndexInvalid != fromJoinIndex) {
+                                RemoveDisconnectedRecord(fromJoinIndex, "upsyncSnapshotRecv");
+                                byte[] copiedUpsyncSnapshot = new byte[netMessage.m_cbSize];
+                                Marshal.Copy(netMessage.m_pData, copiedUpsyncSnapshot, 0, copiedUpsyncSnapshot.Length);
+                                localUpsyncSnapshotBytesBuffer.Enqueue(copiedUpsyncSnapshot);
+                                //Debug.Log($"localUpsyncSnapshotBytesBuffer.Enqueue called, now localUpsyncSnapshotBytesBuffer.Count={localUpsyncSnapshotBytesBuffer}");
+                            }
+                            SteamNetworkingMessage_t.Release(upsyncSnapshotMessagePointers[i]);
+                            upsyncSnapshotMessagePointers[i] = IntPtr.Zero;
+                        }
+                    }
+                } while (messageCount >= MAX_MSG_COUNT_PER_POLL);
+            }
+        } catch (ObjectDisposedException ex1) {
+
+        } catch (Exception ex) {
+            Debug.LogWarning($"p2pSession is stopping for 'upsyncSnapshotRecv' upon exception @localSeqNo={localSeqNo}; ex={ex}");
+        } finally {
+            clearMessagePointers(true, false);
+            localUpsyncSnapshotBytesBuffer.Clear();
+            Debug.Log($"Ends p2pSession 'upsyncSnapshotRecv' loop @localSeqNo={localSeqNo}");
+        }
+    }
+
     protected void ownerSignalSend(CancellationToken sessionCancellationToken) {
         // [REMINDER] Only "lobby owner" in realtime manner will be using this task (i.e. respecting migration of "lobby owner").
-        Debug.Log($"Starts p2pSession 'ownerSignalSend' loop, now ownerSignalSenderBuffer.Count={ownerSignalSenderBuffer.Count}");
+        Debug.Log($"Starts p2pSession 'ownerSignalSend' loop, now ownerSignalSenderBuffer.Count={ownerSignalSenderBuffer.Count}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
         byte[] toSendBuffer;
         try {
             while (!sessionCancellationToken.IsCancellationRequested) {
@@ -752,13 +904,13 @@ public class SteamP2PSessionManager {
         } catch (Exception ex) {
             Debug.LogWarning($"p2pSession is stopping for 'ownerSignalSend' upon exception @localSeqNo={localSeqNo}; ex={ex}");
         } finally {
-            while (senderBuffer.TryTake(out _, sendBufferReadTimeoutMillis, sessionCancellationToken)) { }
+            while (ownerSignalSenderBuffer.TryTake(out _, sendBufferReadTimeoutMillis, sessionCancellationToken)) { }
             Debug.Log($"Ends p2pSession 'ownerSignalSend' loop @localSeqNo={localSeqNo}");
         }
     }
 
     protected void send(CancellationToken sessionCancellationToken) {
-        Debug.Log($"Starts p2pSession 'send' loop, now senderBuffer.Count={senderBuffer.Count}");
+        Debug.Log($"Starts p2pSession 'send' loop, now senderBuffer.Count={senderBuffer.Count}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
         byte[] toSendBuffer;
         try {
             while (!sessionCancellationToken.IsCancellationRequested) {
@@ -787,7 +939,7 @@ public class SteamP2PSessionManager {
 
                                            Moreover, we're intentionally NOT using the "k_nSteamNetworkingSend_NoDelay" flag to improve success rate.
                                          */
-                                        (Steamworks.Constants.k_nSteamNetworkingSend_Reliable | Steamworks.Constants.k_nSteamNetworkingSend_AutoRestartBrokenSession | Steamworks.Constants.k_nSteamNetworkingSend_NoNagle),  
+                                        (Steamworks.Constants.k_nSteamNetworkingSend_Reliable | Steamworks.Constants.k_nSteamNetworkingSend_AutoRestartBrokenSession | Steamworks.Constants.k_nSteamNetworkingSend_NoNagle),
                                         UPSYNC_SNAPSHOT_IO_CHANNEL
                                     ); // [WARNING] This is synchronous, hence we need wrap "send" as "Task.Run(() => send(...))"
                                 }
@@ -807,19 +959,12 @@ public class SteamP2PSessionManager {
     }
 
     ~SteamP2PSessionManager() {
-        if (null != senderBuffer) {
-            senderBuffer.Dispose();
-            senderBuffer = null;
-        }
-        if (null != ownerSignalSenderBuffer) {
-            ownerSignalSenderBuffer.Dispose();
-            ownerSignalSenderBuffer = null;
-        }
         clearPassiveCallbacks();
         if (null != m_LobbyMatchList) {
             m_LobbyMatchList.Dispose();
             m_LobbyMatchList = null;
         }
+
 
         Debug.Log($"~SteamP2PSessionManager done");
     }

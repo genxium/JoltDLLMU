@@ -1,6 +1,6 @@
 using jtshared;
 using System.Collections.Generic;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public partial class PbCharactersOverride : PbCharacters {

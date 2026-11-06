@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using static FrontendOnlyGeometry;
+using static JoltCSharp.PbPrimitivesOverride;
 using static JoltCSharp.Bindings;
 
 public abstract class AbstractJoltMapController : MonoBehaviour {
@@ -381,6 +381,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         }
         battleState = PbPrimitivesOverride.ROOM_STATE_STOPPED;
         battleResultIsSet = false;
+        csharpTimerRdfId = -1;
+        PreemptRenderFrameBeforeMerge(rdfHolder, PbPrimitivesOverride.Instance.getUnderlying());
     }
     
     protected void enableBattleInput(bool yesOrNo) {
@@ -650,6 +652,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         gameplayBtnsHintAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
         keyChLightSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
         sfxSourceAnimPool.SetGeometricConsts(effInftyFar, characterZ);
+        aimingRayAnimPool.SetGeometricConsts(effInftyFar, bulletZ);
         if (debugDrawingEnabled && null != debugColliderPrefab) {
             lazyInitDebugColliderAnimPool(-1);
         }
@@ -1146,8 +1149,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
             if (!String.IsNullOrEmpty(bulletConfig.AnimName)) {
                 var (bulletAnimHolder, oldUd) = bulletAnimPool.GetOrCreateAnimNode(bulletUd, bulletConfig.AnimName, bulletConfig, underlyingMap.transform);
                 bulletAnimHolder.damageDealedIndicatorPrefab = damageIndicatorPrefab;
-                bulletAnimHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
                 bulletAnimHolder.gameObject.transform.position = newPosHolder;
+                bulletAnimHolder.updateAnim(rdfId, bulletUd, bullet, bullet.BlState, bulletConfig, bullet.FramesInBlState);
                 /*
                 playBulletVfx(bullet, bulletConfig, isStartup, isExploding, wx, wy, rdf);
                 */
