@@ -1,7 +1,6 @@
 using Google.Protobuf;
 using jtshared;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SFXSourceAnimPool : AbstractCacheableAnimNodePool<IMessage, Enum, IMessage, string, SFXSourceAnimController> {
@@ -31,24 +30,52 @@ public class SFXSourceAnimPool : AbstractCacheableAnimNodePool<IMessage, Enum, I
 
     public string CalcSfxName(in CharacterDownsync chd, in CharacterConfig chConfig) {
         switch (chd.ChState) {
-            case CharacterState.InAirIdle1ByJump:
-            case CharacterState.InAirIdle1BySlipJump:
-            case CharacterState.InAirIdle2ByJump:
-            case CharacterState.InAirIdle1ByWallJump:
-                return "Jump1"; // [TODO] Allow configuration
-            case CharacterState.Walking:
-                if (0 != chd.GroundUd) {
-                    return "FootStep1"; // [TODO] Allow configuration
+            case CharacterState.Dashing:
+            case CharacterState.BackDashing:
+                return chConfig.DashingSfxName;
+            case CharacterState.InAirDashing:
+            case CharacterState.InAirBackDashing:
+                if (!string.IsNullOrEmpty(chConfig.AirDashingSfxName)) {
+                    return chConfig.AirDashingSfxName;
+                } else {
+                    return chConfig.DashingSfxName;
                 }
-                return "";
-            case CharacterState.Idle1:
+            case CharacterState.Sliding:
+                return chConfig.SlidingSfxName;
+            case CharacterState.InAirIdle1ByJump:
+                return chConfig.JumpingSfxName;
+            case CharacterState.InAirIdle1BySlipJump:
+                if (!string.IsNullOrEmpty(chConfig.SlipJumpingSfxName)) {
+                    return chConfig.SlipJumpingSfxName;
+                } else {
+                    return chConfig.JumpingSfxName;
+                }
+            case CharacterState.InAirIdle2ByJump:
+                if (!string.IsNullOrEmpty(chConfig.AirJumpingSfxName)) {
+                    return chConfig.AirJumpingSfxName;
+                } else {
+                    return chConfig.JumpingSfxName;
+                }
+            case CharacterState.InAirIdle1ByWallJump:
+                if (!string.IsNullOrEmpty(chConfig.WallJumpingSfxName)) {
+                    return chConfig.WallJumpingSfxName;
+                } else {
+                    return chConfig.JumpingSfxName;
+                }
+            case CharacterState.Walking:
+                return chConfig.WalkingSfxName;
+            case CharacterState.InAirWalking:
+                if (!string.IsNullOrEmpty(chConfig.AirWalkingSfxName)) {
+                    return chConfig.AirWalkingSfxName;
+                } else {
+                    return chConfig.WalkingSfxName;
+                }
+            default:
                 if (0 != chd.GroundUd) {
                     if (0 < chd.FallstoppingRdfCountdown) {
-                        return "Landing1"; // [TODO] Allow configuration
+                        return chConfig.LandingSfxName;
                     }
                 }
-                return "";
-            default:
                 return "";
         }
     }

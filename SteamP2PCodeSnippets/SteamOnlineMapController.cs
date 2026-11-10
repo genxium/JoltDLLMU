@@ -851,13 +851,14 @@ public class SteamOnlineMapController : AbstractJoltMapController {
             //Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId}, FixedUpdate() callling with rdfHolder.Id={rdfHolder.Id}, battleState=ROOM_STATE_IN_BATTLE, (frozenRdfCount/frozenRdfCountLimit)=({frozenRdfCount}/{frozenRdfCountLimit}), (frozenGracingRdfCnt/frozenGracePeriodRdfCount)=({frozenGracingRdfCnt}/{frozenGracePeriodRdfCount}), acLagShouldLockStep={acLagShouldLockStep}, ifdFrontShouldFreeze={ifdFrontShouldFreeze}, ifdFrontShouldLockStep={ifdFrontShouldLockStep}");
 
             if (localTimerEnded) {
+                Debug.Log($"@csharpTimerRdfId={csharpTimerRdfId} localTimerEnded with newLcacIfdId={newLcacIfdId}, localRequiredIfdId={localRequiredIfdId}, timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync={timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync}");
                 bool rdfAllConfirmed = (newLcacIfdId >= localRequiredIfdId);
                 if (rdfAllConfirmed) {
                     timerEndedRdfDerivedFromAllConfirmedInputFrameDownsync = true;
                 }
                 if (!timerEndedRdfDerivedFromAllConfirmedInputFrameDownsync && 0 < timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync) {
                     // TODO: Popup some GUI hint to tell the player that we're awaiting downsync only, as the local "timerRdfId" is monotonically increasing, there's no way to rewind and change any input from here!
-                    timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync -= 16; // hardcoded for now
+                    timeoutMillisAwaitingLastAllConfirmedInputFrameDownsync -= (int)(Time.fixedDeltaTime * 1000);
                 } else {
                     // settlementRdfId = timerRdfId;
                     OnBattleStopped($"@csharpTimerRdfId={csharpTimerRdfId} localTimerEnded");

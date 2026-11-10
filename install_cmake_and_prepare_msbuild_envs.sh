@@ -35,25 +35,36 @@ if [ -z "$VS_INSTALL_DIR" ]; then
     
     if [ -f "$VSWHERE" ]; then
         # Use vswhere to find the latest VS installation path
-        VS_INSTALL_DIR_RAW=$("$VSWHERE" -latest -property installationPath)
-        VS_INSTALL_DIR=$(printf '%s' "$VS_INSTALL_DIR_RAW" | sed 's#\\#/#g' | sed 's#C:#/c#g')
-        echo "-> Found Visual Studio at: $VS_INSTALL_DIR"
-        MSVC_VER=$(< "$VS_INSTALL_DIR/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt")
-        echo "-> Found MSVC_VER: $MSVC_VER"
+        VS_INSTALL_DIR_RAW=$("$VSWHERE" -latest -property installationPath | tr -d '\r')
+        VS_INSTALL_DIR=$(cygpath -u "$VS_INSTALL_DIR_RAW")
 
-        export MSVC_X64_CL_FOLDER="$VS_INSTALL_DIR/VC/Tools/MSVC/${MSVC_VER}/bin/Hostx64/x64"
-        export MSVC_X86_CL_FOLDER="$VS_INSTALL_DIR/VC/Tools/MSVC/${MSVC_VER}/bin/Hostx86/x86"
+        # 1. Locate MSVC toolset version
+        MSVC_VER=$(tr -d '\r\n' < "$VS_INSTALL_DIR/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt")
+        MSVC_ROOT_WIN="${VS_INSTALL_DIR_RAW}\\VC\\Tools\\MSVC\\${MSVC_VER}"
+        MSVC_BIN_POSIX="$VS_INSTALL_DIR/VC/Tools/MSVC/${MSVC_VER}/bin/Hostx64/x64"
 
-        export PATH=$PATH:${MSVC_X64_CL_FOLDER}
+        # 2. Locate latest Windows 10/11 SDK from Windows Kits
+        WIN_KITS_ROOT_WIN="C:\\Program Files (x86)\\Windows Kits\\10"
+        WIN_KITS_ROOT_POSIX="/c/Program Files (x86)/Windows Kits/10"
+        WIN_SDK_VER=$(ls -1 "$WIN_KITS_ROOT_POSIX/Include" | grep -E '^10\.' | sort -V | tail -n 1)
+        WIN_SDK_BIN_POSIX="$WIN_KITS_ROOT_POSIX/bin/${WIN_SDK_VER}/x64"
+
+        # 3. Export Windows-formatted INCLUDE and LIB paths for cl.exe and link.exe
+        export INCLUDE="${MSVC_ROOT_WIN}\\include;${WIN_KITS_ROOT_WIN}\\Include\\${WIN_SDK_VER}\\ucrt;${WIN_KITS_ROOT_WIN}\\Include\\${WIN_SDK_VER}\\um;${WIN_KITS_ROOT_WIN}\\Include\\${WIN_SDK_VER}\\shared;${WIN_KITS_ROOT_WIN}\\Include\\${WIN_SDK_VER}\\winrt"
+        export LIB="${MSVC_ROOT_WIN}\\lib\\x64;${WIN_KITS_ROOT_WIN}\\Lib\\${WIN_SDK_VER}\\ucrt\\x64;${WIN_KITS_ROOT_WIN}\\Lib\\${WIN_SDK_VER}\\um\\x64"
+
+        # 4. Prepend MSVC, Windows SDK (rc.exe, mt.exe), and Ninja to PATH
+        NINJA_BIN_POSIX="$VS_INSTALL_DIR/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja"
+        export PATH="$MSVC_BIN_POSIX:$WIN_SDK_BIN_POSIX:$NINJA_BIN_POSIX:$PATH"
+
+        echo "-> Loaded MSVC $MSVC_VER and Windows SDK $WIN_SDK_VER"
     else
         echo "Warning: vswhere.exe not found. Defaulting to system environment."
     fi
 fi
 
-export PATH=$PATH:"$VS_INSTALL_DIR/MSBuild/Current/Bin" # For "msbuild.exe"
-
 # Verify Installations by far
 echo "--- Environment Verification ---"
-msbuild.exe -version | head -n 1
+#msbuild.exe -version | head -n 1
 
 cd $basedir

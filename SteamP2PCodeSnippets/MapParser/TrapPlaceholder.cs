@@ -54,6 +54,7 @@ public class TrapPlaceholder : MonoBehaviour {
             ProvidesSlipJump = colliderOptions.providesSlipJump,
             ProvidesStairsP = colliderOptions.providesStairsP,
             ProvidesStairsN = colliderOptions.providesStairsN,
+            ProvidesDamage = colliderOptions.providesDamage,
             ProhibitsWallGrabbing = !colliderOptions.providesWallGrabbing,
         };
 
@@ -162,6 +163,11 @@ public class TrapPlaceholder : MonoBehaviour {
         var collidingSectionOverride = MapLayer.parseSerializableConvexPolygon(gameObject.transform.Find("CollidingSectionOverride"));
         if (null != collidingSectionOverride) {
             ret.CollidingSectionOverride = collidingSectionOverride;
+        }
+
+        var damageSection = MapLayer.parseSerializableConvexPolygon(gameObject.transform.Find("DamageSection"));
+        if (null != damageSection) {
+            ret.DamageProvidingSections.Add(damageSection);
         }
 
         return ret;

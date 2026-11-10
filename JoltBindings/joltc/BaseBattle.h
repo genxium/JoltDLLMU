@@ -285,27 +285,23 @@ public:
             return;
         }
 
-        const float maxVelX = cc->speed();
-        const float minVelX = -cc->speed();
-        if (ioVel.GetX() > maxVelX) {
-            ioVel.SetX(maxVelX);
-        } else if (ioVel.GetX() < minVelX) {
-            ioVel.SetX(minVelX);
-        }
-
-        const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
-        const float minVelY = -cc->speed();
-        if (ioVel.GetY() > maxVelY) {
-/*
-#ifndef  NDEBUG
-            std::ostringstream oss;
-            oss << "clampFlyingChdVel/speciesId=" << cc->species_id() << ", clamped flying maxVelY from ioVel.GetY=" << ioVel.GetY() << "." << std::endl;
-            Debug::Log(oss.str(), DColor::Yellow);
-#endif // ! NDEBUG
-*/
-            ioVel.SetY(maxVelY);
-        } else if (ioVel.GetY() < minVelY) {
-            ioVel.SetY(minVelY);
+        if (cc->anti_gravity_when_idle() && InAirIdle1NoJump == nextChd->ch_state()) {      
+            ioVel.SetX(0);
+            const float maxVelY = 0 == cc->max_ascending_vel_y() ? cc->speed() : cc->max_ascending_vel_y();
+            const float minVelY = 0 == cc->min_falling_vel_y() ? -cc->speed() : cc->min_falling_vel_y();
+            if (ioVel.GetY() > maxVelY) {
+                ioVel.SetY(maxVelY);
+            } else if (ioVel.GetY() < minVelY) {
+                ioVel.SetY(minVelY);
+            }
+        } else {
+            const float candVel2 = ioVel.LengthSq(); 
+            const float speed2 = cc->speed()*cc->speed();
+            if (candVel2 > speed2) {
+                const float invCandVel = InvSqrt32(candVel2);
+                const float shrinkFactor = cc->speed()*invCandVel;
+                ioVel *= shrinkFactor;
+            }
         }
     }
 
@@ -1978,20 +1974,7 @@ public:
                         //ioSettings.mCombinedFriction = 0.0f;
                         //ioSettings.mCombinedRestitution = 1.0f;
                     }
-                } else if (globalPrimitiveConsts->tpts().sliding_platform() == trapConfigFromTiled->tpt()) {
-                    if (UDT_PLAYER == udt2 || UDT_NPC == udt2) {
-                        ioSettings.mCombinedFriction = trapConfigFromTiled->friction();
-/*
-#ifndef  NDEBUG
-                        std::ostringstream oss;
-                        auto trapPos = inBody1.GetPosition();
-                        auto chPos = inBody2.GetPosition();
-                        oss << "SlidingPlatformFrictionOverride as ud1=" << ud1 << ", trap_pos=(" << trapPos.GetX() << "," << trapPos.GetY() << ")" << "/ud2=" << ud2 << ", ch_pos=(" << chPos.GetX() << "," << chPos.GetY() << ")." << std::endl;
-                        Debug::Log(oss.str(), DColor::Green);
-#endif // ! NDEBUG
-*/
-                    }
-                }
+                } 
 
                 auto& trapConfigs = globalConfigConsts->trap_configs();
                 if (bothDynamic && trapConfigs.count(trapConfigFromTiled->tpt())) {
@@ -2024,20 +2007,7 @@ public:
                         //ioSettings.mCombinedFriction = 0.0f;
                         //ioSettings.mCombinedRestitution = 1.0f;
                     }
-                } else if (globalPrimitiveConsts->tpts().sliding_platform() == trapConfigFromTiled->tpt()) {
-                    if (UDT_PLAYER == udt1 || UDT_NPC == udt1) {
-                        ioSettings.mCombinedFriction = trapConfigFromTiled->friction();
-/*
-#ifndef  NDEBUG
-                        std::ostringstream oss;
-                        auto trapPos = inBody2.GetPosition();
-                        auto chPos = inBody1.GetPosition();
-                        oss << "SlidingPlatformFrictionOverride as ud2=" << ud2 << ", trap_pos=(" << trapPos.GetX() << "," << trapPos.GetY() << ")" << "/ud1=" << ud1 << ", ch_pos=(" << chPos.GetX() << "," << chPos.GetY() << ")." << std::endl;
-                        Debug::Log(oss.str(), DColor::Green);
-#endif // ! NDEBUG
-*/
-                    }
-                }
+                } 
 
                 auto& trapConfigs = globalConfigConsts->trap_configs();
                 if (bothDynamic && trapConfigs.count(trapConfigFromTiled->tpt())) {

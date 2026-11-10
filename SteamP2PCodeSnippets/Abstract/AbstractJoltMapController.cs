@@ -413,6 +413,7 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         Debug.Log($"createSelfParsedStartRdf with speciesIdList={ArrToString(speciesIdList)} for selfJoinIndex={selfJoinIndex}");
         triggerUdToConfigFromTiled.Clear();
         trapUdToConfigFromTiled.Clear();
+
         var grid = underlyingMap.GetComponent<Grid>();
         uint pickableIdCounter = 1;
         uint npcIdCounter = 1;
@@ -420,8 +421,8 @@ public abstract class AbstractJoltMapController : MonoBehaviour {
         uint triggerCount = 0;
 
         var mapProps = underlyingMap.GetComponent<LevelPlaceholder>();
-        if (null != mapProps && 0 != mapProps.durationSeconds) {
-            battleDurationSeconds = mapProps.durationSeconds;
+        if (mapProps.durationSeconds.configured) {
+            battleDurationSeconds = mapProps.durationSeconds.value;
             battleDurationFrames = battleDurationSeconds * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
         } else {
             battleDurationFrames = PbPrimitivesOverride.Instance.getUnderlying().MagicRdfCntInfinite;

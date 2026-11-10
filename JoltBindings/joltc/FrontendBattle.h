@@ -39,7 +39,7 @@ public:
             selfUpsyncReqHolder = nullptr;
         }
 #ifndef NDEBUG
-        Debug::Log("~FrontendBattle/C++", DColor::Green);
+        Debug::Log("~FrontendBattle/C++\n", DColor::Green);
 #endif
     }
 

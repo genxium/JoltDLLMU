@@ -83,12 +83,3 @@ echo "Built $clibname with JoltPhysics engine"
 echo "Building joltphysics.dll for CSharp bindings..."
 cd $JoltBindings_basedir && dotnet build -c $1
 echo "Built joltphysics.dll for CSharp bindings"
-
-LibExportImportCppTestName=LibExportImportCppTest
-if [[ "Linux" == $2 ]]; then
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app ${reusing_id} bash -c "cd $LibExportImportCppTestName && USE_STATIC_PB=${use_static_pb_value} ./build_and_install.sh $1 linux64"
-elif [[ "LinuxDynamicPb" == $2 ]]; then
-    docker run -it --rm --mount type=bind,src=$basedir/,dst=/app ${reusing_id} bash -c "cd $LibExportImportCppTestName && ./build_and_install.sh $1 linux64"
-else
-    USE_STATIC_PB=${use_static_pb_value} $basedir/$LibExportImportCppTestName/build_and_install.sh $1 win64 
-fi

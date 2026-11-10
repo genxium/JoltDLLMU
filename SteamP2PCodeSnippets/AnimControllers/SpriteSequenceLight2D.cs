@@ -2,7 +2,7 @@
 using UnityEngine.Rendering.Universal;
 
 namespace Assets.Scripts.AnimControllers {
-    internal class SpriteSequenceLight2D : MonoBehaviour {
+    public class SpriteSequenceLight2D : MonoBehaviour {
         public Animator animator;
         public Light2D light2D;
         private SpriteRenderer spriteRenderer;
@@ -10,7 +10,7 @@ namespace Assets.Scripts.AnimControllers {
         private void Start() {
         }
 
-        private void LateUpdate() {
+        public void LateUpdate() {
             if (light2D == null) {
                 return;
             }
