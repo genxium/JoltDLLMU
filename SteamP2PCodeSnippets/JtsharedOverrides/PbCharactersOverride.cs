@@ -44,10 +44,21 @@ namespace JoltCSharp {
             BLADEGIRL.LayDownFramesToRecover = 18;
             BLADEGIRL.GetUpInvinsibleFrames = 20;
             BLADEGIRL.GetUpFramesToRecover = 18;
+            BLADEGIRL.WalkingSfxName = "FootStep1";
+            BLADEGIRL.JumpingSfxName = "Jump1";
+            BLADEGIRL.LandingSfxName = "Landing1";
 
             var BOUNTYHUNTER = underlying[PbPrimitivesOverride.SPECIES_BOUNTYHUNTER];
             BOUNTYHUNTER.AccMagX = 0.13f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BOUNTYHUNTER.AngYSpeed = 1.5f * PbPrimitivesOverride.StdYAxisAngularSpeedPerRdf * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            BOUNTYHUNTER.WalkingSfxName = "FootStep1";
+            BOUNTYHUNTER.JumpingSfxName = "Jump1";
+            BOUNTYHUNTER.LandingSfxName = "Landing1";
+
+            var RED_RIDINGHOOD = underlying[PbPrimitivesOverride.SPECIES_RED_RIDINGHOOD];
+            RED_RIDINGHOOD.WalkingSfxName = "FootStep1";
+            RED_RIDINGHOOD.JumpingSfxName = "Jump1";
+            RED_RIDINGHOOD.LandingSfxName = "Landing1";
 
             var BAT1 = underlying[PbPrimitivesOverride.SPECIES_BAT1];
             BAT1.VisionOffsetX = (10.0f);

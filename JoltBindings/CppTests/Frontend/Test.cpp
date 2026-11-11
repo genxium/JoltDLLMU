@@ -391,7 +391,7 @@ RenderFrame* mockSliderTrapTestStartRdf3(google::protobuf::Arena* theAllocator) 
     auto playerCh1 = player1->mutable_chd();
     auto playerCh1Species = chSpecies.bountyhunter();
     auto cc1 = characterConfigs[playerCh1Species];
-    playerCh1->set_x(0);
+    playerCh1->set_x(-50);
     playerCh1->set_y(200);
     playerCh1->set_speed(cc1.speed());
     playerCh1->set_ch_state(CharacterState::InAirIdle1NoJump);
@@ -3456,10 +3456,21 @@ std::map<int, uint64_t> testCmds16 = {
 
 std::map<int, uint64_t> testCmds17 = {
     {0, 0},
+    {29, 0},
+    {30, 3},
+    {31, 3},
+    {32, 3},
+    {33, 3},
+    {34, 3},
+    {36, 3},
+    {41, 3},
+    {42, 0},
     {250, 0},
+    {253, 0},
     {254, 3},
     {320, 3},
     {360, 3},
+    {399, 3},
     {400, 19},
     {404, 3},
     {440, 3},
@@ -3818,7 +3829,10 @@ std::map<int, uint64_t> testCmds38 = {
     {136, 19},
     {139, 3},
     {140, 3},
-    {299, 3},
+    {239, 3},
+    {240, 19},
+    {241, 0},
+    {299, 0},
     {300, 16},
     {301, 0},
     {399, 0},
@@ -3837,16 +3851,16 @@ std::map<int, uint64_t> testCmds39 = {
     {3, 0},
     {4, 3},
     {99, 3},
-    {100, 516}, // Press F and walk back
-    {249, 516}, 
-    {250, 515}, // Hold F, then turn-around to walk up stairs
-    {449, 515},
-    {450, 4}, // Release F, turn-around to test n-type stairs
+    {100, 8}, // Press stairs-intention button and walk back
+    {249, 8}, 
+    {250, 5}, // Hold stairs-intention button, then turn-around to walk up stairs
+    {449, 5},
+    {450, 4}, // Release stairs-intention button, turn-around to test n-type stairs
     {599, 4}, 
-    {600, 3}, // Keep F released, turn-around to test n-type stairs again
+    {600, 3}, // Keep stairs-intention button released, turn-around to test n-type stairs again
     {799, 3},
-    {800, 516}, // Hold F, then turn-around to walk down stairs
-    {1023, 516},
+    {800, 8}, // Hold stairs-intention button, then turn-around to walk down stairs
+    {1023, 8},
     {1024, 4},
     {1037, 4},
     {1048, 3},
@@ -3865,8 +3879,8 @@ std::map<int, uint64_t> testCmds40 = {
     {319, 4}, 
     {320, 3}, 
     {599, 3},
-    {600, 515},
-    {799, 515},
+    {600, 5},
+    {799, 5},
     {800, 0},
     {803, 0},
     {804, 16},
@@ -5365,6 +5379,7 @@ void initTest17Data(WsReq* initializerMapData, std::vector<std::vector<float>>& 
     trapConfigFromTiled1->set_init_q_y(0);
     trapConfigFromTiled1->set_init_q_z(0);
     trapConfigFromTiled1->set_init_q_w(1);
+    trapConfigFromTiled1->set_friction(0.3f);
 
     trapConfigFromTiled1->set_init_vel_x(initVel1.GetX());
     trapConfigFromTiled1->set_init_vel_y(initVel1.GetY());
@@ -8409,8 +8424,9 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
     int newLcacIfdId = -1, maxPlayerInputFrontId = 0, minPlayerInputFrontId = 0;
     int newChaserRdfId = 0, newReferenceBattleChaserRdfId = 0;
 
-    float minTp1Y = 105.0f - .5f, maxTp1Y = 105.0f + .5f;
-    float minTp2Y = 128.0f - .5f, maxTp2Y = 128.0f + .5f;
+    float tpYTolerance = .5f;
+    float minTp1Y = 105.0f - tpYTolerance, maxTp1Y = 105.0f + tpYTolerance;
+    float minTp2Y = 128.0f - tpYTolerance, maxTp2Y = 128.0f + tpYTolerance;
 
     while (loopRdfCnt > outerTimerRdfId) {
         bool shouldPrint = false;
@@ -8430,7 +8446,7 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         auto& tp1 = outerTimerRdf->dynamic_traps(0);        
         auto& tp2 = outerTimerRdf->dynamic_traps(1);
 
-        if (0 < outerTimerRdfId && outerTimerRdfId < 64) {
+        if (30 < outerTimerRdfId && outerTimerRdfId < 64) {
             //shouldPrint = true;
         }
 
@@ -8439,7 +8455,7 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
 
         if (shouldPrint) {
-            std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << "), cs=" << (int)p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", groundUd=" << p1Chd.ground_ud() << ", groundVel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\ttrap1, pos=(" << tp1.x() << ", " << tp1.y() << "), q=(" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << "), trapState=" << (int)tp1.trap_state() << ", framesInTrapState=" << tp1.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp1.id()) << "\n\ttrap2, pos=(" << tp2.x() << ", " << tp2.y() << "), q=(" << tp2.q_x() << ", " << tp2.q_y() << ", " << tp2.q_z() << ", " << tp2.q_w() << "), vel=(" << tp2.vel_x() << ", " << tp2.vel_y() << "), trapState=" << (int)tp2.trap_state() << ", framesInTrapState=" << tp2.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp2.id()) << std::endl;
+            std::cout << "TestCase17/outerTimerRdfId=" << outerTimerRdfId << "\n\tp1 inSingleInput=" << inSingleInput << ", pos=(" << p1Chd.x() << ", " << p1Chd.y() << ", " << p1Chd.z() << "), vel=(" << p1Chd.vel_x() << ", "  << p1Chd.vel_y() << "), cs=" << (int)p1Chd.ch_state() << ", fc=" << p1Chd.frames_in_ch_state() << ", groundUd=" << p1Chd.ground_ud() << ", groundVel=(" << p1Chd.ground_vel_x() << ", " << p1Chd.ground_vel_y() << ")\n\ttrap1, pos=(" << tp1.x() << ", " << tp1.y() << "), q=(" << tp1.q_x() << ", " << tp1.q_y() << ", " << tp1.q_z() << ", " << tp1.q_w() << "), vel=(" << tp1.vel_x() << ", " << tp1.vel_y() << "), trapState=" << (int)tp1.trap_state() << ", framesInTrapState=" << tp1.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp1.id()) << "\n\ttrap2, pos=(" << tp2.x() << ", " << tp2.y() << "), q=(" << tp2.q_x() << ", " << tp2.q_y() << ", " << tp2.q_z() << ", " << tp2.q_w() << "), vel=(" << tp2.vel_x() << ", " << tp2.vel_y() << "), trapState=" << (int)tp2.trap_state() << ", framesInTrapState=" << tp2.frames_in_trap_state() << ", ud=" << APP_CalcTrapUserData(tp2.id()) << std::endl;
         }
 
         if (10 < outerTimerRdfId && outerTimerRdfId < 24) {
@@ -8449,6 +8465,12 @@ bool runTestCase17(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             JPH_ASSERT(p1Chd.ground_ud() == APP_CalcTrapUserData(tp1.id()));
             JPH_ASSERT(!BaseBattle::IsLengthNearZero(p1Chd.ground_vel_x()));
             JPH_ASSERT(0 < p1Chd.vel_x() * p1Chd.ground_vel_x());
+        } else if (40 == outerTimerRdfId) {
+            JPH_ASSERT(p1Chd.ground_ud() == APP_CalcTrapUserData(tp1.id()));
+            JPH_ASSERT(!BaseBattle::IsLengthNearZero(p1Chd.ground_vel_x()));
+            auto p1VelXWrtGround = p1Chd.vel_x() - p1Chd.ground_vel_x();
+            JPH_ASSERT(!BaseBattle::IsLengthNearZero(p1VelXWrtGround) && 0 < p1VelXWrtGround);
+            JPH_ASSERT(0 > p1VelXWrtGround * p1Chd.ground_vel_x());
         } else if (150 <= outerTimerRdfId && outerTimerRdfId <= 248) {
             JPH_ASSERT(minTp1Y < tp1.y() && tp1.y() < maxTp1Y);
         } else if (303 < outerTimerRdfId && outerTimerRdfId <= 420) {
@@ -10367,6 +10389,10 @@ bool runTestCase38(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             }
         }
 
+        if (1 <= outerTimerRdfId && outerTimerRdfId < 120) {
+            //shouldPrint = true;
+        }
+
         if (120 <= outerTimerRdfId && outerTimerRdfId < 380) {
             //shouldPrint = true;
         }
@@ -11158,7 +11184,7 @@ bool runTestCase44(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
         }
         
         if (outerTimerRdfId+5 >= loopRdfCnt) {
-            JPH_ASSERT(54 == p1Hp);
+            JPH_ASSERT(102 == p1Hp);
         }
 
         outerTimerRdfId++;

@@ -37,9 +37,17 @@ set(JOLTC_ROOT ${JOLT_BINDINGS_ROOT}/joltc)
 
 set(TARGET_NAME joltc)
 SET(BUILD_TYPE $ENV{BUILD_TYPE})
-message(STATUS "JoltBindings/CMakeLists.txt, build type=${BUILD_TYPE}")
+message(STATUS "JoltBindings/CMakeLists.txt, CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}, build type=${BUILD_TYPE}")
 
-set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
+set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}) 
+
+string(REGEX MATCH "/${BUILD_TYPE}$" _ends_with_type "${CMAKE_BINARY_DIR}")
+
+if(NOT _ends_with_type)
+    set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/${BUILD_TYPE}) 
+else()
+    set(OVERRIDE_BINARY_DESTINATION ${CMAKE_BINARY_DIR}) 
+endif()
 
 set(PB_GEN_ROOT ${OVERRIDE_BINARY_DESTINATION}/pb_gen)
 
@@ -103,19 +111,30 @@ endif()
 # Set the debug/non-debug build flags
 if(BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Turning on JPH_ASSERT for BUILD_TYPE=Debug")
-    if(MSVC)
+    target_compile_definitions(${TARGET_NAME} PRIVATE JPH_NO_FORCE_INLINE)
+    target_compile_definitions(${TARGET_NAME} PRIVATE GENERATE_DEBUG_SYMBOLS)
+    if(MSVC) 
         # Expand inline functions for easier debugging.
-        target_compile_options(${TARGET_NAME} PUBLIC
+        target_compile_options(${TARGET_NAME} PRIVATE
             /FI$<BUILD_INTERFACE:${JOLTC_ROOT}>/debug_prelude.h
         )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Z7") # See https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
+
+        # See https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            MSVC_DEBUG_INFORMATION_FORMAT ProgramDatabase
+        )
+        
+        # Strip optimizations and force step-into compatibility
+        target_compile_options(${TARGET_NAME} PRIVATE "/Z7" "/MP") 
+        target_link_options(${TARGET_NAME} PRIVATE "/DEBUG")
     else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+        target_compile_options(${TARGET_NAME} PRIVATE "-g")
     endif()
 else()
     message(STATUS "Turning off JPH_ASSERT for BUILD_TYPE=Release")
     if(MSVC)
         # Set more compiler options
+        target_compile_options(${TARGET_NAME} PRIVATE "/Zi" "/MP")
     else()
         # Set more compiler options
     endif()

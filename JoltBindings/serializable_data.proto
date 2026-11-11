@@ -422,6 +422,17 @@ message CharacterConfig {
     string def1_atked_vfx_anim_name = 266;
     string def1_broken_vfx_anim_name = 267;
     string btn_b_charged_vfx_anim_name = 268;
+
+    string walking_sfx_name = 2048;
+    string air_walking_sfx_name = 2049;
+    string dashing_sfx_name = 2050;
+    string sliding_sfx_name = 2051;
+    string air_dashing_sfx_name = 2052;
+    string landing_sfx_name = 2053;
+    string jumping_sfx_name = 2054;
+    string slip_jumping_sfx_name = 2055;
+    string air_jumping_sfx_name = 2056;
+    string wall_jumping_sfx_name = 2057;
 }
 
 enum SpecialMoveOverrideStatus {

@@ -27,7 +27,7 @@ namespace JoltCSharp {
                 DefaultBoxHalfSizeY = 100.0f,
                 DefaultLinearSpeed = 7.0f*BATTLE_DYNAMICS_FPS, 
                 DefaultCooldownRdfCount = 60,
-                Friction = 0.7f, 
+                Friction = (0.09f)/primitiveConsts.DefaultChFriction, // [REMINDER] The "combined friction" is calculated by "sqrt(body1.friction * body2.friction)". A higher friction here makes the "SlidingPlatform" easier to drive the character to move, while making the character itself more difficult to proactively move.  
             };
 
             TrapConfig RotatingPlatformTrap = new TrapConfig {

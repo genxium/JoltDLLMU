@@ -1045,7 +1045,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 biNoLock->SetFriction(bodyID, tpConfigFromTile->friction()); 
             } else {
                 biNoLock->SetFriction(bodyID, globalPrimitiveConsts->default_trap_friction()); 
-            }
+            } 
 
             if (tpConfigFromTile->has_restitution()) {
                 biNoLock->SetRestitution(bodyID, tpConfigFromTile->restitution()); 
@@ -2985,7 +2985,7 @@ void BaseBattle::processInertiaWalkingHandleZeroEffDx(const int currRdfId, float
         if (UDT_PLAYER == gudt || UDT_NPC == gudt) {
             biNoLock->SetFriction(chCollider->GetBodyID(), 0); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
-        } else if (0 == currChd.ground_vel_x() && 0 != currChd.vel_x()) {
+        } else if (currChd.ground_vel_x() != currChd.vel_x()) {
             // Being pushed away
             biNoLock->SetFriction(chCollider->GetBodyID(), globalPrimitiveConsts->anti_push_ch_friction()); // Will be resumed in "batchRemoveFromPhySysAndCache"
             ioFrictionDirty = true;
@@ -5413,7 +5413,7 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
             ioInputInducedMotion->patternFTriggered = true;
         }
 
-        if (0 < currChd.btn_f_holding_rdf_cnt()) {
+        if (0 < effDy) {
             // [WARNING] Experimental.
             ioInputInducedMotion->stairsIntended = true;
         }

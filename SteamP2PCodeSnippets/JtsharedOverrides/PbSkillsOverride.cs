@@ -120,6 +120,7 @@ namespace JoltCSharp {
             BlackSaber1GroundSlash1.RecoveryFrames = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
             BlackSaber1GroundSlash1.RecoveryFramesOnBlock = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
             BlackSaber1GroundSlash1.RecoveryFramesOnHit = BlackSaber1GroundSlash1Hit1.StartupFrames + BlackSaber1GroundSlash1Hit1.ActiveFrames + BlackSaber1GroundSlash1Hit1.CooldownFrames;
+            BlackSaber1GroundSlash1Hit1.CharacterEmitSfxName = "SlowLaserBladeWhoosh1";
 
             var WolverineGroundSlash1 = underlying[PbPrimitivesOverride.Wolverine1GroundSlash1Id];
             var WolverineGroundSlash1Hit1 = WolverineGroundSlash1.Hits[0];
@@ -128,6 +129,8 @@ namespace JoltCSharp {
             WolverineGroundSlash1Hit1.HitboxOffsetY = 34f;
             WolverineGroundSlash1Hit1.HitboxHalfSizeX = 20f;
             WolverineGroundSlash1Hit1.HitboxHalfSizeY = 8f;
+            WolverineGroundSlash1Hit1.StartupFrames = 50;
+            WolverineGroundSlash1Hit1.CharacterEmitSfxName = "SlowClawWhoosh1";
 
             var BlackThrower1TimedBomb = underlying[PbPrimitivesOverride.BlackThrower1TimedBombId];
             var BasicTimedBombHit1 = BlackThrower1TimedBomb.Hits[0];

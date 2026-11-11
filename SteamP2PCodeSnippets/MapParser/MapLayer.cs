@@ -65,6 +65,7 @@ namespace Assets.Scripts.MapParser {
         public bool providesStairsP = false;
         public bool providesStairsN = false;
         public bool providesWallGrabbing = false;
+        public float providesDamage = 0;
     }
 
     [Serializable]
