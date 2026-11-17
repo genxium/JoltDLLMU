@@ -19,7 +19,7 @@ public class TrapPlaceholder : MonoBehaviour {
 
     public OptionalUint subscribesToTriggerId;
 
-    public OptionalInt hp; 
+    public OptionalInt hp;
     public bool destructible;
     public bool allowsRotationFromPhySys;
 
@@ -40,12 +40,12 @@ public class TrapPlaceholder : MonoBehaviour {
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        
+
     }
 
     // Update is called once per frame
     void Update() {
-        
+
     }
 
     public TrapConfigFromTiled buildTrapConfigFromTiled() {
@@ -151,7 +151,7 @@ public class TrapPlaceholder : MonoBehaviour {
 
         var animatorChild = gameObject.GetComponentInChildren<Animator>();
         Renderer renderer = animatorChild.GetComponent<Renderer>();
-        
+
         Bounds worldBounds = renderer.bounds;
         Vector3 center = worldBounds.center;
         Vector3 scaledSize = worldBounds.size;

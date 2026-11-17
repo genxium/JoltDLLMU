@@ -177,7 +177,7 @@ public abstract partial class AbstractSingleSelectGroup {
             } else {
                 gameplayCamera.transform.position = cachedCamDstPos;
             }
-            
+
             return true;
         }
 

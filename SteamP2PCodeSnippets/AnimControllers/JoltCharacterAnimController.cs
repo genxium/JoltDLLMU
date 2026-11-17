@@ -1,10 +1,10 @@
+using JoltCSharp;
 using jtshared;
-using static jtshared.CharacterState;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using UnityEngine;
-using JoltCSharp;
+using static jtshared.CharacterState;
 
 public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDownsync, CharacterState, CharacterConfig, uint> {
     public JoltCharacterAnimController() {
@@ -47,7 +47,7 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         return material;
     }
 
-   
+
     protected override bool lazyInit() {
         if (null != lookUpTable && 0 < lookUpTable.Count) return true;
         animator = getMainAnimator();
@@ -64,24 +64,24 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
             CharacterState chState;
             Enum.TryParse(clip.name, out chState);
             switch (chState) {
-            case Atk1Charging:
-                hasIdle1Charging = true;
-            break;
-            case WalkingAtk1Charging:
-                hasWalkingCharging = true;
-            break;
-            case OnWallAtk1Charging:
-                hasOnWallCharging = true;
-            break;
-            case InAirAtk1Charging:
-                hasInAirIdleCharging = true;
-            break;
-            case CrouchAtk1Charging:
-                hasCrouchCharging = true;
-            break;
-            default:
-            break;
-            } 
+                case Atk1Charging:
+                    hasIdle1Charging = true;
+                    break;
+                case WalkingAtk1Charging:
+                    hasWalkingCharging = true;
+                    break;
+                case OnWallAtk1Charging:
+                    hasOnWallCharging = true;
+                    break;
+                case InAirAtk1Charging:
+                    hasInAirIdleCharging = true;
+                    break;
+                case CrouchAtk1Charging:
+                    hasCrouchCharging = true;
+                    break;
+                default:
+                    break;
+            }
             lookUpTable[chState] = clip;
         }
         return true;
@@ -94,7 +94,7 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         facingQ.Set(rdfCharacter.QX, rdfCharacter.QY, rdfCharacter.QZ, rdfCharacter.QW);
         Vector3 chdFacing = facingQ * Vector3.right;
         // Update directions
-        
+
         if (0 > chdFacing.x) {
             scaleHolder.Set(-1.0f, 1.0f, this.gameObject.transform.localScale.z);
             this.gameObject.transform.localScale = scaleHolder;
@@ -119,9 +119,9 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
         if (0 > frameIdxToPlayDef1Atked) frameIdxToPlayDef1Atked = 0;
         var midway = (DEFAULT_FRAMES_TO_FLASH_DAMAGED >> 1);
         if (remainingFramesToFlash >= midway) {
-           flashIntensity = DAMAGED_FLASH_INTENSITY*(DEFAULT_FRAMES_TO_FLASH_DAMAGED - remainingFramesToFlash) / midway; 
+            flashIntensity = DAMAGED_FLASH_INTENSITY * (DEFAULT_FRAMES_TO_FLASH_DAMAGED - remainingFramesToFlash) / midway;
         } else {
-           flashIntensity = DAMAGED_FLASH_INTENSITY*remainingFramesToFlash / midway;
+            flashIntensity = DAMAGED_FLASH_INTENSITY * remainingFramesToFlash / midway;
         }
         material.SetFloat(MATERIAL_REF_FLASH_INTENSITY, flashIntensity);
         material.SetInt("_EleDamageFlash", 0);
@@ -141,53 +141,53 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
             effNewChState = TurnAround;
         } else if (chConfig.HasBtnBCharging && PbPrimitivesOverride.Instance.getUnderlying().BtnBHoldingRdfCntThreshold2 <= rdfCharacter.BtnBHoldingRdfCnt) {
             switch (newCharacterState) {
-            case Idle1:
-            if (hasIdle1Charging) {
-                effNewChState = Atk1Charging;
-            }
-            break;
-            case Walking:
-            if (hasWalkingCharging) {
-                effNewChState = WalkingAtk1Charging;
-            }
-            break;
-            case InAirIdle1NoJump:
-            case InAirIdle1ByJump:
-            case InAirIdle1BySlipJump:
-            if (hasInAirIdleCharging) {
-                effNewChState = InAirAtk1Charging;
-            }
-            break;
-            case InAirIdle2ByJump:
-            case InAirIdle1ByWallJump:
-            if (hasInAirIdleCharging && framesInNewState >= chConfig.TrailingRdfChargeableChStates[(int)newCharacterState]) {
-                effNewChState = InAirAtk1Charging;
-            }
-            break;
-            case OnWallIdle1:
-            if (hasOnWallCharging) {
-                effNewChState = OnWallAtk1Charging;
-            }
-            break;
-            case CrouchIdle1:
-            if (hasCrouchCharging) {
-                effNewChState = CrouchAtk1Charging;
-            }
-            break;
-            default:
-            break;
+                case Idle1:
+                    if (hasIdle1Charging) {
+                        effNewChState = Atk1Charging;
+                    }
+                    break;
+                case Walking:
+                    if (hasWalkingCharging) {
+                        effNewChState = WalkingAtk1Charging;
+                    }
+                    break;
+                case InAirIdle1NoJump:
+                case InAirIdle1ByJump:
+                case InAirIdle1BySlipJump:
+                    if (hasInAirIdleCharging) {
+                        effNewChState = InAirAtk1Charging;
+                    }
+                    break;
+                case InAirIdle2ByJump:
+                case InAirIdle1ByWallJump:
+                    if (hasInAirIdleCharging && framesInNewState >= chConfig.TrailingRdfChargeableChStates[(int)newCharacterState]) {
+                        effNewChState = InAirAtk1Charging;
+                    }
+                    break;
+                case OnWallIdle1:
+                    if (hasOnWallCharging) {
+                        effNewChState = OnWallAtk1Charging;
+                    }
+                    break;
+                case CrouchIdle1:
+                    if (hasCrouchCharging) {
+                        effNewChState = CrouchAtk1Charging;
+                    }
+                    break;
+                default:
+                    break;
             }
         } else {
             if (InAirIdle1BySlipJump == newCharacterState) {
                 effNewChState = InAirIdle1ByJump;
             }
         }
-        
+
         if (0 < rdfCharacter.Def1BrokenRdfCountdown) {
             effNewChState = Def1Broken;
             //Debug.Log($"@currRdfId={rdfId}, ud={GetUd()} playing framesInNewState={framesInNewState} and newCharacterState={newCharacterState}/effNewChState={effNewChState}, def1BrokenRdfCountdown={rdfCharacter.Def1BrokenRdfCountdown}");
         }
-        
+
         int targetLayer = 0; // We have only 1 layer, i.e. the baseLayer, playing at any time
         int targetClipIdx = 0; // We have only 1 frame anim playing at any time
         var curClip = animator.GetCurrentAnimatorClipInfo(targetLayer)[targetClipIdx].clip;
@@ -213,29 +213,29 @@ public class JoltCharacterAnimController : AbstractCacheableAnimNode<CharacterDo
                 return true;
             }
 
-            var frameIdxInAnim = (Def1Atked1 == newCharacterState ? frameIdxToPlayDef1Atked : framesInNewState);    
-            var estimatedSecondsInAnim = PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf*frameIdxInAnim;
+            var frameIdxInAnim = (Def1Atked1 == newCharacterState ? frameIdxToPlayDef1Atked : framesInNewState);
+            var estimatedSecondsInAnim = PbPrimitivesOverride.Instance.getUnderlying().EstimatedSecondsPerRdf * frameIdxInAnim;
             float normalizedTime = (estimatedSecondsInAnim / targetClip.length); // TODO: Anyway to avoid using division here?
             if (1.0f < normalizedTime) {
                 normalizedTime = 1.0f;
-            } 
+            }
             animator.Play(targetClip.name, targetLayer, normalizedTime);
         } else {
             var totRdfCnt = (PbPrimitivesOverride.Instance.getUnderlying().BattleDynamicsFps * targetClip.length);
             int animLoopingRdfOffset = chConfig.LoopingChStates[((int)effNewChState)];
             var frameIdxInAnim = framesInNewState;
-            if (frameIdxInAnim > animLoopingRdfOffset) {    
+            if (frameIdxInAnim > animLoopingRdfOffset) {
                 var frameIdxInAnimFloat = animLoopingRdfOffset + ((frameIdxInAnim - animLoopingRdfOffset) % (totRdfCnt - animLoopingRdfOffset));
                 float normalizedTime = (frameIdxInAnimFloat / totRdfCnt); // TODO: Anyway to avoid using division here?
                 if (1.0f < normalizedTime) {
                     normalizedTime = 1.0f;
-                } 
+                }
                 animator.Play(targetClip.name, targetLayer, normalizedTime);
             } else {
                 float normalizedTime = (frameIdxInAnim / totRdfCnt); // TODO: Anyway to avoid using division here?
                 if (1.0f < normalizedTime) {
                     normalizedTime = 1.0f;
-                } 
+                }
                 animator.Play(targetClip.name, targetLayer, normalizedTime);
             }
         }

@@ -1,6 +1,5 @@
 using JoltCSharp;
 using jtshared;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class JoltBulletAnimPool : AbstractCacheableAnimNodePool<Bullet, BulletState, BulletConfig, string, JoltBulletAnimController> {

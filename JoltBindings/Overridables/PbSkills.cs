@@ -466,6 +466,8 @@ namespace JoltCSharp {
                               SelfLockVelYWhenFlying = 0,
                               BType = BulletType.Melee,
                               CharacterEmitSfxName = "SlashEmitSpd1",
+                              VanishingAnimRdfCnt = 25,
+                              AnimName = "AirDashRipple",
             };
 
              BulletConfig BasicSlidingHit1 = new BulletConfig {
@@ -473,6 +475,7 @@ namespace JoltCSharp {
                               StartupInvinsibleFrames = 2,
                               ActiveFrames = 12,
                               CooldownFrames = 5,
+                              VanishingAnimRdfCnt = 25,
                               PushbackVelX = primitiveConsts.NoLockVel,
                               PushbackVelY = primitiveConsts.NoLockVel,
                               SelfLockVelX = 4.0f * BATTLE_DYNAMICS_FPS,
@@ -480,6 +483,7 @@ namespace JoltCSharp {
                               SelfLockVelYWhenFlying = primitiveConsts.NoLockVel,
                               BType = BulletType.Melee,
                               CharacterEmitSfxName = "SlashEmitSpd2",
+                              AnimName = "SlidingDust",
             };
 
              Skill BladeGirlSliding = new Skill {
@@ -959,6 +963,19 @@ namespace JoltCSharp {
                 // Other field values don't matter
             }.AddHit(TerrainSpikeHit);
 
+            BulletConfig DefaultAirJumpVfx = new BulletConfig {
+                  AnimName = "AirJumpRipple",
+                  HitAnimRdfCnt = 45,
+                  VanishingAnimRdfCnt = 25,
+                  BType = BulletType.MagicalFireball,
+            };
+
+            Skill DefaultAirJump = new Skill {
+                Id = DefaultAirJumpSkillId,
+                   InvocationType = SkillInvocation.HighLevel,
+                // Other field values don't matter
+            }.AddHit(DefaultAirJumpVfx);
+
             underlying = new MapField<uint, Skill> {
                 { BladeGirlAirSlash1Id, BladeGirlAirSlash1 },
                 { BladeGirlGroundSlash1Id, BladeGirlGroundSlash1 },
@@ -1001,7 +1018,8 @@ namespace JoltCSharp {
                 { RedRidinghoodGroundPistol2Id, RedRidinghoodGroundPistol2 }, 
                 { RedRidinghoodGroundPistol3Id, RedRidinghoodGroundPistol3 }, 
 
-                { TerrainSpikeId, TerrainSpike }
+                { TerrainSpikeId, TerrainSpike },
+                { DefaultAirJumpSkillId, DefaultAirJump },
             };
 
             return true;

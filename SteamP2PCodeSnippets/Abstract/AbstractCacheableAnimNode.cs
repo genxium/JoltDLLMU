@@ -10,8 +10,8 @@ public abstract class AbstractCacheableAnimNode<T, S, C, G> : MonoBehaviour wher
 
     protected Animator animator;
     protected SpriteRenderer spr;
-    public SpriteRenderer GetSpriteRenderer() { 
-        return spr; 
+    public SpriteRenderer GetSpriteRenderer() {
+        return spr;
     }
     protected Material material; // [REMINDER] Keeping a reference here to allow "AnimNode-scope material specification"
 

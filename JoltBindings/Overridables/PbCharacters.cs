@@ -80,6 +80,8 @@ namespace JoltCSharp {
                 Ifc = IfaceCat.Flesh,
                 TransformIntoSpeciesIdUponDeath = SPECIES_NONE_CH,
                 InplacePromptYOffset = (28.0f),
+
+                AirJumpSkillId = PbPrimitives.DefaultAirJumpSkillId,
             };
 
             CharacterConfig BOUNTY_HUNTER = new CharacterConfig {
@@ -145,6 +147,8 @@ namespace JoltCSharp {
                     {(int)CharacterState.InAirIdle1ByWallJump, 25},
                 },
                 InplacePromptYOffset = (28.0f),
+
+                AirJumpSkillId = PbPrimitives.DefaultAirJumpSkillId,
             };
 
             CharacterConfig BLACKSABER1 = new CharacterConfig {
@@ -974,6 +978,8 @@ namespace JoltCSharp {
                 LoopingChStates = {
                     {(int)CharacterState.Walking, 15},
                 },
+
+                AirJumpSkillId = PbPrimitives.DefaultAirJumpSkillId,
             };
 
             // BLADEGIRL

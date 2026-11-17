@@ -1,10 +1,10 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using Google.Protobuf.Collections;
-using jtshared;
-using JoltCSharp;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
+using JoltCSharp;
+using jtshared;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 public class FrameLogPrinter {
 
@@ -84,7 +84,7 @@ public class FrameLogPrinter {
         rdfSb.Add($"nc:{rdf.NpcCount}; ns:{npcS}");
         rdfSb.Add($"bc:{rdf.BulletCount}; bs:{bulletS}");
         rdfSb.Add($"tpc: {rdf.DynamicTrapCount}; tps:{trapS}");
-        
+
         return $"{{ {String.Join('\n', rdfSb)} }}";
     }
 
@@ -135,7 +135,7 @@ public class FrameLogPrinter {
         const int stepResultBufferSizeLimit = (1 << 15);
         byte[] stepResultFetchBuffer = new byte[stepResultBufferSizeLimit];
         StepResult stepResultHolder = new StepResult();
-        
+
         using (StreamWriter outputFile = new StreamWriter(Path.Combine(dirPath, filename))) {
             outputFile.AutoFlush = true;
             fixed (byte* frameLogBufferPtr = frameLogFetchBuffer, stepResultBufferPtr = stepResultFetchBuffer) {

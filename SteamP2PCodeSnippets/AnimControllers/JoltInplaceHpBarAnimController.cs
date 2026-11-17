@@ -1,6 +1,6 @@
+using JoltCSharp;
 using jtshared;
 using UnityEngine;
-using JoltCSharp;
 using static JoltCSharp.PbPrimitivesOverride;
 
 public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<CharacterDownsync, CharacterState, CharacterConfig, uint> {
@@ -37,7 +37,7 @@ public class JoltInplaceHpBarAnimController : AbstractCacheableAnimNode<Characte
         float newHolderWidth = (HP_PER_SECTION >= hpCap ? DEFAULT_HP100_WIDTH * (hpCap / HP_PER_SECTION_F) : DEFAULT_HP100_WIDTH);
         newSizeHolder.Set(newHolderWidth, DEFAULT_HP100_HEIGHT);
         hpFiller.size = newSizeHolder;
-        newSizeHolder.Set(newHolderWidth+DEFAULT_HOLDER_PADDING, DEFAULT_HP100_HEIGHT);
+        newSizeHolder.Set(newHolderWidth + DEFAULT_HOLDER_PADDING, DEFAULT_HP100_HEIGHT);
         hpHolder.size = newSizeHolder;
 
         float newOverflowFillerWidth = (HP_PER_SECTION >= hpCap ? 0 : DEFAULT_HP100_WIDTH);

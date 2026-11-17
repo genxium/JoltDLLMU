@@ -74,7 +74,7 @@ public class CapsuleMeshRenderer : MonoBehaviour {
     private const int segments = 24;
     private const int arcPoints = segments + 1;
     private const int vertCount = arcPoints * 2;
-    private const int triCount = 3*(2*(segments - 1) + 2);
+    private const int triCount = 3 * (2 * (segments - 1) + 2);
     private Vector3[] vertices = new Vector3[vertCount];
     private int[] triangles = new int[triCount];
 
@@ -99,9 +99,9 @@ public class CapsuleMeshRenderer : MonoBehaviour {
 
     private void rebuild() {
         var meshFilter = GetComponent<MeshFilter>();
-        var mesh = meshFilter.mesh;   
+        var mesh = meshFilter.mesh;
         mesh.Clear();
-        
+
         int vertOffset = 0; // For future batch rendering use
 
         Capsule2DGeometry.Generate(radius,

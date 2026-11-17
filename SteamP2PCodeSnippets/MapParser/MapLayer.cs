@@ -14,7 +14,7 @@ namespace Assets.Scripts.MapParser {
         Trigger,
         Player,
         Npc,
-       
+
         GrandCameraBound,
         CameraBound,
     }
@@ -77,7 +77,7 @@ namespace Assets.Scripts.MapParser {
         public MapLayerType primaryLayerType = MapLayerType.Barrier;
         public float xParallaxFactor = 1f;
         public float yParallaxFactor = 1f;
-        
+
         public static SerializableConvexPolygon parseSerializableConvexPolygon(in Transform shapeChild) {
             if (null == shapeChild) {
                 return null;

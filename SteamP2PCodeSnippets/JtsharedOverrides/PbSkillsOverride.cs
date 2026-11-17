@@ -49,7 +49,7 @@ namespace JoltCSharp {
             BladeGirlDiverImpactHit1.HitboxOffsetY = 0.0f;
             BladeGirlDiverImpactHit1.HitboxHalfSizeX = 12f;
             BladeGirlDiverImpactHit1.HitboxHalfSizeY = 8f;
-            BladeGirlDiverImpactHit1.SelfLockVelY = -32.0f* PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            BladeGirlDiverImpactHit1.SelfLockVelY = -32.0f * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             BladeGirlDiverImpactHit1.HitSfxName = "SlashHit2";
             BladeGirlDiverImpactHit1.CharacterEmitSfxName = "Whoosh1";
             BladeGirlDiverImpactHit1.RemainsUponHit = false;
@@ -76,9 +76,9 @@ namespace JoltCSharp {
             BladeGirlGroundSlash2Hit1.StartupFrames = 6;
             BladeGirlGroundSlash2Hit1.ActiveFrames = 8;
             BladeGirlGroundSlash2Hit1.CooldownFrames = 8;
-            BladeGirlGroundSlash2.RecoveryFrames = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
-            BladeGirlGroundSlash2.RecoveryFramesOnBlock = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
-            BladeGirlGroundSlash2.RecoveryFramesOnHit = BladeGirlGroundSlash2Hit1.StartupFrames+BladeGirlGroundSlash2Hit1.ActiveFrames+BladeGirlGroundSlash2Hit1.CooldownFrames;
+            BladeGirlGroundSlash2.RecoveryFrames = BladeGirlGroundSlash2Hit1.StartupFrames + BladeGirlGroundSlash2Hit1.ActiveFrames + BladeGirlGroundSlash2Hit1.CooldownFrames;
+            BladeGirlGroundSlash2.RecoveryFramesOnBlock = BladeGirlGroundSlash2Hit1.StartupFrames + BladeGirlGroundSlash2Hit1.ActiveFrames + BladeGirlGroundSlash2Hit1.CooldownFrames;
+            BladeGirlGroundSlash2.RecoveryFramesOnHit = BladeGirlGroundSlash2Hit1.StartupFrames + BladeGirlGroundSlash2Hit1.ActiveFrames + BladeGirlGroundSlash2Hit1.CooldownFrames;
 
             var BladeGirlGroundSlash3 = underlying[PbPrimitivesOverride.BladeGirlGroundSlash3Id];
             var BladeGirlGroundSlash3Hit1 = BladeGirlGroundSlash3.Hits[0];
@@ -88,12 +88,12 @@ namespace JoltCSharp {
             BladeGirlGroundSlash3Hit1.HitboxHalfSizeY = 18f;
             BladeGirlGroundSlash3Hit1.HitSfxName = "SlashHit1";
             BladeGirlGroundSlash3Hit1.CharacterEmitSfxName = "Whoosh2";
-            BladeGirlGroundSlash3Hit1.MeleeHitSelfStunFrames = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS/12);
+            BladeGirlGroundSlash3Hit1.MeleeHitSelfStunFrames = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS / 12);
             BladeGirlGroundSlash3Hit1.StartupFrames = 18;
             BladeGirlGroundSlash3Hit1.ActiveFrames = 16;
-            BladeGirlGroundSlash3.RecoveryFrames = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
-            BladeGirlGroundSlash3.RecoveryFramesOnBlock = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
-            BladeGirlGroundSlash3.RecoveryFramesOnHit = BladeGirlGroundSlash3Hit1.StartupFrames+BladeGirlGroundSlash3Hit1.ActiveFrames+BladeGirlGroundSlash3Hit1.CooldownFrames;
+            BladeGirlGroundSlash3.RecoveryFrames = BladeGirlGroundSlash3Hit1.StartupFrames + BladeGirlGroundSlash3Hit1.ActiveFrames + BladeGirlGroundSlash3Hit1.CooldownFrames;
+            BladeGirlGroundSlash3.RecoveryFramesOnBlock = BladeGirlGroundSlash3Hit1.StartupFrames + BladeGirlGroundSlash3Hit1.ActiveFrames + BladeGirlGroundSlash3Hit1.CooldownFrames;
+            BladeGirlGroundSlash3.RecoveryFramesOnHit = BladeGirlGroundSlash3Hit1.StartupFrames + BladeGirlGroundSlash3Hit1.ActiveFrames + BladeGirlGroundSlash3Hit1.CooldownFrames;
 
             var BladeGirlAirSlash1 = underlying[PbPrimitivesOverride.BladeGirlAirSlash1Id];
             var BladeGirlAirSlash1Hit1 = BladeGirlAirSlash1.Hits[0];

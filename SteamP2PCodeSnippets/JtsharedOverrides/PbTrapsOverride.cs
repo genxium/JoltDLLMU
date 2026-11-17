@@ -32,7 +32,7 @@ namespace JoltCSharp {
             }
             bool res = base.lazyInit();
             var SliderPlatformTrap = underlying[PbPrimitivesOverride.Instance.getUnderlying().Tpts.SlidingPlatform];
-            SliderPlatformTrap.Friction = (0.04f/PbPrimitivesOverride.Instance.getUnderlying().DefaultChFriction);
+            SliderPlatformTrap.Friction = (0.04f / PbPrimitivesOverride.Instance.getUnderlying().DefaultChFriction);
 
             rectifyByPPU();
 

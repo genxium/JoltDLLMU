@@ -47,7 +47,7 @@ public class SteamRejoinPrompt : AbstractSingleSelectGroup.AbstractSingleSelectP
 
     /////////////////////////////////////////////////////////////////////////////////////////
     protected SteamOnlineMapController map;
-    
+
 
     protected override void Start() {
         base.Start();

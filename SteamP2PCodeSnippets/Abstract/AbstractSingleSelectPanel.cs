@@ -1,8 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public abstract partial class AbstractSingleSelectGroup {
 
@@ -11,10 +11,10 @@ public abstract partial class AbstractSingleSelectGroup {
     */
 
     public abstract class AbstractSingleSelectPanel : MonoBehaviour, ICancelHandler {
-    
+
         /////////////////////////////////////////////////////////////////////////////////////////
-        public InputActionAsset inputActionAsset;   
-    
+        public InputActionAsset inputActionAsset;
+
         public delegate void PostCancelledCallbackT();
         public Image cancelBtn;
 
@@ -43,7 +43,7 @@ public abstract partial class AbstractSingleSelectGroup {
             var activeSubGroup = GetActiveSubGroup();
             return activeSubGroup.GetActiveCell();
         }
-        
+
         public virtual void OnBtnConfirmed(InputAction.CallbackContext context) {
             var activeSubGroup = GetActiveSubGroup();
             activeSubGroup.onBtnConfirmed(context);
@@ -74,17 +74,17 @@ public abstract partial class AbstractSingleSelectGroup {
             switch (kctrl.keyCode) {
                 case Key.W:
                 case Key.UpArrow: {
-                    moveSelection(-1);
-                    break;
-                }
+                        moveSelection(-1);
+                        break;
+                    }
                 case Key.S:
                 case Key.DownArrow: {
-                    moveSelection(+1);
-                    break;
-                }
+                        moveSelection(+1);
+                        break;
+                    }
                 default: {
-                    break;
-                }
+                        break;
+                    }
             }
         }
 

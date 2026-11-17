@@ -28,10 +28,6 @@ using namespace JPH;
 const PrimitiveConsts* globalPrimitiveConsts = nullptr;
 const ConfigConsts* globalConfigConsts = nullptr;
 std::unordered_map<uint32_t, BaseNpcReaction*> globalNpcReactionMap;
-std::unordered_set<uint32_t> trivialTrtSet;
-std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
-std::unordered_set<uint32_t> directSpawnerTrtSet;
-std::unordered_set<uint32_t> collidableTrtSet;
 std::unordered_set<uint32_t> waivingConstraintHelperTpts; 
 
 bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
@@ -57,32 +53,6 @@ bool PrimitiveConsts_Init(char* inBytes, int inBytesCnt) {
 
     globalNpcReactionMap[chSpecies.wolverine1()] = new Wolverine1NpcReaction();
     globalNpcReactionMap[chSpecies.wolverine1_test_with_vision()] = new Wolverine1NpcReaction();
-
-    trivialTrtSet = {
-        globalPrimitiveConsts->trts().by_init_delay(),
-        globalPrimitiveConsts->trts().save_point(),
-        globalPrimitiveConsts->trts().by_movement(),
-        globalPrimitiveConsts->trts().by_attack(),
-        globalPrimitiveConsts->trts().flip_flop(),
-    };
-
-    mixedMainAndSubCycleTrtSet = {
-        globalPrimitiveConsts->trts().victory(),
-        globalPrimitiveConsts->trts().save_point(),
-        globalPrimitiveConsts->trts().by_pattern_f(),
-        globalPrimitiveConsts->trts().flip_flop(),
-    };
-
-    directSpawnerTrtSet = {
-        globalPrimitiveConsts->trts().indi_wave_npc_spawner(),
-        globalPrimitiveConsts->trts().indi_wave_pickable_spawner(),
-    };
-
-    collidableTrtSet = {
-        globalPrimitiveConsts->trts().by_movement(),
-        globalPrimitiveConsts->trts().by_attack(),
-        globalPrimitiveConsts->trts().by_pattern_f(),
-    };
 
     waivingConstraintHelperTpts = {
         globalPrimitiveConsts->tpts().conveyor_belt(), 

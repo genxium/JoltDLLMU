@@ -12,10 +12,6 @@ using namespace jtshared;
 
 extern JOLTC_EXPORT const PrimitiveConsts* globalPrimitiveConsts;
 extern JOLTC_EXPORT const ConfigConsts* globalConfigConsts;
-extern JOLTC_EXPORT std::unordered_set<uint32_t> trivialTrtSet;
-extern JOLTC_EXPORT std::unordered_set<uint32_t> mixedMainAndSubCycleTrtSet;
-extern JOLTC_EXPORT std::unordered_set<uint32_t> directSpawnerTrtSet;
-extern JOLTC_EXPORT std::unordered_set<uint32_t> collidableTrtSet;
 extern JOLTC_EXPORT std::unordered_set<uint32_t> waivingConstraintHelperTpts;
 
 const std::unordered_set<CharacterState> onWallSet = {

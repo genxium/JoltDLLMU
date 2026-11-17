@@ -1,14 +1,13 @@
 
 
 using System;
-using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public class PbPrimitivesOverride : PbPrimitives {
 
         public const uint DEFAULT_PIXELS_PER_UNIT = 32;
 
-        public new const int DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = BATTLE_DYNAMICS_FPS/3;
+        public new const int DEFAULT_MELEE_HIT_SELF_STUN_FRAMES = BATTLE_DYNAMICS_FPS / 3;
 
         /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -89,9 +88,9 @@ namespace JoltCSharp {
             float frictionScaleFactor = 4.0f / DEFAULT_PIXELS_PER_UNIT;
             //underlying.DefaultBarrierFriction *= frictionScaleFactor;
             underlying.DefaultChFriction *= frictionScaleFactor;
-            underlying.WalkstoppingChFriction *= (8*frictionScaleFactor);
-            underlying.FallstoppingChFriction *= (8*frictionScaleFactor);
-            underlying.AntiPushChFriction *= (8*frictionScaleFactor);
+            underlying.WalkstoppingChFriction *= (8 * frictionScaleFactor);
+            underlying.FallstoppingChFriction *= (8 * frictionScaleFactor);
+            underlying.AntiPushChFriction *= (8 * frictionScaleFactor);
             underlying.GroundDashingChFriction *= frictionScaleFactor;
             underlying.DefaultBulletFriction *= frictionScaleFactor;
             underlying.DefaultTrapFriction *= frictionScaleFactor;
@@ -109,11 +108,11 @@ namespace JoltCSharp {
 
             underlying.DefaultHalfThickness /= DEFAULT_PIXELS_PER_UNIT;
             underlying.DefaultBarrierHalfThickness /= DEFAULT_PIXELS_PER_UNIT;
-            underlying.DefaultBlHalfLength/= DEFAULT_PIXELS_PER_UNIT;
-            underlying.DefaultTpHalfLength/= DEFAULT_PIXELS_PER_UNIT;
+            underlying.DefaultBlHalfLength /= DEFAULT_PIXELS_PER_UNIT;
+            underlying.DefaultTpHalfLength /= DEFAULT_PIXELS_PER_UNIT;
 
             underlying.DefaultAimingRayLength /= DEFAULT_PIXELS_PER_UNIT;
-            
+
             /*
             [REMINDER] Intentionally NOT scaling the following parameters because they're already small enough to match the "magic const sweet spot" of Jolt Physics engine.
             

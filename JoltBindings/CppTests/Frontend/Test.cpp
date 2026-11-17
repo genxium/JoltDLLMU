@@ -9687,7 +9687,7 @@ bool runTestCase31(FrontendBattle* reusedBattle, std::vector<std::vector<float>>
             } else {
                 JPH_ASSERT(0 == tr2.main_cycle_mask_to_fulfill());
             }
-        } else if (255 == outerTimerRdfId) {
+        } else if (253 == outerTimerRdfId) {
             JPH_ASSERT(1 == fulfilledTriggersSize);
             JPH_ASSERT(42 == stepResult->fulfilled_triggers(0).id());
             JPH_ASSERT(1 == tr1.quota());

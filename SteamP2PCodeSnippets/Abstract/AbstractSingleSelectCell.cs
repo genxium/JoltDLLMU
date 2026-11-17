@@ -7,7 +7,7 @@ public abstract partial class AbstractSingleSelectGroup {
     */
     public abstract class AbstractSingleSelectCell : MonoBehaviour, IPointerClickHandler {
         /////////////////////////////////////////////////////////////////////////////////////////
-        
+
         public int GetSelectedIdx() {
             return selectedIdx;
         }
@@ -33,7 +33,7 @@ public abstract partial class AbstractSingleSelectGroup {
             //Debug.Log($"{GetType().Name} cell OnPointerClick processed due to true == {selectGroup.GetType().Name}.currentSelectGroupEnabled");
             selectGroup.onCellSelected(selectedIdx, true);
         }
-        
+
         public void SetSelected(bool val) {
             if (val) {
                 highlightAsSelected();
@@ -41,7 +41,7 @@ public abstract partial class AbstractSingleSelectGroup {
                 dimAsUnselected();
             }
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////////////////
         protected abstract void highlightAsSelected();
         protected abstract void dimAsUnselected();

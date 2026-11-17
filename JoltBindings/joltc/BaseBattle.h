@@ -1006,6 +1006,7 @@ protected:
     int& outNewDamage, float& outNewEffPushbackVelX, float& outNewEffPushbackVelY);
 
     bool addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const Bullet* referenceBullet, const Vec3& newPos, const int damageDealed);
+    bool addVfxAsBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t skillId, const Vec3& newPos, const Quat& newRot);
     bool addNewCharacterBulletToNextFrame(const int currRdfId, const CharacterDownsync* currChd, const Vec3& currChdFacing, const CharacterConfig* cc, const bool currParalyzed, const bool currEffInAir, const Skill* skillConfig, const int activeSkillHit, const uint32_t activeSkillId, RenderFrame* nextRdf, const Bullet* referenceBullet, const BulletConfig* referenceBulletConfig, const uint64_t offenderUd, const int bulletTeamId);
     bool addNewTerrainSpikeToNextFrame(const int currRdfId, const Vec3& pos, const Quat& rot, RenderFrame* nextRdf, const uint64_t offenderUd, const int bulletTeamId);
 
@@ -1299,11 +1300,11 @@ protected:
         return (0 >= chd->hp() && 0 >= chd->frames_to_recover());
     }
 
-    inline bool publishToTrigger(const int currRdfId, uint64_t publishingMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger) {
+    inline bool publishToTrigger(const int currRdfId, uint64_t publishingMask, uint64_t offenderUd, int offenderBulletTeamId, Trigger* nextRdfTrigger, const TriggerConfig& targetTriggerConfig) {
         uint64_t oldRemainingMask = nextRdfTrigger->sub_cycle_mask_to_fulfill();
         uint64_t newRemainingMask = (oldRemainingMask ^ publishingMask);
         nextRdfTrigger->set_sub_cycle_mask_to_fulfill(newRemainingMask);
-        if (mixedMainAndSubCycleTrtSet.count(nextRdfTrigger->trt())) {
+        if (targetTriggerConfig.mixed_cycle()) {
             nextRdfTrigger->set_main_cycle_mask_to_fulfill(newRemainingMask);
         }
         nextRdfTrigger->set_offender_ud(offenderUd);

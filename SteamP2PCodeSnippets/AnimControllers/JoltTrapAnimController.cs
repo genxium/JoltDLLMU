@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using UnityEngine;
+using JoltCSharp;
 using jtshared;
 using System;
-using JoltCSharp;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState, TrapConfigFromTiled, uint> {
 
@@ -37,9 +37,9 @@ public class JoltTrapAnimController : AbstractCacheableAnimNode<Trap, TrapState,
     public void SetAbsScale(in float renderBoxHalfWidth, in float renderBoxHalfHeight) {
         if (!lazyInit()) {
             return;
-        } 
-        absScaleX = 2.0f * renderBoxHalfWidth/spr.size.x;
-        absScaleY = 2.0f * renderBoxHalfHeight/spr.size.y;
+        }
+        absScaleX = 2.0f * renderBoxHalfWidth / spr.size.x;
+        absScaleY = 2.0f * renderBoxHalfHeight / spr.size.y;
     }
 
     protected override bool updateAnimUnderlying(in int currRdfId, in Trap currTrap, in TrapState newState, in TrapConfigFromTiled insConfig, in int frameIdxInAnim) {

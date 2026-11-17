@@ -1,9 +1,9 @@
-using UnityEngine;
+using JoltCSharp;
 using jtshared;
 using System;
 using System.Collections.Generic;
 using TMPro;
-using JoltCSharp;
+using UnityEngine;
 using static JoltCSharp.PbPrimitivesOverride;
 
 public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, BulletState, BulletConfig, string> {
@@ -16,10 +16,10 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
     private const float ANCHOR_DAMAGE_DEALED_INDICATOR_H = 10f / DEFAULT_PIXELS_PER_UNIT;
     private const float MAX_DAMAGE_INDICATOR_H = 20f / DEFAULT_PIXELS_PER_UNIT;
     private const int MAX_DAMAGE_INDICATOR_RDF_CNT = 20;
-    private const float INV_MAX_DAMAGE_INDICATOR_RDF_CNT = 1f/MAX_DAMAGE_INDICATOR_RDF_CNT;
+    private const float INV_MAX_DAMAGE_INDICATOR_RDF_CNT = 1f / MAX_DAMAGE_INDICATOR_RDF_CNT;
 
-    private static Color DAMAGE_FONT_COLOR = new Color(0xDB / 255f, 0x0E / 255f, 0x37 / 255f); 
-    private static Color HP_HEAL_FONT_COLOR = new Color(0x00 / 255f, 0xFF / 255f, 0x00 / 255f); 
+    private static Color DAMAGE_FONT_COLOR = new Color(0xDB / 255f, 0x0E / 255f, 0x37 / 255f);
+    private static Color HP_HEAL_FONT_COLOR = new Color(0x00 / 255f, 0xFF / 255f, 0x00 / 255f);
 
     private bool hideDamageIndicator = false;
     public void SetHideDamageIndicator(bool val) {
@@ -28,6 +28,12 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
 
     public GameObject damageDealedIndicatorPrefab;
     public TMP_Text damageDealedIndicator;
+
+    protected static HashSet<string> SUB_CHARACTER_SET = new HashSet<string> {
+        "AirJumpRipple",
+        "AirDashRipple",
+        "SlidingDust",
+    };
 
     protected override bool lazyInit() {
         if (null != lookUpTable && 0 < lookUpTable.Count) return true;
@@ -39,7 +45,7 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             spr.material = sprDefaultMaterial; // [WARNING] This assignment creates a copy of the material for the current SpriteRenderer, thus independent from other SpriteRenderers when being updated.
         }
         material = spr.material;
-        spr.sortingLayerName = "EmittingBullet";
+        spr.sortingLayerName = SUB_CHARACTER_SET.Contains(GetCacheGroupId()) ? "SubCharacterBullet" : "EmittingBullet";
         lookUpTable = new Dictionary<BulletState, AnimationClip>();
         foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips) {
             BulletState blState;
@@ -80,7 +86,7 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             } else {
                 damageDealedIndicator.gameObject.SetActive(true);
                 damageDealedIndicator.gameObject.transform.localRotation = spr.transform.localRotation; // To battle rotation induced invisibility.
-                damageDealedPositionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + MAX_DAMAGE_INDICATOR_H*Mathf.Clamp01(bullet.FramesInBlState * INV_MAX_DAMAGE_INDICATOR_RDF_CNT), 0);
+                damageDealedPositionHolder.Set(0, ANCHOR_DAMAGE_DEALED_INDICATOR_H + MAX_DAMAGE_INDICATOR_H * Mathf.Clamp01(bullet.FramesInBlState * INV_MAX_DAMAGE_INDICATOR_RDF_CNT), 0);
                 damageDealedIndicator.gameObject.transform.localPosition = damageDealedPositionHolder;
                 if (0 < bullet.DamageDealed) {
                     damageDealedIndicator.text = ($"-{bullet.DamageDealed}");
@@ -97,7 +103,7 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
                 }
             }
         }
-      
+
         int targetLayer = 0; // We have only 1 layer, i.e. the baseLayer, playing at any time
         int targetClipIdx = 0; // We have only 1 frame anim playing at any time
 
@@ -123,7 +129,7 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
             float normalizedTime = (estimatedSecondsInAnim / targetClip.length); // TODO: Anyway to avoid using division here?
             if (1.0f < normalizedTime) {
                 normalizedTime = 1.0f;
-            } 
+            }
 
             animator.Play(targetClip.name, targetLayer, normalizedTime);
         } else {
@@ -133,13 +139,13 @@ public class JoltBulletAnimController : AbstractCacheableAnimNode<Bullet, Bullet
                 float normalizedTime = (frameIdxInAnimFloat / totRdfCnt); // TODO: Anyway to avoid using division here?
                 if (1.0f < normalizedTime) {
                     normalizedTime = 1.0f;
-                } 
+                }
                 animator.Play(targetClip.name, targetLayer, normalizedTime);
             } else {
                 float normalizedTime = (frameIdxInAnim / totRdfCnt); // TODO: Anyway to avoid using division here?
                 if (1.0f < normalizedTime) {
                     normalizedTime = 1.0f;
-                } 
+                }
                 animator.Play(targetClip.name, targetLayer, normalizedTime);
             }
         }
