@@ -180,7 +180,7 @@ public class SteamP2PSessionManager {
         lockedLobbyMemberBindings = null;
         lockedMemberIdentities = null;
         lockedLobbyMemberUlSteamIdToJoinIndex = null;
-        
+
         localDownsyncSnapshotBytesBuffer.Clear();
         localUpsyncSnapshotBytesBuffer.Clear();
         disconnectedPeerJoinIndices.Clear();
@@ -824,7 +824,7 @@ public class SteamP2PSessionManager {
         }
     }
 
-    protected static IntPtr[] upsyncSnapshotMessagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL]; 
+    protected static IntPtr[] upsyncSnapshotMessagePointers = new IntPtr[MAX_MSG_COUNT_PER_POLL];
     protected void upsyncSnapshotRecv(CancellationToken sessionCancellationToken, CancellationTokenSource sessionCancellationTokenSource) {
         Debug.Log($"Starts p2pSession 'upsyncSnapshotRecv' loop, now localUpsyncSnapshotBytesBuffer.Count={localUpsyncSnapshotBytesBuffer.Count}, thread ud={Thread.CurrentThread.ManagedThreadId}.");
         try {

@@ -1,5 +1,5 @@
-using System;
 using JoltCSharp;
+using System;
 using System.Collections.Generic;
 
 public class SteamNetworkDoctor {
@@ -15,7 +15,7 @@ public class SteamNetworkDoctor {
 
     public static SteamNetworkDoctor Instance {
         get {
-            if (null != _instance) return _instance; 
+            if (null != _instance) return _instance;
             lock (syncLock) {
                 if (null == _instance) {
                     _instance = new SteamNetworkDoctor();
@@ -59,8 +59,8 @@ public class SteamNetworkDoctor {
 
     // For display on SteamNetworkDoctorInfo panel only
     public float DEFAULT_INDICATOR_COUNTDOWN_RDF_CNT_1 = 7.0f; // 60.0f == 1 second  
-    public float DEFAULT_INDICATOR_COUNTDOWN_RDF_CNT_2 = 120.0f;   
-    public float DEFAULT_INDICATOR_COUNTDOWN_RDF_CNT_3 = 240.0f;   
+    public float DEFAULT_INDICATOR_COUNTDOWN_RDF_CNT_2 = 120.0f;
+    public float DEFAULT_INDICATOR_COUNTDOWN_RDF_CNT_3 = 240.0f;
     public float chasedToPlayerRdfIdIndicatorCountdown;
     public float forceResyncImmediatePumpIndicatorCountdown;
     public float forceResyncFutureAppliedIndicatorCountdown;
@@ -69,7 +69,7 @@ public class SteamNetworkDoctor {
         localRequiredIfdId = 0;
         immediateRollbackFrames = 0;
         ifdFrontLockedStepsCnt = 0;
-        inputRateThreshold = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS-8.0f) / (1 << PbPrimitivesOverride.INPUT_SCALE_FRAMES);
+        inputRateThreshold = (PbPrimitivesOverride.BATTLE_DYNAMICS_FPS - 8.0f) / (1 << PbPrimitivesOverride.INPUT_SCALE_FRAMES);
 
         chasedToPlayerRdfIdIndicatorCountdown = 0;
         forceResyncImmediatePumpIndicatorCountdown = 0;
@@ -102,7 +102,7 @@ public class SteamNetworkDoctor {
     }
 
     public void LogSending(int i, int j) {
-        if (i > j) return; 
+        if (i > j) return;
         int oldEd = sendingQ.EdFrameId;
         sendingQ.DryPut();
         var (ok, holder) = sendingQ.GetByFrameId(oldEd);
@@ -112,7 +112,7 @@ public class SteamNetworkDoctor {
         holder.i = i;
         holder.j = j;
 
-        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds(); 
+        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         holder.t = nowMillis;
 
         while (0 < sendingQ.Cnt) {
@@ -121,12 +121,12 @@ public class SteamNetworkDoctor {
                 sendingQ.Pop();
             } else {
                 break;
-            } 
+            }
         }
     }
 
     public void LogInputFrameDownsync(int i, int j) {
-        if (i > j) return; 
+        if (i > j) return;
         int oldEd = inputFrameDownsyncQ.EdFrameId;
         inputFrameDownsyncQ.DryPut();
         var (ok, holder) = inputFrameDownsyncQ.GetByFrameId(oldEd);
@@ -136,7 +136,7 @@ public class SteamNetworkDoctor {
         holder.i = i;
         holder.j = j;
 
-        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds(); 
+        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         holder.t = nowMillis;
 
         while (0 < inputFrameDownsyncQ.Cnt) {
@@ -150,7 +150,7 @@ public class SteamNetworkDoctor {
     }
 
     public void LogUpsyncSnapshot(int i, int j) {
-        if (i > j) return; 
+        if (i > j) return;
         int oldEd = upsyncSnapshotQ.EdFrameId;
         upsyncSnapshotQ.DryPut();
         var (ok, holder) = upsyncSnapshotQ.GetByFrameId(oldEd);
@@ -160,7 +160,7 @@ public class SteamNetworkDoctor {
         holder.i = i;
         holder.j = j;
 
-        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds(); 
+        var nowMillis = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         holder.t = nowMillis;
 
         while (0 < upsyncSnapshotQ.Cnt) {
@@ -169,7 +169,7 @@ public class SteamNetworkDoctor {
                 upsyncSnapshotQ.Pop();
             } else {
                 break;
-            } 
+            }
         }
     }
 
@@ -211,7 +211,7 @@ public class SteamNetworkDoctor {
         }
         return (sendingFps, srvDownsyncFps, peerUpsyncFps);
     }
-    
+
     public (bool, int, float, float, int, int) IsTooFast(int roomCapacity, int selfJoinIndex, int maxPlayerInputFrontId, int minPlayerInputFrontId, int ifdLagTolerance, in HashSet<uint> disconnectedPeerJoinIndices) {
         var (sendingFps, _, peerUpsyncFps) = Stats();
         chasedToPlayerRdfIdIndicatorCountdown -= 1.0f;

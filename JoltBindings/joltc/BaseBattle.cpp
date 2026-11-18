@@ -944,7 +944,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
                 const uint64_t subscribingToTriggerUd = calcTriggerUserData(currNpc.subscribes_to_trigger_id());;
                 const Trigger* currSubscribingToTrigger = transientUdToCurrTrigger.at(subscribingToTriggerUd);
                 const Trigger* nextSubscribingToTrigger = transientUdToNextTrigger.at(subscribingToTriggerUd);
-                const bool subscribingToTriggerMainCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? (nextSubscribingToTrigger->quota() < currSubscribingToTrigger->quota()) : false;
+                const bool subscribingToTriggerMainCycleTicked = (nextSubscribingToTrigger->quota() < currSubscribingToTrigger->quota());
 
                 if (subscribingToTriggerMainCycleTicked) {
                     nextNpc->set_activated_rdf_id(currRdfId);
@@ -1820,9 +1820,6 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTrigger = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTrigger.id()) break;
-        if (!directSpawnerTrtSet.count(currTrigger.trt())) {
-            continue;
-        }
         if (0 >= currTrigger.quota()) {
             continue;
         }
@@ -1833,6 +1830,9 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
             continue;
         }
         auto* triggerConfigFromTiled = triggerConfigFromTileDict.at(currTrigger.id());
+        if (!triggerConfigFromTiled->spawnable()) {
+            continue;
+        }
         if (globalPrimitiveConsts->terminating_trigger_id() == triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted()) {
             continue;
         }
@@ -1850,7 +1850,7 @@ RenderFrame* BaseBattle::CalcSingleStep(const int currRdfId, int delayedIfdId, I
     }
 
     calcFallenDeath(currRdf, nextRdf);
-    leftShiftDeadNpcs(currRdfId, nextRdf); // Might change "mNextRdfBulletIdCounter" and "mNextRdfBulletCount"
+    leftShiftDeadNpcs(currRdfId, nextRdf); // Might change "mNextRdfBulletIdCounter" and "mNextRdfBulletCount", thus put before setting them in "nextRdf"
     nextRdf->set_npc_count(mNextRdfNpcCount.load());
     nextRdf->set_npc_id_counter(mNextRdfNpcIdCounter.load());
 
@@ -2124,11 +2124,13 @@ bool BaseBattle::ResetStartRdf(char* inBytes, int inBytesCnt) {
 typedef std::list<TriggerConfigFromTiled*> TR_ADJ_ELE;
 typedef std::unordered_map<uint32_t, TR_ADJ_ELE> TR_ADJ_LIST;
 void BaseBattle::topoSortTriggerConfigFromTiledList(WsReq* initializerMapData) {
+    auto& triggerConfigs = globalConfigConsts->trigger_configs();
     for (int i = 0; i < initializerMapData->trigger_config_from_tile_list_size(); i++) {
         const TriggerConfigFromTiled& c = initializerMapData->trigger_config_from_tile_list(i);
         TriggerConfigFromTiled* mutableTriggerConfigFromTiled = google::protobuf::Arena::Create<TriggerConfigFromTiled>(&pbTempAllocator);
+        auto& triggerConfig = triggerConfigs.at(c.trt());
         mutableTriggerConfigFromTiled->CopyFrom(c);
-        if (collidableTrtSet.count(c.trt())) {
+        if (triggerConfig.collidable()) {
             if (0 == c.init_q_x() && 0 == c.init_q_y() && 0 == c.init_q_z() && 0 == c.init_q_w()) {
                 mutableTriggerConfigFromTiled->set_init_q_x(0);
                 mutableTriggerConfigFromTiled->set_init_q_y(0);
@@ -2145,7 +2147,7 @@ void BaseBattle::topoSortTriggerConfigFromTiledList(WsReq* initializerMapData) {
                 mutableTriggerConfigFromTiled->set_recovery_frames(globalPrimitiveConsts->default_tr_recovery_frames());
             } 
             if (0 >= c.quota()) {
-                if (trivialTrtSet.count(c.trt()) || mixedMainAndSubCycleTrtSet.count(c.trt())) {
+                if (triggerConfig.mixed_cycle() || triggerConfig.collidable()) {
                     mutableTriggerConfigFromTiled->set_quota(1);
                 }
             }
@@ -2629,9 +2631,12 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
         collectedDemandedMask[targetTriggerId] |= collectedPublishingMaskUponExhausted[targetTriggerId];
     }
 
+    auto& triggerConfigs = globalConfigConsts->trigger_configs();
     for (auto& [triggerId, triggerConfigFromTile] : triggerConfigFromTileDict) {
         auto targetTriggerId = triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted();
-        if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) continue;
+        if (globalPrimitiveConsts->terminating_trigger_id() == targetTriggerId) {
+            continue;
+        }
 
         if (!collectedPublishingMaskUponExhausted.count(targetTriggerId)) {
             collectedPublishingMaskUponExhausted[targetTriggerId] = 1;
@@ -2652,17 +2657,24 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
     for (int i = 0; i < startRdf->triggers_size(); ++i) {
         Trigger* tr = startRdf->mutable_triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == tr->id()) break;
-        if (directSpawnerTrtSet.count(tr->trt())) {
-            JPH_ASSERT(triggerConfigFromTileDict.count(tr->id()));
-        }
         tr->set_state(TriggerState::TrReady);
         tr->set_main_cycle_mask_to_fulfill(1UL); // Meets the need by far
         if (globalPrimitiveConsts->trts().flip_flop() == tr->trt()) {
             tr->set_sub_cycle_mask_to_fulfill(1UL);
             continue;
         }
+
         if (triggerConfigFromTileDict.count(tr->id())) {
             auto* triggerConfigFromTile = triggerConfigFromTileDict.at(tr->id());
+            auto& triggerConfig = triggerConfigs.at(triggerConfigFromTile->trt());
+            if (!triggerConfigFromTile->has_sub_cycle_driven()) {
+                triggerConfigFromTile->set_sub_cycle_driven(triggerConfig.sub_cycle_driven());
+            }
+
+            if (0 < triggerConfigFromTile->character_spawner_time_seq_size() || 0 < triggerConfigFromTile->pickable_spawner_time_seq_size()) {
+                triggerConfigFromTile->set_spawnable(true);
+            }
+
             if (!collectedDemandedMask.count(tr->id())) {
                 tr->set_sub_cycle_mask_to_fulfill(0);
             } else {
@@ -2670,7 +2682,7 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
             }
             triggerConfigFromTile->set_cached_sub_cycle_mask_to_fulfill(tr->sub_cycle_mask_to_fulfill());
 
-            if (directSpawnerTrtSet.count(tr->trt())) {
+            if (triggerConfigFromTile->spawnable()) {
                 JPH_ASSERT(globalPrimitiveConsts->terminating_trigger_id() != triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted()); // [WARNING] Must have, otherwise wouldn't fire
                 tr->set_main_cycle_mask_to_fulfill(1); // [WARNING] There should be no other trigger that publishes to a "directNpcSpawnerTrt", regardless of any malformatted config.
             }
@@ -2678,25 +2690,6 @@ bool BaseBattle::initTriggerMainAndSubCycles(RenderFrame* startRdf) {
             tr->set_topo_lv(triggerConfigFromTile->topo_lv());
             tr->set_quota(triggerConfigFromTile->quota());
             tr->set_bullet_team_id(triggerConfigFromTile->bullet_team_id());
-#ifndef NDEBUG
-            if (1 == startRdf->id()) {
-                if (collidableTrtSet.count(tr->trt())) {
-                    std::ostringstream oss;
-                    oss << "Collidable trigger with id=" << tr->id() << ", trt=" << tr->trt() << " initialized with UI config: pos=(" << tr->x() << ", " << tr->y() << "), topo_lv=" << triggerConfigFromTile->topo_lv() << ", quota=" << triggerConfigFromTile->quota() << ", bullet_team_id=" << triggerConfigFromTile->bullet_team_id() << ", box_half_size=(" << triggerConfigFromTile->box_half_size_x() << ", " << triggerConfigFromTile->box_half_size_y() << "), main_cycle_mask_to_fulfill=" << tr->main_cycle_mask_to_fulfill() << ", sub_cycle_mask_to_fulfill=" << tr->sub_cycle_mask_to_fulfill() << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted() << std::endl; 
-                    Debug::Log(oss.str(), DColor::Orange);
-                } else {
-                    std::ostringstream oss;
-                    oss << "Trigger with id=" << tr->id() << ", trt=" << tr->trt() << " initialized with UI config: pos=(" << tr->x() << ", " << tr->y() << "), topo_lv=" << triggerConfigFromTile->topo_lv() << ", quota=" << triggerConfigFromTile->quota() << ", bullet_team_id=" << triggerConfigFromTile->bullet_team_id() << ", main_cycle_mask_to_fulfill=" << tr->main_cycle_mask_to_fulfill() << ", sub_cycle_mask_to_fulfill=" << tr->sub_cycle_mask_to_fulfill() << ", publishing_to_trigger_id_upon_exhausted=" << triggerConfigFromTile->publishing_to_trigger_id_upon_exhausted() << std::endl;
-                    Debug::Log(oss.str(), DColor::Orange);
-                }
-            }
-        } else {
-            if (1 == startRdf->id()) {
-                std::ostringstream oss;
-                oss << "Trigger with id=" << tr->id() << ", trt=" << tr->trt() << " initialized without UI config: pos=(" << tr->x() << ", " << tr->y() << ")";
-                Debug::Log(oss.str(), DColor::Orange);
-            }
-#endif
         }
     }
 
@@ -3285,11 +3278,6 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
 
     float newOriginatedX = newPos.GetX(), newOriginatedY = newPos.GetY(), newX = newPos.GetX(), newY = newPos.GetY();
 
-    float dstQx = referenceBullet->q_x();
-    float dstQy = referenceBullet->q_y();
-    float dstQz = referenceBullet->q_z();
-    float dstQw = referenceBullet->q_w();
-
     auto initBlState = BulletState::Hit;
     int initFramesInBlState = 0;
 
@@ -3307,6 +3295,8 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
 #endif // ! NDEBUG
     CopyBullet(referenceBullet, nextBl);
     nextBl->set_id(oldNextRdfBulletIdCounter);
+    auto ud = calcUserData(*nextBl);
+    nextBl->set_ud(ud);
     nextBl->set_originated_render_frame_id(currRdfId);
     nextBl->set_bl_state(initBlState);
     nextBl->set_frames_in_bl_state(initFramesInBlState);
@@ -3319,6 +3309,60 @@ bool BaseBattle::addBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, 
     nextBl->set_vel_y(0);
     nextBl->set_vel_z(0);
     nextBl->set_damage_dealed(damageDealed);
+
+    return true;
+}
+
+bool BaseBattle::addVfxAsBlHitToNextFrame(const int currRdfId, RenderFrame* nextRdf, const uint32_t skillId, const Vec3& newPos, const Quat& newRot) {
+    if (globalPrimitiveConsts->no_skill() == skillId) {
+        return false;
+    }
+    uint32_t oldNextRdfBulletCount = mNextRdfBulletCount.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfBulletCount >= globalPrimitiveConsts->default_prealloc_bullet_capacity()) {
+#ifndef  NDEBUG
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", skillId=" << skillId << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ": bullet overwhelming when adding vfx#1";
+        Debug::Log(oss.str(), DColor::Orange);
+#endif // ! NDEBUG
+        --mNextRdfBulletCount;
+        return false;
+    }
+
+    float newOriginatedX = newPos.GetX(), newOriginatedY = newPos.GetY(), newX = newPos.GetX(), newY = newPos.GetY();
+
+    auto initBlState = BulletState::Vanishing;
+    int initFramesInBlState = 0;
+
+    int oldNextRdfBulletIdCounter = mNextRdfBulletIdCounter.fetch_add(1, std::memory_order_relaxed);
+    if (oldNextRdfBulletCount > cMaxBulletId) {
+        oldNextRdfBulletCount = 1;
+    }
+    Bullet* nextBl = oldNextRdfBulletCount < nextRdf->bullets_size() ? nextRdf->mutable_bullets(oldNextRdfBulletCount) : nextRdf->add_bullets();
+#ifndef  NDEBUG
+    if (globalPrimitiveConsts->terminating_bullet_id() != nextBl->id()) {
+        std::ostringstream oss;
+        oss << "@currRdfId=" << currRdfId << ", a vfx with newBulletId=" << oldNextRdfBulletIdCounter << " will override oldBulletId=" << nextBl->id() << ", oldNextRdfBulletCount=" << oldNextRdfBulletCount << ".";
+        Debug::Log(oss.str(), DColor::Orange);
+     } 
+#endif // ! NDEBUG
+    nextBl->Clear();
+    nextBl->set_id(oldNextRdfBulletIdCounter);
+    auto ud = calcUserData(*nextBl);
+    nextBl->set_ud(ud);
+    nextBl->set_originated_render_frame_id(currRdfId);
+    nextBl->set_bl_state(initBlState);
+    nextBl->set_frames_in_bl_state(initFramesInBlState);
+    nextBl->set_originated_x(newOriginatedX);
+    nextBl->set_originated_y(newOriginatedY);
+    nextBl->set_x(newX);
+    nextBl->set_y(newY);
+    nextBl->set_z(0);
+    nextBl->set_q_x(newRot.GetX());
+    nextBl->set_q_y(newRot.GetY());
+    nextBl->set_q_z(newRot.GetZ());
+    nextBl->set_q_w(newRot.GetW());
+    nextBl->set_skill_id(skillId);
+    nextBl->set_active_skill_hit(1);
 
     return true;
 }
@@ -3340,6 +3384,7 @@ bool BaseBattle::addNewCharacterBulletToNextFrame(const int currRdfId, const Cha
     const BulletConfig& bulletConfig = skillConfig->hits(activeSkillHit - 1);
     if (0 == bulletConfig.hitbox_half_size_x() * bulletConfig.hitbox_half_size_y()) {
         // If there's no hit box, don't waste space on "nextRdf->bullets"!
+        --mNextRdfBulletCount;
         return true;
     }
 
@@ -4372,6 +4417,7 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
         }
     }
 
+    auto& triggerConfigs = globalConfigConsts->trigger_configs();
     for (int i = 0; i < currRdf->trigger_count(); i++) {
         const Trigger& currTr = currRdf->triggers(i);
         if (globalPrimitiveConsts->terminating_trigger_id() == currTr.id()) break;
@@ -4384,7 +4430,9 @@ void BaseBattle::batchPutIntoPhySysFromCache(const int currRdfId, const RenderFr
 
         if (!triggerConfigFromTileDict.count(currTr.id())) continue;
         if (TriggerState::TrReady != currTr.state()) continue; 
-        if (!collidableTrtSet.count(currTr.trt())) continue;
+
+        auto& triggerConfig = triggerConfigs.at(currTr.trt());
+        if (!triggerConfig.collidable()) continue;
         
         auto* triggerConfigFromTile = triggerConfigFromTileDict.at(currTr.id()); 
         float immediateBoxHalfSizeX = triggerConfigFromTile->box_half_size_x();
@@ -4505,9 +4553,9 @@ void BaseBattle::batchNonContactConstraintsSetupFromCache(const int currRdfId, c
             subscribingToTriggerUd = calcTriggerUserData(subscribesToTriggerId);
             currSubscribingToTrigger = transientUdToCurrTrigger.at(subscribingToTriggerUd);
             nextSubscribingToTrigger = transientUdToNextTrigger.at(subscribingToTriggerUd);
-
-            subscribingToTriggerMainCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? (nextSubscribingToTrigger->quota() < currSubscribingToTrigger->quota()) : false;  
-            subscribingToTriggerSubCycleTicked = trivialTrtSet.count(currSubscribingToTrigger->trt()) ? false : (nextSubscribingToTrigger->quota() == currSubscribingToTrigger->quota()  && nextSubscribingToTrigger->sub_cycle_index() > currSubscribingToTrigger->sub_cycle_index());
+            auto& subscribingToTriggerConfig = globalConfigConsts->trigger_configs().at(currSubscribingToTrigger->trt());
+            subscribingToTriggerMainCycleTicked = (nextSubscribingToTrigger->quota() < currSubscribingToTrigger->quota());  
+            subscribingToTriggerSubCycleTicked = !subscribingToTriggerConfig.mixed_cycle() && (nextSubscribingToTrigger->quota() == currSubscribingToTrigger->quota() && nextSubscribingToTrigger->sub_cycle_index() > currSubscribingToTrigger->sub_cycle_index());
         }
 
         const bool idleYetTriggered = (TrapState::TpIdle == currTp.trap_state() && isTriggerBased && subscribingToTriggerMainCycleTicked);
@@ -5309,6 +5357,11 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
                 }
             }
 
+            bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
+            if (!nextNotDashing) {
+                addVfxAsBlHitToNextFrame(currRdfId, nextRdf, outSkillId, Vec3(nextChd->x(), nextChd->y(), nextChd->z()), Quat(nextChd->q_x(), nextChd->q_y(), nextChd->q_z(), nextChd->q_w()));
+            }
+
             if (InAirDashing == outSkillConfig->bound_ch_state()) {
                 if (!currChd.omit_gravity() && 0 < currChd.remaining_air_dash_quota()) {
                     nextChd->set_remaining_air_dash_quota(currChd.remaining_air_dash_quota() - 1);
@@ -5319,7 +5372,6 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
                 bi->SetGravityFactor(chBodyID, 0);
                 ioGravityDirty = true;
             } else {
-                bool nextNotDashing = BaseBattleCollisionFilter::chIsNotDashing(*nextChd);
                 if (!nextNotDashing) {
                     bi->SetFriction(chBodyID, globalPrimitiveConsts->ground_dashing_ch_friction());
                     ioFrictionDirty = true;
@@ -5337,6 +5389,9 @@ void BaseBattle::processSingleCharacterInput(const int currRdfId, float dt, int 
     } else {
         bool currInJumpStartup = isInJumpStartup(currChd, cc); 
         prepareJumpStartup(currRdfId, currChd, currIsFlying, ud, massProps, currChdFacing, jumpedOrNot, slipJumpedOrNot, nextChd, currEffInAir, cc, chOverride, currParalyzed, chCollider, currInJumpStartup, currDashing, ioInputInducedMotion);
+        if (InAirIdle2ByJump == nextChd->ch_state() && 0 == nextChd->frames_in_ch_state()) {
+            addVfxAsBlHitToNextFrame(currRdfId, nextRdf, cc->air_jump_skill_id(), Vec3(nextChd->x(), nextChd->y(), nextChd->z()), Quat(nextChd->q_x(), nextChd->q_y(), nextChd->q_z(), nextChd->q_w()));
+        }
         bool nextInJumpStartup = isInJumpStartup(*nextChd, cc); 
 
         if (!currIsFlying) {
@@ -5843,6 +5898,7 @@ void BaseBattle::postStepSingleChdStateCorrection(const int currRdfId, const uin
 void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
     int aliveI = 0, candI = 0;
     auto& characterConfigs = globalConfigConsts->character_configs();
+    auto& triggerConfigs = globalConfigConsts->trigger_configs();
     int mNextRdfNpcCountVal = mNextRdfNpcCount.load();
     while (candI < mNextRdfNpcCountVal) {
         const NpcCharacterDownsync* candidate = &(nextRdf->npcs(candI));
@@ -5853,18 +5909,19 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
         while (candI < mNextRdfNpcCountVal && globalPrimitiveConsts->terminating_character_id() != candidate->id() && isNpcDeadToDisappear(chd)) {
             
             if (globalPrimitiveConsts->terminating_trigger_id() != candidate->publishing_to_trigger_id_upon_exhausted()) {
-                auto triggerUd = calcPublishingToTriggerUd(*candidate);
-                auto targetTriggerInNextFrame = transientUdToNextTrigger[triggerUd];
+                uint64_t triggerUd = calcPublishingToTriggerUd(*candidate);
+                Trigger* targetTriggerInNextFrame = transientUdToNextTrigger[triggerUd];
+                const TriggerConfig& targetTriggerConfig = triggerConfigs.at(targetTriggerInNextFrame->trt());
                 if (0 == chd->last_damaged_by_ud() && globalPrimitiveConsts->terminating_bullet_team_id() == chd->last_damaged_by_bullet_team_id()) {
                     if (1 == playersCnt) {
-                        publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), 1, 1, targetTriggerInNextFrame);
+                        publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), 1, 1, targetTriggerInNextFrame, targetTriggerConfig);
 #ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#1, NPC id=" << candidate->id() << " is dead with hp=" << chd->hp() << ", published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
                         Debug::Log(oss.str(), DColor::Orange);
 #endif
                     } else {
-                        publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                        publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame, targetTriggerConfig);
 #ifndef NDEBUG
                         std::ostringstream oss;
                         oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#2, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
@@ -5872,7 +5929,7 @@ void BaseBattle::leftShiftDeadNpcs(const int currRdfId, RenderFrame* nextRdf) {
 #endif
                     }
                 } else {
-                    publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame);
+                    publishToTrigger(currRdfId, candidate->publishing_mask_upon_exhausted(), chd->last_damaged_by_ud(), chd->last_damaged_by_bullet_team_id(), targetTriggerInNextFrame, targetTriggerConfig);
 #ifndef NDEBUG
                     std::ostringstream oss;
                     oss << "@currRdfId=" << currRdfId << ", leftShiftDeadNpcs/#3, offenderUd=" << chd->last_damaged_by_ud() << " published mask=" << candidate->publishing_mask_upon_exhausted() << " to receivingTriggerId=" << targetTriggerInNextFrame->id();
@@ -7836,12 +7893,26 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
         triggerConfigFromTiled = triggerConfigFromTileDict.at(steppingTriggerId);
     }
 
+    const TriggerConfig& triggerConfig = globalConfigConsts->trigger_configs().at(currTrigger.trt());
+
     int newFramesToRecover = globalPrimitiveConsts->default_tr_recovery_frames();
     if (nullptr != triggerConfigFromTiled) {
         newFramesToRecover = triggerConfigFromTiled->recovery_frames();
     }
 
     bool mainCycleCooledDown = (TriggerState::TrCooledDown == currTrigger.state());
+    if (nullptr != triggerConfigFromTiled && triggerConfigFromTiled->sub_cycle_driven() && mainCycleCooledDown) {
+        mainCycleFulfilled = true;
+        mainCycleCooledDown = false;
+        nextTrigger->set_main_cycle_mask_to_fulfill(0);
+#ifndef NDEBUG
+        std::ostringstream oss;
+
+        oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << ", mainCycleCooledDown driven `mainCycle` as it has sub_cycle_driven=true" << std::endl;
+        Debug::Log(oss.str(), DColor::Orange);
+#endif
+    }
+
     int oldQuota = currTrigger.quota();
 
     if (mainCycleCooledDown) {
@@ -7860,7 +7931,7 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
         }
 
         nextTrigger->set_quota(newQuota);
-        if (0 < currTrigger.sub_cycle_mask_to_fulfill() && !mixedMainAndSubCycleTrtSet.count(currTrigger.trt())) {
+        if (0 < currTrigger.sub_cycle_mask_to_fulfill() && !triggerConfig.mixed_cycle()) {
             // [WARNING] In this case, "mainCycleExhausted" should be triggered by "subCycleFulfilled" instead
             nextTrigger->set_state(TriggerState::TrSubCycleReady);
         } else {
@@ -7899,9 +7970,10 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
             if (nullptr != triggerConfigFromTiled) {
                 nextTrigger->set_sub_cycle_mask_to_fulfill(triggerConfigFromTiled->cached_sub_cycle_mask_to_fulfill());
             }
+
 #ifndef NDEBUG
             std::ostringstream oss;
-            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << ", subCycleFulfilled, sub_cycle_mask_to_fulfill is reset to " << nextTrigger->sub_cycle_mask_to_fulfill() << std::endl;
+            oss << "@currRdfId=" << currRdfId << ", steppingTriggerId=" << steppingTriggerId << ", subCycleFulfilled, sub_cycle_mask_to_fulfill is reset to " << nextTrigger->sub_cycle_mask_to_fulfill() << ", nextTrigger state set to TrCoolingDown, sub_cycle_driven=" << triggerConfigFromTiled->sub_cycle_driven() << std::endl;
             Debug::Log(oss.str(), DColor::Orange);
 #endif
         }
@@ -7915,7 +7987,8 @@ void BaseBattle::stepOtherSingleTriggerState(const int currRdfId, const Trigger&
                 uint64_t nextReceivingTriggerUd = calcTriggerUserData(receivingTriggerId);
                 Trigger* nextReceivingTrigger = transientUdToNextTrigger.at(nextReceivingTriggerUd);
                 uint64_t publishingMask = triggerConfigFromTiled->publishing_mask_upon_exhausted();
-                publishToTrigger(currRdfId, publishingMask, currTrigger.offender_ud(), currTrigger.offender_bullet_team_id(), nextReceivingTrigger);
+                const TriggerConfig& receivingTriggerConfig = globalConfigConsts->trigger_configs().at(nextReceivingTrigger->trt());
+                publishToTrigger(currRdfId, publishingMask, currTrigger.offender_ud(), currTrigger.offender_bullet_team_id(), nextReceivingTrigger, receivingTriggerConfig);
 #ifndef NDEBUG
                 uint64_t nextReceivingTriggerMainCycleMaskNow = nextReceivingTrigger->main_cycle_mask_to_fulfill();
                 uint64_t nextReceivingTriggerSubCycleMaskNow = nextReceivingTrigger->sub_cycle_mask_to_fulfill();
@@ -8071,7 +8144,8 @@ void BaseBattle::stepSingleIndiWaveNpcSpawner(const int currRdfId, const Trigger
             // [WARNING] For "trts().indi_wave_npc_spawner", we should report to "publishing_to_trigger_id_upon_exhausted" upon "sub-cycle fulfilled" instead of "main-cycle exhausted".
             uint64_t nextReceivingTriggerUd = calcTriggerUserData(triggerConfigFromTiled->publishing_to_trigger_id_upon_exhausted());
             Trigger* nextReceivingTrigger = transientUdToNextTrigger.at(nextReceivingTriggerUd);
-            publishToTrigger(currRdfId, triggerConfigFromTiled->publishing_mask_upon_exhausted(), currTrigger.offender_ud(), currTrigger.offender_bullet_team_id(), nextReceivingTrigger);
+            const TriggerConfig& receivingTriggerConfig = globalConfigConsts->trigger_configs().at(nextReceivingTrigger->trt());
+            publishToTrigger(currRdfId, triggerConfigFromTiled->publishing_mask_upon_exhausted(), currTrigger.offender_ud(), currTrigger.offender_bullet_team_id(), nextReceivingTrigger, receivingTriggerConfig);
 
 #ifndef NDEBUG
             std::ostringstream oss;

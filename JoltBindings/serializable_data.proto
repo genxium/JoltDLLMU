@@ -410,6 +410,8 @@ message CharacterConfig {
 
     float inplace_prompt_y_offset = 117;
 
+    uint32 air_jump_skill_id = 118;
+
     repeated InventorySlotConfig init_inventory_slots = 258;
     map<int32, int32> btn_b_auto_unhold_ch_states = 259; 
     map<int32, int32> looping_ch_states = 260; 
@@ -417,7 +419,6 @@ message CharacterConfig {
 
     map<int32, uint32> init_skill_transit = 262; // encodeForInitSkill(pattern_id, currEffInAir, currCrouching, currOnWall, currDashing, currInBlockStun, currAtked, currParalyzed) -> skill_id
     string species_name = 263;
-    string air_jump_vfx_anim_name = 264;
     string def1_active_vfx_anim_name = 265;
     string def1_atked_vfx_anim_name = 266;
     string def1_broken_vfx_anim_name = 267;
@@ -714,17 +715,6 @@ enum SkillInvocation {
     LowLevel = 3;
 }
 
-enum VfxDurationType {
-    OneOff = 0;
-    Repeating = 1;
-}
-
-enum VfxMotionType {
-    NoMotion = 0;
-    Dropped = 1;
-    Tracing = 2;
-}
-
 message BulletConfig {
     int32 startup_frames = 1;
     int32 startup_invinsible_frames = 2;
@@ -852,6 +842,8 @@ message BulletConfig {
     string hit_on_rock_sfx_name = 2053;
     string hit_on_metal_sfx_name = 2054;
     string hit_on_wood_sfx_name = 2055;
+
+    // Vfx configs
     string anim_name = 2056;
 }
 
@@ -1514,6 +1506,9 @@ message PickableSpawnerConfig {
 message TriggerConfig {
     uint32 trt = 1; // Short for "trigger type" 
     string name = 2;
+    bool sub_cycle_driven = 3; // overridable
+    bool mixed_cycle = 4; // NOT overridable
+    bool collidable = 5; // NOT overridable
 }
 
 message TriggerConfigFromTiled {
@@ -1541,6 +1536,8 @@ message TriggerConfigFromTiled {
     uint64 publishing_mask_upon_exhausted = 17; // [WARNING] NOT to be configured from UI/Story Editor. 
     uint32 publishing_to_trigger_id_upon_exhausted = 18; // [WARNING] Points to a "topo_lv" smaller than itself, and "A.topo_lv < B.topo_lv" means "A" is an ancestor of "B".  
 
+    bool spawnable = 19; // [WARNING] NOT to be configured from UI/Story Editor, derived from non-empty "character_spawner_time_seq" and "pickable_spawner_time_seq" 
+
     uint32 topo_lv = 21; // [WARNING] NOT to be configured from UI/Story Editor, derived from "publishing_to_trigger_id_upon_exhausted"
 
     uint64 cached_sub_cycle_mask_to_fulfill = 22;
@@ -1550,6 +1547,8 @@ message TriggerConfigFromTiled {
     float render_box_half_size_y = 26;
 
     SerializableConvexPolygon colliding_section_override = 27; 
+    
+    optional bool sub_cycle_driven = 28;
 
     optional string name = 514; // Overrides the prefab name to use
 
@@ -1666,11 +1665,9 @@ message TriggerTypes {
     uint32 indi_wave_npc_spawner = 6;
     uint32 indi_wave_pickable_spawner = 7;
 
-    uint32 sync_wave_group = 8;
+    uint32 save_point = 8;
 
-    uint32 save_point = 9;
-
-    uint32 flip_flop = 10;
+    uint32 flip_flop = 9;
 
     uint32 none = 2048;
 }

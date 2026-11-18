@@ -38,6 +38,7 @@ namespace JoltCSharp {
         public static uint Wolverine1GroundSlash1Id = 1034, Wolverine1GroundSlash2Id = 1035, Wolverine1GroundSlash3Id = 1036, Wolverine1AirSlash1Id = 1037, Wolverine1BackDashingId = 1038;
 
         public static uint TerrainSpikeId = 8192;
+        public const uint DefaultAirJumpSkillId = 8193;
 
         public const uint SPECIES_NONE_CH = 0;
         public const uint SPECIES_BLADEGIRL = 1;
@@ -79,7 +80,6 @@ namespace JoltCSharp {
         public const uint TRT_BY_PATTERN_F = 4;
         public const uint TRT_INDI_WAVE_NPC_SPAWNER = 5;
         public const uint TRT_INDI_WAVE_PICKABLE_SPAWNER = 6;
-        public const uint TRT_SYNC_WAVE_GROUP = 7;
         public const uint TRT_SAVE_POINT_ONLY = 8;
         public const uint TRT_VICTORY = 11;
         public const uint TRT_FLIP_FLOP = 12;
@@ -416,7 +416,6 @@ namespace JoltCSharp {
 
                   IndiWaveNpcSpawner = TRT_INDI_WAVE_NPC_SPAWNER,
                   IndiWavePickableSpawner = TRT_INDI_WAVE_PICKABLE_SPAWNER,
-                  SyncWaveGroup = TRT_SYNC_WAVE_GROUP,
 
                   SavePoint = TRT_SAVE_POINT_ONLY,
 

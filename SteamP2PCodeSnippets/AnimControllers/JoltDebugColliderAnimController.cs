@@ -58,7 +58,7 @@ public class JoltDebugColliderAnimController : AbstractCacheableAnimNode<IMessag
         initialized = true;
         return true;
     }
-    
+
     protected override bool updateAnimUnderlying(in int rdfId, in IMessage target, in Enum newTargetState, in IMessage newTargetConfig, in int framesInNewState) {
         MeshType cacheGroupId = GetCacheGroupId();
         if (newTargetConfig is BulletConfig bulletConfig) {

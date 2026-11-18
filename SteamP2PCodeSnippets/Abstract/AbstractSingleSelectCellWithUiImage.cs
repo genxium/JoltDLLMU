@@ -16,7 +16,7 @@ public abstract class AbstractSingleSelectCellWithUiImage : AbstractSingleSelect
         }
         return true;
     }
-    
+
     protected override void highlightAsSelected() {
         lazyInit();
         background.sprite = selectGroup.cellBgSelectedSpr;

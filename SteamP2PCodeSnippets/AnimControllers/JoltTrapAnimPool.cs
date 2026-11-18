@@ -1,6 +1,6 @@
-using UnityEngine;
-using jtshared;
 using JoltCSharp;
+using jtshared;
+using UnityEngine;
 
 public class JoltTrapAnimPool : AbstractCacheableAnimNodePool<Trap, TrapState, TrapConfigFromTiled, uint, JoltTrapAnimController> {
 

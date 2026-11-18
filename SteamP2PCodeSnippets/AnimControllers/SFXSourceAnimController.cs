@@ -79,7 +79,7 @@ public class SFXSourceAnimController : AbstractCacheableAnimNode<IMessage, Enum,
     protected AudioClip audioClip;
     protected AudioSource audioSource;
 
-    protected HashSet<string> loopingSfxNames = new HashSet<string>(); 
+    protected HashSet<string> loopingSfxNames = new HashSet<string>();
 
     public new void hideSelfCleanUp() {
         if (null != audioSource) {

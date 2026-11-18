@@ -32,9 +32,9 @@ namespace Assets.Scripts.MapParser {
 
         public uint id;
         public uint trt;
-        public int delayedFrames;  
+        public int delayedFrames;
         public int recoveryFrames;
-        public int bulletTeamId; 
+        public int bulletTeamId;
 
         public int subCycleTriggerFrames;
         public OptionalInt subCycleQuota;
@@ -45,7 +45,7 @@ namespace Assets.Scripts.MapParser {
 
         public bool shouldRender;
 
-        public CharacterSpawner[] characterSpawnerTimeSeq; 
+        public CharacterSpawner[] characterSpawnerTimeSeq;
         public PickableSpawner[] pickableSpawnerTimeSeq;
 
         // Use this for initialization
@@ -96,7 +96,7 @@ namespace Assets.Scripts.MapParser {
 
             foreach (var s in characterSpawnerTimeSeq) {
                 var casted = new CharacterSpawnerConfig {
-                    CutoffRdfId = s.cutoffRdfId, 
+                    CutoffRdfId = s.cutoffRdfId,
                 };
                 foreach (var e in s.chAndOps) {
                     casted.SpeciesIdList.Add(e.speciesId);

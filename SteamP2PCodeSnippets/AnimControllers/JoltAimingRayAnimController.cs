@@ -1,6 +1,6 @@
+using JoltCSharp;
 using jtshared;
 using UnityEngine;
-using JoltCSharp;
 using static JoltCSharp.PbPrimitivesOverride;
 
 public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, uint, uint, uint> {
@@ -35,7 +35,7 @@ public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, 
         initialized = true;
         return true;
     }
-    
+
     protected override bool updateAnimUnderlying(in int rdfId, in AimingRay aimingRay, in uint ignored1, in uint ignored2, in int framesInNewState) {
         if (null == lineRenderer) {
             lineRenderer = gameObject.AddComponent<BoxMeshRenderer>();
@@ -43,7 +43,7 @@ public class JoltAimingRayAnimController : AbstractCacheableAnimNode<AimingRay, 
             lineRenderer = gameObject.GetComponent<BoxMeshRenderer>();
         }
 
-        lineRenderer.SetHalfExtent(0.5f*(aimingRay.EdX - aimingRay.StX), 0.5f/DEFAULT_PIXELS_PER_UNIT);
+        lineRenderer.SetHalfExtent(0.5f * (aimingRay.EdX - aimingRay.StX), 0.5f / DEFAULT_PIXELS_PER_UNIT);
 
         return true;
     }

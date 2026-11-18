@@ -59,6 +59,7 @@ namespace JoltCSharp {
             RED_RIDINGHOOD.WalkingSfxName = "FootStep1";
             RED_RIDINGHOOD.JumpingSfxName = "Jump1";
             RED_RIDINGHOOD.LandingSfxName = "Landing1";
+            RED_RIDINGHOOD.LoopingChStates.Add((int)CharacterState.Sliding, 28);
 
             var BAT1 = underlying[PbPrimitivesOverride.SPECIES_BAT1];
             BAT1.VisionOffsetX = (10.0f);
@@ -101,7 +102,7 @@ namespace JoltCSharp {
             WOLVERINE1.AlwaysDef1 = true;
             WOLVERINE1.DefaultDef1Quota = 12;
             WOLVERINE1.Def1DamageYield = 0.9f;
-            WOLVERINE1.DefaultDef1BrokenFramesToRecover = 3*PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
+            WOLVERINE1.DefaultDef1BrokenFramesToRecover = 3 * PbPrimitivesOverride.BATTLE_DYNAMICS_FPS;
             //WOLVERINE1.HasTurnAroundAnim = false;
             WOLVERINE1.AwakingFramesToRecover = 135;
             WOLVERINE1.AwakingFramesInvinsible = 135;
@@ -114,7 +115,7 @@ namespace JoltCSharp {
                 }
                 nameToCc.Add(ch.SpeciesName, ch);
             }
-            
+
             _initialized = true;
             return _initialized;
         }
@@ -131,7 +132,7 @@ namespace JoltCSharp {
                 ch.DyingCapsuleHalfHeight /= DEFAULT_PIXELS_PER_UNIT;
                 ch.DimmedCapsuleRadius /= DEFAULT_PIXELS_PER_UNIT;
                 ch.DimmedCapsuleHalfHeight /= DEFAULT_PIXELS_PER_UNIT;
-                
+
                 ch.VisionOffsetX /= DEFAULT_PIXELS_PER_UNIT;
                 ch.VisionOffsetY /= DEFAULT_PIXELS_PER_UNIT;
                 ch.VisionHalfHeight /= DEFAULT_PIXELS_PER_UNIT;

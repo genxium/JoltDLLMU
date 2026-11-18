@@ -61,7 +61,7 @@ public class BattleInputManager : MonoBehaviour {
     public void SetMap(in AbstractJoltMapController val) {
         map = val;
     }
-    
+
     private const float magicLeanLowerBound = 0.1f;
     private const float magicLeanUpperBound = 0.9f;
 
@@ -71,13 +71,13 @@ public class BattleInputManager : MonoBehaviour {
         initPlayerInput();
         initCancelBtnPointerClickHandler();
         joystickInitPos = joystick.transform.position;
-        joystickKeyboardMoveRadius = 0.5f*joystick.GetComponent<OnScreenStick>().movementRange;
+        joystickKeyboardMoveRadius = 0.5f * joystick.GetComponent<OnScreenStick>().movementRange;
         joystickMoveEps = 0.1f;
         ResetSelf();
     }
 
     void OnEnable() {
-        
+
     }
 
     public void OnBtnAInput(InputAction.CallbackContext context) {
@@ -87,7 +87,7 @@ public class BattleInputManager : MonoBehaviour {
     }
 
     public void OnBtnBInput(InputAction.CallbackContext context) {
-		if (!customEnabled) return;
+        if (!customEnabled) return;
         bool rising = context.ReadValueAsButton();
         _triggerEdgeBtnB(rising);
     }
@@ -148,14 +148,14 @@ public class BattleInputManager : MonoBehaviour {
     }
 
     public void OnMove(InputAction.CallbackContext context) {
-		if (!customEnabled) return;
+        if (!customEnabled) return;
         joystickX = context.ReadValue<Vector2>().normalized.x;
         joystickY = context.ReadValue<Vector2>().normalized.y;
         //Debug.Log(String.Format("(joystickX,joystickY) is changed to ({0},{1}) by touch", joystickX, joystickY));
     }
 
     public void OnMoveByKeyboard(InputAction.CallbackContext context) {
-		if (!customEnabled) return;
+        if (!customEnabled) return;
         Vector2 origVal = context.ReadValue<Vector2>();
         joystickY = origVal.y;
         joystickX = 2 * origVal.x;
@@ -205,48 +205,48 @@ public class BattleInputManager : MonoBehaviour {
         // "GetEncodedInput" gets called by "AbstractMapController.doUpdate()", thus a proper spot to update UI
         // TODO: Add sprites on skewed directions.
         switch (discretizedDir) {
-        case 1:
-            joystickImg.sprite = joystickUp;
-            break;
-        case 2:
-            joystickImg.sprite = joystickDown;
-            break;
-        case 3:
-            joystickImg.sprite = joystickRight;
-            break;
-        case 4:
-            joystickImg.sprite = joystickLeft;
-            break;
-        case 5:
-            joystickImg.sprite = joystickUpRight;
-            break;
-        case 6:
-            joystickImg.sprite = joystickDownLeft;
-            break;
-        case 7:
-            joystickImg.sprite = joystickDownRight;
-            break;
-        case 8:
-            joystickImg.sprite = joystickUpLeft;
-            break;
-        default:
-            joystickImg.sprite = joystickIdle;
-            break;
+            case 1:
+                joystickImg.sprite = joystickUp;
+                break;
+            case 2:
+                joystickImg.sprite = joystickDown;
+                break;
+            case 3:
+                joystickImg.sprite = joystickRight;
+                break;
+            case 4:
+                joystickImg.sprite = joystickLeft;
+                break;
+            case 5:
+                joystickImg.sprite = joystickUpRight;
+                break;
+            case 6:
+                joystickImg.sprite = joystickDownLeft;
+                break;
+            case 7:
+                joystickImg.sprite = joystickDownRight;
+                break;
+            case 8:
+                joystickImg.sprite = joystickUpLeft;
+                break;
+            default:
+                joystickImg.sprite = joystickIdle;
+                break;
         }
         ulong ret = Bindings.APP_EncodeInput(dx, dy, btnALevel, btnBLevel, btnCLevel, btnDLevel, btnELevel, btnFLevel, btnLLevel, btnRLevel);
         return ret;
     }
 
-	public bool enable(bool yesOrNo) {
+    public bool enable(bool yesOrNo) {
         if (customEnabled == yesOrNo) return false;
         customEnabled = yesOrNo;
         ResetSelf(); // reset upon any change of this field!
-        
+
         return true;
-	}
+    }
 
     public void TogglePlayerInput(bool yesOrNo) {
-        if (null != playerInput) {           
+        if (null != playerInput) {
             //Debug.Log($"{this.GetType().Name}.togglePlayerInput triggered with val={val}");
             if (yesOrNo) {
                 playerInput.ActivateInput();
@@ -255,7 +255,7 @@ public class BattleInputManager : MonoBehaviour {
             }
         }
     }
-    
+
     public void ResetSelf() {
         joystickX = 0;
         joystickY = 0;
@@ -429,7 +429,7 @@ public class BattleInputManager : MonoBehaviour {
         }
         float criticalRatio = continuousDy / continuousDx;
         float absCriticalRatio = Math.Abs(criticalRatio);
-        float downEps = 5*eps; // dragging down is often more tentative for a player, thus give it a larger threshold!
+        float downEps = 5 * eps; // dragging down is often more tentative for a player, thus give it a larger threshold!
 
         if (absCriticalRatio < magicLeanLowerBound && eps < absContinuousDx) {
             dy = 0;
@@ -498,7 +498,7 @@ public class BattleInputManager : MonoBehaviour {
                         dx = +2; // right 
                         encodedIdx = 3;
                     }
-                } 
+                }
             } else {
                 // 0 > continuousDx
                 dx = -1;

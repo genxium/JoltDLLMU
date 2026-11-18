@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using UnityEngine;
+using JoltCSharp;
 using jtshared;
 using System;
-using JoltCSharp;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class JoltTriggerAnimController : AbstractCacheableAnimNode<Trigger, TriggerState, TriggerConfigFromTiled, uint> {
 

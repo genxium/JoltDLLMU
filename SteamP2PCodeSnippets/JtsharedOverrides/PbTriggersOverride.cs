@@ -1,12 +1,11 @@
 using jtshared;
-using static JoltCSharp.PbPrimitivesOverride;
 
 namespace JoltCSharp {
     public class PbTriggersOverride : PbTriggers {
         ////////////////////////////////////////////////////////////////////////////////////////
         public PbTriggersOverride(in PrimitiveConsts primitiveConsts) : base(primitiveConsts) {
         }
-        
+
         public static PbTriggersOverride Instance {
             get {
                 if (null != _instance) {
@@ -33,7 +32,7 @@ namespace JoltCSharp {
             underlying[PbPrimitivesOverride.TRT_INDI_WAVE_NPC_SPAWNER].Name = "IndiWaveDoor1";
             underlying[PbPrimitivesOverride.TRT_INDI_WAVE_PICKABLE_SPAWNER].Name = "IndiWavePickableChest1";
 
-           
+
             if (underlying.ContainsKey(PbPrimitivesOverride.TRT_BY_ATTACK)) {
                 underlying[PbPrimitivesOverride.TRT_BY_ATTACK].Name = "ByAttack";
             } else {

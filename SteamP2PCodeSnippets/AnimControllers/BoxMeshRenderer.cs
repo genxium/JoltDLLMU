@@ -33,10 +33,10 @@ public class BoxMeshRenderer : MonoBehaviour {
 
     private ulong ud = 0;
     private float halfX = 0f;
-    private float halfY= 0f;
-    
+    private float halfY = 0f;
+
     private const int vertCount = 4;
-    private const int triCount = 2*3;
+    private const int triCount = 2 * 3;
     private Vector3[] vertices = new Vector3[vertCount];
     private int[] triangles = new int[triCount];
 
@@ -61,9 +61,9 @@ public class BoxMeshRenderer : MonoBehaviour {
 
     private void rebuild() {
         var meshFilter = GetComponent<MeshFilter>();
-        var mesh = meshFilter.mesh;   
+        var mesh = meshFilter.mesh;
         mesh.Clear();
-        
+
         int vertOffset = 0; // For future batch rendering use
 
         Box2DGeometry.Generate(halfX,
