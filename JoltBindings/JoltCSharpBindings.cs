@@ -405,6 +405,7 @@ namespace JoltCSharp {
             chd.RemainingDef1Quota = 0;
             chd.Def1BrokenRdfCountdown = 0;
             chd.LowerPartRdfCnt = 0;
+            chd.SkillTreeState = 0;
 
             chd.ComboHitCnt = 0;
             chd.ComboFramesRemained = 0;

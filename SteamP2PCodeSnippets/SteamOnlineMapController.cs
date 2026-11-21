@@ -1242,7 +1242,22 @@ public class SteamOnlineMapController : AbstractJoltMapController {
     }
 
     protected void OnApplicationQuit() {
-        Debug.LogWarning($"{GetType()}.OnApplicationQuit");
+        Debug.LogWarning($"{GetType()}.OnApplicationQuit#1");
+
+        if (UIntPtr.Zero != battle) {
+            APP_DestroyBattle(battle);
+            battle = UIntPtr.Zero;
+        }
+
+        if (UIntPtr.Zero != shadowBattle) {
+            APP_DestroyBattle(shadowBattle);
+            shadowBattle = UIntPtr.Zero;
+        }
+        bool shutdownRes = JPH_Shutdown();
+        Debug.Log($"{GetType()}.OnApplicationQuit#2, Jolt infra shutdown result = {shutdownRes}");
+
+        cleanupNetworkSessionsReentrantSafe();
+        Debug.LogWarning($"{GetType()}.OnApplicationQuit#3");
     }
 
     protected void OnApplicationFocus(bool hasFocus) {

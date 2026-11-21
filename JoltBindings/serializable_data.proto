@@ -443,11 +443,12 @@ enum SpecialMoveOverrideStatus {
 } 
 
 message CharacterBattleSpecificConfig {
-    map<int32, uint32> init_skill_transit = 1;     
-    repeated InventorySlotConfig init_inventory_slots = 2;
+    uint64 skill_tree_state = 1;
+    SpecialMoveOverrideStatus air_jump_override = 2;
     InventorySlotConfig atk1_magazine = 3; 
     InventorySlotConfig super_atk_gauge = 4; 
-    SpecialMoveOverrideStatus air_jump_override = 5;
+    repeated InventorySlotConfig init_inventory_slots = 5;
+    map<int32, uint32> init_skill_transit = 6;     
 }
 
 message BattleSpecificConfig {
@@ -550,6 +551,7 @@ message CharacterDownsync {
     float ground_norm_z = 62;
 
     int32 def1_broken_rdf_countdown = 63;
+    uint64 skill_tree_state = 64; // Intentionally NOT using a "repeated (uint32, uint32) skill_level_list" to avoid traversal each time a skill is used, also intentionally NOT using a "map<uint32, uint32> skill_level_dict" to avoid expensive memory copy per RenderFrame. This "skill_tree_state" can be used per arena-battle or persistently across the whole story mode, and the mapping rule should be defined per character. 
 
     /*
     [REMINDER] Repeated or collection fields of "CharacterDownsync" are not necessarily operated atomically, thus not necessary to preallocate.
@@ -557,23 +559,23 @@ message CharacterDownsync {
     However, "map" creates more memory fragments then "repeated", therefore it's still NOT USED here -- we don't choose data structure merely because it suffices thread-safety needs.
     */
 
-    InventorySlot atk1_magazine = 64; 
-    InventorySlot super_atk_gauge = 65; 
+    InventorySlot atk1_magazine = 65; 
+    InventorySlot super_atk_gauge = 66; 
 
-    repeated Buff buff_list = 66; 
-    uint32 buff_count = 67;
+    repeated Buff buff_list = 67; 
+    uint32 buff_count = 68;
 
-    repeated Debuff debuff_list = 68; 
-    uint32 debuff_count = 69;
+    repeated Debuff debuff_list = 69; 
+    uint32 debuff_count = 70;
 
-    repeated InventorySlot inventory_slots = 70;
-    uint32 ivs_count = 71;
+    repeated InventorySlot inventory_slots = 71;
+    uint32 ivs_count = 72;
 
-    repeated BulletImmuneRecord bullet_immune_records = 72; 
-    uint32 bir_count = 73;
+    repeated BulletImmuneRecord bullet_immune_records = 73; 
+    uint32 bir_count = 74;
 
-    repeated float kinematic_knobs = 74; // including both forward-kinematics and inverse-kinematics   
-    uint32 kk_count = 75;
+    repeated float kinematic_knobs = 75; // including both forward-kinematics and inverse-kinematics   
+    uint32 kk_count = 76;
 }
 
 message PlayerCharacterDownsync {

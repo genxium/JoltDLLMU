@@ -6465,6 +6465,8 @@ void BaseBattle::ClearChd(CharacterDownsync* chd) {
     chd->set_ch_state(CharacterState::Idle1);
     chd->set_frames_in_ch_state(0);   
     chd->set_lower_part_rdf_cnt(0);
+
+    chd->set_skill_tree_state(0);
 }
 
 void BaseBattle::ClearNpcChd(NpcCharacterDownsync* npc) {
@@ -6804,6 +6806,8 @@ void BaseBattle::CopyChd(const CharacterDownsync* from, CharacterDownsync* to) {
     to->set_ch_state(from->ch_state());
     to->set_frames_in_ch_state(from->frames_in_ch_state());   
     to->set_lower_part_rdf_cnt(from->lower_part_rdf_cnt());
+
+    to->set_skill_tree_state(from->skill_tree_state());
 }
 
 bool BaseBattle::FillInventorySlotFromConfig(const InventorySlotConfig* from, InventorySlot* to) {
